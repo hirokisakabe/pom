@@ -18,8 +18,6 @@ import {
 
 // ---------- utils ----------
 
-const PX_PER_IN = 96; // 参考用（ここでは未使用でもOK）
-
 type TRBL = { top: Px; right: Px; bottom: Px; left: Px };
 
 function clamp(v: number, min?: number, max?: number) {
