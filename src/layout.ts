@@ -1,4 +1,3 @@
-// layout.ts
 // すべて px で計算。emit 時に inch へ変換する。
 
 import {

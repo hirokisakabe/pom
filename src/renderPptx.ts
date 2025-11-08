@@ -1,4 +1,3 @@
-// renderPptx.ts
 // layout(=px) → PptxGenJS(=inch) への最終変換
 
 import PptxGenJS from "pptxgenjs";
