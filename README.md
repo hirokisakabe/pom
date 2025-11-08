@@ -19,9 +19,7 @@ npm install pptxgenjs
 ## 基本的な使い方
 
 ```typescript
-import { layout } from "./src/layout";
-import { renderPptx } from "./src/renderPptx";
-import { Node } from "./src/types";
+import { Node, layout, renderPptx } from "./src";
 
 const doc: Node = {
   type: "vstack",

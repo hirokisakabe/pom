@@ -1,6 +1,4 @@
-import { layout } from "src/layout";
-import { renderPptx } from "src/renderPptx";
-import { Node } from "src/types";
+import { Node, layout, renderPptx } from "./src";
 
 // 現在実装されている全機能を示すサンプルデータ
 export const doc: Node = {
