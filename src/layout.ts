@@ -50,7 +50,7 @@ function toTRBL(sp?: Spacing): TRBL {
 // 親の content box（padding 除去後）
 function contentBoxSize(
   node: { w?: Length; h?: Length; padding?: Spacing },
-  c: Constraints
+  c: Constraints,
 ) {
   const pad = toTRBL(node.padding);
   const w = resolveLength(node.w, c.w);
@@ -84,7 +84,7 @@ function measureTextPx(
   text: string = "",
   fontPx = 24,
   maxW?: Px,
-  lineHeight?: number
+  lineHeight?: number,
 ) {
   const charPx = fontPx * 0.6; // 近似
   const lh = lineHeight ?? fontPx * 1.2; // 近似行高
@@ -141,13 +141,13 @@ function layoutText(node: Text, c: Constraints): Positioned {
     node.text,
     node.fontPx ?? 24,
     maxW,
-    node.lineHeight
+    node.lineHeight,
   );
   const W = clamp(wantFull ? contentW : mw, node.minW, node.maxW);
   const H = clamp(
     node.h ? resolveLength(node.h, contentH) : mh,
     node.minH,
-    node.maxH
+    node.maxH,
   );
 
   // 内側パディング考慮（Text自体は padding 分を外枠に持つ）
@@ -196,8 +196,8 @@ function layoutBox(node: Box, c: Constraints): Positioned {
       (node.align === "center"
         ? (contentW - child.w) / 2
         : node.align === "end"
-        ? contentW - child.w
-        : 0);
+          ? contentW - child.w
+          : 0);
     // 縦方向は上寄せ（必要なら verticalAlign を導入）
     child.y = pad.top;
   }
@@ -216,7 +216,7 @@ function layoutBox(node: Box, c: Constraints): Positioned {
 function layoutStack(
   node: VStack | HStack,
   c: Constraints,
-  axis: "v" | "h"
+  axis: "v" | "h",
 ): Positioned {
   const { pad } = { pad: toTRBL(node.padding) };
   const wAvail = resolveLength(node.w, c.w);
@@ -245,10 +245,10 @@ function layoutStack(
     justify === "center"
       ? Math.max(0, free / 2)
       : justify === "end"
-      ? Math.max(0, free)
-      : justify === "spaceBetween" && children.length > 1
-      ? 0
-      : 0;
+        ? Math.max(0, free)
+        : justify === "spaceBetween" && children.length > 1
+          ? 0
+          : 0;
 
   // spaceBetween は gap を再計算
   const effGap =
@@ -275,8 +275,8 @@ function layoutStack(
         align === "center"
           ? (alignBaseW - p.w) / 2
           : align === "end"
-          ? alignBaseW - p.w
-          : 0;
+            ? alignBaseW - p.w
+            : 0;
       p.x = pad.left + xOff;
       p.y = pad.top + run;
       run += p.h + effGap;
@@ -286,8 +286,8 @@ function layoutStack(
         align === "center"
           ? (alignBaseH - p.h) / 2
           : align === "end"
-          ? alignBaseH - p.h
-          : 0;
+            ? alignBaseH - p.h
+            : 0;
       p.x = pad.left + run;
       p.y = pad.top + yOff;
       run += p.w + effGap;

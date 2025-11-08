@@ -82,7 +82,7 @@ export function renderPptx(root: Positioned, slidePx?: SlidePx) {
 function walk(
   p: Positioned,
   f: (p: Positioned, parent?: Positioned) => void,
-  parent?: Positioned
+  parent?: Positioned,
 ) {
   f(p, parent);
   p.children?.forEach((ch) => walk(ch, f, p));
