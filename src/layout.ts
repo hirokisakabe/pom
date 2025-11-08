@@ -26,14 +26,15 @@ function clamp(v: number, min?: number, max?: number) {
   return v;
 }
 
-function resolveLength(v: Length | undefined, parent: Px): Px {
+// テスト可能にするためexportするが、内部APIとして扱う
+export function resolveLength(v: Length | undefined, parent: Px): Px {
   if (v == null || v === "max") return parent;
   if (typeof v === "string" && v.endsWith("%"))
     return (parent * parseFloat(v)) / 100;
-  return v;
+  return v as Px; // 型アサーションで解決
 }
 
-function toTRBL(sp?: Spacing): TRBL {
+export function toTRBL(sp?: Spacing): TRBL {
   if (sp == null) return { top: 0, right: 0, bottom: 0, left: 0 };
   if (typeof sp === "number")
     return { top: sp, right: sp, bottom: sp, left: sp };
@@ -70,7 +71,7 @@ export function layout(root: Node, slide: Constraints): Positioned {
   return rel;
 }
 
-function absolutize(p: Positioned, ax: number, ay: number) {
+export function absolutize(p: Positioned, ax: number, ay: number) {
   p.x += ax;
   p.y += ay;
   p.children?.forEach((ch) => absolutize(ch, p.x, p.y));
@@ -78,7 +79,7 @@ function absolutize(p: Positioned, ax: number, ay: number) {
 
 // ---------- measure helpers ----------
 
-function measureTextPx(
+export function measureTextPx(
   text: string = "",
   fontPx = 24,
   maxW?: Px,
