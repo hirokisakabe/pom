@@ -16,3 +16,4 @@ jobs:
           node-version: "22"
       - run: npm ci
       - run: npm run fmt:check
+      - run: npm run test:run

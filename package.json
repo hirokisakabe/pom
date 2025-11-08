@@ -16,11 +16,16 @@
   "main": "index.js",
   "scripts": {
     "fmt": "prettier --write .",
-    "fmt:check": "prettier --check ."
+    "fmt:check": "prettier --check .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run"
   },
   "devDependencies": {
+    "@vitest/ui": "^4.0.8",
     "prettier": "3.6.2",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^4.0.8"
   },
   "dependencies": {
     "pptxgenjs": "4.0.1"

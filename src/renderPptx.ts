@@ -4,9 +4,9 @@
 import PptxGenJS from "pptxgenjs";
 import type { Positioned, Text, Image } from "./types";
 
-const PX_PER_IN = 96;
-const pxToIn = (px: number) => px / PX_PER_IN;
-const pxToPt = (px: number) => (px * 72) / PX_PER_IN;
+export const PX_PER_IN = 96;
+export const pxToIn = (px: number) => px / PX_PER_IN;
+export const pxToPt = (px: number) => (px * 72) / PX_PER_IN;
 
 type SlidePx = { w: number; h: number };
 
