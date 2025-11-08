@@ -13,6 +13,7 @@ import {
   Length,
   Spacing,
   Align,
+  Shape, // ← 追加
 } from "./types";
 
 // ---------- utils ----------
@@ -124,6 +125,8 @@ function layoutRel(node: Node, c: Constraints): Positioned {
       return layoutStack(node, c, "v");
     case "hstack":
       return layoutStack(node, c, "h");
+    case "shape":
+      return layoutShape(node, c); // ← 追加
   }
 }
 
@@ -152,7 +155,7 @@ function layoutText(node: Text, c: Constraints): Positioned {
   const w = node.w ? resolveLength(node.w, c.w) : W + pad.left + pad.right;
   const h = node.h ? resolveLength(node.h, c.h) : H + pad.top + pad.bottom;
 
-  // Textは相対原点に置く（縦の内側揃えは verticalAlign で調整可）
+  // Textは相対原点に置く
   return { type: "text", node, x: 0, y: 0, w, h };
 }
 
@@ -173,6 +176,49 @@ function layoutImage(node: Image, c: Constraints): Positioned {
   const h = innerH + pad.top + pad.bottom;
 
   return { type: "image", node, x: 0, y: 0, w, h };
+}
+
+function layoutShape(node: Shape, c: Constraints): Positioned {
+  // Shape は w/h が無ければ内容テキストで自動採寸。無ければデフォルトサイズ。
+  const pad = toTRBL(node.padding);
+  const contentWAvail = Math.max(0, c.w - (pad.left + pad.right));
+  const contentHAvail = Math.max(0, c.h - (pad.top + pad.bottom));
+
+  // テキストがあれば採寸
+  const hasText = !!node.text && node.text.length > 0;
+  const measured = hasText
+    ? measureTextPx(node.text!, node.fontPx ?? 16, contentWAvail)
+    : { w: 0, h: 0 };
+
+  // 内側サイズ決定
+  let innerW =
+    node.w != null
+      ? resolveLength(node.w, c.w) - (pad.left + pad.right)
+      : hasText
+        ? measured.w
+        : Math.min(120, contentWAvail); // デフォルト幅
+
+  let innerH =
+    node.h != null
+      ? resolveLength(node.h, c.h) - (pad.top + pad.bottom)
+      : hasText
+        ? measured.h
+        : Math.min(60, contentHAvail); // デフォルト高
+
+  innerW = Math.max(0, innerW);
+  innerH = Math.max(0, innerH);
+
+  // 折り返しを考慮して再採寸（w が既定で高さが未指定のとき）
+  if (hasText && node.w != null && node.h == null) {
+    const re = measureTextPx(node.text!, node.fontPx ?? 16, innerW);
+    innerH = re.h;
+  }
+
+  // 最小最大制約
+  const outerW = clamp(innerW + pad.left + pad.right, node.minW, node.maxW);
+  const outerH = clamp(innerH + pad.top + pad.bottom, node.minH, node.maxH);
+
+  return { type: "shape", node, x: 0, y: 0, w: outerW, h: outerH };
 }
 
 function layoutBox(node: Box, c: Constraints): Positioned {
@@ -196,7 +242,7 @@ function layoutBox(node: Box, c: Constraints): Positioned {
         : node.align === "end"
           ? contentW - child.w
           : 0);
-    // 縦方向は上寄せ（必要なら verticalAlign を導入）
+    // 縦方向は上寄せ
     child.y = pad.top;
   }
 

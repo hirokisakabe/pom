@@ -7,7 +7,7 @@ export const doc: Node = {
   gap: 16,
   children: [
     // ========================================
-    // セクション1: タイトル（中央揃え）
+    // セクション1: タイトル（中央揃え）＋下線ライン(shape)
     // ========================================
     {
       type: "vstack",
@@ -23,22 +23,32 @@ export const doc: Node = {
         },
         {
           type: "text",
-          text: "VStack / HStack / Box / Text / Image",
+          text: "VStack / HStack / Box / Text / Image / Shape",
           fontPx: 18,
           alignText: "center",
           w: "max",
+        },
+        // タイトル下にライン
+        {
+          type: "shape",
+          shapeKind: "line",
+          w: 640,
+          h: 2,
+          border: { color: "#333333", width: 2, dash: "solid" },
+          alignSelf: "center",
         },
       ],
     },
 
     // ========================================
-    // セクション2: 2カラムレイアウト
+    // セクション2: 2カラムレイアウト + 右矢印(shape)
     // ========================================
     {
       type: "hstack",
       w: "max",
       gap: 16,
       justify: "center",
+      alignItems: "center",
       children: [
         {
           type: "vstack",
@@ -64,6 +74,17 @@ export const doc: Node = {
             },
           ],
         },
+
+        // カラム間の強調として矢印
+        {
+          type: "shape",
+          shapeKind: "rightArrow",
+          w: 60,
+          h: 40,
+          fill: { color: "#4A90E2", opacity: 1 },
+          border: { color: "#4A90E2", width: 0 },
+        },
+
         {
           type: "vstack",
           gap: 8,
@@ -135,7 +156,7 @@ export const doc: Node = {
     },
 
     // ========================================
-    // セクション4: spaceBetweenの使用例
+    // セクション4: spaceBetween の使用例＋ダイヤモンド(shape)を中央に
     // ========================================
     {
       type: "vstack",
@@ -160,11 +181,14 @@ export const doc: Node = {
               fontPx: 16,
               alignText: "left",
             },
+            // 中央の飾り
             {
-              type: "text",
-              text: "中央",
-              fontPx: 16,
-              alignText: "center",
+              type: "shape",
+              shapeKind: "diamond",
+              w: 24,
+              h: 24,
+              fill: { color: "#6C5CE7", opacity: 1 },
+              border: { color: "#6C5CE7", width: 0 },
             },
             {
               type: "text",
@@ -178,7 +202,7 @@ export const doc: Node = {
     },
 
     // ========================================
-    // セクション5: Boxとpadding TRBL指定
+    // セクション5: Box と padding TRBL 指定 ＋ 吹き出し(callout)
     // ========================================
     {
       type: "box",
@@ -186,7 +210,7 @@ export const doc: Node = {
       children: [
         {
           type: "vstack",
-          gap: 4,
+          gap: 8,
           alignItems: "center",
           children: [
             {
@@ -202,6 +226,19 @@ export const doc: Node = {
               fontPx: 12,
               alignText: "center",
               w: "max",
+            },
+            // 吹き出し
+            {
+              type: "shape",
+              shapeKind: "callout",
+              w: 420,
+              h: 72,
+              fill: { color: "#FFF3CD", opacity: 1 },
+              border: { color: "#E0A800", width: 1, dash: "solid" },
+              text: "Shape は fill/border/text をサポートします",
+              fontPx: 14,
+              alignText: "center",
+              verticalAlign: "middle",
             },
           ],
         },

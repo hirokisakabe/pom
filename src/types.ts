@@ -102,7 +102,41 @@ export type Image = Base & {
   basis?: Length;
 };
 
-export type Node = VStack | HStack | Box | Text | Image;
+export const shapeKinds = [
+  "rect",
+  "roundRect",
+  "circle",
+  "triangle",
+  "diamond",
+  "rightArrow",
+  "leftArrow",
+  "upArrow",
+  "downArrow",
+  "line",
+  "cloud",
+  "callout",
+] as const;
+
+export type ShapeKind = (typeof shapeKinds)[number];
+
+export type Shape = Base & {
+  type: "shape";
+  shapeKind: ShapeKind;
+  fill?: { color?: string; opacity?: number };
+  border?: { color?: string; width?: Px; dash?: "solid" | "dot" | "dash" };
+  text?: string;
+  fontPx?: number;
+  alignText?: "left" | "center" | "right";
+  verticalAlign?: "top" | "middle" | "bottom";
+  autoFit?: boolean;
+  // 子ごとの上書き
+  alignSelf?: Align;
+  grow?: number;
+  shrink?: number;
+  basis?: Length;
+};
+
+export type Node = VStack | HStack | Box | Text | Image | Shape;
 
 // layout 入力制約（親のコンテンツ箱サイズ, px）
 export type Constraints = { w: Px; h: Px };
