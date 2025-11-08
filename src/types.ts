@@ -1,4 +1,3 @@
-// types.ts
 // レイアウト内部は px 基準。emit で inch に変換する前提。
 
 export type Px = number;
