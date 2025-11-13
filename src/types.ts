@@ -1,153 +1,88 @@
-// レイアウト内部は px 基準。emit で inch に変換する前提。
+import type { Node as YogaNode } from "yoga-layout";
 
-export type Px = number;
-export type Align = "start" | "center" | "end" | "stretch";
-export type Justify = "start" | "center" | "end" | "spaceBetween";
-export type Length = Px | "max" | `${number}%`;
-export type Spacing = Px | { top?: Px; right?: Px; bottom?: Px; left?: Px };
+export type Length = number | "max" | `${number}%`;
 
-type Base = {
-  id?: string;
+export type Padding =
+  | number
+  | {
+      top?: number;
+      right?: number;
+      bottom?: number;
+      left?: number;
+    };
 
-  // サイズ（相対指定を許可）
+export type AlignItems = "start" | "center" | "end" | "stretch";
+export type JustifyContent =
+  | "start"
+  | "center"
+  | "end"
+  | "spaceBetween"
+  | "spaceAround"
+  | "spaceEvenly";
+export type FlexDirection = "row" | "column";
+
+type BasePOMNode = {
+  yogaNode?: YogaNode;
+
   w?: Length;
   h?: Length;
-
-  // 最小/最大は実数pxで拘束
-  minW?: Px;
-  minH?: Px;
-  maxW?: Px;
-  maxH?: Px;
-
-  // 余白
-  padding?: Spacing;
-  margin?: Spacing;
-
-  // 任意：絶対配置の逃げ道
-  position?: "relative" | "absolute";
-  x?: Px;
-  y?: Px;
-  z?: number;
-
-  // 回転（度）
-  rotate?: number;
+  minW?: number;
+  maxW?: number;
+  minH?: number;
+  maxH?: number;
+  padding?: Padding;
 };
 
-export type VStack = Base & {
-  type: "vstack";
-  gap?: Px;
-  alignItems?: Align; // 交差軸
-  justify?: Justify; // 主軸
-  children: Node[];
-};
-
-export type HStack = Base & {
-  type: "hstack";
-  gap?: Px;
-  alignItems?: Align;
-  justify?: Justify;
-  children: Node[];
-};
-
-export type Box = Base & {
-  type: "box";
-  align?: Align; // 子1つの水平揃え（stretch/center/end）
-  children?: Node[];
-  // 子ごとの上書き
-  alignSelf?: Align;
-  grow?: number;
-  shrink?: number;
-  basis?: Length;
-};
-
-export type Text = Base & {
+export type TextNode = BasePOMNode & {
   type: "text";
-  text?: string;
-
-  // 将来のリッチテキストを見据えたプレースホルダ
-  rich?: {
-    runs: {
-      text: string;
-      bold?: boolean;
-      italic?: boolean;
-      color?: string;
-      link?: string;
-    }[];
-    bullets?: { type: "disc" | "decimal"; level?: number };
-  };
-
+  text: string;
   fontPx?: number;
   alignText?: "left" | "center" | "right";
-  lineHeight?: number; // px
-  paragraphSpacing?: number; // px
-  verticalAlign?: "top" | "middle" | "bottom";
-  autoFit?: boolean; // 枠に収まるまで縮小
-  // 子ごとの上書き
-  alignSelf?: Align;
-  grow?: number;
-  shrink?: number;
-  basis?: Length;
 };
 
-export type Image = Base & {
+export type ImageNode = BasePOMNode & {
   type: "image";
-  src: string; // data URL or file path
-  aspectRatio?: number; // w/h
-  objectFit?: "contain" | "cover" | "fill";
-  objectPosition?: "center" | "top" | "bottom" | "left" | "right";
-  // 子ごとの上書き
-  alignSelf?: Align;
-  grow?: number;
-  shrink?: number;
-  basis?: Length;
+  src: string;
 };
 
-export const shapeKinds = [
-  "rect",
-  "roundRect",
-  "circle",
-  "triangle",
-  "diamond",
-  "rightArrow",
-  "leftArrow",
-  "upArrow",
-  "downArrow",
-  "line",
-  "cloud",
-  "callout",
-] as const;
-
-export type ShapeKind = (typeof shapeKinds)[number];
-
-export type Shape = Base & {
-  type: "shape";
-  shapeKind: ShapeKind;
-  fill?: { color?: string; opacity?: number };
-  border?: { color?: string; width?: Px; dash?: "solid" | "dot" | "dash" };
-  text?: string;
-  fontPx?: number;
-  alignText?: "left" | "center" | "right";
-  verticalAlign?: "top" | "middle" | "bottom";
-  autoFit?: boolean;
-  // 子ごとの上書き
-  alignSelf?: Align;
-  grow?: number;
-  shrink?: number;
-  basis?: Length;
+export type BoxNode = BasePOMNode & {
+  type: "box";
+  children: POMNode;
 };
 
-export type Node = VStack | HStack | Box | Text | Image | Shape;
-
-// layout 入力制約（親のコンテンツ箱サイズ, px）
-export type Constraints = { w: Px; h: Px };
-
-// layout 出力（絶対座標は別ステップで加算。ここは相対でも絶対でも px 数値）
-export type Positioned = {
-  type: Node["type"];
-  node: Node;
-  x: Px;
-  y: Px;
-  w: Px;
-  h: Px;
-  children?: Positioned[];
+export type VStackNode = BasePOMNode & {
+  type: "vstack";
+  children: POMNode[];
+  gap?: number;
+  alignItems?: AlignItems;
+  justifyContent?: JustifyContent;
 };
+
+export type HStackNode = BasePOMNode & {
+  type: "hstack";
+  children: POMNode[];
+  gap?: number;
+  alignItems?: AlignItems;
+  justifyContent?: JustifyContent;
+};
+
+export type POMNode =
+  | TextNode
+  | ImageNode
+  | BoxNode
+  | VStackNode
+  | HStackNode /* | ... */;
+
+type PositionedBase = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
+
+export type PositionedNode =
+  | (TextNode & PositionedBase)
+  | (ImageNode & PositionedBase)
+  | (BoxNode & PositionedBase & { children: PositionedNode })
+  | (VStackNode & PositionedBase & { children: PositionedNode[] })
+  | (HStackNode & PositionedBase & { children: PositionedNode[] });
