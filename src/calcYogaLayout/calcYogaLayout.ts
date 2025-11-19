@@ -322,7 +322,7 @@ async function applyStyleToYogaNode(node: POMNode, yn: YogaNode) {
           const fontWeight = "normal";
           const lineHeight = 1.3;
 
-          yn.setMeasureFunc((width, widthMode, height, heightMode) => {
+          yn.setMeasureFunc((width, widthMode) => {
             const maxWidthPx = (() => {
               switch (widthMode) {
                 case yoga.MEASURE_MODE_UNDEFINED:

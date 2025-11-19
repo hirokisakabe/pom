@@ -152,7 +152,7 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
         }
 
         case "shape": {
-          const shapeOptions: any = {
+          const shapeOptions: Record<string, unknown> = {
             x: pxToIn(node.x),
             y: pxToIn(node.y),
             w: pxToIn(node.w),
@@ -193,9 +193,10 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
 
           if (node.text) {
             // テキストがある場合：addTextでshapeを指定
-            const textOptions: any = {
+            const shapeTypeRecord = pptx.ShapeType as Record<string, string>;
+            const textOptions: Record<string, unknown> = {
               ...shapeOptions,
-              shape: (pptx.ShapeType as any)[node.shapeType] ?? node.shapeType,
+              shape: shapeTypeRecord[node.shapeType] ?? node.shapeType,
               fontSize: pxToPt(node.fontPx ?? 24),
               fontFace: "Noto Sans JP",
               color: node.fontColor,
@@ -206,9 +207,10 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
             slide.addText(node.text, textOptions);
           } else {
             // テキストがない場合：addShapeを使用
-            const shapeType =
-              (pptx.ShapeType as any)[node.shapeType] ?? node.shapeType;
-            slide.addShape(shapeType, shapeOptions);
+            const shapeTypeRecord = pptx.ShapeType as Record<string, string>;
+            const shapeType = shapeTypeRecord[node.shapeType] ?? node.shapeType;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            slide.addShape(shapeType as any, shapeOptions);
           }
           break;
         }
