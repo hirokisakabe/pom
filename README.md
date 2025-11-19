@@ -164,3 +164,50 @@
   ...
 }
 ```
+
+#### 7. Shape
+
+図形を描画するノード。テキスト付き/なしで異なる表現が可能で、複雑なビジュアル効果をサポートしています。
+
+```typescript
+{
+  type: "shape";
+  shapeType: PptxGenJS.SHAPE_NAME;  // 例: "roundRect", "ellipse", "cloud", "star5" など
+  text?: string;                     // 図形内に表示するテキスト（オプション）
+  fill?: {
+    color?: string;
+    transparency?: number;
+  };
+  line?: {
+    color?: string;
+    width?: number;
+    dashType?: "solid" | "dash" | "dashDot" | "lgDash" | "lgDashDot" | "lgDashDotDot" | "sysDash" | "sysDot";
+  };
+  shadow?: {
+    type: "outer" | "inner";
+    opacity?: number;
+    blur?: number;
+    angle?: number;
+    offset?: number;
+    color?: string;
+  };
+  fontPx?: number;
+  fontColor?: string;
+  alignText?: "left" | "center" | "right";
+
+  // 共通プロパティ
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+**主な図形タイプの例:**
+
+- `roundRect`: 角丸長方形（タイトルボックス、カテゴリ表示）
+- `ellipse`: 楕円/円（ステップ番号、バッジ）
+- `cloud`: 雲型（コメント、重要ポイント）
+- `wedgeRectCallout`: 矢印付き吹き出し（注記）
+- `cloudCallout`: 雲吹き出し（コメント）
+- `star5`: 5つ星（強調、デコレーション）
+- `downArrow`: 下矢印（フロー図）
