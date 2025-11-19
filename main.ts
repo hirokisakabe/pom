@@ -388,8 +388,197 @@ const page3: POMNode = {
   ],
 };
 
+// ページ4: Shape機能のデモ
+const page4: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 32,
+  gap: 24,
+  alignItems: "stretch",
+  backgroundColor: "F0F9FF",
+  border: { color: "BAE6FD", width: 4 },
+  children: [
+    {
+      type: "box",
+      padding: 12,
+      backgroundColor: "FFFFFF",
+      border: { color: "7DD3FC", width: 2 },
+      children: {
+        type: "text",
+        text: "図形機能のデモ",
+        fontPx: 32,
+      },
+    },
+    {
+      type: "hstack",
+      gap: 24,
+      alignItems: "start",
+      children: [
+        // 左カラム: 基本図形
+        {
+          type: "vstack",
+          w: "50%",
+          gap: 20,
+          alignItems: "center",
+          children: [
+            {
+              type: "text",
+              text: "【基本図形】",
+              fontPx: 22,
+            },
+            {
+              type: "hstack",
+              gap: 16,
+              justifyContent: "center",
+              children: [
+                {
+                  type: "shape",
+                  shapeType: "ellipse",
+                  w: 120,
+                  h: 120,
+                  text: "円形",
+                  fontPx: 20,
+                  fill: { color: "FEF3C7" },
+                  line: { color: "F59E0B", width: 3 },
+                },
+                {
+                  type: "shape",
+                  shapeType: "rect",
+                  w: 120,
+                  h: 120,
+                  text: "四角形",
+                  fontPx: 20,
+                  fill: { color: "DBEAFE" },
+                  line: { color: "3B82F6", width: 3 },
+                },
+                {
+                  type: "shape",
+                  shapeType: "diamond",
+                  w: 120,
+                  h: 120,
+                  text: "菱形",
+                  fontPx: 20,
+                  fill: { color: "FCE7F3" },
+                  line: { color: "EC4899", width: 3 },
+                },
+              ],
+            },
+            {
+              type: "text",
+              text: "【影付き図形】",
+              fontPx: 22,
+            },
+            {
+              type: "shape",
+              shapeType: "roundRect",
+              w: 300,
+              h: 80,
+              text: "角丸四角形（影あり）",
+              fontPx: 20,
+              fill: { color: "C7D2FE" },
+              line: { color: "6366F1", width: 2 },
+              shadow: {
+                type: "outer",
+                opacity: 0.5,
+                blur: 8,
+                angle: 45,
+                offset: 5,
+                color: "000000",
+              },
+            },
+          ],
+        },
+        // 右カラム: 吹き出しと雲形
+        {
+          type: "vstack",
+          w: "50%",
+          gap: 20,
+          alignItems: "center",
+          children: [
+            {
+              type: "text",
+              text: "【吹き出し・雲形】",
+              fontPx: 22,
+            },
+            {
+              type: "shape",
+              shapeType: "cloud",
+              w: 280,
+              h: 100,
+              text: "雲形で考えを表現",
+              fontPx: 18,
+              fill: { color: "FFFFFF" },
+              line: { color: "94A3B8", width: 2 },
+            },
+            {
+              type: "shape",
+              shapeType: "cloudCallout",
+              w: 280,
+              h: 100,
+              text: "雲形の吹き出し",
+              fontPx: 18,
+              fill: { color: "FEF9C3" },
+              line: { color: "EAB308", width: 2 },
+            },
+            {
+              type: "shape",
+              shapeType: "wedgeRectCallout",
+              w: 280,
+              h: 100,
+              text: "四角形の吹き出し",
+              fontPx: 18,
+              fill: { color: "D1FAE5" },
+              line: { color: "10B981", width: 2 },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: "BAE6FD", width: 2 },
+      children: {
+        type: "hstack",
+        gap: 16,
+        alignItems: "center",
+        justifyContent: "center",
+        children: [
+          {
+            type: "shape",
+            shapeType: "rightArrow",
+            w: 100,
+            h: 60,
+            fill: { color: "FCA5A5" },
+            line: { color: "DC2626", width: 2 },
+          },
+          {
+            type: "text",
+            text: "図形は塗りつぶし、枠線、影をカスタマイズできます",
+            fontPx: 20,
+          },
+          {
+            type: "shape",
+            shapeType: "leftArrow",
+            w: 100,
+            h: 60,
+            fill: { color: "FCA5A5" },
+            line: { color: "DC2626", width: 2 },
+          },
+        ],
+      },
+    },
+  ],
+};
+
 async function main() {
-  await buildPptx([page1, page2, page3], { w: 1280, h: 720 }, "sample.pptx");
+  await buildPptx(
+    [page1, page2, page3, page4],
+    { w: 1280, h: 720 },
+    "sample.pptx",
+  );
 }
 
 main();

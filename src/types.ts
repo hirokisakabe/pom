@@ -27,6 +27,20 @@ export type BorderStyle = {
   dashType?: BorderDash;
 };
 
+export type FillStyle = {
+  color?: string;
+  transparency?: number;
+};
+
+export type ShadowStyle = {
+  type?: "outer" | "inner";
+  opacity?: number;
+  blur?: number;
+  angle?: number;
+  offset?: number;
+  color?: string;
+};
+
 export type AlignItems = "start" | "center" | "end" | "stretch";
 export type JustifyContent =
   | "start"
@@ -109,13 +123,26 @@ export type HStackNode = BasePOMNode & {
   justifyContent?: JustifyContent;
 };
 
+export type ShapeNode = BasePOMNode & {
+  type: "shape";
+  shapeType: string;
+  text?: string;
+  fill?: FillStyle;
+  line?: BorderStyle;
+  shadow?: ShadowStyle;
+  fontPx?: number;
+  fontColor?: string;
+  alignText?: "left" | "center" | "right";
+};
+
 export type POMNode =
   | TextNode
   | ImageNode
   | TableNode
   | BoxNode
   | VStackNode
-  | HStackNode /* | ... */;
+  | HStackNode
+  | ShapeNode /* | ... */;
 
 type PositionedBase = {
   x: number;
@@ -130,4 +157,5 @@ export type PositionedNode =
   | (TableNode & PositionedBase)
   | (BoxNode & PositionedBase & { children: PositionedNode })
   | (VStackNode & PositionedBase & { children: PositionedNode[] })
-  | (HStackNode & PositionedBase & { children: PositionedNode[] });
+  | (HStackNode & PositionedBase & { children: PositionedNode[] })
+  | (ShapeNode & PositionedBase);

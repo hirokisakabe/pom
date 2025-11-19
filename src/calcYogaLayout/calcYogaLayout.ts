@@ -68,6 +68,7 @@ async function buildPomWithYogaTree(node: POMNode, parentYoga: YogaNode) {
     case "text":
     case "image":
     case "table":
+    case "shape":
       // 子要素なし
       break;
   }
@@ -308,6 +309,44 @@ async function applyStyleToYogaNode(node: POMNode, yn: YogaNode) {
             height,
           };
         });
+      }
+      break;
+
+    case "shape":
+      {
+        if (node.text) {
+          // テキストがある場合、テキストサイズを測定
+          const text = node.text;
+          const fontSizePx = node.fontPx ?? 24;
+          const fontFamily = "Noto Sans JP";
+          const fontWeight = "normal";
+          const lineHeight = 1.3;
+
+          yn.setMeasureFunc((width, widthMode, height, heightMode) => {
+            const maxWidthPx = (() => {
+              switch (widthMode) {
+                case yoga.MEASURE_MODE_UNDEFINED:
+                  return Number.POSITIVE_INFINITY;
+                case yoga.MEASURE_MODE_EXACTLY:
+                case yoga.MEASURE_MODE_AT_MOST:
+                  return width;
+              }
+            })();
+
+            const { widthPx, heightPx } = measureText(text, maxWidthPx, {
+              fontFamily,
+              fontSizePx,
+              lineHeight,
+              fontWeight,
+            });
+
+            return {
+              width: widthPx,
+              height: heightPx,
+            };
+          });
+        }
+        // テキストがない場合は、明示的にサイズが指定されていることを期待
       }
       break;
   }

@@ -150,6 +150,68 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
           slide.addTable(tableRows, tableOptions);
           break;
         }
+
+        case "shape": {
+          const shapeOptions: any = {
+            x: pxToIn(node.x),
+            y: pxToIn(node.y),
+            w: pxToIn(node.w),
+            h: pxToIn(node.h),
+          };
+
+          // fill（塗りつぶし）の設定
+          if (node.fill) {
+            shapeOptions.fill = {
+              color: node.fill.color,
+              transparency: node.fill.transparency,
+            };
+          }
+
+          // line（枠線）の設定
+          if (node.line) {
+            shapeOptions.line = {
+              color: node.line.color,
+              width:
+                node.line.width !== undefined
+                  ? pxToPt(node.line.width)
+                  : undefined,
+              dashType: node.line.dashType,
+            };
+          }
+
+          // shadow（影）の設定
+          if (node.shadow) {
+            shapeOptions.shadow = {
+              type: node.shadow.type,
+              opacity: node.shadow.opacity,
+              blur: node.shadow.blur,
+              angle: node.shadow.angle,
+              offset: node.shadow.offset,
+              color: node.shadow.color,
+            };
+          }
+
+          if (node.text) {
+            // テキストがある場合：addTextでshapeを指定
+            const textOptions: any = {
+              ...shapeOptions,
+              shape: (pptx.ShapeType as any)[node.shapeType] ?? node.shapeType,
+              fontSize: pxToPt(node.fontPx ?? 24),
+              fontFace: "Noto Sans JP",
+              color: node.fontColor,
+              align: node.alignText ?? "center",
+              valign: "middle" as const,
+            };
+
+            slide.addText(node.text, textOptions);
+          } else {
+            // テキストがない場合：addShapeを使用
+            const shapeType =
+              (pptx.ShapeType as any)[node.shapeType] ?? node.shapeType;
+            slide.addShape(shapeType, shapeOptions);
+          }
+          break;
+        }
       }
     }
 
