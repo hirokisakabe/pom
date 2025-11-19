@@ -150,6 +150,58 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
           slide.addTable(tableRows, tableOptions);
           break;
         }
+
+        case "shape": {
+          const shapeOptions = {
+            x: pxToIn(node.x),
+            y: pxToIn(node.y),
+            w: pxToIn(node.w),
+            h: pxToIn(node.h),
+            fill: node.fill
+              ? {
+                  color: node.fill.color,
+                  transparency: node.fill.transparency,
+                }
+              : undefined,
+            line: node.line
+              ? {
+                  color: node.line.color,
+                  width:
+                    node.line.width !== undefined
+                      ? pxToPt(node.line.width)
+                      : undefined,
+                  dashType: node.line.dashType,
+                }
+              : undefined,
+            shadow: node.shadow
+              ? {
+                  type: node.shadow.type,
+                  opacity: node.shadow.opacity,
+                  blur: node.shadow.blur,
+                  angle: node.shadow.angle,
+                  offset: node.shadow.offset,
+                  color: node.shadow.color,
+                }
+              : undefined,
+          };
+
+          if (node.text) {
+            // テキストがある場合：addTextでshapeを指定
+            slide.addText(node.text, {
+              ...shapeOptions,
+              shape: node.shapeType,
+              fontSize: pxToPt(node.fontPx ?? 24),
+              fontFace: "Noto Sans JP",
+              color: node.fontColor,
+              align: node.alignText ?? "center",
+              valign: "middle" as const,
+            });
+          } else {
+            // テキストがない場合：addShapeを使用
+            slide.addShape(node.shapeType, shapeOptions);
+          }
+          break;
+        }
       }
     }
 
