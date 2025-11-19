@@ -12,7 +12,6 @@
   },
   "license": "MIT",
   "author": "",
-  "type": "commonjs",
   "main": "index.js",
   "scripts": {
     "fmt": "prettier --write .",
@@ -22,12 +21,16 @@
     "test:run": "vitest run"
   },
   "devDependencies": {
+    "@types/image-size": "0.7.0",
     "@vitest/ui": "^4.0.8",
     "prettier": "3.6.2",
     "typescript": "5.9.3",
     "vitest": "^4.0.8"
   },
   "dependencies": {
-    "pptxgenjs": "4.0.1"
+    "canvas": "3.2.0",
+    "image-size": "2.0.2",
+    "pptxgenjs": "4.0.1",
+    "yoga-layout": "3.2.1"
   }
 }
