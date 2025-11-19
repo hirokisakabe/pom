@@ -63,6 +63,31 @@ export type ImageNode = BasePOMNode & {
   src: string;
 };
 
+export type TableCell = {
+  text: string;
+  fontPx?: number;
+  color?: string;
+  bold?: boolean;
+  alignText?: "left" | "center" | "right";
+  backgroundColor?: string;
+};
+
+export type TableRow = {
+  cells: TableCell[];
+  height?: number;
+};
+
+export type TableColumn = {
+  width: number;
+};
+
+export type TableNode = BasePOMNode & {
+  type: "table";
+  columns: TableColumn[];
+  rows: TableRow[];
+  defaultRowHeight?: number;
+};
+
 export type BoxNode = BasePOMNode & {
   type: "box";
   children: POMNode;
@@ -87,6 +112,7 @@ export type HStackNode = BasePOMNode & {
 export type POMNode =
   | TextNode
   | ImageNode
+  | TableNode
   | BoxNode
   | VStackNode
   | HStackNode /* | ... */;
@@ -101,6 +127,7 @@ type PositionedBase = {
 export type PositionedNode =
   | (TextNode & PositionedBase)
   | (ImageNode & PositionedBase)
+  | (TableNode & PositionedBase)
   | (BoxNode & PositionedBase & { children: PositionedNode })
   | (VStackNode & PositionedBase & { children: PositionedNode[] })
   | (HStackNode & PositionedBase & { children: PositionedNode[] });

@@ -76,7 +76,39 @@
 }
 ```
 
-#### 3. Box
+#### 3. Table
+
+表を描画するノード。列幅・行高を px 単位で宣言し、セル単位で装飾を細かく制御できます。
+
+```typescript
+{
+  type: "table";
+  columns: { width: number }[];
+  rows: {
+    height?: number;
+    cells: {
+      text: string;
+      fontPx?: number;
+      color?: string;
+      bold?: boolean;
+      alignText?: "left" | "center" | "right";
+      backgroundColor?: string;
+    }[];
+  }[];
+  defaultRowHeight?: number;
+
+  // 共通プロパティ
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+- `columns` の合計がテーブルの自然幅になります（必要であれば `w` で上書きできます）。
+- `rows` の `height` を省略すると `defaultRowHeight`（未指定なら32px）が適用されます。
+- セル背景やフォント装飾を `cells` の各要素で個別に指定できます。
+
+#### 4. Box
 
 単一の子要素をラップする汎用コンテナ。
 
@@ -95,7 +127,7 @@
 }
 ```
 
-#### 4. VStack
+#### 5. VStack
 
 子要素を **縦方向** に並べる。
 
@@ -114,7 +146,7 @@
 }
 ```
 
-#### 5. HStack
+#### 6. HStack
 
 子要素を **横方向** に並べる。
 

@@ -288,6 +288,93 @@ const page3: POMNode = {
         {
           type: "box",
           padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: "D1D9FF", width: 1 },
+          children: {
+            type: "table",
+            defaultRowHeight: 40,
+            columns: [{ width: 200 }, { width: 380 }, { width: 240 }],
+            rows: [
+              {
+                height: 48,
+                cells: [
+                  {
+                    text: "フェーズ",
+                    fontPx: 20,
+                    bold: true,
+                    alignText: "center",
+                    backgroundColor: "EEF2FF",
+                  },
+                  {
+                    text: "主なAI活用例",
+                    fontPx: 20,
+                    bold: true,
+                    alignText: "center",
+                    backgroundColor: "EEF2FF",
+                  },
+                  {
+                    text: "期待される効果",
+                    fontPx: 20,
+                    bold: true,
+                    alignText: "center",
+                    backgroundColor: "EEF2FF",
+                  },
+                ],
+              },
+              {
+                cells: [
+                  {
+                    text: "要件定義",
+                    fontPx: 18,
+                  },
+                  {
+                    text: "AIチャットで要件の抜け漏れを自動チェックし、アーキテクチャ案を比較",
+                    fontPx: 16,
+                  },
+                  {
+                    text: "仕様の確からしさ向上、意思決定スピードアップ",
+                    fontPx: 16,
+                  },
+                ],
+              },
+              {
+                cells: [
+                  {
+                    text: "実装",
+                    fontPx: 18,
+                  },
+                  {
+                    text: "CopilotなどでCRUDの自動生成、テストケース案の生成",
+                    fontPx: 16,
+                  },
+                  {
+                    text: "開発リードタイム短縮、ケアレスミスの減少",
+                    fontPx: 16,
+                  },
+                ],
+              },
+              {
+                cells: [
+                  {
+                    text: "テスト/保守",
+                    fontPx: 18,
+                  },
+                  {
+                    text: "失敗ログを入力して根本原因候補と修正案を提示",
+                    fontPx: 16,
+                  },
+                  {
+                    text: "不具合分析の高速化、学習コストの削減",
+                    fontPx: 16,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          padding: 16,
           backgroundColor: "F7F9FC",
           border: { color: "CBD2E5", width: 2 },
           children: {

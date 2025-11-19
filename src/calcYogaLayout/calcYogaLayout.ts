@@ -3,6 +3,7 @@ import { Node as YogaNode } from "yoga-layout";
 import { loadYoga } from "yoga-layout/load";
 import { measureText } from "./measureText";
 import { measureImage } from "./measureImage";
+import { calcTableIntrinsicSize } from "../table/utils";
 
 /**
  * POMNode ツリーを Yoga でレイアウト計算する
@@ -66,6 +67,7 @@ async function buildPomWithYogaTree(node: POMNode, parentYoga: YogaNode) {
     }
     case "text":
     case "image":
+    case "table":
       // 子要素なし
       break;
   }
@@ -291,6 +293,19 @@ async function applyStyleToYogaNode(node: POMNode, yn: YogaNode) {
           return {
             width: widthPx,
             height: heightPx,
+          };
+        });
+      }
+      break;
+
+    case "table":
+      {
+        yn.setMeasureFunc(() => {
+          const { width, height } = calcTableIntrinsicSize(node);
+
+          return {
+            width,
+            height,
           };
         });
       }
