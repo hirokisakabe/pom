@@ -1,127 +1,166 @@
 import { POMNode, buildPptx } from "./src";
 
-// ページ1: タイトルページと概要
+// ページ1: タイトルページ
 const page1: POMNode = {
   type: "vstack",
   w: "100%",
   h: "max",
   padding: 40,
-  gap: 20,
+  gap: 24,
   alignItems: "stretch",
-  backgroundColor: "F6F8FF",
-  border: { color: "CBD5FF", width: 4 },
+  backgroundColor: "EFF6FF",
+  border: { color: "93C5FD", width: 4 },
   children: [
+    // タイトルセクション
     {
       type: "vstack",
-      gap: 12,
+      gap: 16,
       alignItems: "center",
       padding: 32,
       backgroundColor: "FFFFFF",
-      border: { color: "E0E7FF", width: 2 },
+      border: { color: "3B82F6", width: 2 },
       children: [
         {
           type: "text",
-          text: "Webアプリケーション開発における",
-          fontPx: 32,
+          text: "TypeScriptプロジェクト",
+          fontPx: 40,
         },
         {
           type: "text",
-          text: "AI活用の最前線",
-          fontPx: 44,
+          text: "ベストプラクティス",
+          fontPx: 48,
         },
         {
           type: "text",
-          text: "～生産性を劇的に向上させる実践手法～",
+          text: "品質と生産性を高める開発手法",
           fontPx: 24,
         },
       ],
     },
+    // メインコンテンツ
     {
-      type: "box",
-      padding: 24,
-      backgroundColor: "FFFFFF",
-      border: { color: "D9E2EC", width: 2 },
-      children: {
-        type: "vstack",
-        gap: 16,
-        alignItems: "start",
-        children: [
-          {
-            type: "text",
-            text: "AI技術の進化により、Web開発の現場は大きく変わりつつあります。GitHub Copilot、ChatGPT、Claude、Cursorなどのツールは、単なるコード補完を超え、設計、実装、テスト、デバッグの全工程を支援します。本プレゼンテーションでは、実際の開発現場でAIをどう活用すべきか、具体的な手法と効果を解説します。",
-            fontPx: 18,
-          },
-          {
-            type: "hstack",
-            gap: 32,
-            children: [
-              {
+      type: "hstack",
+      gap: 24,
+      alignItems: "start",
+      children: [
+        // 左: イメージとテキスト
+        {
+          type: "vstack",
+          w: "50%",
+          gap: 16,
+          alignItems: "center",
+          children: [
+            {
+              type: "shape",
+              shapeType: "roundRect",
+              w: 200,
+              h: 200,
+              text: "TypeScript",
+              fontPx: 32,
+              fontColor: "FFFFFF",
+              fill: { color: "3178C6" },
+              line: { color: "235A97", width: 3 },
+              shadow: {
+                type: "outer",
+                opacity: 0.3,
+                blur: 10,
+                angle: 45,
+                offset: 8,
+                color: "000000",
+              },
+            },
+            {
+              type: "text",
+              text: "型安全性と開発体験の向上",
+              fontPx: 18,
+            },
+          ],
+        },
+        // 右: 概要
+        {
+          type: "vstack",
+          w: "50%",
+          gap: 16,
+          children: [
+            {
+              type: "box",
+              padding: 20,
+              backgroundColor: "FFFFFF",
+              border: { color: "BFDBFE", width: 2 },
+              children: {
                 type: "vstack",
-                w: "50%",
-                gap: 8,
-                padding: 12,
-                backgroundColor: "F9FAFB",
-                border: { color: "E5E7EB", width: 1 },
+                gap: 12,
                 children: [
                   {
                     type: "text",
-                    text: "【主なトピック】",
-                    fontPx: 20,
-                  },
-                  {
-                    type: "text",
-                    text: "• AI開発ツールの種類と特徴\n• 開発フロー別の活用方法\n• 生産性向上の実例\n• 導入における注意点",
+                    text: "このプレゼンテーションでは、TypeScriptプロジェクトにおける開発のベストプラクティスを紹介します。適切なツール選定、コーディング規約、実装パターンを学ぶことで、チーム全体の生産性と品質を向上させることができます。",
                     fontPx: 16,
                   },
                 ],
               },
-              {
-                type: "vstack",
-                w: "50%",
-                gap: 8,
-                padding: 12,
-                backgroundColor: "F9FAFB",
-                border: { color: "E5E7EB", width: 1 },
-                children: [
-                  {
-                    type: "text",
-                    text: "【対象者】",
-                    fontPx: 20,
-                  },
-                  {
-                    type: "text",
-                    text: "• Web開発エンジニア\n• 技術リーダー\n• プロダクトマネージャー\n• AI活用に関心のある方",
-                    fontPx: 16,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
+            },
+            {
+              type: "hstack",
+              gap: 16,
+              children: [
+                {
+                  type: "shape",
+                  shapeType: "ellipse",
+                  w: 100,
+                  h: 100,
+                  text: "品質",
+                  fontPx: 18,
+                  fill: { color: "DBEAFE" },
+                  line: { color: "3B82F6", width: 2 },
+                },
+                {
+                  type: "shape",
+                  shapeType: "ellipse",
+                  w: 100,
+                  h: 100,
+                  text: "速度",
+                  fontPx: 18,
+                  fill: { color: "D1FAE5" },
+                  line: { color: "10B981", width: 2 },
+                },
+                {
+                  type: "shape",
+                  shapeType: "ellipse",
+                  w: 100,
+                  h: 100,
+                  text: "保守性",
+                  fontPx: 18,
+                  fill: { color: "FEF3C7" },
+                  line: { color: "F59E0B", width: 2 },
+                },
+              ],
+            },
+          ],
+        },
+      ],
     },
   ],
 };
 
-// ページ2: 開発フロー別AI活用法
+// ページ2: 開発環境とツール
 const page2: POMNode = {
   type: "vstack",
   w: "100%",
   h: "max",
   padding: 32,
-  gap: 16,
+  gap: 20,
   alignItems: "stretch",
-  backgroundColor: "FFFDF6",
-  border: { color: "F4E3C2", width: 4 },
+  backgroundColor: "F0FDF4",
+  border: { color: "86EFAC", width: 4 },
   children: [
     {
       type: "box",
       padding: 12,
       backgroundColor: "FFFFFF",
-      border: { color: "F2DCA8", width: 2 },
+      border: { color: "10B981", width: 2 },
       children: {
         type: "text",
-        text: "開発フロー別AI活用法",
+        text: "開発環境とツール",
         fontPx: 32,
       },
     },
@@ -130,406 +169,147 @@ const page2: POMNode = {
       gap: 20,
       alignItems: "start",
       children: [
+        // 左カラム: ツールカテゴリ
         {
           type: "vstack",
           w: "50%",
-          gap: 12,
-          alignItems: "start",
-          padding: 20,
-          backgroundColor: "FFFFFF",
-          border: { color: "F2DCA8", width: 2 },
-          children: [
-            {
-              type: "text",
-              text: "【設計・要件定義フェーズ】",
-              fontPx: 22,
-            },
-            {
-              type: "text",
-              text: "AIチャットツール（ChatGPT、Claude等）を活用し、システムアーキテクチャの提案や技術選定の支援を受けます。複数の実装パターンを比較検討する際、AIは各選択肢のメリット・デメリットを即座に提示できます。また、データベーススキーマ設計やAPI設計のレビューにも活用でき、見落としがちな問題点を早期発見できます。",
-              fontPx: 16,
-            },
-            {
-              type: "text",
-              text: "【実装フェーズ】",
-              fontPx: 22,
-            },
-            {
-              type: "text",
-              text: "GitHub CopilotやCursorなどのIDE統合型ツールが真価を発揮します。コンテキストを理解した上での高精度なコード生成、リファクタリング提案、型定義の自動生成などにより、実装速度が2〜3倍に向上します。特に定型的なCRUD処理やバリデーションロジックの実装では、ほぼ完全な自動生成が可能です。",
-              fontPx: 16,
-            },
-          ],
-        },
-        {
-          type: "vstack",
-          w: "50%",
-          gap: 12,
-          alignItems: "start",
-          padding: 20,
-          backgroundColor: "FFFFFF",
-          border: { color: "F2DCA8", width: 2 },
-          children: [
-            {
-              type: "text",
-              text: "【テスト・品質保証フェーズ】",
-              fontPx: 22,
-            },
-            {
-              type: "text",
-              text: "AIはユニットテスト、統合テストのコード生成を支援します。既存コードを分析してテストケースを提案し、エッジケースの洗い出しも行います。また、テストデータの生成やモックオブジェクトの作成も自動化でき、テスト作成時間を大幅に削減できます。",
-              fontPx: 16,
-            },
-            {
-              type: "text",
-              text: "【デバッグ・保守フェーズ】",
-              fontPx: 22,
-            },
-            {
-              type: "text",
-              text: "エラーメッセージやスタックトレースをAIに共有すると、原因の特定と修正方法の提案を受けられます。レガシーコードの理解支援にも有効で、複雑なコードベースの解説やリファクタリング提案により、保守性が向上します。コードレビューの自動化により、潜在的なバグやセキュリティ脆弱性の早期発見も可能です。",
-              fontPx: 16,
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
-
-// ページ3: 効果と課題、まとめ
-const page3: POMNode = {
-  type: "vstack",
-  w: "100%",
-  h: "max",
-  padding: 32,
-  gap: 18,
-  alignItems: "stretch",
-  backgroundColor: "F9F9FC",
-  border: { color: "D9D6FE", width: 4 },
-  children: [
-    {
-      type: "box",
-      padding: 12,
-      backgroundColor: "FFFFFF",
-      border: { color: "CBC3FF", width: 2 },
-      children: {
-        type: "text",
-        text: "AI活用の効果と今後の展望",
-        fontPx: 32,
-      },
-    },
-    {
-      type: "vstack",
-      gap: 14,
-      alignItems: "start",
-      padding: 24,
-      backgroundColor: "FFFFFF",
-      border: { color: "E0E7FF", width: 2 },
-      children: [
-        {
-          type: "text",
-          text: "【定量的な効果】",
-          fontPx: 24,
-        },
-        {
-          type: "text",
-          text: "実際の開発プロジェクトにおいて、AI活用により以下の効果が確認されています。コード作成速度が平均2.5倍向上し、バグ検出率が40%改善しました。また、新規参画メンバーのオンボーディング期間が50%短縮され、ドキュメント作成時間も70%削減されました。これらの効果により、プロジェクト全体の生産性が大幅に向上しています。",
-          fontPx: 17,
-        },
-        {
-          type: "hstack",
-          gap: 24,
+          gap: 16,
           children: [
             {
               type: "vstack",
-              w: "50%",
-              gap: 10,
-              alignItems: "start",
-              padding: 16,
-              backgroundColor: "F9FAFF",
-              border: { color: "D1D9FF", width: 1 },
-              children: [
-                {
-                  type: "text",
-                  text: "【導入における課題と対策】",
-                  fontPx: 22,
-                },
-                {
-                  type: "text",
-                  text: "AIが生成するコードの品質チェックが必須です。特にセキュリティとパフォーマンスの観点での人間によるレビューが重要です。また、機密情報の取り扱いには注意が必要で、社内ガイドラインの整備が不可欠です。過度な依存を避け、AIをアシスタントとして適切に活用するマインドセットも重要です。",
-                  fontPx: 16,
-                },
-              ],
-            },
-            {
-              type: "vstack",
-              w: "50%",
-              gap: 10,
-              alignItems: "start",
-              padding: 16,
-              backgroundColor: "F9FAFF",
-              border: { color: "D1D9FF", width: 1 },
-              children: [
-                {
-                  type: "text",
-                  text: "【今後の展望】",
-                  fontPx: 22,
-                },
-                {
-                  type: "text",
-                  text: "AI技術は今後さらに進化し、より高度なコード生成や自動リファクタリングが可能になります。プロジェクト全体の最適化提案や、アーキテクチャレベルの意思決定支援も実現するでしょう。重要なのは、AIと人間が協調する開発スタイルを確立することです。AIは強力なツールですが、最終的な判断と責任は人間が持つべきです。",
-                  fontPx: 16,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          type: "box",
-          padding: 16,
-          backgroundColor: "FFFFFF",
-          border: { color: "D1D9FF", width: 1 },
-          children: {
-            type: "table",
-            defaultRowHeight: 40,
-            columns: [{ width: 200 }, { width: 380 }, { width: 240 }],
-            rows: [
-              {
-                height: 48,
-                cells: [
-                  {
-                    text: "フェーズ",
-                    fontPx: 20,
-                    bold: true,
-                    alignText: "center",
-                    backgroundColor: "EEF2FF",
-                  },
-                  {
-                    text: "主なAI活用例",
-                    fontPx: 20,
-                    bold: true,
-                    alignText: "center",
-                    backgroundColor: "EEF2FF",
-                  },
-                  {
-                    text: "期待される効果",
-                    fontPx: 20,
-                    bold: true,
-                    alignText: "center",
-                    backgroundColor: "EEF2FF",
-                  },
-                ],
-              },
-              {
-                cells: [
-                  {
-                    text: "要件定義",
-                    fontPx: 18,
-                  },
-                  {
-                    text: "AIチャットで要件の抜け漏れを自動チェックし、アーキテクチャ案を比較",
-                    fontPx: 16,
-                  },
-                  {
-                    text: "仕様の確からしさ向上、意思決定スピードアップ",
-                    fontPx: 16,
-                  },
-                ],
-              },
-              {
-                cells: [
-                  {
-                    text: "実装",
-                    fontPx: 18,
-                  },
-                  {
-                    text: "CopilotなどでCRUDの自動生成、テストケース案の生成",
-                    fontPx: 16,
-                  },
-                  {
-                    text: "開発リードタイム短縮、ケアレスミスの減少",
-                    fontPx: 16,
-                  },
-                ],
-              },
-              {
-                cells: [
-                  {
-                    text: "テスト/保守",
-                    fontPx: 18,
-                  },
-                  {
-                    text: "失敗ログを入力して根本原因候補と修正案を提示",
-                    fontPx: 16,
-                  },
-                  {
-                    text: "不具合分析の高速化、学習コストの削減",
-                    fontPx: 16,
-                  },
-                ],
-              },
-            ],
-          },
-        },
-        {
-          type: "box",
-          padding: 16,
-          backgroundColor: "F7F9FC",
-          border: { color: "CBD2E5", width: 2 },
-          children: {
-            type: "text",
-            text: "まとめ：AI活用は開発の未来ではなく、すでに現在の必須スキルです。適切に活用することで、生産性と品質の両方を向上させ、より創造的な開発に時間を使えるようになります。",
-            fontPx: 18,
-          },
-        },
-      ],
-    },
-  ],
-};
-
-// ページ4: Shape機能のデモ
-const page4: POMNode = {
-  type: "vstack",
-  w: "100%",
-  h: "max",
-  padding: 32,
-  gap: 24,
-  alignItems: "stretch",
-  backgroundColor: "F0F9FF",
-  border: { color: "BAE6FD", width: 4 },
-  children: [
-    {
-      type: "box",
-      padding: 12,
-      backgroundColor: "FFFFFF",
-      border: { color: "7DD3FC", width: 2 },
-      children: {
-        type: "text",
-        text: "図形機能のデモ",
-        fontPx: 32,
-      },
-    },
-    {
-      type: "hstack",
-      gap: 24,
-      alignItems: "start",
-      children: [
-        // 左カラム: 基本図形
-        {
-          type: "vstack",
-          w: "50%",
-          gap: 20,
-          alignItems: "center",
-          children: [
-            {
-              type: "text",
-              text: "【基本図形】",
-              fontPx: 22,
-            },
-            {
-              type: "hstack",
-              gap: 16,
-              justifyContent: "center",
+              gap: 12,
+              padding: 20,
+              backgroundColor: "FFFFFF",
+              border: { color: "6EE7B7", width: 2 },
               children: [
                 {
                   type: "shape",
-                  shapeType: "ellipse",
-                  w: 120,
-                  h: 120,
-                  text: "円形",
-                  fontPx: 20,
-                  fill: { color: "FEF3C7" },
-                  line: { color: "F59E0B", width: 3 },
-                },
-                {
-                  type: "shape",
-                  shapeType: "rect",
-                  w: 120,
-                  h: 120,
-                  text: "四角形",
+                  shapeType: "roundRect",
+                  w: 280,
+                  h: 60,
+                  text: "型チェック・Linter",
                   fontPx: 20,
                   fill: { color: "DBEAFE" },
-                  line: { color: "3B82F6", width: 3 },
+                  line: { color: "3B82F6", width: 2 },
+                  shadow: {
+                    type: "outer",
+                    opacity: 0.3,
+                    blur: 6,
+                    angle: 45,
+                    offset: 4,
+                    color: "000000",
+                  },
                 },
                 {
-                  type: "shape",
-                  shapeType: "diamond",
-                  w: 120,
-                  h: 120,
-                  text: "菱形",
-                  fontPx: 20,
-                  fill: { color: "FCE7F3" },
-                  line: { color: "EC4899", width: 3 },
+                  type: "text",
+                  text: "• TypeScript Compiler (tsc)\n• ESLint (typescript-eslint)\n• Prettier\n• ts-node / tsx",
+                  fontPx: 16,
                 },
               ],
             },
             {
-              type: "text",
-              text: "【影付き図形】",
-              fontPx: 22,
-            },
-            {
-              type: "shape",
-              shapeType: "roundRect",
-              w: 300,
-              h: 80,
-              text: "角丸四角形（影あり）",
-              fontPx: 20,
-              fill: { color: "C7D2FE" },
-              line: { color: "6366F1", width: 2 },
-              shadow: {
-                type: "outer",
-                opacity: 0.5,
-                blur: 8,
-                angle: 45,
-                offset: 5,
-                color: "000000",
-              },
+              type: "vstack",
+              gap: 12,
+              padding: 20,
+              backgroundColor: "FFFFFF",
+              border: { color: "6EE7B7", width: 2 },
+              children: [
+                {
+                  type: "shape",
+                  shapeType: "roundRect",
+                  w: 280,
+                  h: 60,
+                  text: "ビルド・バンドラ",
+                  fontPx: 20,
+                  fill: { color: "FEF3C7" },
+                  line: { color: "F59E0B", width: 2 },
+                  shadow: {
+                    type: "outer",
+                    opacity: 0.3,
+                    blur: 6,
+                    angle: 45,
+                    offset: 4,
+                    color: "000000",
+                  },
+                },
+                {
+                  type: "text",
+                  text: "• Vite\n• esbuild\n• Webpack\n• Rollup",
+                  fontPx: 16,
+                },
+              ],
             },
           ],
         },
-        // 右カラム: 吹き出しと雲形
+        // 右カラム: ツールカテゴリ
         {
           type: "vstack",
           w: "50%",
-          gap: 20,
-          alignItems: "center",
+          gap: 16,
           children: [
             {
-              type: "text",
-              text: "【吹き出し・雲形】",
-              fontPx: 22,
+              type: "vstack",
+              gap: 12,
+              padding: 20,
+              backgroundColor: "FFFFFF",
+              border: { color: "6EE7B7", width: 2 },
+              children: [
+                {
+                  type: "shape",
+                  shapeType: "roundRect",
+                  w: 280,
+                  h: 60,
+                  text: "テスティング",
+                  fontPx: 20,
+                  fill: { color: "D1FAE5" },
+                  line: { color: "10B981", width: 2 },
+                  shadow: {
+                    type: "outer",
+                    opacity: 0.3,
+                    blur: 6,
+                    angle: 45,
+                    offset: 4,
+                    color: "000000",
+                  },
+                },
+                {
+                  type: "text",
+                  text: "• Vitest\n• Jest\n• Testing Library\n• Playwright / Cypress",
+                  fontPx: 16,
+                },
+              ],
             },
             {
-              type: "shape",
-              shapeType: "cloud",
-              w: 280,
-              h: 100,
-              text: "雲形で考えを表現",
-              fontPx: 18,
-              fill: { color: "FFFFFF" },
-              line: { color: "94A3B8", width: 2 },
-            },
-            {
-              type: "shape",
-              shapeType: "cloudCallout",
-              w: 280,
-              h: 100,
-              text: "雲形の吹き出し",
-              fontPx: 18,
-              fill: { color: "FEF9C3" },
-              line: { color: "EAB308", width: 2 },
-            },
-            {
-              type: "shape",
-              shapeType: "wedgeRectCallout",
-              w: 280,
-              h: 100,
-              text: "四角形の吹き出し",
-              fontPx: 18,
-              fill: { color: "D1FAE5" },
-              line: { color: "10B981", width: 2 },
+              type: "vstack",
+              gap: 12,
+              padding: 20,
+              backgroundColor: "FFFFFF",
+              border: { color: "6EE7B7", width: 2 },
+              children: [
+                {
+                  type: "shape",
+                  shapeType: "roundRect",
+                  w: 280,
+                  h: 60,
+                  text: "開発体験向上",
+                  fontPx: 20,
+                  fill: { color: "FCE7F3" },
+                  line: { color: "EC4899", width: 2 },
+                  shadow: {
+                    type: "outer",
+                    opacity: 0.3,
+                    blur: 6,
+                    angle: 45,
+                    offset: 4,
+                    color: "000000",
+                  },
+                },
+                {
+                  type: "text",
+                  text: "• Biome\n• Zod (Runtime Validation)\n• tRPC\n• Husky (Git Hooks)",
+                  fontPx: 16,
+                },
+              ],
             },
           ],
         },
@@ -539,7 +319,495 @@ const page4: POMNode = {
       type: "box",
       padding: 16,
       backgroundColor: "FFFFFF",
-      border: { color: "BAE6FD", width: 2 },
+      border: { color: "6EE7B7", width: 2 },
+      children: {
+        type: "hstack",
+        gap: 16,
+        alignItems: "center",
+        children: [
+          {
+            type: "shape",
+            shapeType: "cloud",
+            w: 180,
+            h: 80,
+            text: "ツール選定のコツ",
+            fontPx: 16,
+            fill: { color: "EFF6FF" },
+            line: { color: "3B82F6", width: 2 },
+          },
+          {
+            type: "text",
+            text: "プロジェクトの規模や要件に応じて最適なツールを選択し、チーム全体で統一した開発環境を構築することが重要です。",
+            fontPx: 16,
+          },
+        ],
+      },
+    },
+  ],
+};
+
+// ページ3: コーディング規約とパターン
+const page3: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 32,
+  gap: 18,
+  alignItems: "stretch",
+  backgroundColor: "FEF3C7",
+  border: { color: "FCD34D", width: 4 },
+  children: [
+    {
+      type: "box",
+      padding: 12,
+      backgroundColor: "FFFFFF",
+      border: { color: "F59E0B", width: 2 },
+      children: {
+        type: "text",
+        text: "コーディング規約とパターン",
+        fontPx: 32,
+      },
+    },
+    {
+      type: "vstack",
+      gap: 16,
+      children: [
+        // テーブル: ベストプラクティス
+        {
+          type: "box",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: "FCD34D", width: 2 },
+          children: {
+            type: "table",
+            defaultRowHeight: 45,
+            columns: [{ width: 200 }, { width: 300 }, { width: 320 }],
+            rows: [
+              {
+                height: 50,
+                cells: [
+                  {
+                    text: "カテゴリ",
+                    fontPx: 20,
+                    bold: true,
+                    alignText: "center",
+                    backgroundColor: "FEF3C7",
+                  },
+                  {
+                    text: "推奨",
+                    fontPx: 20,
+                    bold: true,
+                    alignText: "center",
+                    backgroundColor: "D1FAE5",
+                  },
+                  {
+                    text: "非推奨",
+                    fontPx: 20,
+                    bold: true,
+                    alignText: "center",
+                    backgroundColor: "FEE2E2",
+                  },
+                ],
+              },
+              {
+                cells: [
+                  {
+                    text: "型定義",
+                    fontPx: 18,
+                    bold: true,
+                  },
+                  {
+                    text: "interface / type を適切に使い分ける",
+                    fontPx: 16,
+                  },
+                  {
+                    text: "any 型の多用",
+                    fontPx: 16,
+                  },
+                ],
+              },
+              {
+                cells: [
+                  {
+                    text: "関数定義",
+                    fontPx: 18,
+                    bold: true,
+                  },
+                  {
+                    text: "アロー関数で明示的な戻り値型",
+                    fontPx: 16,
+                  },
+                  {
+                    text: "暗黙的な戻り値と副作用の混在",
+                    fontPx: 16,
+                  },
+                ],
+              },
+              {
+                cells: [
+                  {
+                    text: "非同期処理",
+                    fontPx: 18,
+                    bold: true,
+                  },
+                  {
+                    text: "async/await を活用",
+                    fontPx: 16,
+                  },
+                  {
+                    text: "Promise のネストしたコールバック",
+                    fontPx: 16,
+                  },
+                ],
+              },
+              {
+                cells: [
+                  {
+                    text: "エラーハンドリング",
+                    fontPx: 18,
+                    bold: true,
+                  },
+                  {
+                    text: "型安全なエラークラスを定義",
+                    fontPx: 16,
+                  },
+                  {
+                    text: "string 型のエラーを throw",
+                    fontPx: 16,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        // 吹き出しで重要ポイント
+        {
+          type: "hstack",
+          gap: 16,
+          children: [
+            {
+              type: "shape",
+              shapeType: "wedgeRectCallout",
+              w: 260,
+              h: 90,
+              text: "strictモードを\n有効にしよう！",
+              fontPx: 18,
+              fill: { color: "DBEAFE" },
+              line: { color: "3B82F6", width: 2 },
+            },
+            {
+              type: "shape",
+              shapeType: "cloudCallout",
+              w: 260,
+              h: 90,
+              text: "型推論を\n活用しよう！",
+              fontPx: 18,
+              fill: { color: "D1FAE5" },
+              line: { color: "10B981", width: 2 },
+            },
+            {
+              type: "shape",
+              shapeType: "wedgeRectCallout",
+              w: 260,
+              h: 90,
+              text: "一貫性のある\nコードスタイル",
+              fontPx: 18,
+              fill: { color: "FEF3C7" },
+              line: { color: "F59E0B", width: 2 },
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+// ページ4: 実装例とまとめ
+const page4: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 32,
+  gap: 20,
+  alignItems: "stretch",
+  backgroundColor: "FCE7F3",
+  border: { color: "F9A8D4", width: 4 },
+  children: [
+    {
+      type: "box",
+      padding: 12,
+      backgroundColor: "FFFFFF",
+      border: { color: "EC4899", width: 2 },
+      children: {
+        type: "text",
+        text: "実装のポイントとまとめ",
+        fontPx: 32,
+      },
+    },
+    {
+      type: "hstack",
+      gap: 20,
+      alignItems: "start",
+      children: [
+        // 左: 実装フロー
+        {
+          type: "vstack",
+          w: "50%",
+          gap: 16,
+          children: [
+            {
+              type: "box",
+              padding: 20,
+              backgroundColor: "FFFFFF",
+              border: { color: "F9A8D4", width: 2 },
+              children: {
+                type: "vstack",
+                gap: 14,
+                children: [
+                  {
+                    type: "text",
+                    text: "【開発フロー】",
+                    fontPx: 22,
+                  },
+                  {
+                    type: "hstack",
+                    gap: 12,
+                    alignItems: "center",
+                    children: [
+                      {
+                        type: "shape",
+                        shapeType: "ellipse",
+                        w: 40,
+                        h: 40,
+                        text: "1",
+                        fontPx: 18,
+                        fill: { color: "DBEAFE" },
+                        line: { color: "3B82F6", width: 2 },
+                      },
+                      {
+                        type: "text",
+                        text: "型定義を先に設計",
+                        fontPx: 16,
+                      },
+                    ],
+                  },
+                  {
+                    type: "hstack",
+                    gap: 12,
+                    alignItems: "center",
+                    children: [
+                      {
+                        type: "shape",
+                        shapeType: "downArrow",
+                        w: 40,
+                        h: 30,
+                        fill: { color: "D1D5DB" },
+                      },
+                    ],
+                  },
+                  {
+                    type: "hstack",
+                    gap: 12,
+                    alignItems: "center",
+                    children: [
+                      {
+                        type: "shape",
+                        shapeType: "ellipse",
+                        w: 40,
+                        h: 40,
+                        text: "2",
+                        fontPx: 18,
+                        fill: { color: "D1FAE5" },
+                        line: { color: "10B981", width: 2 },
+                      },
+                      {
+                        type: "text",
+                        text: "テストを記述",
+                        fontPx: 16,
+                      },
+                    ],
+                  },
+                  {
+                    type: "hstack",
+                    gap: 12,
+                    alignItems: "center",
+                    children: [
+                      {
+                        type: "shape",
+                        shapeType: "downArrow",
+                        w: 40,
+                        h: 30,
+                        fill: { color: "D1D5DB" },
+                      },
+                    ],
+                  },
+                  {
+                    type: "hstack",
+                    gap: 12,
+                    alignItems: "center",
+                    children: [
+                      {
+                        type: "shape",
+                        shapeType: "ellipse",
+                        w: 40,
+                        h: 40,
+                        text: "3",
+                        fontPx: 18,
+                        fill: { color: "FEF3C7" },
+                        line: { color: "F59E0B", width: 2 },
+                      },
+                      {
+                        type: "text",
+                        text: "実装とリファクタリング",
+                        fontPx: 16,
+                      },
+                    ],
+                  },
+                  {
+                    type: "hstack",
+                    gap: 12,
+                    alignItems: "center",
+                    children: [
+                      {
+                        type: "shape",
+                        shapeType: "downArrow",
+                        w: 40,
+                        h: 30,
+                        fill: { color: "D1D5DB" },
+                      },
+                    ],
+                  },
+                  {
+                    type: "hstack",
+                    gap: 12,
+                    alignItems: "center",
+                    children: [
+                      {
+                        type: "shape",
+                        shapeType: "ellipse",
+                        w: 40,
+                        h: 40,
+                        text: "4",
+                        fontPx: 18,
+                        fill: { color: "FCE7F3" },
+                        line: { color: "EC4899", width: 2 },
+                      },
+                      {
+                        type: "text",
+                        text: "Lint・型チェック・レビュー",
+                        fontPx: 16,
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        // 右: コード例画像とまとめ
+        {
+          type: "vstack",
+          w: "50%",
+          gap: 16,
+          children: [
+            {
+              type: "box",
+              padding: 20,
+              backgroundColor: "1E293B",
+              border: { color: "475569", width: 2 },
+              children: {
+                type: "vstack",
+                gap: 8,
+                children: [
+                  {
+                    type: "text",
+                    text: "// 型安全な実装例",
+                    fontPx: 14,
+                  },
+                  {
+                    type: "text",
+                    text: "interface User {",
+                    fontPx: 14,
+                  },
+                  {
+                    type: "text",
+                    text: "  id: string;",
+                    fontPx: 14,
+                  },
+                  {
+                    type: "text",
+                    text: "  name: string;",
+                    fontPx: 14,
+                  },
+                  {
+                    type: "text",
+                    text: "}",
+                    fontPx: 14,
+                  },
+                  {
+                    type: "text",
+                    text: "",
+                    fontPx: 14,
+                  },
+                  {
+                    type: "text",
+                    text: "async function getUser(",
+                    fontPx: 14,
+                  },
+                  {
+                    type: "text",
+                    text: "  id: string",
+                    fontPx: 14,
+                  },
+                  {
+                    type: "text",
+                    text: "): Promise<User> {",
+                    fontPx: 14,
+                  },
+                  {
+                    type: "text",
+                    text: "  return await api.get(id);",
+                    fontPx: 14,
+                  },
+                  {
+                    type: "text",
+                    text: "}",
+                    fontPx: 14,
+                  },
+                ],
+              },
+            },
+            {
+              type: "box",
+              padding: 16,
+              backgroundColor: "FFFFFF",
+              border: { color: "F9A8D4", width: 2 },
+              children: {
+                type: "vstack",
+                gap: 12,
+                children: [
+                  {
+                    type: "text",
+                    text: "【まとめ】",
+                    fontPx: 22,
+                  },
+                  {
+                    type: "text",
+                    text: "TypeScriptのベストプラクティスを実践することで、バグの早期発見、コードの可読性向上、チーム開発の効率化を実現できます。適切なツール選定と規約の遵守が成功の鍵です。",
+                    fontPx: 16,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: "F9A8D4", width: 2 },
       children: {
         type: "hstack",
         gap: 16,
@@ -548,24 +816,24 @@ const page4: POMNode = {
         children: [
           {
             type: "shape",
-            shapeType: "rightArrow",
-            w: 100,
+            shapeType: "star5",
+            w: 60,
             h: 60,
-            fill: { color: "FCA5A5" },
-            line: { color: "DC2626", width: 2 },
+            fill: { color: "FCD34D" },
+            line: { color: "F59E0B", width: 2 },
           },
           {
             type: "text",
-            text: "図形は塗りつぶし、枠線、影をカスタマイズできます",
-            fontPx: 20,
+            text: "型安全性 × 生産性 = より良いソフトウェア開発",
+            fontPx: 22,
           },
           {
             type: "shape",
-            shapeType: "leftArrow",
-            w: 100,
+            shapeType: "star5",
+            w: 60,
             h: 60,
-            fill: { color: "FCA5A5" },
-            line: { color: "DC2626", width: 2 },
+            fill: { color: "FCD34D" },
+            line: { color: "F59E0B", width: 2 },
           },
         ],
       },
