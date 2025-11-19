@@ -1,5 +1,7 @@
 import PptxGenJS from "pptxgenjs";
+import type { TableCellProps, TableProps } from "pptxgenjs";
 import type { PositionedNode } from "../types";
+import { resolveRowHeights } from "../table/utils";
 
 export const PX_PER_IN = 96;
 export const pxToIn = (px: number) => px / PX_PER_IN;
@@ -113,6 +115,41 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
           for (const child of node.children) {
             renderNode(child);
           }
+          break;
+        }
+
+        case "table": {
+          const tableRows = node.rows.map((row) =>
+            row.cells.map((cell) => {
+              const cellOptions: TableCellProps = {
+                fontSize: pxToPt(cell.fontPx ?? 18),
+                color: cell.color,
+                bold: cell.bold,
+                align: cell.alignText ?? "left",
+              };
+
+              if (cell.backgroundColor) {
+                cellOptions.fill = { color: cell.backgroundColor };
+              }
+
+              return {
+                text: cell.text,
+                options: cellOptions,
+              };
+            }),
+          );
+
+          const tableOptions: TableProps = {
+            x: pxToIn(node.x),
+            y: pxToIn(node.y),
+            w: pxToIn(node.w),
+            h: pxToIn(node.h),
+            colW: node.columns.map((column) => pxToIn(column.width)),
+            rowH: resolveRowHeights(node).map((height) => pxToIn(height)),
+            margin: 0,
+          };
+
+          slide.addTable(tableRows, tableOptions);
           break;
         }
       }
