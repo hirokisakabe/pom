@@ -16,6 +16,7 @@
   "scripts": {
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
+    "lint": "eslint",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run"
