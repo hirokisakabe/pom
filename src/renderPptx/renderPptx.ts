@@ -1,5 +1,4 @@
 import PptxGenJS from "pptxgenjs";
-import type { TableCellProps, TableProps } from "pptxgenjs";
 import type { PositionedNode } from "../types";
 import { resolveRowHeights } from "../table/utils";
 
@@ -121,16 +120,15 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
         case "table": {
           const tableRows = node.rows.map((row) =>
             row.cells.map((cell) => {
-              const cellOptions: TableCellProps = {
+              const cellOptions = {
                 fontSize: pxToPt(cell.fontPx ?? 18),
                 color: cell.color,
                 bold: cell.bold,
                 align: cell.alignText ?? "left",
+                fill: cell.backgroundColor
+                  ? { color: cell.backgroundColor }
+                  : undefined,
               };
-
-              if (cell.backgroundColor) {
-                cellOptions.fill = { color: cell.backgroundColor };
-              }
 
               return {
                 text: cell.text,
@@ -139,7 +137,7 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
             }),
           );
 
-          const tableOptions: TableProps = {
+          const tableOptions = {
             x: pxToIn(node.x),
             y: pxToIn(node.y),
             w: pxToIn(node.w),
