@@ -54,8 +54,8 @@ export function measureText(
   const widthPx = lines.length ? Math.max(...lines.map((l) => l.widthPx)) : 0;
   const heightPx = lines.length * lineHeightPx;
 
-  // 端数切り上げ＋余裕分 2px を足す
-  return { widthPx: widthPx + 2, heightPx };
+  // 端数切り上げ＋余裕分 10px を足す
+  return { widthPx: widthPx + 10, heightPx };
 }
 
 function applyFontStyle(opts: MeasureOptions) {
