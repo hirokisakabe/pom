@@ -11,6 +11,22 @@ export type Padding =
       left?: number;
     };
 
+export type BorderDash =
+  | "solid"
+  | "dash"
+  | "dashDot"
+  | "lgDash"
+  | "lgDashDot"
+  | "lgDashDotDot"
+  | "sysDash"
+  | "sysDot";
+
+export type BorderStyle = {
+  color?: string;
+  width?: number;
+  dashType?: BorderDash;
+};
+
 export type AlignItems = "start" | "center" | "end" | "stretch";
 export type JustifyContent =
   | "start"
@@ -31,6 +47,8 @@ type BasePOMNode = {
   minH?: number;
   maxH?: number;
   padding?: Padding;
+  backgroundColor?: string;
+  border?: BorderStyle;
 };
 
 export type TextNode = BasePOMNode & {

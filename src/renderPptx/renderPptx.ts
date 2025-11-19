@@ -24,10 +24,51 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
   for (const data of pages) {
     const slide = pptx.addSlide();
 
+    function renderBackgroundAndBorder(node: PositionedNode) {
+      const { backgroundColor, border } = node;
+      const hasBackground = Boolean(backgroundColor);
+      const hasBorder = Boolean(
+        border &&
+          (border.color !== undefined ||
+            border.width !== undefined ||
+            border.dashType !== undefined),
+      );
+
+      if (!hasBackground && !hasBorder) {
+        return;
+      }
+
+      const fill = hasBackground
+        ? { color: backgroundColor! }
+        : { type: "none" as const };
+
+      const line = hasBorder
+        ? {
+            color: border?.color ?? "000000",
+            width:
+              border?.width !== undefined ? pxToPt(border.width) : undefined,
+            dashType: border?.dashType,
+          }
+        : { type: "none" as const };
+
+      const shapeOptions = {
+        x: pxToIn(node.x),
+        y: pxToIn(node.y),
+        w: pxToIn(node.w),
+        h: pxToIn(node.h),
+        fill,
+        line,
+      };
+
+      slide.addShape(pptx.ShapeType.rect, shapeOptions);
+    }
+
     /**
      * node をスライドにレンダリングする
      */
     function renderNode(node: PositionedNode) {
+      renderBackgroundAndBorder(node);
+
       switch (node.type) {
         case "text": {
           const fontSizePx = node.fontPx ?? 24;

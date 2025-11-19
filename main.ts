@@ -8,11 +8,16 @@ const page1: POMNode = {
   padding: 40,
   gap: 20,
   alignItems: "stretch",
+  backgroundColor: "F6F8FF",
+  border: { color: "CBD5FF", width: 4 },
   children: [
     {
       type: "vstack",
       gap: 12,
       alignItems: "center",
+      padding: 32,
+      backgroundColor: "FFFFFF",
+      border: { color: "E0E7FF", width: 2 },
       children: [
         {
           type: "text",
@@ -34,6 +39,8 @@ const page1: POMNode = {
     {
       type: "box",
       padding: 24,
+      backgroundColor: "FFFFFF",
+      border: { color: "D9E2EC", width: 2 },
       children: {
         type: "vstack",
         gap: 16,
@@ -52,6 +59,9 @@ const page1: POMNode = {
                 type: "vstack",
                 w: "50%",
                 gap: 8,
+                padding: 12,
+                backgroundColor: "F9FAFB",
+                border: { color: "E5E7EB", width: 1 },
                 children: [
                   {
                     type: "text",
@@ -69,6 +79,9 @@ const page1: POMNode = {
                 type: "vstack",
                 w: "50%",
                 gap: 8,
+                padding: 12,
+                backgroundColor: "F9FAFB",
+                border: { color: "E5E7EB", width: 1 },
                 children: [
                   {
                     type: "text",
@@ -98,10 +111,14 @@ const page2: POMNode = {
   padding: 32,
   gap: 16,
   alignItems: "stretch",
+  backgroundColor: "FFFDF6",
+  border: { color: "F4E3C2", width: 4 },
   children: [
     {
       type: "box",
       padding: 12,
+      backgroundColor: "FFFFFF",
+      border: { color: "F2DCA8", width: 2 },
       children: {
         type: "text",
         text: "開発フロー別AI活用法",
@@ -118,6 +135,9 @@ const page2: POMNode = {
           w: "50%",
           gap: 12,
           alignItems: "start",
+          padding: 20,
+          backgroundColor: "FFFFFF",
+          border: { color: "F2DCA8", width: 2 },
           children: [
             {
               type: "text",
@@ -146,6 +166,9 @@ const page2: POMNode = {
           w: "50%",
           gap: 12,
           alignItems: "start",
+          padding: 20,
+          backgroundColor: "FFFFFF",
+          border: { color: "F2DCA8", width: 2 },
           children: [
             {
               type: "text",
@@ -182,10 +205,14 @@ const page3: POMNode = {
   padding: 32,
   gap: 18,
   alignItems: "stretch",
+  backgroundColor: "F9F9FC",
+  border: { color: "D9D6FE", width: 4 },
   children: [
     {
       type: "box",
       padding: 12,
+      backgroundColor: "FFFFFF",
+      border: { color: "CBC3FF", width: 2 },
       children: {
         type: "text",
         text: "AI活用の効果と今後の展望",
@@ -196,6 +223,9 @@ const page3: POMNode = {
       type: "vstack",
       gap: 14,
       alignItems: "start",
+      padding: 24,
+      backgroundColor: "FFFFFF",
+      border: { color: "E0E7FF", width: 2 },
       children: [
         {
           type: "text",
@@ -216,6 +246,9 @@ const page3: POMNode = {
               w: "50%",
               gap: 10,
               alignItems: "start",
+              padding: 16,
+              backgroundColor: "F9FAFF",
+              border: { color: "D1D9FF", width: 1 },
               children: [
                 {
                   type: "text",
@@ -234,6 +267,9 @@ const page3: POMNode = {
               w: "50%",
               gap: 10,
               alignItems: "start",
+              padding: 16,
+              backgroundColor: "F9FAFF",
+              border: { color: "D1D9FF", width: 1 },
               children: [
                 {
                   type: "text",
@@ -252,6 +288,8 @@ const page3: POMNode = {
         {
           type: "box",
           padding: 16,
+          backgroundColor: "F7F9FC",
+          border: { color: "CBD2E5", width: 2 },
           children: {
             type: "text",
             text: "まとめ：AI活用は開発の未来ではなく、すでに現在の必須スキルです。適切に活用することで、生産性と品質の両方を向上させ、より創造的な開発に時間を使えるようになります。",
