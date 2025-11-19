@@ -152,65 +152,53 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
         }
 
         case "shape": {
-          const shapeOptions: Record<string, unknown> = {
+          const shapeOptions = {
             x: pxToIn(node.x),
             y: pxToIn(node.y),
             w: pxToIn(node.w),
             h: pxToIn(node.h),
+            fill: node.fill
+              ? {
+                  color: node.fill.color,
+                  transparency: node.fill.transparency,
+                }
+              : undefined,
+            line: node.line
+              ? {
+                  color: node.line.color,
+                  width:
+                    node.line.width !== undefined
+                      ? pxToPt(node.line.width)
+                      : undefined,
+                  dashType: node.line.dashType,
+                }
+              : undefined,
+            shadow: node.shadow
+              ? {
+                  type: node.shadow.type,
+                  opacity: node.shadow.opacity,
+                  blur: node.shadow.blur,
+                  angle: node.shadow.angle,
+                  offset: node.shadow.offset,
+                  color: node.shadow.color,
+                }
+              : undefined,
           };
-
-          // fill（塗りつぶし）の設定
-          if (node.fill) {
-            shapeOptions.fill = {
-              color: node.fill.color,
-              transparency: node.fill.transparency,
-            };
-          }
-
-          // line（枠線）の設定
-          if (node.line) {
-            shapeOptions.line = {
-              color: node.line.color,
-              width:
-                node.line.width !== undefined
-                  ? pxToPt(node.line.width)
-                  : undefined,
-              dashType: node.line.dashType,
-            };
-          }
-
-          // shadow（影）の設定
-          if (node.shadow) {
-            shapeOptions.shadow = {
-              type: node.shadow.type,
-              opacity: node.shadow.opacity,
-              blur: node.shadow.blur,
-              angle: node.shadow.angle,
-              offset: node.shadow.offset,
-              color: node.shadow.color,
-            };
-          }
 
           if (node.text) {
             // テキストがある場合：addTextでshapeを指定
-            const shapeTypeRecord = pptx.ShapeType as Record<string, string>;
-            const textOptions: Record<string, unknown> = {
+            slide.addText(node.text, {
               ...shapeOptions,
-              shape: shapeTypeRecord[node.shapeType] ?? node.shapeType,
+              shape: node.shapeType,
               fontSize: pxToPt(node.fontPx ?? 24),
               fontFace: "Noto Sans JP",
               color: node.fontColor,
               align: node.alignText ?? "center",
               valign: "middle" as const,
-            };
-
-            slide.addText(node.text, textOptions);
+            });
           } else {
             // テキストがない場合：addShapeを使用
-            const shapeTypeRecord = pptx.ShapeType as Record<string, string>;
-            const shapeType = shapeTypeRecord[node.shapeType] ?? node.shapeType;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            slide.addShape(shapeType as any, shapeOptions);
+            slide.addShape(node.shapeType, shapeOptions);
           }
           break;
         }

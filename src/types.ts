@@ -1,4 +1,5 @@
 import type { Node as YogaNode } from "yoga-layout";
+import type PptxGenJS from "pptxgenjs";
 
 export type Length = number | "max" | `${number}%`;
 
@@ -125,7 +126,7 @@ export type HStackNode = BasePOMNode & {
 
 export type ShapeNode = BasePOMNode & {
   type: "shape";
-  shapeType: string;
+  shapeType: PptxGenJS.SHAPE_NAME;
   text?: string;
   fill?: FillStyle;
   line?: BorderStyle;
