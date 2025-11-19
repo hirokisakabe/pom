@@ -25,8 +25,17 @@
   minH?: number;
   maxH?: number;
   padding?: number;
+  backgroundColor?: string;
+  border?: {
+    color?: string;
+    width?: number;
+    dashType?: "solid" | "dash" | "dashDot" | "lgDash" | "lgDashDot" | "lgDashDotDot" | "sysDash" | "sysDot";
+  };
 }
 ```
+
+- `backgroundColor` はノード全体に塗りつぶしを適用します（例: `"F8F9FA"`）。
+- `border.width` は px 単位で指定し、色や `dashType` と組み合わせて枠線を制御できます。
 
 ### ノード一覧
 
