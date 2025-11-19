@@ -340,6 +340,12 @@ const page2: POMNode = {
             text: "プロジェクトの規模や要件に応じて最適なツールを選択し、チーム全体で統一した開発環境を構築することが重要です。",
             fontPx: 16,
           },
+          {
+            type: "image",
+            src: "https://placehold.co/100x100/3B82F6/FFFFFF?text=Tools",
+            w: 100,
+            h: 100,
+          },
         ],
       },
     },
