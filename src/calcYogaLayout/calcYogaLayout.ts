@@ -36,7 +36,7 @@ export async function calcYogaLayout(
 let yogaP: Promise<Yoga> | null = null;
 type Yoga = Awaited<ReturnType<typeof loadYoga>>;
 async function getYoga(): Promise<Yoga> {
-  if (!yogaP) yogaP = loadYoga();
+  if (yogaP === null) yogaP = loadYoga();
   return yogaP;
 }
 
