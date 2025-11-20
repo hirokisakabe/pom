@@ -33,7 +33,7 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
         border &&
           (border.color !== undefined ||
             border.width !== undefined ||
-            border.dashType !== undefined)
+            border.dashType !== undefined),
       );
 
       if (!hasBackground && !hasBorder) {
@@ -135,7 +135,7 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
                 text: cell.text,
                 options: cellOptions,
               };
-            })
+            }),
           );
 
           const tableOptions = {
