@@ -6,7 +6,6 @@ import { POMNode, PositionedNode } from "./types";
 export async function buildPptx(
   nodes: POMNode[],
   slideSize: { w: number; h: number },
-  fileName: string,
 ) {
   const positionedPages: PositionedNode[] = [];
 
@@ -18,5 +17,5 @@ export async function buildPptx(
 
   const pptx = renderPptx(positionedPages, slideSize);
 
-  await pptx.writeFile({ fileName });
+  return pptx;
 }

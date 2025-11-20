@@ -848,11 +848,12 @@ const page4: POMNode = {
 };
 
 async function main() {
-  await buildPptx(
-    [page1, page2, page3, page4],
-    { w: 1280, h: 720 },
-    "sample.pptx",
-  );
+  const pptx = await buildPptx([page1, page2, page3, page4], {
+    w: 1280,
+    h: 720,
+  });
+
+  await pptx.writeFile({ fileName: "sample.pptx" });
 }
 
 main();
