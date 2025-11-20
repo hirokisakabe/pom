@@ -1,4 +1,7 @@
-import PptxGenJS from "pptxgenjs";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+import type PptxGenJSType from "pptxgenjs";
+const PptxGenJS = require("pptxgenjs") as typeof PptxGenJSType;
 import type { PositionedNode } from "../types";
 import { resolveRowHeights } from "../table/utils";
 
@@ -17,9 +20,7 @@ type SlidePx = { w: number; h: number };
 export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
   const slideIn = { w: pxToIn(slidePx.w), h: pxToIn(slidePx.h) }; // layout(=px) → PptxGenJS(=inch) への最終変換
 
-  // @ts-expect-error: PptxGenJS の型定義が不完全なため、一時的にエラーを無視
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  const pptx = new PptxGenJS.default() as PptxGenJS;
+  const pptx = new PptxGenJS();
 
   pptx.defineLayout({ name: "custom", width: slideIn.w, height: slideIn.h });
   pptx.layout = "custom";
