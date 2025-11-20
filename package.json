@@ -1,7 +1,21 @@
 {
-  "name": "pom",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@hirokisakabe/pom",
+  "version": "0.1.0",
+  "description": "PowerPoint Object Model - A declarative TypeScript library for creating PowerPoint presentations",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "homepage": "https://github.com/hirokisakabe/pom#readme",
   "bugs": {
     "url": "https://github.com/hirokisakabe/pom/issues"
@@ -11,9 +25,10 @@
     "url": "git+https://github.com/hirokisakabe/pom.git"
   },
   "license": "MIT",
-  "author": "",
-  "main": "index.js",
+  "author": "Hiroki Sakabe",
   "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build && npm run lint && npm run fmt:check && npm run typecheck && npm run test:run",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
     "lint": "eslint",
