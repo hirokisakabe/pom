@@ -17,7 +17,8 @@ type SlidePx = { w: number; h: number };
 export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
   const slideIn = { w: pxToIn(slidePx.w), h: pxToIn(slidePx.h) }; // layout(=px) → PptxGenJS(=inch) への最終変換
 
-  const pptx = new PptxGenJS();
+  // @ts-expect-error: PptxGenJS の型定義が不完全なため、一時的にエラーを無視
+  const pptx = new PptxGenJS.default();
 
   pptx.defineLayout({ name: "custom", width: slideIn.w, height: slideIn.h });
   pptx.layout = "custom";
