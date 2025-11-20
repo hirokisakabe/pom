@@ -1,108 +1,156 @@
 import type { Node as YogaNode } from "yoga-layout";
 import type PptxGenJS from "pptxgenjs";
+import { z } from "zod";
 
-export type Length = number | "max" | `${number}%`;
+// ===== Basic Types =====
+export const lengthSchema = z.union([
+  z.number(),
+  z.literal("max"),
+  z.string().regex(/^\d+%$/),
+]);
 
-export type Padding =
-  | number
-  | {
-      top?: number;
-      right?: number;
-      bottom?: number;
-      left?: number;
-    };
+export const paddingSchema = z.union([
+  z.number(),
+  z.object({
+    top: z.number().optional(),
+    right: z.number().optional(),
+    bottom: z.number().optional(),
+    left: z.number().optional(),
+  }),
+]);
 
-export type BorderDash =
-  | "solid"
-  | "dash"
-  | "dashDot"
-  | "lgDash"
-  | "lgDashDot"
-  | "lgDashDotDot"
-  | "sysDash"
-  | "sysDot";
+export const borderDashSchema = z.enum([
+  "solid",
+  "dash",
+  "dashDot",
+  "lgDash",
+  "lgDashDot",
+  "lgDashDotDot",
+  "sysDash",
+  "sysDot",
+]);
 
-export type BorderStyle = {
-  color?: string;
-  width?: number;
-  dashType?: BorderDash;
-};
+export const borderStyleSchema = z.object({
+  color: z.string().optional(),
+  width: z.number().optional(),
+  dashType: borderDashSchema.optional(),
+});
 
-export type FillStyle = {
-  color?: string;
-  transparency?: number;
-};
+export const fillStyleSchema = z.object({
+  color: z.string().optional(),
+  transparency: z.number().optional(),
+});
 
-export type ShadowStyle = {
-  type?: "outer" | "inner";
-  opacity?: number;
-  blur?: number;
-  angle?: number;
-  offset?: number;
-  color?: string;
-};
+export const shadowStyleSchema = z.object({
+  type: z.enum(["outer", "inner"]).optional(),
+  opacity: z.number().optional(),
+  blur: z.number().optional(),
+  angle: z.number().optional(),
+  offset: z.number().optional(),
+  color: z.string().optional(),
+});
 
-export type AlignItems = "start" | "center" | "end" | "stretch";
-export type JustifyContent =
-  | "start"
-  | "center"
-  | "end"
-  | "spaceBetween"
-  | "spaceAround"
-  | "spaceEvenly";
-export type FlexDirection = "row" | "column";
+export const alignItemsSchema = z.enum(["start", "center", "end", "stretch"]);
 
-type BasePOMNode = {
-  yogaNode?: YogaNode;
+export const justifyContentSchema = z.enum([
+  "start",
+  "center",
+  "end",
+  "spaceBetween",
+  "spaceAround",
+  "spaceEvenly",
+]);
 
-  w?: Length;
-  h?: Length;
-  minW?: number;
-  maxW?: number;
-  minH?: number;
-  maxH?: number;
-  padding?: Padding;
-  backgroundColor?: string;
-  border?: BorderStyle;
-};
+export const flexDirectionSchema = z.enum(["row", "column"]);
 
-export type TextNode = BasePOMNode & {
-  type: "text";
-  text: string;
-  fontPx?: number;
-  alignText?: "left" | "center" | "right";
-};
+// ===== TypeScript Types (defined early for recursive references) =====
+export type Length = z.infer<typeof lengthSchema>;
+export type Padding = z.infer<typeof paddingSchema>;
+export type BorderDash = z.infer<typeof borderDashSchema>;
+export type BorderStyle = z.infer<typeof borderStyleSchema>;
+export type FillStyle = z.infer<typeof fillStyleSchema>;
+export type ShadowStyle = z.infer<typeof shadowStyleSchema>;
+export type AlignItems = z.infer<typeof alignItemsSchema>;
+export type JustifyContent = z.infer<typeof justifyContentSchema>;
+export type FlexDirection = z.infer<typeof flexDirectionSchema>;
 
-export type ImageNode = BasePOMNode & {
-  type: "image";
-  src: string;
-};
+// ===== Base Node =====
+const basePOMNodeSchema = z.object({
+  yogaNode: z.custom<YogaNode>().optional(),
+  w: lengthSchema.optional(),
+  h: lengthSchema.optional(),
+  minW: z.number().optional(),
+  maxW: z.number().optional(),
+  minH: z.number().optional(),
+  maxH: z.number().optional(),
+  padding: paddingSchema.optional(),
+  backgroundColor: z.string().optional(),
+  border: borderStyleSchema.optional(),
+});
 
-export type TableCell = {
-  text: string;
-  fontPx?: number;
-  color?: string;
-  bold?: boolean;
-  alignText?: "left" | "center" | "right";
-  backgroundColor?: string;
-};
+type BasePOMNode = z.infer<typeof basePOMNodeSchema>;
 
-export type TableRow = {
-  cells: TableCell[];
-  height?: number;
-};
+// ===== Non-recursive Node Types =====
+export const textNodeSchema = basePOMNodeSchema.extend({
+  type: z.literal("text"),
+  text: z.string(),
+  fontPx: z.number().optional(),
+  alignText: z.enum(["left", "center", "right"]).optional(),
+});
 
-export type TableColumn = {
-  width: number;
-};
+export const imageNodeSchema = basePOMNodeSchema.extend({
+  type: z.literal("image"),
+  src: z.string(),
+});
 
-export type TableNode = BasePOMNode & {
-  type: "table";
-  columns: TableColumn[];
-  rows: TableRow[];
-  defaultRowHeight?: number;
-};
+export const tableCellSchema = z.object({
+  text: z.string(),
+  fontPx: z.number().optional(),
+  color: z.string().optional(),
+  bold: z.boolean().optional(),
+  alignText: z.enum(["left", "center", "right"]).optional(),
+  backgroundColor: z.string().optional(),
+});
 
+export const tableRowSchema = z.object({
+  cells: z.array(tableCellSchema),
+  height: z.number().optional(),
+});
+
+export const tableColumnSchema = z.object({
+  width: z.number(),
+});
+
+export const tableNodeSchema = basePOMNodeSchema.extend({
+  type: z.literal("table"),
+  columns: z.array(tableColumnSchema),
+  rows: z.array(tableRowSchema),
+  defaultRowHeight: z.number().optional(),
+});
+
+export const shapeNodeSchema = basePOMNodeSchema.extend({
+  type: z.literal("shape"),
+  shapeType: z.custom<PptxGenJS.SHAPE_NAME>(),
+  text: z.string().optional(),
+  fill: fillStyleSchema.optional(),
+  line: borderStyleSchema.optional(),
+  shadow: shadowStyleSchema.optional(),
+  fontPx: z.number().optional(),
+  fontColor: z.string().optional(),
+  alignText: z.enum(["left", "center", "right"]).optional(),
+});
+
+export type TextNode = z.infer<typeof textNodeSchema>;
+export type ImageNode = z.infer<typeof imageNodeSchema>;
+export type TableCell = z.infer<typeof tableCellSchema>;
+export type TableRow = z.infer<typeof tableRowSchema>;
+export type TableColumn = z.infer<typeof tableColumnSchema>;
+export type TableNode = z.infer<typeof tableNodeSchema>;
+export type ShapeNode = z.infer<typeof shapeNodeSchema>;
+
+// ===== Recursive Types with Explicit Type Definitions =====
+
+// Define the types explicitly to avoid 'any' inference
 export type BoxNode = BasePOMNode & {
   type: "box";
   children: POMNode;
@@ -124,18 +172,6 @@ export type HStackNode = BasePOMNode & {
   justifyContent?: JustifyContent;
 };
 
-export type ShapeNode = BasePOMNode & {
-  type: "shape";
-  shapeType: PptxGenJS.SHAPE_NAME;
-  text?: string;
-  fill?: FillStyle;
-  line?: BorderStyle;
-  shadow?: ShadowStyle;
-  fontPx?: number;
-  fontColor?: string;
-  alignText?: "left" | "center" | "right";
-};
-
 export type POMNode =
   | TextNode
   | ImageNode
@@ -143,14 +179,59 @@ export type POMNode =
   | BoxNode
   | VStackNode
   | HStackNode
-  | ShapeNode /* | ... */;
+  | ShapeNode;
 
-type PositionedBase = {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-};
+// Define schemas using passthrough to maintain type safety
+const boxNodeSchemaBase = basePOMNodeSchema.extend({
+  type: z.literal("box"),
+  children: z.lazy(() => pomNodeSchema),
+});
+
+const vStackNodeSchemaBase = basePOMNodeSchema.extend({
+  type: z.literal("vstack"),
+  children: z.array(z.lazy(() => pomNodeSchema)),
+  gap: z.number().optional(),
+  alignItems: alignItemsSchema.optional(),
+  justifyContent: justifyContentSchema.optional(),
+});
+
+const hStackNodeSchemaBase = basePOMNodeSchema.extend({
+  type: z.literal("hstack"),
+  children: z.array(z.lazy(() => pomNodeSchema)),
+  gap: z.number().optional(),
+  alignItems: alignItemsSchema.optional(),
+  justifyContent: justifyContentSchema.optional(),
+});
+
+// Export with proper type annotations using z.ZodType
+export const boxNodeSchema: z.ZodType<BoxNode> =
+  boxNodeSchemaBase as z.ZodType<BoxNode>;
+export const vStackNodeSchema: z.ZodType<VStackNode> =
+  vStackNodeSchemaBase as z.ZodType<VStackNode>;
+export const hStackNodeSchema: z.ZodType<HStackNode> =
+  hStackNodeSchemaBase as z.ZodType<HStackNode>;
+
+export const pomNodeSchema: z.ZodType<POMNode> = z.lazy(() =>
+  z.discriminatedUnion("type", [
+    textNodeSchema,
+    imageNodeSchema,
+    tableNodeSchema,
+    boxNodeSchemaBase,
+    vStackNodeSchemaBase,
+    hStackNodeSchemaBase,
+    shapeNodeSchema,
+  ]),
+) as z.ZodType<POMNode>;
+
+// ===== Positioned Node Types =====
+const positionedBaseSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+});
+
+type PositionedBase = z.infer<typeof positionedBaseSchema>;
 
 export type PositionedNode =
   | (TextNode & PositionedBase)
@@ -160,3 +241,21 @@ export type PositionedNode =
   | (VStackNode & PositionedBase & { children: PositionedNode[] })
   | (HStackNode & PositionedBase & { children: PositionedNode[] })
   | (ShapeNode & PositionedBase);
+
+export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
+  z.union([
+    textNodeSchema.merge(positionedBaseSchema),
+    imageNodeSchema.merge(positionedBaseSchema),
+    tableNodeSchema.merge(positionedBaseSchema),
+    boxNodeSchemaBase.merge(positionedBaseSchema).extend({
+      children: z.lazy(() => positionedNodeSchema),
+    }),
+    vStackNodeSchemaBase.merge(positionedBaseSchema).extend({
+      children: z.array(z.lazy(() => positionedNodeSchema)),
+    }),
+    hStackNodeSchemaBase.merge(positionedBaseSchema).extend({
+      children: z.array(z.lazy(() => positionedNodeSchema)),
+    }),
+    shapeNodeSchema.merge(positionedBaseSchema),
+  ]),
+) as z.ZodType<PositionedNode>;
