@@ -88,6 +88,7 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
             align: "left" as const,
             valign: "top" as const,
             margin: 0,
+            lineSpacingMultiple: 1.3,
           };
 
           slide.addText(node.text ?? "", opts);
@@ -198,6 +199,7 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
               color: node.fontColor,
               align: node.alignText ?? "center",
               valign: "middle" as const,
+              lineSpacingMultiple: 1.3,
             });
           } else {
             // テキストがない場合：addShapeを使用
