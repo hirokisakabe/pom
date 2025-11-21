@@ -23,30 +23,41 @@ export function measureText(
 } {
   applyFontStyle(opts);
 
-  const words = splitForWrap(text);
+  // まず改行で段落に分割
+  const paragraphs = text.split("\n");
   const lines: { widthPx: number }[] = [];
 
-  let current = "";
-  let currentWidth = 0;
-
-  for (const word of words) {
-    const candidate = current ? current + word : word;
-    const w = ctx.measureText(candidate).width;
-
-    if (w <= maxWidthPx || !current) {
-      // まだ詰められる
-      current = candidate;
-      currentWidth = w;
-    } else {
-      // 折り返す
-      lines.push({ widthPx: currentWidth });
-      current = word;
-      currentWidth = ctx.measureText(word).width;
+  for (const paragraph of paragraphs) {
+    // 空の段落（連続した改行）も1行としてカウント
+    if (paragraph === "") {
+      lines.push({ widthPx: 0 });
+      continue;
     }
-  }
 
-  if (current) {
-    lines.push({ widthPx: currentWidth });
+    const words = splitForWrap(paragraph);
+
+    let current = "";
+    let currentWidth = 0;
+
+    for (const word of words) {
+      const candidate = current ? current + word : word;
+      const w = ctx.measureText(candidate).width;
+
+      if (w <= maxWidthPx || !current) {
+        // まだ詰められる
+        current = candidate;
+        currentWidth = w;
+      } else {
+        // 折り返す
+        lines.push({ widthPx: currentWidth });
+        current = word;
+        currentWidth = ctx.measureText(word).width;
+      }
+    }
+
+    if (current) {
+      lines.push({ widthPx: currentWidth });
+    }
   }
 
   const lineHeightRatio = opts.lineHeight ?? 1.3;
