@@ -97,6 +97,9 @@ export const textNodeSchema = basePOMNodeSchema.extend({
   fontPx: z.number().optional(),
   color: z.string().optional(),
   alignText: z.enum(["left", "center", "right"]).optional(),
+  bold: z.boolean().optional(),
+  fontFamily: z.string().optional(),
+  lineSpacingMultiple: z.number().optional(),
 });
 
 export const imageNodeSchema = basePOMNodeSchema.extend({

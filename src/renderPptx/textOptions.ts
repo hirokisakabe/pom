@@ -5,7 +5,8 @@ type TextNode = Extract<PositionedNode, { type: "text" }>;
 
 export function createTextOptions(node: TextNode) {
   const fontSizePx = node.fontPx ?? 24;
-  const fontFamily = "Noto Sans JP";
+  const fontFamily = node.fontFamily ?? "Noto Sans JP";
+  const lineSpacingMultiple = node.lineSpacingMultiple ?? 1.3;
 
   return {
     x: pxToIn(node.x),
@@ -17,7 +18,8 @@ export function createTextOptions(node: TextNode) {
     align: node.alignText ?? "left",
     valign: "top" as const,
     margin: 0,
-    lineSpacingMultiple: 1.3,
+    lineSpacingMultiple,
     color: node.color,
+    bold: node.bold,
   };
 }
