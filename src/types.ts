@@ -75,8 +75,8 @@ export type JustifyContent = z.infer<typeof justifyContentSchema>;
 export type FlexDirection = z.infer<typeof flexDirectionSchema>;
 
 // ===== Base Node =====
-const basePOMNodeSchema = z.object({
-  yogaNode: z.custom<YogaNode>().optional(),
+// Input schema (for LLM/external input validation - no internal properties)
+export const inputBaseNodeSchema = z.object({
   w: lengthSchema.optional(),
   h: lengthSchema.optional(),
   minW: z.number().optional(),
@@ -88,7 +88,13 @@ const basePOMNodeSchema = z.object({
   border: borderStyleSchema.optional(),
 });
 
+// Internal schema (extends input with internal properties)
+const basePOMNodeSchema = inputBaseNodeSchema.extend({
+  yogaNode: z.custom<YogaNode>().optional(),
+});
+
 type BasePOMNode = z.infer<typeof basePOMNodeSchema>;
+type InputBaseNode = z.infer<typeof inputBaseNodeSchema>;
 
 // ===== Non-recursive Node Types =====
 export const textNodeSchema = basePOMNodeSchema.extend({
@@ -286,3 +292,151 @@ export const masterSlideOptionsSchema = z.object({
 export type PageNumberPosition = z.infer<typeof pageNumberPositionSchema>;
 export type DateFormat = z.infer<typeof dateFormatSchema>;
 export type MasterSlideOptions = z.infer<typeof masterSlideOptionsSchema>;
+
+// ===== Input Schemas (for LLM/external input - no internal properties like yogaNode) =====
+export const inputTextNodeSchema = inputBaseNodeSchema.extend({
+  type: z.literal("text"),
+  text: z.string(),
+  fontPx: z.number().optional(),
+  color: z.string().optional(),
+  alignText: z.enum(["left", "center", "right"]).optional(),
+  bold: z.boolean().optional(),
+  fontFamily: z.string().optional(),
+  lineSpacingMultiple: z.number().optional(),
+});
+
+export const inputImageNodeSchema = inputBaseNodeSchema.extend({
+  type: z.literal("image"),
+  src: z.string(),
+});
+
+export const inputTableNodeSchema = inputBaseNodeSchema.extend({
+  type: z.literal("table"),
+  columns: z.array(tableColumnSchema),
+  rows: z.array(tableRowSchema),
+  defaultRowHeight: z.number().optional(),
+});
+
+export const inputShapeNodeSchema = inputBaseNodeSchema.extend({
+  type: z.literal("shape"),
+  shapeType: z.custom<PptxGenJS.SHAPE_NAME>(),
+  text: z.string().optional(),
+  fill: fillStyleSchema.optional(),
+  line: borderStyleSchema.optional(),
+  shadow: shadowStyleSchema.optional(),
+  fontPx: z.number().optional(),
+  fontColor: z.string().optional(),
+  alignText: z.enum(["left", "center", "right"]).optional(),
+});
+
+export type InputTextNode = z.infer<typeof inputTextNodeSchema>;
+export type InputImageNode = z.infer<typeof inputImageNodeSchema>;
+export type InputTableNode = z.infer<typeof inputTableNodeSchema>;
+export type InputShapeNode = z.infer<typeof inputShapeNodeSchema>;
+
+// Input recursive types
+export type InputBoxNode = InputBaseNode & {
+  type: "box";
+  children: InputPOMNode;
+};
+
+export type InputVStackNode = InputBaseNode & {
+  type: "vstack";
+  children: InputPOMNode[];
+  gap?: number;
+  alignItems?: AlignItems;
+  justifyContent?: JustifyContent;
+};
+
+export type InputHStackNode = InputBaseNode & {
+  type: "hstack";
+  children: InputPOMNode[];
+  gap?: number;
+  alignItems?: AlignItems;
+  justifyContent?: JustifyContent;
+};
+
+export type InputPOMNode =
+  | InputTextNode
+  | InputImageNode
+  | InputTableNode
+  | InputBoxNode
+  | InputVStackNode
+  | InputHStackNode
+  | InputShapeNode;
+
+// Input schemas for recursive nodes
+const inputBoxNodeSchemaBase = inputBaseNodeSchema.extend({
+  type: z.literal("box"),
+  children: z.lazy(() => inputPomNodeSchema),
+});
+
+const inputVStackNodeSchemaBase = inputBaseNodeSchema.extend({
+  type: z.literal("vstack"),
+  children: z.array(z.lazy(() => inputPomNodeSchema)),
+  gap: z.number().optional(),
+  alignItems: alignItemsSchema.optional(),
+  justifyContent: justifyContentSchema.optional(),
+});
+
+const inputHStackNodeSchemaBase = inputBaseNodeSchema.extend({
+  type: z.literal("hstack"),
+  children: z.array(z.lazy(() => inputPomNodeSchema)),
+  gap: z.number().optional(),
+  alignItems: alignItemsSchema.optional(),
+  justifyContent: justifyContentSchema.optional(),
+});
+
+export const inputBoxNodeSchema: z.ZodType<InputBoxNode> =
+  inputBoxNodeSchemaBase as z.ZodType<InputBoxNode>;
+export const inputVStackNodeSchema: z.ZodType<InputVStackNode> =
+  inputVStackNodeSchemaBase as z.ZodType<InputVStackNode>;
+export const inputHStackNodeSchema: z.ZodType<InputHStackNode> =
+  inputHStackNodeSchemaBase as z.ZodType<InputHStackNode>;
+
+/**
+ * Input schema for POM nodes (for LLM/external input validation)
+ * Use this schema when validating JSON from OpenAI, Claude, or other LLMs.
+ *
+ * @example
+ * ```typescript
+ * import { inputPomNodeSchema } from "@hirokisakabe/pom";
+ * import { zodResponseFormat } from "openai/helpers/zod";
+ *
+ * const response = await openai.chat.completions.create({
+ *   model: "gpt-4o",
+ *   messages: [...],
+ *   response_format: zodResponseFormat(inputPomNodeSchema, "slide"),
+ * });
+ * ```
+ */
+export const inputPomNodeSchema: z.ZodType<InputPOMNode> = z.lazy(() =>
+  z.discriminatedUnion("type", [
+    inputTextNodeSchema,
+    inputImageNodeSchema,
+    inputTableNodeSchema,
+    inputBoxNodeSchemaBase,
+    inputVStackNodeSchemaBase,
+    inputHStackNodeSchemaBase,
+    inputShapeNodeSchema,
+  ]),
+) as z.ZodType<InputPOMNode>;
+
+export const inputMasterSlideOptionsSchema = z.object({
+  header: z.lazy(() => inputPomNodeSchema).optional(),
+  footer: z.lazy(() => inputPomNodeSchema).optional(),
+  pageNumber: z
+    .object({
+      position: pageNumberPositionSchema,
+    })
+    .optional(),
+  date: z
+    .object({
+      format: dateFormatSchema,
+    })
+    .optional(),
+});
+
+export type InputMasterSlideOptions = z.infer<
+  typeof inputMasterSlideOptionsSchema
+>;
