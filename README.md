@@ -324,7 +324,7 @@ pom は LLM（GPT-4o、Claude など）で生成した JSON からスライド�
 
 ### 入力用スキーマ
 
-`inputPomNodeSchema` は LLM 出力の検証用に設計されたスキーマです。内部実装用のプロパティ（`yogaNode` など）を含まないため、外部入力の検証に適しています。
+`inputPomNodeSchema` を使って、LLM が生成した JSON を検証できます。
 
 ```typescript
 import { inputPomNodeSchema, buildPptx, InputPOMNode } from "@hirokisakabe/pom";
