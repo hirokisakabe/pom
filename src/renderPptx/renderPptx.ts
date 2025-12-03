@@ -4,32 +4,12 @@ import type PptxGenJSType from "pptxgenjs";
 const PptxGenJS = require("pptxgenjs") as typeof PptxGenJSType;
 import type { PositionedNode } from "../types";
 import { resolveRowHeights } from "../table/utils";
-
-export const PX_PER_IN = 96;
-export const pxToIn = (px: number) => px / PX_PER_IN;
-export const pxToPt = (px: number) => (px * 72) / PX_PER_IN;
-type TextNode = Extract<PositionedNode, { type: "text" }>;
+import { createTextOptions } from "./textOptions";
+import { pxToIn, pxToPt } from "./units";
 
 type SlidePx = { w: number; h: number };
-
-export function createTextOptions(node: TextNode) {
-  const fontSizePx = node.fontPx ?? 24;
-  const fontFamily = "Noto Sans JP";
-
-  return {
-    x: pxToIn(node.x),
-    y: pxToIn(node.y),
-    w: pxToIn(node.w),
-    h: pxToIn(node.h),
-    fontSize: pxToPt(fontSizePx),
-    fontFace: fontFamily,
-    align: node.alignText ?? "left",
-    valign: "top" as const,
-    margin: 0,
-    lineSpacingMultiple: 1.3,
-    color: node.color,
-  };
-}
+export { createTextOptions } from "./textOptions";
+export { PX_PER_IN, pxToIn, pxToPt } from "./units";
 
 /**
  * PositionedNode ツリーを PptxGenJS スライドに変換する

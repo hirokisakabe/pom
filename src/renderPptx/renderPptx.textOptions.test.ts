@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createTextOptions, pxToIn, pxToPt } from "./renderPptx";
+import { createTextOptions } from "./textOptions";
+import { pxToIn, pxToPt } from "./units";
 
 describe("createTextOptions", () => {
   it("指定した色と配置をオプションに反映する", () => {
