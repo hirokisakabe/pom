@@ -17,7 +17,6 @@
  * ```
  */
 
-import type PptxGenJS from "pptxgenjs";
 import { z } from "zod";
 import {
   lengthSchema,
@@ -27,6 +26,7 @@ import {
   shadowStyleSchema,
   alignItemsSchema,
   justifyContentSchema,
+  shapeTypeSchema,
   tableColumnSchema,
   tableRowSchema,
   pageNumberPositionSchema,
@@ -76,7 +76,7 @@ export const inputTableNodeSchema = inputBaseNodeSchema.extend({
 
 export const inputShapeNodeSchema = inputBaseNodeSchema.extend({
   type: z.literal("shape"),
-  shapeType: z.custom<PptxGenJS.SHAPE_NAME>(),
+  shapeType: shapeTypeSchema,
   text: z.string().optional(),
   fill: fillStyleSchema.optional(),
   line: borderStyleSchema.optional(),
