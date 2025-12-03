@@ -1229,10 +1229,64 @@ const page4: POMNode = {
 };
 
 async function main() {
-  const pptx = await buildPptx([page1, page2, page3, page4], {
-    w: 1280,
-    h: 720,
-  });
+  const pptx = await buildPptx(
+    [page1, page2, page3, page4],
+    {
+      w: 1280,
+      h: 720,
+    },
+    {
+      master: {
+        header: {
+          type: "hstack",
+          h: 40,
+          padding: { left: 48, right: 48, top: 12, bottom: 0 },
+          justifyContent: "spaceBetween",
+          alignItems: "center",
+          backgroundColor: palette.navy,
+          children: [
+            {
+              type: "text",
+              text: "桜テックホールディングス",
+              fontPx: 14,
+              color: "FFFFFF",
+            },
+            {
+              type: "text",
+              text: "{{date}}",
+              fontPx: 12,
+              color: "E2E8F0",
+            },
+          ],
+        },
+        footer: {
+          type: "hstack",
+          h: 30,
+          padding: { left: 48, right: 48, top: 0, bottom: 8 },
+          justifyContent: "spaceBetween",
+          alignItems: "center",
+          children: [
+            {
+              type: "text",
+              text: "Confidential",
+              fontPx: 10,
+              color: palette.charcoal,
+            },
+            {
+              type: "text",
+              text: "Page {{page}} / {{totalPages}}",
+              fontPx: 10,
+              color: palette.charcoal,
+              alignText: "right",
+            },
+          ],
+        },
+        date: {
+          format: "YYYY/MM/DD",
+        },
+      },
+    },
+  );
 
   await pptx.writeFile({ fileName: "sample.pptx" });
 }
