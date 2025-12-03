@@ -51,6 +51,9 @@
   fontPx?: number;
   color?: string;
   alignText?: "left" | "center" | "right";
+  bold?: boolean;
+  fontFamily?: string;
+  lineSpacingMultiple?: number;
 
   // 共通プロパティ
   w?: number | "max" | `${number}%`;
@@ -60,6 +63,9 @@
 ```
 
 - `color` で文字色を 16 進カラーコード（例: `"FF0000"`）として指定できます。
+- `bold` で太字を指定できます。
+- `fontFamily` でフォントファミリーを指定できます（デフォルト: `"Noto Sans JP"`）。
+- `lineSpacingMultiple` で行間倍率を指定できます（デフォルト: `1.3`）。
 
 #### 2. Image
 

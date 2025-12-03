@@ -69,6 +69,7 @@ const page1: POMNode = {
           text: "2024年度 技術投資計画",
           fontPx: 40,
           color: palette.charcoal,
+          bold: true,
         },
         {
           type: "text",
@@ -118,12 +119,15 @@ const page1: POMNode = {
                 text: "背景",
                 fontPx: 18,
                 color: palette.charcoal,
+                bold: true,
+                fontFamily: "Noto Sans JP",
               },
               {
                 type: "text",
                 text: "・国内主要拠点の業務標準化とシステム統合が急務\n・社内開発リソースの再配置により俊敏性を確保\n・品質ガバナンス強化を前提とした投資判断",
                 fontPx: 14,
                 color: palette.charcoal,
+                lineSpacingMultiple: 1.5,
               },
               {
                 type: "shape",
