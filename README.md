@@ -317,3 +317,85 @@ type MasterSlideOptions = {
 - **自動合成**: 各ページのコンテンツに自動的にヘッダー・フッターが追加されます
 - **動的置換**: プレースホルダーはページごとに自動的に置換されます
 - **後方互換性**: master オプションは省略可能で、既存コードへの影響はありません
+
+## LLM 連携
+
+pom は LLM（GPT-4o、Claude など）で生成した JSON からスライドを作成するユースケースに対応しています。
+
+### 入力用スキーマ
+
+`inputPomNodeSchema` を使って、LLM が生成した JSON を検証できます。
+
+```typescript
+import { inputPomNodeSchema, buildPptx, InputPOMNode } from "@hirokisakabe/pom";
+
+// LLMからのJSON出力を検証
+const jsonFromLLM = `{
+  "type": "vstack",
+  "padding": 48,
+  "gap": 24,
+  "children": [
+    { "type": "text", "text": "タイトル", "fontPx": 32, "bold": true },
+    { "type": "text", "text": "本文テキスト", "fontPx": 16 }
+  ]
+}`;
+
+const parsed = JSON.parse(jsonFromLLM);
+const result = inputPomNodeSchema.safeParse(parsed);
+
+if (result.success) {
+  // 検証成功 - PPTXを生成
+  const pptx = await buildPptx([result.data], { w: 1280, h: 720 });
+  await pptx.writeFile({ fileName: "output.pptx" });
+} else {
+  // 検証失敗 - エラー内容を確認
+  console.error("Validation failed:", result.error.format());
+}
+```
+
+### OpenAI Structured Outputs との連携
+
+OpenAI SDK の `zodResponseFormat` を使用して、LLM に直接スキーマ準拠の JSON を生成させることができます。
+
+```typescript
+import { inputPomNodeSchema, buildPptx } from "@hirokisakabe/pom";
+import OpenAI from "openai";
+import { zodResponseFormat } from "openai/helpers/zod";
+
+const openai = new OpenAI();
+
+const response = await openai.chat.completions.create({
+  model: "gpt-4o",
+  messages: [
+    {
+      role: "system",
+      content:
+        "あなたはプレゼンテーション作成アシスタントです。指定されたスキーマに従ってスライドのJSONを生成してください。",
+    },
+    {
+      role: "user",
+      content:
+        "売上報告のスライドを作成して。タイトルと3つの箇条書きを含めて。",
+    },
+  ],
+  response_format: zodResponseFormat(inputPomNodeSchema, "slide"),
+});
+
+const slideData = JSON.parse(response.choices[0].message.content!);
+const pptx = await buildPptx([slideData], { w: 1280, h: 720 });
+await pptx.writeFile({ fileName: "sales-report.pptx" });
+```
+
+### 利用可能な入力用スキーマ
+
+| スキーマ                        | 説明                                           |
+| ------------------------------- | ---------------------------------------------- |
+| `inputPomNodeSchema`            | メインのノードスキーマ（全ノードタイプを含む） |
+| `inputTextNodeSchema`           | テキストノード用                               |
+| `inputImageNodeSchema`          | 画像ノード用                                   |
+| `inputTableNodeSchema`          | テーブルノード用                               |
+| `inputShapeNodeSchema`          | 図形ノード用                                   |
+| `inputBoxNodeSchema`            | Boxノード用                                    |
+| `inputVStackNodeSchema`         | VStackノード用                                 |
+| `inputHStackNodeSchema`         | HStackノード用                                 |
+| `inputMasterSlideOptionsSchema` | マスタースライド設定用                         |
