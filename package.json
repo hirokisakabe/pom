@@ -1,6 +1,6 @@
 {
   "name": "@hirokisakabe/pom",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "PowerPoint Object Model - A declarative TypeScript library for creating PowerPoint presentations",
   "type": "module",
   "main": "./dist/index.js",
