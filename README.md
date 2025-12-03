@@ -48,6 +48,7 @@
   type: "text";
   text: string;
   fontPx?: number;
+  color?: string;
   alignText?: "left" | "center" | "right";
 
   // 共通プロパティ
@@ -56,6 +57,8 @@
   ...
 }
 ```
+
+- `color` で文字色を 16 進カラーコード（例: `"FF0000"`）として指定できます。
 
 #### 2. Image
 

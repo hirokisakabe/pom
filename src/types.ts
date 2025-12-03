@@ -95,6 +95,7 @@ export const textNodeSchema = basePOMNodeSchema.extend({
   type: z.literal("text"),
   text: z.string(),
   fontPx: z.number().optional(),
+  color: z.string().optional(),
   alignText: z.enum(["left", "center", "right"]).optional(),
 });
 
