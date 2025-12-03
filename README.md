@@ -8,6 +8,7 @@
 - **宣言的**: JSON ライクなオブジェクトでスライドを記述
 - **柔軟なレイアウト**: VStack/HStack/Box による自動レイアウト
 - **ピクセル単位**: 直感的なピクセル単位での指定（内部でインチに変換）
+- **マスタースライド**: 全ページ共通のヘッダー・フッター・ページ番号を自動挿入
 - **AI フレンドリー**: LLM がコード生成しやすいシンプルな構造
 
 ## ノード
@@ -214,3 +215,99 @@
 - `cloudCallout`: 雲吹き出し（コメント）
 - `star5`: 5つ星（強調、デコレーション）
 - `downArrow`: 下矢印（フロー図）
+
+## マスタースライド
+
+全ページに共通のヘッダー・フッター・ページ番号を自動挿入できます。
+
+### 基本的な使い方
+
+```typescript
+import { buildPptx } from "@hirokisakabe/pom";
+
+const pptx = await buildPptx(
+  [page1, page2, page3],
+  { w: 1280, h: 720 },
+  {
+    master: {
+      header: {
+        type: "hstack",
+        h: 40,
+        padding: { left: 48, right: 48, top: 12, bottom: 0 },
+        justifyContent: "spaceBetween",
+        alignItems: "center",
+        backgroundColor: "0F172A",
+        children: [
+          {
+            type: "text",
+            text: "会社名",
+            fontPx: 14,
+            color: "FFFFFF",
+          },
+          {
+            type: "text",
+            text: "{{date}}",
+            fontPx: 12,
+            color: "E2E8F0",
+          },
+        ],
+      },
+      footer: {
+        type: "hstack",
+        h: 30,
+        padding: { left: 48, right: 48, top: 0, bottom: 8 },
+        justifyContent: "spaceBetween",
+        alignItems: "center",
+        children: [
+          {
+            type: "text",
+            text: "Confidential",
+            fontPx: 10,
+            color: "1E293B",
+          },
+          {
+            type: "text",
+            text: "Page {{page}} / {{totalPages}}",
+            fontPx: 10,
+            color: "1E293B",
+            alignText: "right",
+          },
+        ],
+      },
+      date: {
+        format: "YYYY/MM/DD", // または "locale"
+      },
+    },
+  },
+);
+```
+
+### マスタースライドのオプション
+
+```typescript
+type MasterSlideOptions = {
+  header?: POMNode; // ヘッダー（任意の POMNode を指定可能）
+  footer?: POMNode; // フッター（任意の POMNode を指定可能）
+  pageNumber?: {
+    position: "left" | "center" | "right"; // ページ番号の位置
+  };
+  date?: {
+    format: "YYYY/MM/DD" | "locale"; // 日付のフォーマット
+  };
+};
+```
+
+### プレースホルダー
+
+ヘッダー・フッター内のテキストで以下のプレースホルダーが使用できます：
+
+- `{{page}}`: 現在のページ番号
+- `{{totalPages}}`: 総ページ数
+- `{{date}}`: 日付（`date.format` で指定した形式）
+
+### 特徴
+
+- **柔軟性**: ヘッダー・フッターには任意の POMNode（VStack、HStack、Box など）を使用可能
+- **自動合成**: 各ページのコンテンツに自動的にヘッダー・フッターが追加されます
+- **動的置換**: プレースホルダーはページごとに自動的に置換されます
+- **後方互換性**: master オプションは省略可能で、既存コードへの影響はありません
