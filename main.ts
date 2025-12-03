@@ -27,7 +27,7 @@ const page1: POMNode = {
       border: { color: palette.navy, width: 2 },
       children: {
         type: "hstack",
-        justifyContent: "space-between",
+        justifyContent: "spaceBetween",
         alignItems: "center",
         children: [
           {
