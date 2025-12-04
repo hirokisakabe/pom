@@ -1,9 +1,9 @@
 import { POMNode, buildPptx } from "./src";
 
 const palette = {
-  background: "F8FAFC",
-  navy: "0F172A",
-  blue: "1D4ED8",
+  background: "ECF0F6",
+  navy: "0E0D6A",
+  blue: "0E0D6A",
   lightBlue: "DBEAFE",
   accent: "0EA5E9",
   border: "E2E8F0",
