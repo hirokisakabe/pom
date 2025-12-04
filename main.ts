@@ -106,7 +106,7 @@ const page1: POMNode = {
       children: [
         {
           type: "box",
-          w: "60%",
+          w: "50%",
           padding: { top: 12, bottom: 12, left: 20, right: 20 },
           backgroundColor: "FFFFFF",
           border: { color: palette.border, width: 2 },
@@ -221,6 +221,13 @@ const page1: POMNode = {
               },
             },
           ],
+        },
+        {
+          type: "box",
+          children: {
+            type: "image",
+            src: "./150x150.png",
+          },
         },
       ],
     },
