@@ -107,132 +107,142 @@ const page1: POMNode = {
       w: "100%",
       children: [
         {
-          type: "box",
-
-          padding: { top: 12, bottom: 12, left: 20, right: 20 },
-          backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
-          children: {
-            type: "vstack",
-            gap: 12,
-            children: [
-              {
-                type: "text",
-                text: "背景",
-                fontPx: 18,
-                color: palette.charcoal,
-                bold: true,
-                fontFamily: "Noto Sans JP",
-              },
-              {
-                type: "text",
-                text: "・国内主要拠点の業務標準化とシステム統合が急務\n・品質ガバナンス強化を前提とした投資判断",
-                fontPx: 14,
-                color: palette.charcoal,
-                lineSpacingMultiple: 1.5,
-              },
-              {
-                type: "vstack",
-                padding: { top: 4, bottom: 4 },
-                children: [
-                  {
-                    type: "shape",
-                    shapeType: "rect",
-                    w: "100%",
-                    h: 1,
-                    fill: { color: palette.border },
-                  },
-                ],
-              },
-              {
-                type: "text",
-                text: "目的",
-                bold: true,
-                fontPx: 18,
-                color: palette.charcoal,
-              },
-              {
-                type: "text",
-                text: "・3拠点共通のエンジニアリング基盤を年度内に整備\n・外部委託費 15%削減 / 品質KPI 95%以上の維持",
-                fontPx: 14,
-              },
-            ],
-          },
-        },
-        {
-          type: "vstack",
-          gap: 12,
+          type: "hstack",
+          gap: 20,
           children: [
             {
               type: "box",
-              padding: { top: 12, bottom: 12, left: 18, right: 18 },
-              backgroundColor: palette.lightBlue,
-              border: { color: palette.blue, width: 2 },
-              children: {
-                type: "vstack",
-                gap: 3,
-                children: [
-                  {
-                    type: "text",
-                    text: "投資総額",
-                    fontPx: 14,
-                    color: palette.blue,
-                  },
-                  {
-                    type: "text",
-                    text: "¥420M",
-                    fontPx: 28,
-                    color: palette.navy,
-                  },
-                  {
-                    type: "text",
-                    text: "前年度比 +8%",
-                    fontPx: 12,
-                    color: palette.charcoal,
-                  },
-                ],
-              },
-            },
 
-            {
-              type: "box",
-              padding: 18,
+              padding: { top: 12, bottom: 12, left: 20, right: 20 },
               backgroundColor: "FFFFFF",
               border: { color: palette.border, width: 2 },
               children: {
-                type: "hstack",
-                gap: 10,
-                alignItems: "center",
+                type: "vstack",
+                gap: 12,
                 children: [
                   {
-                    type: "shape",
-                    shapeType: "ellipse",
-                    w: 60,
-                    h: 60,
-                    text: "ESG",
-                    fontPx: 16,
-                    fill: { color: palette.lightBlue },
-                    line: { color: palette.blue, width: 2 },
+                    type: "text",
+                    text: "背景",
+                    fontPx: 18,
+                    color: palette.charcoal,
+                    bold: true,
+                    fontFamily: "Noto Sans JP",
                   },
                   {
                     type: "text",
-                    text: "社会的信頼・説明責任に資するIT投資",
-                    fontPx: 13,
+                    text: "・国内主要拠点の業務標準化とシステム統合が急務\n・品質ガバナンス強化を前提とした投資判断",
+                    fontPx: 14,
+                    color: palette.charcoal,
+                    lineSpacingMultiple: 1.5,
+                  },
+                  {
+                    type: "vstack",
+                    padding: { top: 4, bottom: 4 },
+                    children: [
+                      {
+                        type: "shape",
+                        shapeType: "rect",
+                        w: "100%",
+                        h: 1,
+                        fill: { color: palette.border },
+                      },
+                    ],
+                  },
+                  {
+                    type: "text",
+                    text: "目的",
+                    bold: true,
+                    fontPx: 18,
+                    color: palette.charcoal,
+                  },
+                  {
+                    type: "text",
+                    text: "・3拠点共通のエンジニアリング基盤を年度内に整備\n・外部委託費 15%削減 / 品質KPI 95%以上の維持",
+                    fontPx: 14,
                   },
                 ],
               },
             },
+            {
+              type: "vstack",
+              gap: 12,
+              children: [
+                {
+                  type: "box",
+                  padding: { top: 12, bottom: 12, left: 18, right: 18 },
+                  backgroundColor: palette.lightBlue,
+                  border: { color: palette.blue, width: 2 },
+                  children: {
+                    type: "vstack",
+                    gap: 3,
+                    children: [
+                      {
+                        type: "text",
+                        text: "投資総額",
+                        fontPx: 14,
+                        color: palette.blue,
+                      },
+                      {
+                        type: "text",
+                        text: "¥420M",
+                        fontPx: 28,
+                        color: palette.navy,
+                      },
+                      {
+                        type: "text",
+                        text: "前年度比 +8%",
+                        fontPx: 12,
+                        color: palette.charcoal,
+                      },
+                    ],
+                  },
+                },
+
+                {
+                  type: "box",
+                  padding: 18,
+                  backgroundColor: "FFFFFF",
+                  border: { color: palette.border, width: 2 },
+                  children: {
+                    type: "hstack",
+                    gap: 10,
+                    alignItems: "center",
+                    children: [
+                      {
+                        type: "shape",
+                        shapeType: "ellipse",
+                        w: 60,
+                        h: 60,
+                        text: "ESG",
+                        fontPx: 16,
+                        fill: { color: palette.lightBlue },
+                        line: { color: palette.blue, width: 2 },
+                      },
+                      {
+                        type: "text",
+                        text: "社会的信頼・説明責任に資するIT投資",
+                        fontPx: 13,
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
           ],
         },
+
         {
           type: "hstack",
           padding: { top: 4, bottom: 4 },
+          gap: 10,
           children: [
             {
               type: "box",
               children: {
                 type: "image",
-                src: "./150x150.png",
+                src: "./japan.png",
+                w: 150,
+                h: 150,
               },
             },
             {
@@ -244,7 +254,7 @@ const page1: POMNode = {
                 {
                   type: "shape",
                   shapeType: "rightArrow",
-                  fill: { color: palette.border },
+                  fill: { color: palette.blue },
                   w: 40,
                   h: 40,
                 },
@@ -254,7 +264,9 @@ const page1: POMNode = {
               type: "box",
               children: {
                 type: "image",
-                src: "./150x150.png",
+                src: "./earth.png",
+                w: 150,
+                h: 150,
               },
             },
           ],
