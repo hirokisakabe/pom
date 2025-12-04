@@ -210,10 +210,10 @@ const page1: POMNode = {
                     children: [
                       {
                         type: "shape",
-                        shapeType: "ellipse",
+                        shapeType: "lightningBolt",
                         w: 60,
                         h: 60,
-                        text: "ESG",
+
                         fontPx: 16,
                         fill: { color: palette.lightBlue },
                         line: { color: palette.blue, width: 2 },
