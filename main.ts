@@ -15,14 +15,14 @@ const page1: POMNode = {
   type: "vstack",
   w: "100%",
   h: "max",
-  padding: 48,
-  gap: 24,
+  padding: 22,
+  gap: 20,
   alignItems: "stretch",
   backgroundColor: palette.background,
   children: [
     {
       type: "box",
-      padding: 20,
+      padding: { top: 16, bottom: 16, left: 20, right: 20 },
       backgroundColor: palette.navy,
       border: { color: palette.navy, width: 2 },
       children: {
@@ -152,7 +152,6 @@ const page1: POMNode = {
         },
         {
           type: "vstack",
-          w: "40%",
           gap: 12,
           children: [
             {
