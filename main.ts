@@ -51,6 +51,7 @@ const page1: POMNode = {
           {
             type: "text",
             text: "Confidential",
+            bold: true,
             fontPx: 20,
             color: "FDE68A",
           },
@@ -66,7 +67,7 @@ const page1: POMNode = {
       children: [
         {
           type: "text",
-          text: "2024年度 技術投資計画",
+          text: "2026年度 技術投資計画",
           fontPx: 40,
           color: palette.charcoal,
           bold: true,
@@ -91,7 +92,7 @@ const page1: POMNode = {
             },
             {
               type: "text",
-              text: "取締役会 2024.04.12",
+              text: "取締役会 20xx.xx.xx",
               fontPx: 14,
               color: palette.charcoal,
             },
@@ -130,7 +131,7 @@ const page1: POMNode = {
                   },
                   {
                     type: "text",
-                    text: "・国内主要拠点の業務標準化とシステム統合が急務\n・品質ガバナンス強化を前提とした投資判断",
+                    text: "・国内主要拠点の業務標準化とシステム統合が急務\n・海外拠点展開に向けた基盤整備の必要性増大",
                     fontPx: 14,
                     color: palette.charcoal,
                     lineSpacingMultiple: 1.5,
@@ -322,7 +323,7 @@ const page1: POMNode = {
     },
     {
       type: "text",
-      text: "Prepared by HogeHoge Div. / 更新日: 2024-04-05",
+      text: "Prepared by HogeHoge Div. / 更新日: 20xx-xx-xx",
       fontPx: 12,
       color: palette.charcoal,
     },
