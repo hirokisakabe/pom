@@ -16,7 +16,7 @@ const page1: POMNode = {
   w: "100%",
   h: "max",
   padding: 22,
-  gap: 20,
+  gap: 10,
   alignItems: "stretch",
   backgroundColor: palette.background,
   children: [
@@ -51,7 +51,7 @@ const page1: POMNode = {
           {
             type: "text",
             text: "Confidential",
-            fontPx: 16,
+            fontPx: 20,
             color: "FDE68A",
           },
         ],
@@ -102,12 +102,12 @@ const page1: POMNode = {
     {
       type: "hstack",
       gap: 20,
-      alignItems: "start",
+      alignItems: "center",
       children: [
         {
           type: "box",
           w: "60%",
-          padding: 20,
+          padding: { top: 12, bottom: 12, left: 20, right: 20 },
           backgroundColor: "FFFFFF",
           border: { color: palette.border, width: 2 },
           children: {
@@ -130,15 +130,22 @@ const page1: POMNode = {
                 lineSpacingMultiple: 1.5,
               },
               {
-                type: "shape",
-                shapeType: "rect",
-                w: "100%",
-                h: 1,
-                fill: { color: palette.border },
+                type: "vstack",
+                padding: { top: 4, bottom: 4 },
+                children: [
+                  {
+                    type: "shape",
+                    shapeType: "rect",
+                    w: "100%",
+                    h: 1,
+                    fill: { color: palette.border },
+                  },
+                ],
               },
               {
                 type: "text",
                 text: "目的",
+                bold: true,
                 fontPx: 18,
                 color: palette.charcoal,
               },
@@ -156,12 +163,12 @@ const page1: POMNode = {
           children: [
             {
               type: "box",
-              padding: 18,
+              padding: { top: 12, bottom: 12, left: 18, right: 18 },
               backgroundColor: palette.lightBlue,
               border: { color: palette.blue, width: 2 },
               children: {
                 type: "vstack",
-                gap: 8,
+                gap: 3,
                 children: [
                   {
                     type: "text",
@@ -252,7 +259,7 @@ const page1: POMNode = {
     },
     {
       type: "text",
-      text: "Prepared by Corporate IT Planning Div. / 更新日: 2024-04-05",
+      text: "Prepared by HogeHoge Div. / 更新日: 2024-04-05",
       fontPx: 12,
       color: palette.charcoal,
     },
