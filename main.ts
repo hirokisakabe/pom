@@ -232,42 +232,56 @@ const page1: POMNode = {
         },
 
         {
-          type: "hstack",
-          padding: { top: 4, bottom: 4 },
-          gap: 10,
+          type: "vstack",
+          padding: { left: 20, right: 20 },
           children: [
             {
-              type: "box",
-              children: {
-                type: "image",
-                src: "./japan.png",
-                w: 150,
-                h: 150,
-              },
-            },
-            {
-              type: "vstack",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: { left: 4, right: 4 },
+              type: "hstack",
+              padding: { top: 4, bottom: 4 },
+              gap: 10,
               children: [
                 {
-                  type: "shape",
-                  shapeType: "rightArrow",
-                  fill: { color: palette.blue },
-                  w: 40,
-                  h: 40,
+                  type: "box",
+                  children: {
+                    type: "image",
+                    src: "./japan.png",
+                    w: 150,
+                    h: 150,
+                  },
+                },
+                {
+                  type: "vstack",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: { left: 4, right: 4 },
+                  children: [
+                    {
+                      type: "shape",
+                      shapeType: "rightArrow",
+                      fill: { color: palette.blue },
+                      w: 40,
+                      h: 40,
+                    },
+                  ],
+                },
+                {
+                  type: "box",
+                  children: {
+                    type: "image",
+                    src: "./earth.png",
+                    w: 150,
+                    h: 150,
+                  },
                 },
               ],
             },
             {
-              type: "box",
-              children: {
-                type: "image",
-                src: "./earth.png",
-                w: 150,
-                h: 150,
-              },
+              type: "text",
+              text: "海外拠点展開を視野に入れた基盤整備",
+              fontPx: 12,
+              color: palette.charcoal,
+              w: "100%",
+              alignText: "center",
             },
           ],
         },
