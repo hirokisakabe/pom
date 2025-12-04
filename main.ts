@@ -103,6 +103,8 @@ const page1: POMNode = {
       type: "hstack",
       gap: 20,
       alignItems: "center",
+      justifyContent: "spaceBetween",
+      w: "100%",
       children: [
         {
           type: "box",
