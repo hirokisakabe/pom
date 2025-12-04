@@ -65,6 +65,10 @@ const page1: POMNode = {
       border: { color: palette.border, width: 2 },
       children: [
         {
+          type: "image",
+          src: "./150x150.png",
+        },
+        {
           type: "text",
           text: "2024年度 技術投資計画",
           fontPx: 40,
@@ -1289,7 +1293,7 @@ async function main() {
           format: "YYYY/MM/DD",
         },
       },
-    },
+    }
   );
 
   await pptx.writeFile({ fileName: "sample.pptx" });
