@@ -36,13 +36,13 @@ const page1: POMNode = {
             children: [
               {
                 type: "text",
-                text: "桜テックホールディングス",
+                text: "ほげほげ株式会社",
                 fontPx: 26,
                 color: "FFFFFF",
               },
               {
                 type: "text",
-                text: "Technology Strategy Briefing / FY2024",
+                text: "ふがふが事業本部",
                 fontPx: 14,
                 color: "E2E8F0",
               },
@@ -64,10 +64,6 @@ const page1: POMNode = {
       backgroundColor: "FFFFFF",
       border: { color: palette.border, width: 2 },
       children: [
-        {
-          type: "image",
-          src: "./150x150.png",
-        },
         {
           type: "text",
           text: "2024年度 技術投資計画",
@@ -128,7 +124,7 @@ const page1: POMNode = {
               },
               {
                 type: "text",
-                text: "・国内主要拠点の業務標準化とシステム統合が急務\n・社内開発リソースの再配置により俊敏性を確保\n・品質ガバナンス強化を前提とした投資判断",
+                text: "・国内主要拠点の業務標準化とシステム統合が急務\n・品質ガバナンス強化を前提とした投資判断",
                 fontPx: 14,
                 color: palette.charcoal,
                 lineSpacingMultiple: 1.5,
@@ -189,29 +185,7 @@ const page1: POMNode = {
                 ],
               },
             },
-            {
-              type: "box",
-              padding: 18,
-              backgroundColor: "FFFFFF",
-              border: { color: palette.border, width: 2 },
-              children: {
-                type: "vstack",
-                gap: 6,
-                children: [
-                  {
-                    type: "text",
-                    text: "重点領域",
-                    fontPx: 14,
-                    color: palette.charcoal,
-                  },
-                  {
-                    type: "text",
-                    text: "1. 社内サービスPF刷新\n2. データ利活用高度化\n3. セキュリティオートメーション",
-                    fontPx: 13,
-                  },
-                ],
-              },
-            },
+
             {
               type: "box",
               padding: 18,
@@ -274,68 +248,8 @@ const page1: POMNode = {
             text: "・年度後半での海外拠点展開を見据え、セキュリティ審査手続きとクラウド運用統制を事前に整備する。",
             fontPx: 13,
           },
-          {
-            type: "text",
-            text: "・人材投資：シニアエンジニア比率を20%→28%へ。採用/育成リードタイム短縮のため内製アカデミーを拡充。",
-            fontPx: 13,
-          },
         ],
       },
-    },
-    {
-      type: "hstack",
-      gap: 16,
-      alignItems: "stretch",
-      children: [
-        {
-          type: "box",
-          w: "50%",
-          padding: 18,
-          backgroundColor: palette.lightBlue,
-          border: { color: palette.blue, width: 2 },
-          children: {
-            type: "vstack",
-            gap: 8,
-            children: [
-              {
-                type: "text",
-                text: "主要リスク",
-                fontPx: 16,
-                color: palette.navy,
-              },
-              {
-                type: "text",
-                text: "・要件定義遅延による業務側の巻き戻し\n・共通基盤リリース後の性能チューニング不足\n・外部委託先ガバナンスの一時的低下",
-                fontPx: 13,
-              },
-            ],
-          },
-        },
-        {
-          type: "box",
-          w: "50%",
-          padding: 18,
-          backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
-          children: {
-            type: "vstack",
-            gap: 8,
-            children: [
-              {
-                type: "text",
-                text: "対策・コミュニケーション",
-                fontPx: 16,
-                color: palette.charcoal,
-              },
-              {
-                type: "text",
-                text: "・PMO直轄レビューを隔週で実施し、論点を役員向けメモ化\n・性能観点ではSLO測定基盤を同時導入\n・委託先は契約更新時にSLO連動の成果報酬へ",
-                fontPx: 13,
-              },
-            ],
-          },
-        },
-      ],
     },
     {
       type: "text",
