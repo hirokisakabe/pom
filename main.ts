@@ -108,7 +108,7 @@ const page1: POMNode = {
       children: [
         {
           type: "box",
-          w: "50%",
+
           padding: { top: 12, bottom: 12, left: 20, right: 20 },
           backgroundColor: "FFFFFF",
           border: { color: palette.border, width: 2 },
@@ -225,11 +225,39 @@ const page1: POMNode = {
           ],
         },
         {
-          type: "box",
-          children: {
-            type: "image",
-            src: "./150x150.png",
-          },
+          type: "hstack",
+          padding: { top: 4, bottom: 4 },
+          children: [
+            {
+              type: "box",
+              children: {
+                type: "image",
+                src: "./150x150.png",
+              },
+            },
+            {
+              type: "vstack",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: { left: 4, right: 4 },
+              children: [
+                {
+                  type: "shape",
+                  shapeType: "rightArrow",
+                  fill: { color: palette.border },
+                  w: 40,
+                  h: 40,
+                },
+              ],
+            },
+            {
+              type: "box",
+              children: {
+                type: "image",
+                src: "./150x150.png",
+              },
+            },
+          ],
         },
       ],
     },
