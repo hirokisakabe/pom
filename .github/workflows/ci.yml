@@ -24,11 +24,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y libreoffice
-      - uses: actions/setup-node@v4
+      - name: Run VRT in Docker
+        run: docker compose run --rm vrt
+      - name: Upload diff on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
         with:
-          node-version: "22"
-      - run: npm ci
-      - run: npx tsx vrt/genpptx.ts
-      - run: soffice --headless --convert-to png --outdir ./vrt actual.pptx
-      - run: npx tsx vrt/vrt.ts
+          name: vrt-diff
+          path: |
+            vrt/actual.png
+            vrt/diff.png
