@@ -1,0 +1,18 @@
+services:
+  vrt:
+    build:
+      context: .
+      dockerfile: vrt/Dockerfile
+    volumes:
+      # 結果をホストに出力するため output ディレクトリをマウント
+      - ./vrt/output:/app/vrt/output
+    command: npm run vrt
+
+  vrt-update:
+    build:
+      context: .
+      dockerfile: vrt/Dockerfile
+    volumes:
+      # expected.png を更新するため vrt ディレクトリ全体をマウント
+      - ./vrt:/app/vrt
+    command: npm run vrt:update
