@@ -1,0 +1,19 @@
+services:
+  vrt:
+    build:
+      context: .
+      dockerfile: vrt/Dockerfile
+    volumes:
+      # 結果をホストに出力するためのマウント
+      - ./vrt/actual.png:/app/vrt/actual.png
+      - ./vrt/diff.png:/app/vrt/diff.png
+    command: npm run vrt
+
+  vrt-update:
+    build:
+      context: .
+      dockerfile: vrt/Dockerfile
+    volumes:
+      - ./vrt/expected.png:/app/vrt/expected.png
+      - ./vrt/actual.png:/app/vrt/actual.png
+    command: npm run vrt:update
