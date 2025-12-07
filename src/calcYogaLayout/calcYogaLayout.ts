@@ -76,7 +76,11 @@ async function getYoga(): Promise<Yoga> {
 /**
  * POMNode ツリーを再帰的に走査し、YogaNode ツリーを構築する
  */
-async function buildPomWithYogaTree(node: POMNode, parentYoga: YogaNode) {
+async function buildPomWithYogaTree(
+  node: POMNode,
+  parentYoga: YogaNode,
+  parentNode?: POMNode,
+) {
   const yoga = await getYoga();
 
   const yn = yoga.Node.create();
@@ -84,17 +88,23 @@ async function buildPomWithYogaTree(node: POMNode, parentYoga: YogaNode) {
 
   await applyStyleToYogaNode(node, yn);
 
+  // HStack の子要素で幅が指定されていない場合、デフォルトで均等分割
+  if (parentNode?.type === "hstack" && node.w === undefined) {
+    yn.setFlexGrow(1);
+    yn.setFlexBasis(0);
+  }
+
   parentYoga.insertChild(yn, parentYoga.getChildCount());
 
   switch (node.type) {
     case "box": {
-      await buildPomWithYogaTree(node.children, yn);
+      await buildPomWithYogaTree(node.children, yn, node);
       break;
     }
     case "vstack":
     case "hstack": {
       for (const child of node.children) {
-        await buildPomWithYogaTree(child, yn);
+        await buildPomWithYogaTree(child, yn, node);
       }
       break;
     }
