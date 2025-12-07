@@ -181,7 +181,7 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
               shape: node.shapeType,
               fontSize: pxToPt(node.fontPx ?? 24),
               fontFace: "Noto Sans JP",
-              color: node.fontColor,
+              color: node.color,
               align: node.alignText ?? "center",
               valign: "middle" as const,
               lineSpacingMultiple: 1.3,
