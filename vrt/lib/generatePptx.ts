@@ -10,7 +10,7 @@ const palette = {
   charcoal: "1E293B",
 };
 
-// ページ1: タイトル・コンセプト
+// Page 1: Basic layout components (vstack, hstack, box, text, shape)
 const page1: POMNode = {
   type: "vstack",
   w: "100%",
@@ -36,13 +36,13 @@ const page1: POMNode = {
             children: [
               {
                 type: "text",
-                text: "桜テックホールディングス",
+                text: "TEST_COMPANY",
                 fontPx: 26,
                 color: "FFFFFF",
               },
               {
                 type: "text",
-                text: "Technology Strategy Briefing / FY2024",
+                text: "TEST_SUBTITLE / TEST_DATE",
                 fontPx: 14,
                 color: "E2E8F0",
               },
@@ -50,7 +50,7 @@ const page1: POMNode = {
           },
           {
             type: "text",
-            text: "Confidential",
+            text: "TEST_LABEL",
             fontPx: 16,
             color: "FDE68A",
           },
@@ -66,14 +66,14 @@ const page1: POMNode = {
       children: [
         {
           type: "text",
-          text: "2024年度 技術投資計画",
+          text: "TEST_TITLE",
           fontPx: 40,
           color: palette.charcoal,
           bold: true,
         },
         {
           type: "text",
-          text: "企業DXを支える安定した開発体制と統制",
+          text: "TEST_DESCRIPTION_LINE_1",
           fontPx: 20,
           color: palette.blue,
         },
@@ -91,7 +91,7 @@ const page1: POMNode = {
             },
             {
               type: "text",
-              text: "取締役会 2024.04.12",
+              text: "TEST_DATE_2",
               fontPx: 14,
               color: palette.charcoal,
             },
@@ -116,7 +116,7 @@ const page1: POMNode = {
             children: [
               {
                 type: "text",
-                text: "背景",
+                text: "TEST_SECTION_A",
                 fontPx: 18,
                 color: palette.charcoal,
                 bold: true,
@@ -124,7 +124,7 @@ const page1: POMNode = {
               },
               {
                 type: "text",
-                text: "・国内主要拠点の業務標準化とシステム統合が急務\n・社内開発リソースの再配置により俊敏性を確保\n・品質ガバナンス強化を前提とした投資判断",
+                text: "・TEST_BULLET_1\n・TEST_BULLET_2\n・TEST_BULLET_3",
                 fontPx: 14,
                 color: palette.charcoal,
                 lineSpacingMultiple: 1.5,
@@ -138,13 +138,13 @@ const page1: POMNode = {
               },
               {
                 type: "text",
-                text: "目的",
+                text: "TEST_SECTION_B",
                 fontPx: 18,
                 color: palette.charcoal,
               },
               {
                 type: "text",
-                text: "・3拠点共通のエンジニアリング基盤を年度内に整備\n・外部委託費 15%削減 / 品質KPI 95%以上の維持",
+                text: "・TEST_BULLET_4\n・TEST_BULLET_5",
                 fontPx: 14,
               },
             ],
@@ -166,19 +166,19 @@ const page1: POMNode = {
                 children: [
                   {
                     type: "text",
-                    text: "投資総額",
+                    text: "TEST_METRIC_LABEL",
                     fontPx: 14,
                     color: palette.blue,
                   },
                   {
                     type: "text",
-                    text: "¥420M",
+                    text: "TEST_AMOUNT",
                     fontPx: 28,
                     color: palette.navy,
                   },
                   {
                     type: "text",
-                    text: "前年度比 +8%",
+                    text: "TEST_CHANGE +8%",
                     fontPx: 12,
                     color: palette.charcoal,
                   },
@@ -196,13 +196,13 @@ const page1: POMNode = {
                 children: [
                   {
                     type: "text",
-                    text: "重点領域",
+                    text: "TEST_LIST_HEADER",
                     fontPx: 14,
                     color: palette.charcoal,
                   },
                   {
                     type: "text",
-                    text: "1. 社内サービスPF刷新\n2. データ利活用高度化\n3. セキュリティオートメーション",
+                    text: "1. TEST_ITEM_A\n2. TEST_ITEM_B\n3. TEST_ITEM_C",
                     fontPx: 13,
                   },
                 ],
@@ -223,14 +223,14 @@ const page1: POMNode = {
                     shapeType: "ellipse",
                     w: 60,
                     h: 60,
-                    text: "ESG",
+                    text: "ABC",
                     fontPx: 16,
                     fill: { color: palette.lightBlue },
                     line: { color: palette.blue, width: 2 },
                   },
                   {
                     type: "text",
-                    text: "社会的信頼・説明責任に資するIT投資",
+                    text: "TEST_SHAPE_DESCRIPTION",
                     fontPx: 13,
                   },
                 ],
@@ -251,28 +251,28 @@ const page1: POMNode = {
         children: [
           {
             type: "text",
-            text: "エグゼクティブサマリー",
+            text: "TEST_SUMMARY_HEADER",
             fontPx: 18,
             color: palette.charcoal,
           },
           {
             type: "text",
-            text: "・IT投資ROIは営業利益への直接貢献を評価指標とし、既存システム更新と成長投資を両輪で推進する。",
+            text: "・TEST_SUMMARY_POINT_1",
             fontPx: 13,
           },
           {
             type: "text",
-            text: "・3拠点での業務標準化に向け、ワークフロー/権限設計を統一し、アプリラインごとに責任者を配置する。",
+            text: "・TEST_SUMMARY_POINT_2",
             fontPx: 13,
           },
           {
             type: "text",
-            text: "・年度後半での海外拠点展開を見据え、セキュリティ審査手続きとクラウド運用統制を事前に整備する。",
+            text: "・TEST_SUMMARY_POINT_3",
             fontPx: 13,
           },
           {
             type: "text",
-            text: "・人材投資：シニアエンジニア比率を20%→28%へ。採用/育成リードタイム短縮のため内製アカデミーを拡充。",
+            text: "・TEST_SUMMARY_POINT_4",
             fontPx: 13,
           },
         ],
@@ -295,13 +295,13 @@ const page1: POMNode = {
             children: [
               {
                 type: "text",
-                text: "主要リスク",
+                text: "TEST_BOX_A_TITLE",
                 fontPx: 16,
                 color: palette.navy,
               },
               {
                 type: "text",
-                text: "・要件定義遅延による業務側の巻き戻し\n・共通基盤リリース後の性能チューニング不足\n・外部委託先ガバナンスの一時的低下",
+                text: "・TEST_BOX_A_LINE_1\n・TEST_BOX_A_LINE_2\n・TEST_BOX_A_LINE_3",
                 fontPx: 13,
               },
             ],
@@ -319,13 +319,13 @@ const page1: POMNode = {
             children: [
               {
                 type: "text",
-                text: "対策・コミュニケーション",
+                text: "TEST_BOX_B_TITLE",
                 fontPx: 16,
                 color: palette.charcoal,
               },
               {
                 type: "text",
-                text: "・PMO直轄レビューを隔週で実施し、論点を役員向けメモ化\n・性能観点ではSLO測定基盤を同時導入\n・委託先は契約更新時にSLO連動の成果報酬へ",
+                text: "・TEST_BOX_B_LINE_1\n・TEST_BOX_B_LINE_2\n・TEST_BOX_B_LINE_3",
                 fontPx: 13,
               },
             ],
@@ -335,14 +335,14 @@ const page1: POMNode = {
     },
     {
       type: "text",
-      text: "Prepared by Corporate IT Planning Div. / 更新日: 2024-04-05",
+      text: "TEST_FOOTER_TEXT / TEST_UPDATE_DATE",
       fontPx: 12,
       color: palette.charcoal,
     },
   ],
 };
 
-// ページ2: アジェンダとメッセージ
+// Page 2: Table and complex nested layout
 const page2: POMNode = {
   type: "vstack",
   w: "100%",
@@ -371,7 +371,7 @@ const page2: POMNode = {
           },
           {
             type: "text",
-            text: "本日の進行",
+            text: "TEST_PAGE_2_HEADER",
             fontPx: 28,
             color: palette.charcoal,
           },
@@ -395,7 +395,7 @@ const page2: POMNode = {
             children: [
               {
                 type: "text",
-                text: "アジェンダ",
+                text: "TEST_TABLE_TITLE",
                 fontPx: 18,
                 color: palette.charcoal,
               },
@@ -407,19 +407,19 @@ const page2: POMNode = {
                   {
                     cells: [
                       {
-                        text: "時間",
+                        text: "COL_A",
                         fontPx: 14,
                         bold: true,
                         backgroundColor: palette.lightBlue,
                       },
                       {
-                        text: "テーマ",
+                        text: "COL_B",
                         fontPx: 14,
                         bold: true,
                         backgroundColor: palette.lightBlue,
                       },
                       {
-                        text: "担当",
+                        text: "COL_C",
                         fontPx: 14,
                         bold: true,
                         backgroundColor: palette.lightBlue,
@@ -428,37 +428,37 @@ const page2: POMNode = {
                   },
                   {
                     cells: [
-                      { text: "09:00", fontPx: 13 },
-                      { text: "開会挨拶・目的共有", fontPx: 13 },
-                      { text: "社長", fontPx: 13 },
+                      { text: "ROW_1_A", fontPx: 13 },
+                      { text: "ROW_1_B", fontPx: 13 },
+                      { text: "ROW_1_C", fontPx: 13 },
                     ],
                   },
                   {
                     cells: [
-                      { text: "09:10", fontPx: 13 },
-                      { text: "技術投資計画 概要", fontPx: 13 },
-                      { text: "CIO", fontPx: 13 },
+                      { text: "ROW_2_A", fontPx: 13 },
+                      { text: "ROW_2_B", fontPx: 13 },
+                      { text: "ROW_2_C", fontPx: 13 },
                     ],
                   },
                   {
                     cells: [
-                      { text: "09:30", fontPx: 13 },
-                      { text: "重点施策・KPI", fontPx: 13 },
-                      { text: "CTO", fontPx: 13 },
+                      { text: "ROW_3_A", fontPx: 13 },
+                      { text: "ROW_3_B", fontPx: 13 },
+                      { text: "ROW_3_C", fontPx: 13 },
                     ],
                   },
                   {
                     cells: [
-                      { text: "09:50", fontPx: 13 },
-                      { text: "投資判断のポイント", fontPx: 13 },
-                      { text: "経営企画", fontPx: 13 },
+                      { text: "ROW_4_A", fontPx: 13 },
+                      { text: "ROW_4_B", fontPx: 13 },
+                      { text: "ROW_4_C", fontPx: 13 },
                     ],
                   },
                   {
                     cells: [
-                      { text: "10:05", fontPx: 13 },
-                      { text: "質疑応答", fontPx: 13 },
-                      { text: "全員", fontPx: 13 },
+                      { text: "ROW_5_A", fontPx: 13 },
+                      { text: "ROW_5_B", fontPx: 13 },
+                      { text: "ROW_5_C", fontPx: 13 },
                     ],
                   },
                 ],
@@ -482,13 +482,13 @@ const page2: POMNode = {
                 children: [
                   {
                     type: "text",
-                    text: "キーメッセージ",
+                    text: "TEST_NESTED_SECTION_A",
                     fontPx: 18,
                     color: palette.charcoal,
                   },
                   {
                     type: "text",
-                    text: "・成長事業とコアシステム双方での投資バランス\n・開発の内製化率向上による継続的コスト最適化\n・セキュリティ/品質指標を経営指標に連動",
+                    text: "・TEST_NESTED_LINE_1\n・TEST_NESTED_LINE_2\n・TEST_NESTED_LINE_3",
                     fontPx: 13,
                   },
                 ],
@@ -514,7 +514,7 @@ const page2: POMNode = {
                   },
                   {
                     type: "text",
-                    text: "リスクと対策をセットで提示",
+                    text: "TEST_TRIANGLE_SHAPE_TEXT",
                     fontPx: 14,
                     color: palette.navy,
                   },
@@ -532,13 +532,13 @@ const page2: POMNode = {
                 children: [
                   {
                     type: "text",
-                    text: "意思決定ポイント",
+                    text: "TEST_NESTED_SECTION_B",
                     fontPx: 16,
                     color: palette.charcoal,
                   },
                   {
                     type: "text",
-                    text: "1. 投資優先順位 / 2. 投資額上限 / 3. モニタリング手法",
+                    text: "1. TEST_OPTION_A / 2. TEST_OPTION_B / 3. TEST_OPTION_C",
                     fontPx: 13,
                   },
                 ],
@@ -565,18 +565,18 @@ const page2: POMNode = {
             children: [
               {
                 type: "text",
-                text: "意思決定材料",
+                text: "TEST_DETAIL_SECTION_A",
                 fontPx: 18,
                 color: palette.charcoal,
               },
               {
                 type: "text",
-                text: "・KPIの算定根拠: 内製化率は稼働時間ベースで算出\n・ROI試算: 5年累計NPV +¥1.4B, IRR 28%\n・依存関係: 人事制度改定/海外DC統合/監査部門レビュー",
+                text: "・TEST_DETAIL_A_LINE_1\n・TEST_DETAIL_A_LINE_2\n・TEST_DETAIL_A_LINE_3",
                 fontPx: 13,
               },
               {
                 type: "text",
-                text: "・システム更改ロードマップは別添Appendix-01を参照。DX推進委員会による承認済み。",
+                text: "・TEST_DETAIL_A_LINE_4",
                 fontPx: 13,
               },
             ],
@@ -594,18 +594,18 @@ const page2: POMNode = {
             children: [
               {
                 type: "text",
-                text: "コミュニケーション計画",
+                text: "TEST_DETAIL_SECTION_B",
                 fontPx: 18,
                 color: palette.navy,
               },
               {
                 type: "text",
-                text: "・役員ブリーフィング: 月次\n・現場説明会: 各事業部で隔週開催\n・Slack #it-strategy に議事録・FAQ集約",
+                text: "・TEST_DETAIL_B_LINE_1\n・TEST_DETAIL_B_LINE_2\n・TEST_DETAIL_B_LINE_3",
                 fontPx: 13,
               },
               {
                 type: "text",
-                text: "・議論想定論点: コスト抑制策、外部監査対応、海外/R&D拠点への展開可否。",
+                text: "・TEST_DETAIL_B_LINE_4",
                 fontPx: 13,
               },
             ],
@@ -620,7 +620,7 @@ const page2: POMNode = {
       border: { color: palette.border, width: 2 },
       children: {
         type: "text",
-        text: "備考: 提示資料は社内ポータルに掲載予定。会議終了後24時間以内にフィードバックを集約します。",
+        text: "TEST_PAGE_2_FOOTER_NOTE",
         fontPx: 12,
         color: palette.charcoal,
       },
@@ -628,7 +628,7 @@ const page2: POMNode = {
   ],
 };
 
-// ページ3: 重点施策とKPI
+// Page 3: Multiple boxes and shape types
 const page3: POMNode = {
   type: "vstack",
   w: "100%",
@@ -640,7 +640,7 @@ const page3: POMNode = {
   children: [
     {
       type: "text",
-      text: "重点施策と管理指標",
+      text: "TEST_PAGE_3_HEADER",
       fontPx: 28,
       color: palette.charcoal,
     },
@@ -665,18 +665,18 @@ const page3: POMNode = {
                 children: [
                   {
                     type: "text",
-                    text: "① 共通開発基盤",
+                    text: "TEST_CARD_1_TITLE",
                     fontPx: 16,
                     color: palette.charcoal,
                   },
                   {
                     type: "text",
-                    text: "クラウドネイティブ基盤を社内標準化。テンプレート提供と教育で現場浸透を促進。",
+                    text: "TEST_CARD_1_DESCRIPTION",
                     fontPx: 13,
                   },
                   {
                     type: "text",
-                    text: "KPI: 主要サービス 90%移行",
+                    text: "KPI: TEST_KPI_VALUE_1",
                     fontPx: 12,
                     color: palette.blue,
                   },
@@ -694,18 +694,18 @@ const page3: POMNode = {
                 children: [
                   {
                     type: "text",
-                    text: "② データ利活用高度化",
+                    text: "TEST_CARD_2_TITLE",
                     fontPx: 16,
                     color: palette.charcoal,
                   },
                   {
                     type: "text",
-                    text: "営業・生産情報を横断するデータレイク構築。ダッシュボードを全事業部へ提供。",
+                    text: "TEST_CARD_2_DESCRIPTION",
                     fontPx: 13,
                   },
                   {
                     type: "text",
-                    text: "KPI: 可視化指標 35件",
+                    text: "KPI: TEST_KPI_VALUE_2",
                     fontPx: 12,
                     color: palette.blue,
                   },
@@ -723,18 +723,18 @@ const page3: POMNode = {
                 children: [
                   {
                     type: "text",
-                    text: "③ セキュリティ自動化",
+                    text: "TEST_CARD_3_TITLE",
                     fontPx: 16,
                     color: palette.charcoal,
                   },
                   {
                     type: "text",
-                    text: "ゼロトラスト前提のアクセス制御と脆弱性検知自動化を推進。",
+                    text: "TEST_CARD_3_DESCRIPTION",
                     fontPx: 13,
                   },
                   {
                     type: "text",
-                    text: "KPI: インシデント MTTR -40%",
+                    text: "KPI: TEST_KPI_VALUE_3",
                     fontPx: 12,
                     color: palette.blue,
                   },
@@ -755,7 +755,7 @@ const page3: POMNode = {
             children: [
               {
                 type: "text",
-                text: "主要KPI",
+                text: "TEST_METRICS_TITLE",
                 fontPx: 18,
                 color: palette.charcoal,
               },
@@ -767,13 +767,13 @@ const page3: POMNode = {
                   {
                     cells: [
                       {
-                        text: "指標",
+                        text: "METRIC_COL_A",
                         fontPx: 14,
                         bold: true,
                         backgroundColor: palette.lightBlue,
                       },
                       {
-                        text: "2024目標",
+                        text: "METRIC_COL_B",
                         fontPx: 14,
                         bold: true,
                         backgroundColor: palette.lightBlue,
@@ -782,31 +782,31 @@ const page3: POMNode = {
                   },
                   {
                     cells: [
-                      { text: "リリース品質 (欠陥率)", fontPx: 12 },
+                      { text: "METRIC_1_NAME", fontPx: 12 },
                       { text: "0.12%", fontPx: 12 },
                     ],
                   },
                   {
                     cells: [
-                      { text: "内製化率", fontPx: 12 },
+                      { text: "METRIC_2_NAME", fontPx: 12 },
                       { text: "55%", fontPx: 12 },
                     ],
                   },
                   {
                     cells: [
-                      { text: "開発リードタイム", fontPx: 12 },
+                      { text: "METRIC_3_NAME", fontPx: 12 },
                       { text: "-20%", fontPx: 12 },
                     ],
                   },
                   {
                     cells: [
-                      { text: "重大インシデント件数", fontPx: 12 },
+                      { text: "METRIC_4_NAME", fontPx: 12 },
                       { text: "0", fontPx: 12 },
                     ],
                   },
                   {
                     cells: [
-                      { text: "社員教育受講率", fontPx: 12 },
+                      { text: "METRIC_5_NAME", fontPx: 12 },
                       { text: "95%", fontPx: 12 },
                     ],
                   },
@@ -818,13 +818,13 @@ const page3: POMNode = {
                 children: [
                   {
                     type: "text",
-                    text: "評価方法",
+                    text: "TEST_EVALUATION_LABEL",
                     fontPx: 16,
                     color: palette.charcoal,
                   },
                   {
                     type: "text",
-                    text: "四半期レビューで進捗を定量化し、経営指標と連動させる。",
+                    text: "TEST_EVALUATION_DESCRIPTION",
                     fontPx: 12,
                   },
                 ],
@@ -845,33 +845,33 @@ const page3: POMNode = {
         children: [
           {
             type: "text",
-            text: "施策詳細",
+            text: "TEST_DETAIL_TITLE",
             fontPx: 18,
             color: palette.charcoal,
           },
           {
             type: "text",
-            text: "① 共通開発基盤: 規約テンプレート/CIセット/監査証跡の標準化により、プロジェクト開始時のセットアップ工数を40%削減。外部委託案件も同一基盤を義務化し、コード品質の可視化ダッシュボードを全役職へ展開。",
+            text: "TEST_DETAIL_PARAGRAPH_1",
             fontPx: 13,
           },
           {
             type: "text",
-            text: "② データ利活用: データレイクに対してデータプロダクト単位で責任者を配置し、業務部門自らがKPI定義/SQLテンプレート作成を行える運営体制を敷く。BCP観点ではDRサイト自動同期と暗号化キー管理を統一。",
+            text: "TEST_DETAIL_PARAGRAPH_2",
             fontPx: 13,
           },
           {
             type: "text",
-            text: "③ セキュリティ自動化: アクセスレビュー/脆弱性診断/ログモニタリングを自動連携し、検知から封じ込めまでの平均時間を短縮。SOC/CSIRT/IT企画が共通のワークフローで意思決定することで、経営レポーティングも月次で自動集計。",
+            text: "TEST_DETAIL_PARAGRAPH_3",
             fontPx: 13,
           },
           {
             type: "text",
-            text: "④ 人材戦略: エンジニア評価制度と連動したスキルマップを整備し、アウトプットをKPIと紐付ける。ビジネス部門と共催でワークショップを行い、要求整理力の底上げを図る。",
+            text: "TEST_DETAIL_PARAGRAPH_4",
             fontPx: 13,
           },
           {
             type: "text",
-            text: "⑤ 事業連携: サプライチェーン/グループ会社向けのAPI公開ポリシーを策定し、外部ベンダーとの共同開発におけるガイドラインを整備。これにより、追加収益機会を探索すると同時に統制ラインを確保する。",
+            text: "TEST_DETAIL_PARAGRAPH_5",
             fontPx: 13,
           },
         ],
@@ -894,18 +894,18 @@ const page3: POMNode = {
             children: [
               {
                 type: "text",
-                text: "リスク・依存関係",
+                text: "TEST_LEFT_COLUMN_TITLE",
                 fontPx: 16,
                 color: palette.charcoal,
               },
               {
                 type: "text",
-                text: "・海外拠点のネットワーク更新計画遅延→グローバルインフラ部門と合同の臨時タスクフォースを組成済み。\n・BPO委託更新: 既存契約の更改リードを見直し、SLAの段階導入で品質を確保。",
+                text: "・TEST_LEFT_LINE_1\n・TEST_LEFT_LINE_2",
                 fontPx: 13,
               },
               {
                 type: "text",
-                text: "・データ利活用における個人情報取り扱い: プライバシー委員会と連携し、マスキング/匿名加工の自動ルールを年内実装。",
+                text: "・TEST_LEFT_LINE_3",
                 fontPx: 13,
               },
             ],
@@ -917,18 +917,18 @@ const page3: POMNode = {
             children: [
               {
                 type: "text",
-                text: "連動施策",
+                text: "TEST_RIGHT_COLUMN_TITLE",
                 fontPx: 16,
                 color: palette.charcoal,
               },
               {
                 type: "text",
-                text: "1. 品質保証部門: 自動テストカバレッジ指標を品質会議で共有\n2. 人事部門: キャリアパス設計と評価テーブルの更新\n3. 監査部門: ITGC/サイバー監査の観点を共通基盤へ組み込み",
+                text: "1. TEST_RIGHT_ITEM_1\n2. TEST_RIGHT_ITEM_2\n3. TEST_RIGHT_ITEM_3",
                 fontPx: 13,
               },
               {
                 type: "text",
-                text: "各部門の成果報告はPowerBIテンプレート化し、役員会議での進捗報告に再利用できるようデータ構造を統一。",
+                text: "TEST_RIGHT_NOTE",
                 fontPx: 13,
               },
             ],
@@ -943,7 +943,7 @@ const page3: POMNode = {
       border: { color: palette.blue, width: 2 },
       children: {
         type: "text",
-        text: "ガバナンス: CIO直轄のPMOが横断ルールを定め、各事業部の投資効果をモニタリングします。",
+        text: "TEST_PAGE_3_FOOTER_NOTE",
         fontPx: 13,
         color: palette.navy,
       },
@@ -951,7 +951,7 @@ const page3: POMNode = {
   ],
 };
 
-// ページ4: 推進体制とスケジュール
+// Page 4: Roadmap and RACI matrix representation
 const page4: POMNode = {
   type: "vstack",
   w: "100%",
@@ -963,7 +963,7 @@ const page4: POMNode = {
   children: [
     {
       type: "text",
-      text: "推進体制・スケジュール",
+      text: "TEST_PAGE_4_HEADER",
       fontPx: 28,
       color: palette.charcoal,
     },
@@ -984,7 +984,7 @@ const page4: POMNode = {
             children: [
               {
                 type: "text",
-                text: "ロードマップ",
+                text: "TEST_ROADMAP_TITLE",
                 fontPx: 18,
                 color: palette.charcoal,
               },
@@ -1009,7 +1009,7 @@ const page4: POMNode = {
                       },
                       {
                         type: "text",
-                        text: "現状分析・要件定義 / 主要メンバー確定",
+                        text: "TEST_Q1_DESCRIPTION",
                         fontPx: 13,
                       },
                     ],
@@ -1031,7 +1031,7 @@ const page4: POMNode = {
                       },
                       {
                         type: "text",
-                        text: "共通基盤リリース / データレイク構築着手",
+                        text: "TEST_Q2_DESCRIPTION",
                         fontPx: 13,
                       },
                     ],
@@ -1053,7 +1053,7 @@ const page4: POMNode = {
                       },
                       {
                         type: "text",
-                        text: "セキュリティオートメーション展開 / KPIレビュー",
+                        text: "TEST_Q3_DESCRIPTION",
                         fontPx: 13,
                       },
                     ],
@@ -1075,7 +1075,7 @@ const page4: POMNode = {
                       },
                       {
                         type: "text",
-                        text: "最終評価 / 次年度計画とロードマップ策定",
+                        text: "TEST_Q4_DESCRIPTION",
                         fontPx: 13,
                       },
                     ],
@@ -1101,13 +1101,13 @@ const page4: POMNode = {
                 children: [
                   {
                     type: "text",
-                    text: "推進体制",
+                    text: "TEST_STRUCTURE_TITLE",
                     fontPx: 18,
                     color: palette.charcoal,
                   },
                   {
                     type: "text",
-                    text: "・経営直轄PMO: 企画/進捗管理\n・CTO室: 技術支援 / 標準整備\n・各事業部: 実装 / 効果測定",
+                    text: "・TEST_ROLE_A: TEST_ROLE_A_DESC\n・TEST_ROLE_B: TEST_ROLE_B_DESC\n・TEST_ROLE_C: TEST_ROLE_C_DESC",
                     fontPx: 13,
                   },
                 ],
@@ -1124,13 +1124,13 @@ const page4: POMNode = {
                 children: [
                   {
                     type: "text",
-                    text: "ガバナンス",
+                    text: "TEST_GOVERNANCE_TITLE",
                     fontPx: 16,
                     color: palette.navy,
                   },
                   {
                     type: "text",
-                    text: "月次ステアリングコミッティで課題共有、重要リスクは即日シニアレビュー。",
+                    text: "TEST_GOVERNANCE_DESCRIPTION",
                     fontPx: 12,
                     color: palette.navy,
                   },
@@ -1148,13 +1148,13 @@ const page4: POMNode = {
                 children: [
                   {
                     type: "text",
-                    text: "次のアクション",
+                    text: "TEST_ACTION_TITLE",
                     fontPx: 16,
                     color: palette.charcoal,
                   },
                   {
                     type: "text",
-                    text: "承認後2週間でキックオフ。進捗はPowerBIで役員へ週次共有。",
+                    text: "TEST_ACTION_DESCRIPTION",
                     fontPx: 12,
                   },
                 ],
@@ -1181,18 +1181,18 @@ const page4: POMNode = {
             children: [
               {
                 type: "text",
-                text: "役割責任 (RACI)",
+                text: "TEST_RACI_TITLE",
                 fontPx: 18,
                 color: palette.charcoal,
               },
               {
                 type: "text",
-                text: "R: PMO, A: CIO, C: CTO室/監査, I: 事業本部\nQ2以降は海外IT統括もRACIに追加し、意思決定の一貫性を担保。",
+                text: "R: TEST_R_ROLE, A: TEST_A_ROLE, C: TEST_C_ROLE, I: TEST_I_ROLE\nTEST_RACI_NOTE",
                 fontPx: 13,
               },
               {
                 type: "text",
-                text: "業務部門のプロダクトオーナーをリード役に据え、各施策のアウトカム/KPIへの責任範囲を明文化する。",
+                text: "TEST_RACI_ADDITIONAL_NOTE",
                 fontPx: 13,
               },
             ],
@@ -1204,18 +1204,18 @@ const page4: POMNode = {
             children: [
               {
                 type: "text",
-                text: "主要成果物",
+                text: "TEST_DELIVERABLES_TITLE",
                 fontPx: 18,
                 color: palette.charcoal,
               },
               {
                 type: "text",
-                text: "・統合ロードマップ (ver.4.2)\n・共通基盤Runbook + Playbook\n・セキュリティ自動化ハンドブック\n・データガバナンス規程/教育資料",
+                text: "・TEST_DELIVERABLE_1\n・TEST_DELIVERABLE_2\n・TEST_DELIVERABLE_3\n・TEST_DELIVERABLE_4",
                 fontPx: 13,
               },
               {
                 type: "text",
-                text: "成果物はTeams SharePointにて管理し、最終承認版はConfluenceでナレッジ化。",
+                text: "TEST_DELIVERABLES_NOTE",
                 fontPx: 13,
               },
             ],
@@ -1225,7 +1225,7 @@ const page4: POMNode = {
     },
     {
       type: "text",
-      text: "お問い合わせ: Corporate IT Planning Division / planning@sakura-tech.co.jp",
+      text: "TEST_CONTACT_INFO / TEST_EMAIL_ADDRESS",
       fontPx: 12,
       color: palette.charcoal,
     },
@@ -1251,7 +1251,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
           children: [
             {
               type: "text",
-              text: "桜テックホールディングス",
+              text: "TEST_COMPANY",
               fontPx: 14,
               color: "FFFFFF",
             },
@@ -1272,7 +1272,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
           children: [
             {
               type: "text",
-              text: "Confidential",
+              text: "TEST_LABEL",
               fontPx: 10,
               color: palette.charcoal,
             },
