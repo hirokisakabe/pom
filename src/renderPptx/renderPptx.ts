@@ -3,7 +3,7 @@ const require = createRequire(import.meta.url);
 import type PptxGenJSType from "pptxgenjs";
 const PptxGenJS = require("pptxgenjs") as typeof PptxGenJSType;
 import type { PositionedNode } from "../types";
-import { resolveRowHeights } from "../table/utils";
+import { resolveColumnWidths, resolveRowHeights } from "../table/utils";
 import { createTextOptions } from "./textOptions";
 import { pxToIn, pxToPt } from "./units";
 
@@ -131,7 +131,9 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
             y: pxToIn(node.y),
             w: pxToIn(node.w),
             h: pxToIn(node.h),
-            colW: node.columns.map((column) => pxToIn(column.width)),
+            colW: resolveColumnWidths(node, node.w).map((width) =>
+              pxToIn(width),
+            ),
             rowH: resolveRowHeights(node).map((height) => pxToIn(height)),
             margin: 0,
           };

@@ -199,7 +199,7 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 ```typescript
 {
   type: "table";
-  columns: { width: number }[];
+  columns: { width?: number }[];
   rows: {
     height?: number;
     cells: {
@@ -220,6 +220,7 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 }
 ```
 
+- `columns[].width` を省略すると、テーブル全体の幅から均等分割されます。
 - `columns` の合計がテーブルの自然幅になります（必要であれば `w` で上書きできます）。
 - `rows` の `height` を省略すると `defaultRowHeight`（未指定なら32px）が適用されます。
 - セル背景やフォント装飾を `cells` の各要素で個別に指定できます。

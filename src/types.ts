@@ -332,7 +332,7 @@ export const tableRowSchema = z.object({
 });
 
 export const tableColumnSchema = z.object({
-  width: z.number(),
+  width: z.number().optional(),
 });
 
 export const tableNodeSchema = basePOMNodeSchema.extend({
