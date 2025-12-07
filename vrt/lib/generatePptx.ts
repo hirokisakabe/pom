@@ -714,6 +714,61 @@ const page4Table: POMNode = {
         ],
       },
     },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "Column width omitted (auto equal split):",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "table",
+            w: 450,
+            defaultRowHeight: 32,
+            columns: [{}, {}, {}],
+            rows: [
+              {
+                cells: [
+                  {
+                    text: "Col 1",
+                    fontPx: 13,
+                    backgroundColor: palette.lightBlue,
+                    bold: true,
+                  },
+                  {
+                    text: "Col 2",
+                    fontPx: 13,
+                    backgroundColor: palette.lightBlue,
+                    bold: true,
+                  },
+                  {
+                    text: "Col 3",
+                    fontPx: 13,
+                    backgroundColor: palette.lightBlue,
+                    bold: true,
+                  },
+                ],
+              },
+              {
+                cells: [
+                  { text: "150px each", fontPx: 13 },
+                  { text: "150px each", fontPx: 13 },
+                  { text: "150px each", fontPx: 13 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
   ],
 };
 
