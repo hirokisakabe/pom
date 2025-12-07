@@ -323,6 +323,7 @@ export const shapeNodeSchema = basePOMNodeSchema.extend({
   fontPx: z.number().optional(),
   fontColor: z.string().optional(),
   alignText: z.enum(["left", "center", "right"]).optional(),
+  bold: z.boolean().optional(),
 });
 
 export const chartTypeSchema = z.enum(["bar", "line", "pie"]);

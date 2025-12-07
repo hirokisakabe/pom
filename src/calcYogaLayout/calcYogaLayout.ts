@@ -254,7 +254,7 @@ async function applyStyleToYogaNode(node: POMNode, yn: YogaNode) {
         const text = node.text;
         const fontSizePx = node.fontPx ?? 24;
         const fontFamily = "Noto Sans JP";
-        const fontWeight = "normal";
+        const fontWeight = node.bold ? "bold" : "normal";
         const lineHeight = 1.3;
 
         yn.setMeasureFunc((width, widthMode) => {
@@ -319,7 +319,7 @@ async function applyStyleToYogaNode(node: POMNode, yn: YogaNode) {
           const text = node.text;
           const fontSizePx = node.fontPx ?? 24;
           const fontFamily = "Noto Sans JP";
-          const fontWeight = "normal";
+          const fontWeight = node.bold ? "bold" : "normal";
           const lineHeight = 1.3;
 
           yn.setMeasureFunc((width, widthMode) => {
