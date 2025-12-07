@@ -33,6 +33,7 @@ import {
   dateFormatSchema,
   chartTypeSchema,
   chartDataSchema,
+  bulletOptionsSchema,
   type AlignItems,
   type JustifyContent,
 } from "./types";
@@ -62,6 +63,7 @@ export const inputTextNodeSchema = inputBaseNodeSchema.extend({
   bold: z.boolean().optional(),
   fontFamily: z.string().optional(),
   lineSpacingMultiple: z.number().optional(),
+  bullet: z.union([z.boolean(), bulletOptionsSchema]).optional(),
 });
 
 export const inputImageNodeSchema = inputBaseNodeSchema.extend({

@@ -1258,8 +1258,165 @@ const page4: POMNode = {
   ],
 };
 
-// Page 5: Chart examples
+// Page 5: Bullet examples
 const page5: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 24,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "TEST_PAGE_5_HEADER - Bullets",
+      fontPx: 28,
+      color: palette.charcoal,
+    },
+    {
+      type: "hstack",
+      gap: 20,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "50%",
+          padding: 20,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 2 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Simple Bullet (boolean)",
+                fontPx: 18,
+                color: palette.charcoal,
+              },
+              {
+                type: "text",
+                text: "TEST_BULLET_ITEM_1\nTEST_BULLET_ITEM_2\nTEST_BULLET_ITEM_3",
+                fontPx: 14,
+                bullet: true,
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "50%",
+          padding: 20,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 2 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Number Bullet",
+                fontPx: 18,
+                color: palette.charcoal,
+              },
+              {
+                type: "text",
+                text: "TEST_NUMBER_ITEM_1\nTEST_NUMBER_ITEM_2\nTEST_NUMBER_ITEM_3",
+                fontPx: 14,
+                bullet: { type: "number" },
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      type: "hstack",
+      gap: 20,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "50%",
+          padding: 20,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 2 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Alpha Lowercase",
+                fontPx: 18,
+                color: palette.charcoal,
+              },
+              {
+                type: "text",
+                text: "TEST_ALPHA_ITEM_1\nTEST_ALPHA_ITEM_2\nTEST_ALPHA_ITEM_3",
+                fontPx: 14,
+                bullet: { type: "number", numberType: "alphaLcPeriod" },
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "50%",
+          padding: 20,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 2 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Roman Numerals",
+                fontPx: 18,
+                color: palette.charcoal,
+              },
+              {
+                type: "text",
+                text: "TEST_ROMAN_ITEM_1\nTEST_ROMAN_ITEM_2\nTEST_ROMAN_ITEM_3",
+                fontPx: 14,
+                bullet: { type: "number", numberType: "romanLcPeriod" },
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      type: "box",
+      padding: 20,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 2 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "Number Start At 5",
+            fontPx: 18,
+            color: palette.charcoal,
+          },
+          {
+            type: "text",
+            text: "TEST_START_AT_ITEM_1\nTEST_START_AT_ITEM_2\nTEST_START_AT_ITEM_3",
+            fontPx: 14,
+            bullet: { type: "number", numberStartAt: 5 },
+          },
+        ],
+      },
+    },
+  ],
+};
+
+// Page 6: Chart examples
+const page6: POMNode = {
   type: "vstack",
   w: "100%",
   h: "max",
@@ -1443,7 +1600,7 @@ const page5: POMNode = {
 
 export async function generatePptx(outputPath: string): Promise<void> {
   const pptx = await buildPptx(
-    [page1, page2, page3, page4, page5],
+    [page1, page2, page3, page4, page5, page6],
     {
       w: 1280,
       h: 720,

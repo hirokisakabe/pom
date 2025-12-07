@@ -111,6 +111,7 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
   bold?: boolean;
   fontFamily?: string;
   lineSpacingMultiple?: number;
+  bullet?: boolean | BulletOptions;
 
   // 共通プロパティ
   w?: number | "max" | `${number}%`;
@@ -123,6 +124,54 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 - `bold` で太字を指定できます。
 - `fontFamily` でフォントファミリーを指定できます（デフォルト: `"Noto Sans JP"`）。
 - `lineSpacingMultiple` で行間倍率を指定できます（デフォルト: `1.3`）。
+- `bullet` で箇条書きを指定できます。`true` を指定するとデフォルトの箇条書き、オブジェクトで詳細設定が可能です。
+
+**BulletOptions:**
+
+```typescript
+{
+  type?: "bullet" | "number";  // "bullet": 記号、"number": 番号付き
+  indent?: number;             // インデントレベル
+  numberType?: "alphaLcParenBoth" | "alphaLcParenR" | "alphaLcPeriod" |
+               "alphaUcParenBoth" | "alphaUcParenR" | "alphaUcPeriod" |
+               "arabicParenBoth" | "arabicParenR" | "arabicPeriod" | "arabicPlain" |
+               "romanLcParenBoth" | "romanLcParenR" | "romanLcPeriod" |
+               "romanUcParenBoth" | "romanUcParenR" | "romanUcPeriod";
+  numberStartAt?: number;      // 番号の開始値
+}
+```
+
+**使用例:**
+
+```typescript
+// シンプルな箇条書き
+{
+  type: "text",
+  text: "項目1\n項目2\n項目3",
+  bullet: true,
+}
+
+// 番号付きリスト
+{
+  type: "text",
+  text: "ステップ1\nステップ2\nステップ3",
+  bullet: { type: "number" },
+}
+
+// アルファベット小文字（a. b. c.）
+{
+  type: "text",
+  text: "項目A\n項目B\n項目C",
+  bullet: { type: "number", numberType: "alphaLcPeriod" },
+}
+
+// 5から始まる番号リスト
+{
+  type: "text",
+  text: "5番目\n6番目\n7番目",
+  bullet: { type: "number", numberStartAt: 5 },
+}
+```
 
 #### 2. Image
 

@@ -1,14 +1,46 @@
-import type { PositionedNode } from "../types";
+import type { PositionedNode, BulletOptions } from "../types";
 import { pxToIn, pxToPt } from "./units";
 
 type TextNode = Extract<PositionedNode, { type: "text" }>;
+
+type PptxBulletOptions = {
+  type?: "bullet" | "number";
+  indent?: number;
+  numberType?: BulletOptions["numberType"];
+  numberStartAt?: number;
+};
+
+function createBulletOptions(
+  bullet: boolean | BulletOptions,
+): PptxBulletOptions | boolean {
+  if (typeof bullet === "boolean") {
+    return bullet;
+  }
+
+  const options: PptxBulletOptions = {};
+
+  if (bullet.type !== undefined) {
+    options.type = bullet.type;
+  }
+  if (bullet.indent !== undefined) {
+    options.indent = bullet.indent;
+  }
+  if (bullet.numberType !== undefined) {
+    options.numberType = bullet.numberType;
+  }
+  if (bullet.numberStartAt !== undefined) {
+    options.numberStartAt = bullet.numberStartAt;
+  }
+
+  return options;
+}
 
 export function createTextOptions(node: TextNode) {
   const fontSizePx = node.fontPx ?? 24;
   const fontFamily = node.fontFamily ?? "Noto Sans JP";
   const lineSpacingMultiple = node.lineSpacingMultiple ?? 1.3;
 
-  return {
+  const baseOptions = {
     x: pxToIn(node.x),
     y: pxToIn(node.y),
     w: pxToIn(node.w),
@@ -22,4 +54,13 @@ export function createTextOptions(node: TextNode) {
     color: node.color,
     bold: node.bold,
   };
+
+  if (node.bullet !== undefined) {
+    return {
+      ...baseOptions,
+      bullet: createBulletOptions(node.bullet),
+    };
+  }
+
+  return baseOptions;
 }

@@ -51,6 +51,7 @@ PPTX 生成は3段階のパイプライン:
 - `PositionedNode` - 位置情報付きノード（x, y, w, h を持つ）
 - `MasterSlideOptions` - マスタースライド設定（header, footer, pageNumber, date）
 - `ChartNode` - グラフノード（bar, line, pie をサポート）
+- `BulletOptions` - 箇条書き設定（type, indent, numberType, numberStartAt）
 
 ### 入力スキーマ（LLM連携用）
 
