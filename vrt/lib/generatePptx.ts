@@ -1232,9 +1232,192 @@ const page4: POMNode = {
   ],
 };
 
+// Page 5: Chart examples
+const page5: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 24,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "TEST_PAGE_5_HEADER - Charts",
+      fontPx: 28,
+      color: palette.charcoal,
+    },
+    {
+      type: "hstack",
+      gap: 20,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "50%",
+          padding: 20,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 2 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Bar Chart",
+                fontPx: 18,
+                color: palette.charcoal,
+              },
+              {
+                type: "chart",
+                chartType: "bar",
+                w: 500,
+                h: 200,
+                data: [
+                  {
+                    name: "Sales",
+                    labels: ["Q1", "Q2", "Q3", "Q4"],
+                    values: [100, 200, 150, 300],
+                  },
+                  {
+                    name: "Profit",
+                    labels: ["Q1", "Q2", "Q3", "Q4"],
+                    values: [30, 60, 45, 90],
+                  },
+                ],
+                showLegend: true,
+                chartColors: ["0088CC", "00AA00"],
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "50%",
+          padding: 20,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 2 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Line Chart",
+                fontPx: 18,
+                color: palette.charcoal,
+              },
+              {
+                type: "chart",
+                chartType: "line",
+                w: 500,
+                h: 200,
+                data: [
+                  {
+                    name: "Revenue",
+                    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+                    values: [50, 80, 60, 120, 100, 150],
+                  },
+                ],
+                showLegend: true,
+                chartColors: ["1D4ED8"],
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      type: "hstack",
+      gap: 20,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "50%",
+          padding: 20,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 2 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Pie Chart",
+                fontPx: 18,
+                color: palette.charcoal,
+              },
+              {
+                type: "chart",
+                chartType: "pie",
+                w: 500,
+                h: 200,
+                data: [
+                  {
+                    name: "Market Share",
+                    labels: ["Product A", "Product B", "Product C", "Others"],
+                    values: [40, 30, 20, 10],
+                  },
+                ],
+                showLegend: true,
+                showTitle: true,
+                title: "Market Share",
+                chartColors: ["0088CC", "00AA00", "FF6600", "888888"],
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "50%",
+          padding: 20,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 2 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Bar Chart with Title",
+                fontPx: 18,
+                color: palette.charcoal,
+              },
+              {
+                type: "chart",
+                chartType: "bar",
+                w: 500,
+                h: 200,
+                data: [
+                  {
+                    name: "2023",
+                    labels: ["North", "South", "East", "West"],
+                    values: [250, 180, 220, 150],
+                  },
+                  {
+                    name: "2024",
+                    labels: ["North", "South", "East", "West"],
+                    values: [300, 200, 250, 180],
+                  },
+                ],
+                showLegend: true,
+                showTitle: true,
+                title: "Regional Sales",
+                chartColors: ["1D4ED8", "0EA5E9"],
+              },
+            ],
+          },
+        },
+      ],
+    },
+  ],
+};
+
 export async function generatePptx(outputPath: string): Promise<void> {
   const pptx = await buildPptx(
-    [page1, page2, page3, page4],
+    [page1, page2, page3, page4, page5],
     {
       w: 1280,
       h: 720,

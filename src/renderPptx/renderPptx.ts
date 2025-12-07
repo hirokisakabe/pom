@@ -192,6 +192,28 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
           }
           break;
         }
+
+        case "chart": {
+          const chartData = node.data.map((d) => ({
+            name: d.name,
+            labels: d.labels,
+            values: d.values,
+          }));
+
+          const chartOptions = {
+            x: pxToIn(node.x),
+            y: pxToIn(node.y),
+            w: pxToIn(node.w),
+            h: pxToIn(node.h),
+            showLegend: node.showLegend ?? false,
+            showTitle: node.showTitle ?? false,
+            title: node.title,
+            chartColors: node.chartColors,
+          };
+
+          slide.addChart(node.chartType, chartData, chartOptions);
+          break;
+        }
       }
     }
 
