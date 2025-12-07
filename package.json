@@ -25,6 +25,17 @@
     "url": "git+https://github.com/hirokisakabe/pom.git"
   },
   "license": "MIT",
+  "keywords": [
+    "powerpoint",
+    "pptx",
+    "presentation",
+    "slides",
+    "typescript",
+    "declarative",
+    "flexbox",
+    "layout",
+    "office"
+  ],
   "author": "Hiroki Sakabe",
   "scripts": {
     "build": "tsc",
