@@ -31,6 +31,8 @@ import {
   tableRowSchema,
   pageNumberPositionSchema,
   dateFormatSchema,
+  chartTypeSchema,
+  chartDataSchema,
   type AlignItems,
   type JustifyContent,
 } from "./types";
@@ -86,10 +88,21 @@ export const inputShapeNodeSchema = inputBaseNodeSchema.extend({
   alignText: z.enum(["left", "center", "right"]).optional(),
 });
 
+export const inputChartNodeSchema = inputBaseNodeSchema.extend({
+  type: z.literal("chart"),
+  chartType: chartTypeSchema,
+  data: z.array(chartDataSchema),
+  showLegend: z.boolean().optional(),
+  showTitle: z.boolean().optional(),
+  title: z.string().optional(),
+  chartColors: z.array(z.string()).optional(),
+});
+
 export type InputTextNode = z.infer<typeof inputTextNodeSchema>;
 export type InputImageNode = z.infer<typeof inputImageNodeSchema>;
 export type InputTableNode = z.infer<typeof inputTableNodeSchema>;
 export type InputShapeNode = z.infer<typeof inputShapeNodeSchema>;
+export type InputChartNode = z.infer<typeof inputChartNodeSchema>;
 
 // ===== Recursive Types =====
 export type InputBoxNode = InputBaseNode & {
@@ -120,7 +133,8 @@ export type InputPOMNode =
   | InputBoxNode
   | InputVStackNode
   | InputHStackNode
-  | InputShapeNode;
+  | InputShapeNode
+  | InputChartNode;
 
 // ===== Recursive Node Schemas =====
 const inputBoxNodeSchemaBase = inputBaseNodeSchema.extend({
@@ -178,6 +192,7 @@ export const inputPomNodeSchema: z.ZodType<InputPOMNode> = z.lazy(() =>
     inputVStackNodeSchemaBase,
     inputHStackNodeSchemaBase,
     inputShapeNodeSchema,
+    inputChartNodeSchema,
   ]),
 ) as z.ZodType<InputPOMNode>;
 

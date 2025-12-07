@@ -325,6 +325,24 @@ export const shapeNodeSchema = basePOMNodeSchema.extend({
   alignText: z.enum(["left", "center", "right"]).optional(),
 });
 
+export const chartTypeSchema = z.enum(["bar", "line", "pie"]);
+
+export const chartDataSchema = z.object({
+  name: z.string().optional(),
+  labels: z.array(z.string()),
+  values: z.array(z.number()),
+});
+
+export const chartNodeSchema = basePOMNodeSchema.extend({
+  type: z.literal("chart"),
+  chartType: chartTypeSchema,
+  data: z.array(chartDataSchema),
+  showLegend: z.boolean().optional(),
+  showTitle: z.boolean().optional(),
+  title: z.string().optional(),
+  chartColors: z.array(z.string()).optional(),
+});
+
 export type TextNode = z.infer<typeof textNodeSchema>;
 export type ImageNode = z.infer<typeof imageNodeSchema>;
 export type TableCell = z.infer<typeof tableCellSchema>;
@@ -332,6 +350,9 @@ export type TableRow = z.infer<typeof tableRowSchema>;
 export type TableColumn = z.infer<typeof tableColumnSchema>;
 export type TableNode = z.infer<typeof tableNodeSchema>;
 export type ShapeNode = z.infer<typeof shapeNodeSchema>;
+export type ChartType = z.infer<typeof chartTypeSchema>;
+export type ChartData = z.infer<typeof chartDataSchema>;
+export type ChartNode = z.infer<typeof chartNodeSchema>;
 
 // ===== Recursive Types with Explicit Type Definitions =====
 
@@ -364,7 +385,8 @@ export type POMNode =
   | BoxNode
   | VStackNode
   | HStackNode
-  | ShapeNode;
+  | ShapeNode
+  | ChartNode;
 
 // Define schemas using passthrough to maintain type safety
 const boxNodeSchemaBase = basePOMNodeSchema.extend({
@@ -405,6 +427,7 @@ export const pomNodeSchema: z.ZodType<POMNode> = z.lazy(() =>
     vStackNodeSchemaBase,
     hStackNodeSchemaBase,
     shapeNodeSchema,
+    chartNodeSchema,
   ]),
 ) as z.ZodType<POMNode>;
 
@@ -425,7 +448,8 @@ export type PositionedNode =
   | (BoxNode & PositionedBase & { children: PositionedNode })
   | (VStackNode & PositionedBase & { children: PositionedNode[] })
   | (HStackNode & PositionedBase & { children: PositionedNode[] })
-  | (ShapeNode & PositionedBase);
+  | (ShapeNode & PositionedBase)
+  | (ChartNode & PositionedBase);
 
 export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
   z.union([
@@ -442,6 +466,7 @@ export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
       children: z.array(z.lazy(() => positionedNodeSchema)),
     }),
     shapeNodeSchema.merge(positionedBaseSchema),
+    chartNodeSchema.merge(positionedBaseSchema),
   ]),
 ) as z.ZodType<PositionedNode>;
 

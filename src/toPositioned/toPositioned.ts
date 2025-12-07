@@ -57,6 +57,15 @@ export function toPositioned(
         h: layout.height,
       };
     }
+    case "chart": {
+      return {
+        ...pom,
+        x: absoluteX,
+        y: absoluteY,
+        w: layout.width,
+        h: layout.height,
+      };
+    }
     case "box": {
       return {
         ...pom,
