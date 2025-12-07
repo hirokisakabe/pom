@@ -8,275 +8,239 @@ const palette = {
   accent: "0EA5E9",
   border: "E2E8F0",
   charcoal: "1E293B",
+  red: "DC2626",
+  green: "16A34A",
 };
 
-// Page 1: Basic layout components (vstack, hstack, box, text, shape)
-const page1: POMNode = {
+// ============================================================
+// Page 1: Text Node Test
+// テスト対象: fontPx, color, alignText, bold, fontFamily, lineSpacingMultiple
+// ============================================================
+const page1Text: POMNode = {
   type: "vstack",
   w: "100%",
   h: "max",
   padding: 48,
-  gap: 24,
+  gap: 20,
   alignItems: "stretch",
   backgroundColor: palette.background,
   children: [
     {
+      type: "text",
+      text: "Page 1: Text Node Test",
+      fontPx: 28,
+      color: palette.charcoal,
+      bold: true,
+    },
+    // fontPx variations
+    {
       type: "box",
-      padding: 20,
-      backgroundColor: palette.navy,
-      border: { color: palette.navy, width: 2 },
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
       children: {
-        type: "hstack",
-        justifyContent: "spaceBetween",
-        alignItems: "center",
+        type: "vstack",
+        gap: 8,
         children: [
+          { type: "text", text: "fontPx:", fontPx: 14, bold: true },
+          {
+            type: "hstack",
+            gap: 24,
+            alignItems: "end",
+            children: [
+              { type: "text", text: "12px", fontPx: 12 },
+              { type: "text", text: "18px", fontPx: 18 },
+              { type: "text", text: "24px", fontPx: 24 },
+              { type: "text", text: "36px", fontPx: 36 },
+            ],
+          },
+        ],
+      },
+    },
+    // color variations
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 8,
+        children: [
+          { type: "text", text: "color:", fontPx: 14, bold: true },
+          {
+            type: "hstack",
+            gap: 24,
+            alignItems: "center",
+            children: [
+              {
+                type: "text",
+                text: "charcoal",
+                fontPx: 16,
+                color: palette.charcoal,
+              },
+              { type: "text", text: "blue", fontPx: 16, color: palette.blue },
+              { type: "text", text: "red", fontPx: 16, color: palette.red },
+              { type: "text", text: "green", fontPx: 16, color: palette.green },
+            ],
+          },
+        ],
+      },
+    },
+    // alignText variations
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 8,
+        children: [
+          { type: "text", text: "alignText:", fontPx: 14, bold: true },
           {
             type: "vstack",
             gap: 4,
             children: [
               {
-                type: "text",
-                text: "TEST_COMPANY",
-                fontPx: 26,
-                color: "FFFFFF",
+                type: "box",
+                w: "100%",
+                backgroundColor: palette.lightBlue,
+                padding: 8,
+                children: {
+                  type: "text",
+                  text: "left (default)",
+                  fontPx: 14,
+                  alignText: "left",
+                },
               },
               {
-                type: "text",
-                text: "TEST_SUBTITLE / TEST_DATE",
-                fontPx: 14,
-                color: "E2E8F0",
+                type: "box",
+                w: "100%",
+                backgroundColor: palette.lightBlue,
+                padding: 8,
+                children: {
+                  type: "text",
+                  text: "center",
+                  fontPx: 14,
+                  alignText: "center",
+                },
+              },
+              {
+                type: "box",
+                w: "100%",
+                backgroundColor: palette.lightBlue,
+                padding: 8,
+                children: {
+                  type: "text",
+                  text: "right",
+                  fontPx: 14,
+                  alignText: "right",
+                },
               },
             ],
-          },
-          {
-            type: "text",
-            text: "TEST_LABEL",
-            fontPx: 16,
-            color: "FDE68A",
           },
         ],
       },
     },
+    // bold variations
     {
-      type: "vstack",
-      gap: 12,
-      padding: 24,
+      type: "box",
+      padding: 16,
       backgroundColor: "FFFFFF",
-      border: { color: palette.border, width: 2 },
-      children: [
-        {
-          type: "text",
-          text: "TEST_TITLE",
-          fontPx: 40,
-          color: palette.charcoal,
-          bold: true,
-        },
-        {
-          type: "text",
-          text: "TEST_DESCRIPTION_LINE_1",
-          fontPx: 20,
-          color: palette.blue,
-        },
-        {
-          type: "hstack",
-          gap: 18,
-          alignItems: "center",
-          children: [
-            {
-              type: "shape",
-              shapeType: "rect",
-              w: 60,
-              h: 4,
-              fill: { color: palette.blue },
-            },
-            {
-              type: "text",
-              text: "TEST_DATE_2",
-              fontPx: 14,
-              color: palette.charcoal,
-            },
-          ],
-        },
-      ],
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 8,
+        children: [
+          { type: "text", text: "bold:", fontPx: 14, bold: true },
+          {
+            type: "hstack",
+            gap: 24,
+            alignItems: "center",
+            children: [
+              { type: "text", text: "Normal text", fontPx: 16 },
+              { type: "text", text: "Bold text", fontPx: 16, bold: true },
+            ],
+          },
+        ],
+      },
     },
+    // fontFamily & lineSpacingMultiple
     {
       type: "hstack",
-      gap: 20,
-      alignItems: "start",
+      gap: 16,
+      alignItems: "stretch",
       children: [
         {
           type: "box",
-          w: "60%",
-          padding: 20,
+          w: "50%",
+          padding: 16,
           backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
+          border: { color: palette.border, width: 1 },
           children: {
             type: "vstack",
-            gap: 12,
+            gap: 8,
             children: [
+              { type: "text", text: "fontFamily:", fontPx: 14, bold: true },
               {
                 type: "text",
-                text: "TEST_SECTION_A",
-                fontPx: 18,
-                color: palette.charcoal,
-                bold: true,
+                text: "Noto Sans JP",
+                fontPx: 16,
                 fontFamily: "Noto Sans JP",
-              },
-              {
-                type: "text",
-                text: "・TEST_BULLET_1\n・TEST_BULLET_2\n・TEST_BULLET_3",
-                fontPx: 14,
-                color: palette.charcoal,
-                lineSpacingMultiple: 1.5,
-              },
-              {
-                type: "shape",
-                shapeType: "rect",
-                w: "100%",
-                h: 1,
-                fill: { color: palette.border },
-              },
-              {
-                type: "text",
-                text: "TEST_SECTION_B",
-                fontPx: 18,
-                color: palette.charcoal,
-              },
-              {
-                type: "text",
-                text: "・TEST_BULLET_4\n・TEST_BULLET_5",
-                fontPx: 14,
               },
             ],
           },
         },
         {
-          type: "vstack",
-          w: "40%",
-          gap: 12,
-          children: [
-            {
-              type: "box",
-              padding: 18,
-              backgroundColor: palette.lightBlue,
-              border: { color: palette.blue, width: 2 },
-              children: {
-                type: "vstack",
-                gap: 8,
-                children: [
-                  {
-                    type: "text",
-                    text: "TEST_METRIC_LABEL",
-                    fontPx: 14,
-                    color: palette.blue,
-                  },
-                  {
-                    type: "text",
-                    text: "TEST_AMOUNT",
-                    fontPx: 28,
-                    color: palette.navy,
-                  },
-                  {
-                    type: "text",
-                    text: "TEST_CHANGE +8%",
-                    fontPx: 12,
-                    color: palette.charcoal,
-                  },
-                ],
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 8,
+            children: [
+              {
+                type: "text",
+                text: "lineSpacingMultiple:",
+                fontPx: 14,
+                bold: true,
               },
-            },
-            {
-              type: "box",
-              padding: 18,
-              backgroundColor: "FFFFFF",
-              border: { color: palette.border, width: 2 },
-              children: {
-                type: "vstack",
-                gap: 6,
-                children: [
-                  {
-                    type: "text",
-                    text: "TEST_LIST_HEADER",
-                    fontPx: 14,
-                    color: palette.charcoal,
-                  },
-                  {
-                    type: "text",
-                    text: "1. TEST_ITEM_A\n2. TEST_ITEM_B\n3. TEST_ITEM_C",
-                    fontPx: 13,
-                  },
-                ],
+              {
+                type: "text",
+                text: "Line 1\nLine 2\nLine 3",
+                fontPx: 14,
+                lineSpacingMultiple: 1.5,
               },
-            },
-            {
-              type: "box",
-              padding: 18,
-              backgroundColor: "FFFFFF",
-              border: { color: palette.border, width: 2 },
-              children: {
-                type: "hstack",
-                gap: 10,
-                alignItems: "center",
-                children: [
-                  {
-                    type: "shape",
-                    shapeType: "ellipse",
-                    w: 60,
-                    h: 60,
-                    text: "ABC",
-                    fontPx: 16,
-                    fill: { color: palette.lightBlue },
-                    line: { color: palette.blue, width: 2 },
-                  },
-                  {
-                    type: "text",
-                    text: "TEST_SHAPE_DESCRIPTION",
-                    fontPx: 13,
-                  },
-                ],
-              },
-            },
-          ],
+            ],
+          },
         },
       ],
     },
+  ],
+};
+
+// ============================================================
+// Page 2: Bullet Test
+// テスト対象: bullet: true, type, numberType, numberStartAt
+// ============================================================
+const page2Bullet: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 20,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
     {
-      type: "box",
-      padding: 20,
-      backgroundColor: "FFFFFF",
-      border: { color: palette.border, width: 2 },
-      children: {
-        type: "vstack",
-        gap: 10,
-        children: [
-          {
-            type: "text",
-            text: "TEST_SUMMARY_HEADER",
-            fontPx: 18,
-            color: palette.charcoal,
-          },
-          {
-            type: "text",
-            text: "・TEST_SUMMARY_POINT_1",
-            fontPx: 13,
-          },
-          {
-            type: "text",
-            text: "・TEST_SUMMARY_POINT_2",
-            fontPx: 13,
-          },
-          {
-            type: "text",
-            text: "・TEST_SUMMARY_POINT_3",
-            fontPx: 13,
-          },
-          {
-            type: "text",
-            text: "・TEST_SUMMARY_POINT_4",
-            fontPx: 13,
-          },
-        ],
-      },
+      type: "text",
+      text: "Page 2: Bullet Test",
+      fontPx: 28,
+      color: palette.charcoal,
+      bold: true,
     },
     {
       type: "hstack",
@@ -286,1018 +250,22 @@ const page1: POMNode = {
         {
           type: "box",
           w: "50%",
-          padding: 18,
-          backgroundColor: palette.lightBlue,
-          border: { color: palette.blue, width: 2 },
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
           children: {
             type: "vstack",
             gap: 8,
             children: [
               {
                 type: "text",
-                text: "TEST_BOX_A_TITLE",
-                fontPx: 16,
-                color: palette.navy,
+                text: "bullet: true",
+                fontPx: 14,
+                bold: true,
               },
               {
                 type: "text",
-                text: "・TEST_BOX_A_LINE_1\n・TEST_BOX_A_LINE_2\n・TEST_BOX_A_LINE_3",
-                fontPx: 13,
-              },
-            ],
-          },
-        },
-        {
-          type: "box",
-          w: "50%",
-          padding: 18,
-          backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
-          children: {
-            type: "vstack",
-            gap: 8,
-            children: [
-              {
-                type: "text",
-                text: "TEST_BOX_B_TITLE",
-                fontPx: 16,
-                color: palette.charcoal,
-              },
-              {
-                type: "text",
-                text: "・TEST_BOX_B_LINE_1\n・TEST_BOX_B_LINE_2\n・TEST_BOX_B_LINE_3",
-                fontPx: 13,
-              },
-            ],
-          },
-        },
-      ],
-    },
-    {
-      type: "text",
-      text: "TEST_FOOTER_TEXT / TEST_UPDATE_DATE",
-      fontPx: 12,
-      color: palette.charcoal,
-    },
-  ],
-};
-
-// Page 2: Table and complex nested layout
-const page2: POMNode = {
-  type: "vstack",
-  w: "100%",
-  h: "max",
-  padding: 48,
-  gap: 24,
-  alignItems: "stretch",
-  backgroundColor: palette.background,
-  children: [
-    {
-      type: "box",
-      padding: 18,
-      backgroundColor: "FFFFFF",
-      border: { color: palette.border, width: 2 },
-      children: {
-        type: "hstack",
-        gap: 16,
-        alignItems: "center",
-        children: [
-          {
-            type: "shape",
-            shapeType: "rect",
-            w: 8,
-            h: 60,
-            fill: { color: palette.blue },
-          },
-          {
-            type: "text",
-            text: "TEST_PAGE_2_HEADER",
-            fontPx: 28,
-            color: palette.charcoal,
-          },
-        ],
-      },
-    },
-    {
-      type: "hstack",
-      gap: 24,
-      alignItems: "start",
-      children: [
-        {
-          type: "box",
-          w: "55%",
-          padding: 20,
-          backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
-          children: {
-            type: "vstack",
-            gap: 16,
-            children: [
-              {
-                type: "text",
-                text: "TEST_TABLE_TITLE",
-                fontPx: 18,
-                color: palette.charcoal,
-              },
-              {
-                type: "table",
-                defaultRowHeight: 36,
-                columns: [{ width: 80 }, { width: 230 }, { width: 120 }],
-                rows: [
-                  {
-                    cells: [
-                      {
-                        text: "COL_A",
-                        fontPx: 14,
-                        bold: true,
-                        backgroundColor: palette.lightBlue,
-                      },
-                      {
-                        text: "COL_B",
-                        fontPx: 14,
-                        bold: true,
-                        backgroundColor: palette.lightBlue,
-                      },
-                      {
-                        text: "COL_C",
-                        fontPx: 14,
-                        bold: true,
-                        backgroundColor: palette.lightBlue,
-                      },
-                    ],
-                  },
-                  {
-                    cells: [
-                      { text: "ROW_1_A", fontPx: 13 },
-                      { text: "ROW_1_B", fontPx: 13 },
-                      { text: "ROW_1_C", fontPx: 13 },
-                    ],
-                  },
-                  {
-                    cells: [
-                      { text: "ROW_2_A", fontPx: 13 },
-                      { text: "ROW_2_B", fontPx: 13 },
-                      { text: "ROW_2_C", fontPx: 13 },
-                    ],
-                  },
-                  {
-                    cells: [
-                      { text: "ROW_3_A", fontPx: 13 },
-                      { text: "ROW_3_B", fontPx: 13 },
-                      { text: "ROW_3_C", fontPx: 13 },
-                    ],
-                  },
-                  {
-                    cells: [
-                      { text: "ROW_4_A", fontPx: 13 },
-                      { text: "ROW_4_B", fontPx: 13 },
-                      { text: "ROW_4_C", fontPx: 13 },
-                    ],
-                  },
-                  {
-                    cells: [
-                      { text: "ROW_5_A", fontPx: 13 },
-                      { text: "ROW_5_B", fontPx: 13 },
-                      { text: "ROW_5_C", fontPx: 13 },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        },
-        {
-          type: "vstack",
-          w: "45%",
-          gap: 18,
-          children: [
-            {
-              type: "box",
-              padding: 20,
-              backgroundColor: "FFFFFF",
-              border: { color: palette.border, width: 2 },
-              children: {
-                type: "vstack",
-                gap: 10,
-                children: [
-                  {
-                    type: "text",
-                    text: "TEST_NESTED_SECTION_A",
-                    fontPx: 18,
-                    color: palette.charcoal,
-                  },
-                  {
-                    type: "text",
-                    text: "・TEST_NESTED_LINE_1\n・TEST_NESTED_LINE_2\n・TEST_NESTED_LINE_3",
-                    fontPx: 13,
-                  },
-                ],
-              },
-            },
-            {
-              type: "box",
-              padding: 18,
-              backgroundColor: palette.lightBlue,
-              border: { color: palette.blue, width: 2 },
-              children: {
-                type: "hstack",
-                gap: 12,
-                alignItems: "center",
-                children: [
-                  {
-                    type: "shape",
-                    shapeType: "triangle",
-                    w: 40,
-                    h: 40,
-                    fill: { color: palette.blue },
-                    line: { color: palette.blue, width: 2 },
-                  },
-                  {
-                    type: "text",
-                    text: "TEST_TRIANGLE_SHAPE_TEXT",
-                    fontPx: 14,
-                    color: palette.navy,
-                  },
-                ],
-              },
-            },
-            {
-              type: "box",
-              padding: 18,
-              backgroundColor: "FFFFFF",
-              border: { color: palette.border, width: 2 },
-              children: {
-                type: "vstack",
-                gap: 8,
-                children: [
-                  {
-                    type: "text",
-                    text: "TEST_NESTED_SECTION_B",
-                    fontPx: 16,
-                    color: palette.charcoal,
-                  },
-                  {
-                    type: "text",
-                    text: "1. TEST_OPTION_A / 2. TEST_OPTION_B / 3. TEST_OPTION_C",
-                    fontPx: 13,
-                  },
-                ],
-              },
-            },
-          ],
-        },
-      ],
-    },
-    {
-      type: "hstack",
-      gap: 18,
-      alignItems: "stretch",
-      children: [
-        {
-          type: "box",
-          w: "55%",
-          padding: 20,
-          backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
-          children: {
-            type: "vstack",
-            gap: 8,
-            children: [
-              {
-                type: "text",
-                text: "TEST_DETAIL_SECTION_A",
-                fontPx: 18,
-                color: palette.charcoal,
-              },
-              {
-                type: "text",
-                text: "・TEST_DETAIL_A_LINE_1\n・TEST_DETAIL_A_LINE_2\n・TEST_DETAIL_A_LINE_3",
-                fontPx: 13,
-              },
-              {
-                type: "text",
-                text: "・TEST_DETAIL_A_LINE_4",
-                fontPx: 13,
-              },
-            ],
-          },
-        },
-        {
-          type: "box",
-          w: "45%",
-          padding: 20,
-          backgroundColor: palette.lightBlue,
-          border: { color: palette.blue, width: 2 },
-          children: {
-            type: "vstack",
-            gap: 8,
-            children: [
-              {
-                type: "text",
-                text: "TEST_DETAIL_SECTION_B",
-                fontPx: 18,
-                color: palette.navy,
-              },
-              {
-                type: "text",
-                text: "・TEST_DETAIL_B_LINE_1\n・TEST_DETAIL_B_LINE_2\n・TEST_DETAIL_B_LINE_3",
-                fontPx: 13,
-              },
-              {
-                type: "text",
-                text: "・TEST_DETAIL_B_LINE_4",
-                fontPx: 13,
-              },
-            ],
-          },
-        },
-      ],
-    },
-    {
-      type: "box",
-      padding: 16,
-      backgroundColor: "FFFFFF",
-      border: { color: palette.border, width: 2 },
-      children: {
-        type: "text",
-        text: "TEST_PAGE_2_FOOTER_NOTE",
-        fontPx: 12,
-        color: palette.charcoal,
-      },
-    },
-  ],
-};
-
-// Page 3: Multiple boxes and shape types
-const page3: POMNode = {
-  type: "vstack",
-  w: "100%",
-  h: "max",
-  padding: 48,
-  gap: 24,
-  alignItems: "stretch",
-  backgroundColor: palette.background,
-  children: [
-    {
-      type: "text",
-      text: "TEST_PAGE_3_HEADER",
-      fontPx: 28,
-      color: palette.charcoal,
-    },
-    {
-      type: "hstack",
-      gap: 20,
-      alignItems: "stretch",
-      children: [
-        {
-          type: "vstack",
-          w: "55%",
-          gap: 16,
-          children: [
-            {
-              type: "box",
-              padding: 18,
-              backgroundColor: "FFFFFF",
-              border: { color: palette.border, width: 2 },
-              children: {
-                type: "vstack",
-                gap: 8,
-                children: [
-                  {
-                    type: "text",
-                    text: "TEST_CARD_1_TITLE",
-                    fontPx: 16,
-                    color: palette.charcoal,
-                  },
-                  {
-                    type: "text",
-                    text: "TEST_CARD_1_DESCRIPTION",
-                    fontPx: 13,
-                  },
-                  {
-                    type: "text",
-                    text: "KPI: TEST_KPI_VALUE_1",
-                    fontPx: 12,
-                    color: palette.blue,
-                  },
-                ],
-              },
-            },
-            {
-              type: "box",
-              padding: 18,
-              backgroundColor: "FFFFFF",
-              border: { color: palette.border, width: 2 },
-              children: {
-                type: "vstack",
-                gap: 8,
-                children: [
-                  {
-                    type: "text",
-                    text: "TEST_CARD_2_TITLE",
-                    fontPx: 16,
-                    color: palette.charcoal,
-                  },
-                  {
-                    type: "text",
-                    text: "TEST_CARD_2_DESCRIPTION",
-                    fontPx: 13,
-                  },
-                  {
-                    type: "text",
-                    text: "KPI: TEST_KPI_VALUE_2",
-                    fontPx: 12,
-                    color: palette.blue,
-                  },
-                ],
-              },
-            },
-            {
-              type: "box",
-              padding: 18,
-              backgroundColor: "FFFFFF",
-              border: { color: palette.border, width: 2 },
-              children: {
-                type: "hstack",
-                gap: 12,
-                alignItems: "center",
-                children: [
-                  {
-                    type: "image",
-                    src: "https://raw.githubusercontent.com/hirokisakabe/pom/main/sample_images/sample_0.png",
-                    w: 60,
-                    h: 60,
-                  },
-                  {
-                    type: "vstack",
-                    gap: 4,
-                    children: [
-                      {
-                        type: "text",
-                        text: "TEST_CARD_3_TITLE",
-                        fontPx: 16,
-                        color: palette.charcoal,
-                      },
-                      {
-                        type: "text",
-                        text: "TEST_CARD_3_DESCRIPTION",
-                        fontPx: 13,
-                      },
-                      {
-                        type: "text",
-                        text: "KPI: TEST_KPI_VALUE_3",
-                        fontPx: 12,
-                        color: palette.blue,
-                      },
-                    ],
-                  },
-                ],
-              },
-            },
-          ],
-        },
-        {
-          type: "box",
-          w: "45%",
-          padding: 20,
-          backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
-          children: {
-            type: "vstack",
-            gap: 14,
-            children: [
-              {
-                type: "hstack",
-                gap: 12,
-                alignItems: "center",
-                children: [
-                  {
-                    type: "image",
-                    src: "https://raw.githubusercontent.com/hirokisakabe/pom/main/sample_images/sample_1.png",
-                    w: 40,
-                    h: 40,
-                  },
-                  {
-                    type: "text",
-                    text: "TEST_METRICS_TITLE",
-                    fontPx: 18,
-                    color: palette.charcoal,
-                  },
-                ],
-              },
-              {
-                type: "table",
-                defaultRowHeight: 34,
-                columns: [{ width: 160 }, { width: 120 }],
-                rows: [
-                  {
-                    cells: [
-                      {
-                        text: "METRIC_COL_A",
-                        fontPx: 14,
-                        bold: true,
-                        backgroundColor: palette.lightBlue,
-                      },
-                      {
-                        text: "METRIC_COL_B",
-                        fontPx: 14,
-                        bold: true,
-                        backgroundColor: palette.lightBlue,
-                      },
-                    ],
-                  },
-                  {
-                    cells: [
-                      { text: "METRIC_1_NAME", fontPx: 12 },
-                      { text: "0.12%", fontPx: 12 },
-                    ],
-                  },
-                  {
-                    cells: [
-                      { text: "METRIC_2_NAME", fontPx: 12 },
-                      { text: "55%", fontPx: 12 },
-                    ],
-                  },
-                  {
-                    cells: [
-                      { text: "METRIC_3_NAME", fontPx: 12 },
-                      { text: "-20%", fontPx: 12 },
-                    ],
-                  },
-                  {
-                    cells: [
-                      { text: "METRIC_4_NAME", fontPx: 12 },
-                      { text: "0", fontPx: 12 },
-                    ],
-                  },
-                  {
-                    cells: [
-                      { text: "METRIC_5_NAME", fontPx: 12 },
-                      { text: "95%", fontPx: 12 },
-                    ],
-                  },
-                ],
-              },
-              {
-                type: "vstack",
-                gap: 6,
-                children: [
-                  {
-                    type: "text",
-                    text: "TEST_EVALUATION_LABEL",
-                    fontPx: 16,
-                    color: palette.charcoal,
-                  },
-                  {
-                    type: "text",
-                    text: "TEST_EVALUATION_DESCRIPTION",
-                    fontPx: 12,
-                  },
-                ],
-              },
-            ],
-          },
-        },
-      ],
-    },
-    {
-      type: "box",
-      padding: 20,
-      backgroundColor: "FFFFFF",
-      border: { color: palette.border, width: 2 },
-      children: {
-        type: "vstack",
-        gap: 10,
-        children: [
-          {
-            type: "text",
-            text: "TEST_DETAIL_TITLE",
-            fontPx: 18,
-            color: palette.charcoal,
-          },
-          {
-            type: "text",
-            text: "TEST_DETAIL_PARAGRAPH_1",
-            fontPx: 13,
-          },
-          {
-            type: "text",
-            text: "TEST_DETAIL_PARAGRAPH_2",
-            fontPx: 13,
-          },
-          {
-            type: "text",
-            text: "TEST_DETAIL_PARAGRAPH_3",
-            fontPx: 13,
-          },
-          {
-            type: "text",
-            text: "TEST_DETAIL_PARAGRAPH_4",
-            fontPx: 13,
-          },
-          {
-            type: "text",
-            text: "TEST_DETAIL_PARAGRAPH_5",
-            fontPx: 13,
-          },
-        ],
-      },
-    },
-    {
-      type: "box",
-      padding: 20,
-      backgroundColor: "FFFFFF",
-      border: { color: palette.border, width: 2 },
-      children: {
-        type: "hstack",
-        gap: 18,
-        alignItems: "start",
-        children: [
-          {
-            type: "vstack",
-            w: "55%",
-            gap: 8,
-            children: [
-              {
-                type: "text",
-                text: "TEST_LEFT_COLUMN_TITLE",
-                fontPx: 16,
-                color: palette.charcoal,
-              },
-              {
-                type: "text",
-                text: "・TEST_LEFT_LINE_1\n・TEST_LEFT_LINE_2",
-                fontPx: 13,
-              },
-              {
-                type: "text",
-                text: "・TEST_LEFT_LINE_3",
-                fontPx: 13,
-              },
-            ],
-          },
-          {
-            type: "vstack",
-            w: "45%",
-            gap: 8,
-            children: [
-              {
-                type: "text",
-                text: "TEST_RIGHT_COLUMN_TITLE",
-                fontPx: 16,
-                color: palette.charcoal,
-              },
-              {
-                type: "text",
-                text: "1. TEST_RIGHT_ITEM_1\n2. TEST_RIGHT_ITEM_2\n3. TEST_RIGHT_ITEM_3",
-                fontPx: 13,
-              },
-              {
-                type: "text",
-                text: "TEST_RIGHT_NOTE",
-                fontPx: 13,
-              },
-            ],
-          },
-        ],
-      },
-    },
-    {
-      type: "box",
-      padding: 18,
-      backgroundColor: palette.lightBlue,
-      border: { color: palette.blue, width: 2 },
-      children: {
-        type: "text",
-        text: "TEST_PAGE_3_FOOTER_NOTE",
-        fontPx: 13,
-        color: palette.navy,
-      },
-    },
-  ],
-};
-
-// Page 4: Roadmap and RACI matrix representation
-const page4: POMNode = {
-  type: "vstack",
-  w: "100%",
-  h: "max",
-  padding: 48,
-  gap: 24,
-  alignItems: "stretch",
-  backgroundColor: palette.background,
-  children: [
-    {
-      type: "text",
-      text: "TEST_PAGE_4_HEADER",
-      fontPx: 28,
-      color: palette.charcoal,
-    },
-    {
-      type: "hstack",
-      gap: 20,
-      alignItems: "start",
-      children: [
-        {
-          type: "box",
-          w: "60%",
-          padding: 22,
-          backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
-          children: {
-            type: "vstack",
-            gap: 12,
-            children: [
-              {
-                type: "text",
-                text: "TEST_ROADMAP_TITLE",
-                fontPx: 18,
-                color: palette.charcoal,
-              },
-              {
-                type: "vstack",
-                gap: 10,
-                children: [
-                  {
-                    type: "hstack",
-                    gap: 10,
-                    alignItems: "center",
-                    children: [
-                      {
-                        type: "shape",
-                        shapeType: "ellipse",
-                        w: 34,
-                        h: 34,
-                        text: "Q1",
-                        fontPx: 14,
-                        fill: { color: palette.lightBlue },
-                        line: { color: palette.blue, width: 2 },
-                      },
-                      {
-                        type: "text",
-                        text: "TEST_Q1_DESCRIPTION",
-                        fontPx: 13,
-                      },
-                    ],
-                  },
-                  {
-                    type: "hstack",
-                    gap: 10,
-                    alignItems: "center",
-                    children: [
-                      {
-                        type: "shape",
-                        shapeType: "ellipse",
-                        w: 34,
-                        h: 34,
-                        text: "Q2",
-                        fontPx: 14,
-                        fill: { color: "FFFFFF" },
-                        line: { color: palette.blue, width: 2 },
-                      },
-                      {
-                        type: "text",
-                        text: "TEST_Q2_DESCRIPTION",
-                        fontPx: 13,
-                      },
-                    ],
-                  },
-                  {
-                    type: "hstack",
-                    gap: 10,
-                    alignItems: "center",
-                    children: [
-                      {
-                        type: "shape",
-                        shapeType: "ellipse",
-                        w: 34,
-                        h: 34,
-                        text: "Q3",
-                        fontPx: 14,
-                        fill: { color: palette.lightBlue },
-                        line: { color: palette.blue, width: 2 },
-                      },
-                      {
-                        type: "text",
-                        text: "TEST_Q3_DESCRIPTION",
-                        fontPx: 13,
-                      },
-                    ],
-                  },
-                  {
-                    type: "hstack",
-                    gap: 10,
-                    alignItems: "center",
-                    children: [
-                      {
-                        type: "shape",
-                        shapeType: "ellipse",
-                        w: 34,
-                        h: 34,
-                        text: "Q4",
-                        fontPx: 14,
-                        fill: { color: "FFFFFF" },
-                        line: { color: palette.blue, width: 2 },
-                      },
-                      {
-                        type: "text",
-                        text: "TEST_Q4_DESCRIPTION",
-                        fontPx: 13,
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        },
-        {
-          type: "vstack",
-          w: "40%",
-          gap: 16,
-          children: [
-            {
-              type: "box",
-              padding: 20,
-              backgroundColor: "FFFFFF",
-              border: { color: palette.border, width: 2 },
-              children: {
-                type: "vstack",
-                gap: 8,
-                children: [
-                  {
-                    type: "text",
-                    text: "TEST_STRUCTURE_TITLE",
-                    fontPx: 18,
-                    color: palette.charcoal,
-                  },
-                  {
-                    type: "text",
-                    text: "・TEST_ROLE_A: TEST_ROLE_A_DESC\n・TEST_ROLE_B: TEST_ROLE_B_DESC\n・TEST_ROLE_C: TEST_ROLE_C_DESC",
-                    fontPx: 13,
-                  },
-                ],
-              },
-            },
-            {
-              type: "box",
-              padding: 18,
-              backgroundColor: palette.lightBlue,
-              border: { color: palette.blue, width: 2 },
-              children: {
-                type: "vstack",
-                gap: 8,
-                children: [
-                  {
-                    type: "text",
-                    text: "TEST_GOVERNANCE_TITLE",
-                    fontPx: 16,
-                    color: palette.navy,
-                  },
-                  {
-                    type: "text",
-                    text: "TEST_GOVERNANCE_DESCRIPTION",
-                    fontPx: 12,
-                    color: palette.navy,
-                  },
-                ],
-              },
-            },
-            {
-              type: "box",
-              padding: 18,
-              backgroundColor: "FFFFFF",
-              border: { color: palette.border, width: 2 },
-              children: {
-                type: "vstack",
-                gap: 8,
-                children: [
-                  {
-                    type: "text",
-                    text: "TEST_ACTION_TITLE",
-                    fontPx: 16,
-                    color: palette.charcoal,
-                  },
-                  {
-                    type: "text",
-                    text: "TEST_ACTION_DESCRIPTION",
-                    fontPx: 12,
-                  },
-                ],
-              },
-            },
-          ],
-        },
-      ],
-    },
-    {
-      type: "box",
-      padding: 20,
-      backgroundColor: "FFFFFF",
-      border: { color: palette.border, width: 2 },
-      children: {
-        type: "hstack",
-        gap: 18,
-        alignItems: "start",
-        children: [
-          {
-            type: "vstack",
-            w: "55%",
-            gap: 10,
-            children: [
-              {
-                type: "text",
-                text: "TEST_RACI_TITLE",
-                fontPx: 18,
-                color: palette.charcoal,
-              },
-              {
-                type: "text",
-                text: "R: TEST_R_ROLE, A: TEST_A_ROLE, C: TEST_C_ROLE, I: TEST_I_ROLE\nTEST_RACI_NOTE",
-                fontPx: 13,
-              },
-              {
-                type: "text",
-                text: "TEST_RACI_ADDITIONAL_NOTE",
-                fontPx: 13,
-              },
-            ],
-          },
-          {
-            type: "vstack",
-            w: "45%",
-            gap: 10,
-            children: [
-              {
-                type: "text",
-                text: "TEST_DELIVERABLES_TITLE",
-                fontPx: 18,
-                color: palette.charcoal,
-              },
-              {
-                type: "text",
-                text: "・TEST_DELIVERABLE_1\n・TEST_DELIVERABLE_2\n・TEST_DELIVERABLE_3\n・TEST_DELIVERABLE_4",
-                fontPx: 13,
-              },
-              {
-                type: "text",
-                text: "TEST_DELIVERABLES_NOTE",
-                fontPx: 13,
-              },
-            ],
-          },
-        ],
-      },
-    },
-    {
-      type: "text",
-      text: "TEST_CONTACT_INFO / TEST_EMAIL_ADDRESS",
-      fontPx: 12,
-      color: palette.charcoal,
-    },
-  ],
-};
-
-// Page 5: Bullet examples
-const page5: POMNode = {
-  type: "vstack",
-  w: "100%",
-  h: "max",
-  padding: 48,
-  gap: 24,
-  alignItems: "stretch",
-  backgroundColor: palette.background,
-  children: [
-    {
-      type: "text",
-      text: "TEST_PAGE_5_HEADER - Bullets",
-      fontPx: 28,
-      color: palette.charcoal,
-    },
-    {
-      type: "hstack",
-      gap: 20,
-      alignItems: "stretch",
-      children: [
-        {
-          type: "box",
-          w: "50%",
-          padding: 20,
-          backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
-          children: {
-            type: "vstack",
-            gap: 12,
-            children: [
-              {
-                type: "text",
-                text: "Simple Bullet (boolean)",
-                fontPx: 18,
-                color: palette.charcoal,
-              },
-              {
-                type: "text",
-                text: "TEST_BULLET_ITEM_1\nTEST_BULLET_ITEM_2\nTEST_BULLET_ITEM_3",
+                text: "Item A\nItem B\nItem C",
                 fontPx: 14,
                 bullet: true,
               },
@@ -1307,22 +275,22 @@ const page5: POMNode = {
         {
           type: "box",
           w: "50%",
-          padding: 20,
+          padding: 16,
           backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
+          border: { color: palette.border, width: 1 },
           children: {
             type: "vstack",
-            gap: 12,
+            gap: 8,
             children: [
               {
                 type: "text",
-                text: "Number Bullet",
-                fontPx: 18,
-                color: palette.charcoal,
+                text: 'type: "number"',
+                fontPx: 14,
+                bold: true,
               },
               {
                 type: "text",
-                text: "TEST_NUMBER_ITEM_1\nTEST_NUMBER_ITEM_2\nTEST_NUMBER_ITEM_3",
+                text: "First\nSecond\nThird",
                 fontPx: 14,
                 bullet: { type: "number" },
               },
@@ -1333,28 +301,28 @@ const page5: POMNode = {
     },
     {
       type: "hstack",
-      gap: 20,
+      gap: 16,
       alignItems: "stretch",
       children: [
         {
           type: "box",
           w: "50%",
-          padding: 20,
+          padding: 16,
           backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
+          border: { color: palette.border, width: 1 },
           children: {
             type: "vstack",
-            gap: 12,
+            gap: 8,
             children: [
               {
                 type: "text",
-                text: "Alpha Lowercase",
-                fontPx: 18,
-                color: palette.charcoal,
+                text: "alphaLcPeriod (a. b. c.)",
+                fontPx: 14,
+                bold: true,
               },
               {
                 type: "text",
-                text: "TEST_ALPHA_ITEM_1\nTEST_ALPHA_ITEM_2\nTEST_ALPHA_ITEM_3",
+                text: "Alpha\nBeta\nGamma",
                 fontPx: 14,
                 bullet: { type: "number", numberType: "alphaLcPeriod" },
               },
@@ -1364,22 +332,22 @@ const page5: POMNode = {
         {
           type: "box",
           w: "50%",
-          padding: 20,
+          padding: 16,
           backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
+          border: { color: palette.border, width: 1 },
           children: {
             type: "vstack",
-            gap: 12,
+            gap: 8,
             children: [
               {
                 type: "text",
-                text: "Roman Numerals",
-                fontPx: 18,
-                color: palette.charcoal,
+                text: "romanLcPeriod (i. ii. iii.)",
+                fontPx: 14,
+                bold: true,
               },
               {
                 type: "text",
-                text: "TEST_ROMAN_ITEM_1\nTEST_ROMAN_ITEM_2\nTEST_ROMAN_ITEM_3",
+                text: "Roman I\nRoman II\nRoman III",
                 fontPx: 14,
                 bullet: { type: "number", numberType: "romanLcPeriod" },
               },
@@ -1390,22 +358,22 @@ const page5: POMNode = {
     },
     {
       type: "box",
-      padding: 20,
+      padding: 16,
       backgroundColor: "FFFFFF",
-      border: { color: palette.border, width: 2 },
+      border: { color: palette.border, width: 1 },
       children: {
         type: "vstack",
-        gap: 12,
+        gap: 8,
         children: [
           {
             type: "text",
-            text: "Number Start At 5",
-            fontPx: 18,
-            color: palette.charcoal,
+            text: "numberStartAt: 5",
+            fontPx: 14,
+            bold: true,
           },
           {
             type: "text",
-            text: "TEST_START_AT_ITEM_1\nTEST_START_AT_ITEM_2\nTEST_START_AT_ITEM_3",
+            text: "Starts at 5\nContinues 6\nAnd 7",
             fontPx: 14,
             bullet: { type: "number", numberStartAt: 5 },
           },
@@ -1415,48 +383,692 @@ const page5: POMNode = {
   ],
 };
 
-// Page 6: Chart examples
-const page6: POMNode = {
+// ============================================================
+// Page 3: Image Test
+// テスト対象: src, w, h
+// ============================================================
+const page3Image: POMNode = {
   type: "vstack",
   w: "100%",
   h: "max",
   padding: 48,
-  gap: 24,
+  gap: 20,
   alignItems: "stretch",
   backgroundColor: palette.background,
   children: [
     {
       type: "text",
-      text: "TEST_PAGE_5_HEADER - Charts",
+      text: "Page 3: Image Test",
       fontPx: 28,
       color: palette.charcoal,
+      bold: true,
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "Size variations:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "hstack",
+            gap: 24,
+            alignItems: "end",
+            children: [
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "image",
+                    src: "https://raw.githubusercontent.com/hirokisakabe/pom/main/sample_images/sample_0.png",
+                    w: 60,
+                    h: 60,
+                  },
+                  { type: "text", text: "60x60", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "image",
+                    src: "https://raw.githubusercontent.com/hirokisakabe/pom/main/sample_images/sample_1.png",
+                    w: 120,
+                    h: 90,
+                  },
+                  { type: "text", text: "120x90", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "image",
+                    src: "https://raw.githubusercontent.com/hirokisakabe/pom/main/sample_images/sample_0.png",
+                    w: 180,
+                    h: 135,
+                  },
+                  { type: "text", text: "180x135", fontPx: 12 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "Image with container styling:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "hstack",
+            gap: 16,
+            alignItems: "start",
+            children: [
+              {
+                type: "box",
+                padding: 12,
+                backgroundColor: palette.lightBlue,
+                border: { color: palette.blue, width: 2 },
+                children: {
+                  type: "image",
+                  src: "https://raw.githubusercontent.com/hirokisakabe/pom/main/sample_images/sample_0.png",
+                  w: 80,
+                  h: 80,
+                },
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                children: [
+                  {
+                    type: "text",
+                    text: "Image in styled Box",
+                    fontPx: 16,
+                    bold: true,
+                  },
+                  {
+                    type: "text",
+                    text: "Box with padding, backgroundColor, border",
+                    fontPx: 12,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+};
+
+// ============================================================
+// Page 4: Table Test
+// テスト対象: columns, rows, defaultRowHeight, セルプロパティ
+// ============================================================
+const page4Table: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 20,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "Page 4: Table Test",
+      fontPx: 28,
+      color: palette.charcoal,
+      bold: true,
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "Basic table (header + data rows):",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "table",
+            defaultRowHeight: 32,
+            columns: [{ width: 100 }, { width: 200 }, { width: 100 }],
+            rows: [
+              {
+                cells: [
+                  {
+                    text: "ID",
+                    fontPx: 14,
+                    bold: true,
+                    backgroundColor: palette.lightBlue,
+                  },
+                  {
+                    text: "Name",
+                    fontPx: 14,
+                    bold: true,
+                    backgroundColor: palette.lightBlue,
+                  },
+                  {
+                    text: "Status",
+                    fontPx: 14,
+                    bold: true,
+                    backgroundColor: palette.lightBlue,
+                  },
+                ],
+              },
+              {
+                cells: [
+                  { text: "001", fontPx: 13 },
+                  { text: "Item Alpha", fontPx: 13 },
+                  { text: "Active", fontPx: 13 },
+                ],
+              },
+              {
+                cells: [
+                  { text: "002", fontPx: 13 },
+                  { text: "Item Beta", fontPx: 13 },
+                  { text: "Pending", fontPx: 13 },
+                ],
+              },
+              {
+                cells: [
+                  { text: "003", fontPx: 13 },
+                  { text: "Item Gamma", fontPx: 13 },
+                  { text: "Done", fontPx: 13 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "Cell alignText (left / center / right):",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "table",
+            defaultRowHeight: 32,
+            columns: [{ width: 150 }, { width: 150 }, { width: 150 }],
+            rows: [
+              {
+                cells: [
+                  {
+                    text: "Left",
+                    fontPx: 13,
+                    alignText: "left",
+                    backgroundColor: palette.lightBlue,
+                  },
+                  {
+                    text: "Center",
+                    fontPx: 13,
+                    alignText: "center",
+                    backgroundColor: palette.lightBlue,
+                  },
+                  {
+                    text: "Right",
+                    fontPx: 13,
+                    alignText: "right",
+                    backgroundColor: palette.lightBlue,
+                  },
+                ],
+              },
+              {
+                cells: [
+                  { text: "Aligned left", fontPx: 13, alignText: "left" },
+                  { text: "Aligned center", fontPx: 13, alignText: "center" },
+                  { text: "Aligned right", fontPx: 13, alignText: "right" },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "Cell backgroundColor & color:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "table",
+            defaultRowHeight: 32,
+            columns: [{ width: 150 }, { width: 150 }, { width: 150 }],
+            rows: [
+              {
+                cells: [
+                  {
+                    text: "Light Blue BG",
+                    fontPx: 13,
+                    backgroundColor: palette.lightBlue,
+                  },
+                  {
+                    text: "Navy BG + White",
+                    fontPx: 13,
+                    backgroundColor: palette.navy,
+                    color: "FFFFFF",
+                  },
+                  {
+                    text: "Blue text",
+                    fontPx: 13,
+                    color: palette.blue,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+};
+
+// ============================================================
+// Page 5: Shape Test
+// テスト対象: shapeType, fill, line, shadow, text
+// ============================================================
+const page5Shape: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 20,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "Page 5: Shape Test",
+      fontPx: 28,
+      color: palette.charcoal,
+      bold: true,
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "shapeType variations:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "hstack",
+            gap: 24,
+            alignItems: "end",
+            children: [
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "shape",
+                    shapeType: "rect",
+                    w: 60,
+                    h: 40,
+                    fill: { color: palette.lightBlue },
+                    line: { color: palette.blue, width: 2 },
+                  },
+                  { type: "text", text: "rect", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "shape",
+                    shapeType: "ellipse",
+                    w: 60,
+                    h: 40,
+                    fill: { color: palette.lightBlue },
+                    line: { color: palette.blue, width: 2 },
+                  },
+                  { type: "text", text: "ellipse", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "shape",
+                    shapeType: "triangle",
+                    w: 60,
+                    h: 40,
+                    fill: { color: palette.lightBlue },
+                    line: { color: palette.blue, width: 2 },
+                  },
+                  { type: "text", text: "triangle", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "shape",
+                    shapeType: "roundRect",
+                    w: 60,
+                    h: 40,
+                    fill: { color: palette.lightBlue },
+                    line: { color: palette.blue, width: 2 },
+                  },
+                  { type: "text", text: "roundRect", fontPx: 12 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "fill & line combinations:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "hstack",
+            gap: 24,
+            alignItems: "end",
+            children: [
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "shape",
+                    shapeType: "rect",
+                    w: 60,
+                    h: 40,
+                    fill: { color: palette.blue },
+                  },
+                  { type: "text", text: "fill only", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "shape",
+                    shapeType: "rect",
+                    w: 60,
+                    h: 40,
+                    line: { color: palette.blue, width: 2 },
+                  },
+                  { type: "text", text: "line only", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "shape",
+                    shapeType: "rect",
+                    w: 60,
+                    h: 40,
+                    fill: { color: palette.lightBlue },
+                    line: { color: palette.blue, width: 2 },
+                  },
+                  { type: "text", text: "fill + line", fontPx: 12 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "line.dashType variations:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "hstack",
+            gap: 24,
+            alignItems: "end",
+            children: [
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "shape",
+                    shapeType: "rect",
+                    w: 80,
+                    h: 40,
+                    line: {
+                      color: palette.charcoal,
+                      width: 2,
+                      dashType: "solid",
+                    },
+                  },
+                  { type: "text", text: "solid", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "shape",
+                    shapeType: "rect",
+                    w: 80,
+                    h: 40,
+                    line: {
+                      color: palette.charcoal,
+                      width: 2,
+                      dashType: "dash",
+                    },
+                  },
+                  { type: "text", text: "dash", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "shape",
+                    shapeType: "rect",
+                    w: 80,
+                    h: 40,
+                    line: {
+                      color: palette.charcoal,
+                      width: 2,
+                      dashType: "dashDot",
+                    },
+                  },
+                  { type: "text", text: "dashDot", fontPx: 12 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "Shape with text:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "hstack",
+            gap: 24,
+            alignItems: "center",
+            children: [
+              {
+                type: "shape",
+                shapeType: "ellipse",
+                w: 80,
+                h: 80,
+                text: "Circle",
+                fontPx: 14,
+                fill: { color: palette.lightBlue },
+                line: { color: palette.blue, width: 2 },
+              },
+              {
+                type: "shape",
+                shapeType: "rect",
+                w: 100,
+                h: 50,
+                text: "Rectangle",
+                fontPx: 14,
+                bold: true,
+                fill: { color: palette.navy },
+                color: "FFFFFF",
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+};
+
+// ============================================================
+// Page 6: Chart Test
+// テスト対象: chartType, data, showLegend, showTitle, chartColors
+// ============================================================
+const page6Chart: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 20,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "Page 6: Chart Test",
+      fontPx: 28,
+      color: palette.charcoal,
+      bold: true,
     },
     {
       type: "hstack",
-      gap: 20,
+      gap: 16,
       alignItems: "stretch",
       children: [
         {
           type: "box",
           w: "50%",
-          padding: 20,
+          padding: 16,
           backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
+          border: { color: palette.border, width: 1 },
           children: {
             type: "vstack",
-            gap: 12,
+            gap: 8,
             children: [
-              {
-                type: "text",
-                text: "Bar Chart",
-                fontPx: 18,
-                color: palette.charcoal,
-              },
+              { type: "text", text: "Bar Chart", fontPx: 14, bold: true },
               {
                 type: "chart",
                 chartType: "bar",
-                w: 500,
-                h: 200,
+                w: 400,
+                h: 180,
                 data: [
                   {
                     name: "Sales",
@@ -1478,24 +1090,19 @@ const page6: POMNode = {
         {
           type: "box",
           w: "50%",
-          padding: 20,
+          padding: 16,
           backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
+          border: { color: palette.border, width: 1 },
           children: {
             type: "vstack",
-            gap: 12,
+            gap: 8,
             children: [
-              {
-                type: "text",
-                text: "Line Chart",
-                fontPx: 18,
-                color: palette.charcoal,
-              },
+              { type: "text", text: "Line Chart", fontPx: 14, bold: true },
               {
                 type: "chart",
                 chartType: "line",
-                w: 500,
-                h: 200,
+                w: 400,
+                h: 180,
                 data: [
                   {
                     name: "Revenue",
@@ -1504,7 +1111,7 @@ const page6: POMNode = {
                   },
                 ],
                 showLegend: true,
-                chartColors: ["1D4ED8"],
+                chartColors: [palette.blue],
               },
             ],
           },
@@ -1513,34 +1120,34 @@ const page6: POMNode = {
     },
     {
       type: "hstack",
-      gap: 20,
+      gap: 16,
       alignItems: "stretch",
       children: [
         {
           type: "box",
           w: "50%",
-          padding: 20,
+          padding: 16,
           backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
+          border: { color: palette.border, width: 1 },
           children: {
             type: "vstack",
-            gap: 12,
+            gap: 8,
             children: [
               {
                 type: "text",
-                text: "Pie Chart",
-                fontPx: 18,
-                color: palette.charcoal,
+                text: "Pie Chart (with title)",
+                fontPx: 14,
+                bold: true,
               },
               {
                 type: "chart",
                 chartType: "pie",
-                w: 500,
-                h: 200,
+                w: 400,
+                h: 180,
                 data: [
                   {
-                    name: "Market Share",
-                    labels: ["Product A", "Product B", "Product C", "Others"],
+                    name: "Share",
+                    labels: ["A", "B", "C", "D"],
                     values: [40, 30, 20, 10],
                   },
                 ],
@@ -1555,40 +1162,40 @@ const page6: POMNode = {
         {
           type: "box",
           w: "50%",
-          padding: 20,
+          padding: 16,
           backgroundColor: "FFFFFF",
-          border: { color: palette.border, width: 2 },
+          border: { color: palette.border, width: 1 },
           children: {
             type: "vstack",
-            gap: 12,
+            gap: 8,
             children: [
               {
                 type: "text",
-                text: "Bar Chart with Title",
-                fontPx: 18,
-                color: palette.charcoal,
+                text: "Bar Chart (with title)",
+                fontPx: 14,
+                bold: true,
               },
               {
                 type: "chart",
                 chartType: "bar",
-                w: 500,
-                h: 200,
+                w: 400,
+                h: 180,
                 data: [
                   {
                     name: "2023",
-                    labels: ["North", "South", "East", "West"],
+                    labels: ["N", "S", "E", "W"],
                     values: [250, 180, 220, 150],
                   },
                   {
                     name: "2024",
-                    labels: ["North", "South", "East", "West"],
+                    labels: ["N", "S", "E", "W"],
                     values: [300, 200, 250, 180],
                   },
                 ],
                 showLegend: true,
                 showTitle: true,
                 title: "Regional Sales",
-                chartColors: ["1D4ED8", "0EA5E9"],
+                chartColors: [palette.blue, palette.accent],
               },
             ],
           },
@@ -1598,9 +1205,748 @@ const page6: POMNode = {
   ],
 };
 
+// ============================================================
+// Page 7: Layout Test (VStack / HStack / Box)
+// テスト対象: gap, alignItems, justifyContent
+// ============================================================
+const page7Layout: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 20,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "Page 7: Layout Test",
+      fontPx: 28,
+      color: palette.charcoal,
+      bold: true,
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          { type: "text", text: "HStack gap:", fontPx: 14, bold: true },
+          {
+            type: "hstack",
+            gap: 8,
+            alignItems: "stretch",
+            children: [
+              {
+                type: "box",
+                padding: 8,
+                backgroundColor: palette.lightBlue,
+                children: {
+                  type: "hstack",
+                  gap: 8,
+                  children: [
+                    {
+                      type: "box",
+                      w: 40,
+                      h: 30,
+                      backgroundColor: palette.blue,
+                      children: { type: "text", text: "" },
+                    },
+                    {
+                      type: "box",
+                      w: 40,
+                      h: 30,
+                      backgroundColor: palette.blue,
+                      children: { type: "text", text: "" },
+                    },
+                    {
+                      type: "box",
+                      w: 40,
+                      h: 30,
+                      backgroundColor: palette.blue,
+                      children: { type: "text", text: "" },
+                    },
+                  ],
+                },
+              },
+              { type: "text", text: "gap: 8", fontPx: 12 },
+              {
+                type: "box",
+                padding: 8,
+                backgroundColor: palette.lightBlue,
+                children: {
+                  type: "hstack",
+                  gap: 32,
+                  children: [
+                    {
+                      type: "box",
+                      w: 40,
+                      h: 30,
+                      backgroundColor: palette.blue,
+                      children: { type: "text", text: "" },
+                    },
+                    {
+                      type: "box",
+                      w: 40,
+                      h: 30,
+                      backgroundColor: palette.blue,
+                      children: { type: "text", text: "" },
+                    },
+                    {
+                      type: "box",
+                      w: 40,
+                      h: 30,
+                      backgroundColor: palette.blue,
+                      children: { type: "text", text: "" },
+                    },
+                  ],
+                },
+              },
+              { type: "text", text: "gap: 32", fontPx: 12 },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "HStack alignItems:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "hstack",
+            gap: 16,
+            alignItems: "stretch",
+            children: [
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    w: 120,
+                    h: 60,
+                    padding: 4,
+                    backgroundColor: palette.lightBlue,
+                    children: {
+                      type: "hstack",
+                      gap: 4,
+                      alignItems: "start",
+                      children: [
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 20,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 40,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                      ],
+                    },
+                  },
+                  { type: "text", text: "start", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    w: 120,
+                    h: 60,
+                    padding: 4,
+                    backgroundColor: palette.lightBlue,
+                    children: {
+                      type: "hstack",
+                      gap: 4,
+                      alignItems: "center",
+                      children: [
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 20,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 40,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                      ],
+                    },
+                  },
+                  { type: "text", text: "center", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    w: 120,
+                    h: 60,
+                    padding: 4,
+                    backgroundColor: palette.lightBlue,
+                    children: {
+                      type: "hstack",
+                      gap: 4,
+                      alignItems: "end",
+                      children: [
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 20,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 40,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                      ],
+                    },
+                  },
+                  { type: "text", text: "end", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    w: 120,
+                    h: 60,
+                    padding: 4,
+                    backgroundColor: palette.lightBlue,
+                    children: {
+                      type: "hstack",
+                      gap: 4,
+                      alignItems: "stretch",
+                      children: [
+                        {
+                          type: "box",
+                          w: 30,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                        {
+                          type: "box",
+                          w: 30,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                      ],
+                    },
+                  },
+                  { type: "text", text: "stretch", fontPx: 12 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "HStack justifyContent:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "hstack",
+            gap: 16,
+            alignItems: "stretch",
+            children: [
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    w: 140,
+                    h: 40,
+                    padding: 4,
+                    backgroundColor: palette.lightBlue,
+                    children: {
+                      type: "hstack",
+                      gap: 4,
+                      justifyContent: "start",
+                      children: [
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 30,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 30,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                      ],
+                    },
+                  },
+                  { type: "text", text: "start", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    w: 140,
+                    h: 40,
+                    padding: 4,
+                    backgroundColor: palette.lightBlue,
+                    children: {
+                      type: "hstack",
+                      gap: 4,
+                      justifyContent: "center",
+                      children: [
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 30,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 30,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                      ],
+                    },
+                  },
+                  { type: "text", text: "center", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    w: 140,
+                    h: 40,
+                    padding: 4,
+                    backgroundColor: palette.lightBlue,
+                    children: {
+                      type: "hstack",
+                      gap: 4,
+                      justifyContent: "end",
+                      children: [
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 30,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 30,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                      ],
+                    },
+                  },
+                  { type: "text", text: "end", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    w: 140,
+                    h: 40,
+                    padding: 4,
+                    backgroundColor: palette.lightBlue,
+                    children: {
+                      type: "hstack",
+                      justifyContent: "spaceBetween",
+                      children: [
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 30,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                        {
+                          type: "box",
+                          w: 30,
+                          h: 30,
+                          backgroundColor: palette.blue,
+                          children: { type: "text", text: "" },
+                        },
+                      ],
+                    },
+                  },
+                  { type: "text", text: "spaceBetween", fontPx: 12 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+};
+
+// ============================================================
+// Page 8: Common Properties Test
+// テスト対象: w/h, padding, backgroundColor, border
+// ============================================================
+const page8Common: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 20,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "Page 8: Common Properties Test",
+      fontPx: 28,
+      color: palette.charcoal,
+      bold: true,
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "w/h variations:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "hstack",
+            gap: 16,
+            alignItems: "end",
+            children: [
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    w: 80,
+                    h: 40,
+                    backgroundColor: palette.blue,
+                    children: { type: "text", text: "" },
+                  },
+                  { type: "text", text: "w:80, h:40", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    w: "30%",
+                    h: 40,
+                    backgroundColor: palette.blue,
+                    children: { type: "text", text: "" },
+                  },
+                  { type: "text", text: 'w:"30%"', fontPx: 12 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "padding variations:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "hstack",
+            gap: 16,
+            alignItems: "start",
+            children: [
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    padding: 8,
+                    backgroundColor: palette.lightBlue,
+                    children: {
+                      type: "box",
+                      w: 60,
+                      h: 30,
+                      backgroundColor: palette.blue,
+                      children: { type: "text", text: "" },
+                    },
+                  },
+                  { type: "text", text: "padding: 8", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    padding: 24,
+                    backgroundColor: palette.lightBlue,
+                    children: {
+                      type: "box",
+                      w: 60,
+                      h: 30,
+                      backgroundColor: palette.blue,
+                      children: { type: "text", text: "" },
+                    },
+                  },
+                  { type: "text", text: "padding: 24", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    padding: { top: 20, right: 8, bottom: 4, left: 8 },
+                    backgroundColor: palette.lightBlue,
+                    children: {
+                      type: "box",
+                      w: 60,
+                      h: 30,
+                      backgroundColor: palette.blue,
+                      children: { type: "text", text: "" },
+                    },
+                  },
+                  { type: "text", text: "top:20, bottom:4", fontPx: 12 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "border variations:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "hstack",
+            gap: 16,
+            alignItems: "center",
+            children: [
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    w: 80,
+                    h: 40,
+                    border: { color: palette.charcoal, width: 1 },
+                    children: { type: "text", text: "" },
+                  },
+                  { type: "text", text: "width: 1", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    w: 80,
+                    h: 40,
+                    border: { color: palette.charcoal, width: 3 },
+                    children: { type: "text", text: "" },
+                  },
+                  { type: "text", text: "width: 3", fontPx: 12 },
+                ],
+              },
+              {
+                type: "vstack",
+                gap: 4,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "box",
+                    w: 80,
+                    h: 40,
+                    border: { color: palette.blue, width: 2 },
+                    children: { type: "text", text: "" },
+                  },
+                  { type: "text", text: "color: blue", fontPx: 12 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "backgroundColor variations:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "hstack",
+            gap: 16,
+            alignItems: "center",
+            children: [
+              {
+                type: "box",
+                w: 80,
+                h: 40,
+                backgroundColor: palette.lightBlue,
+                children: { type: "text", text: "" },
+              },
+              {
+                type: "box",
+                w: 80,
+                h: 40,
+                backgroundColor: palette.navy,
+                children: { type: "text", text: "" },
+              },
+              {
+                type: "box",
+                w: 80,
+                h: 40,
+                backgroundColor: palette.blue,
+                children: { type: "text", text: "" },
+              },
+              {
+                type: "box",
+                w: 80,
+                h: 40,
+                backgroundColor: palette.green,
+                children: { type: "text", text: "" },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+};
+
 export async function generatePptx(outputPath: string): Promise<void> {
   const pptx = await buildPptx(
-    [page1, page2, page3, page4, page5, page6],
+    [
+      page1Text,
+      page2Bullet,
+      page3Image,
+      page4Table,
+      page5Shape,
+      page6Chart,
+      page7Layout,
+      page8Common,
+    ],
     {
       w: 1280,
       h: 720,
@@ -1617,7 +1963,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
           children: [
             {
               type: "text",
-              text: "TEST_COMPANY",
+              text: "VRT Test Suite",
               fontPx: 14,
               color: "FFFFFF",
             },
@@ -1638,7 +1984,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
           children: [
             {
               type: "text",
-              text: "TEST_LABEL",
+              text: "pom VRT",
               fontPx: 10,
               color: palette.charcoal,
             },
