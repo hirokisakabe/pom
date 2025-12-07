@@ -321,7 +321,7 @@ export const shapeNodeSchema = basePOMNodeSchema.extend({
   line: borderStyleSchema.optional(),
   shadow: shadowStyleSchema.optional(),
   fontPx: z.number().optional(),
-  fontColor: z.string().optional(),
+  color: z.string().optional(),
   alignText: z.enum(["left", "center", "right"]).optional(),
   bold: z.boolean().optional(),
 });

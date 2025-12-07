@@ -194,7 +194,7 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
     color?: string;
   };
   fontPx?: number;
-  fontColor?: string;
+  color?: string;
   alignText?: "left" | "center" | "right";
 
   // 共通プロパティ
