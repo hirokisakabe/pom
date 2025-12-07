@@ -9,14 +9,32 @@ pom (PowerPoint Object Model) は、TypeScript で PowerPoint プレゼンテー
 ## コマンド
 
 ```bash
-npm run build        # TypeScriptコンパイル
-npm run lint         # ESLint
-npm run fmt          # Prettierフォーマット
-npm run fmt:check    # フォーマットチェック
-npm run typecheck    # 型チェック
-npm run test:run     # テスト実行
-npm run test         # テスト（watchモード）
-npx tsx main.ts      # サンプル実行（sample.pptx生成）
+npm run build             # TypeScriptコンパイル
+npm run lint              # ESLint
+npm run fmt               # Prettierフォーマット
+npm run fmt:check         # フォーマットチェック
+npm run typecheck         # 型チェック
+npm run test:run          # テスト実行
+npm run test              # テスト（watchモード）
+npx tsx main.ts           # サンプル実行（sample.pptx生成）
+npm run vrt:docker        # VRT実行（Docker環境）
+npm run vrt:docker:update # VRTベースライン更新（Docker環境）
+```
+
+## ディレクトリ構造
+
+```
+src/
+├── index.ts              # 公開API
+├── types.ts              # 型定義
+├── inputSchema.ts        # LLM用入力スキーマ（Zod）
+├── buildPptx.ts          # メイン処理（3段階パイプライン）
+├── calcYogaLayout/       # レイアウト計算（yoga-layout）
+├── toPositioned/         # 絶対座標変換
+├── renderPptx/           # PPTX描画（pptxgenjs）
+└── table/                # テーブルユーティリティ
+
+vrt/                      # Visual Regression Test
 ```
 
 ## アーキテクチャ
@@ -29,8 +47,16 @@ PPTX 生成は3段階のパイプライン:
 
 ### 主要な型
 
-- `POMNode` - 入力ノード型（Text, Image, Table, Box, VStack, HStack, Shape）
+- `POMNode` - 入力ノード型（Text, Image, Table, Shape, Box, VStack, HStack）
 - `PositionedNode` - 位置情報付きノード（x, y, w, h を持つ）
+- `MasterSlideOptions` - マスタースライド設定（header, footer, pageNumber, date）
+
+### 入力スキーマ（LLM連携用）
+
+`inputSchema.ts` に Zod スキーマを定義。LLM が生成した JSON を検証するために使用。
+
+- `inputPomNodeSchema` - メインの入力スキーマ
+- `inputMasterSlideOptionsSchema` - マスタースライド設定用
 
 ### 単位変換
 
