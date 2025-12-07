@@ -2,6 +2,54 @@
 
 **pom (PowerPoint Object Model)** は、PowerPoint プレゼンテーション（pptx）を TypeScript で宣言的に記述するためのライブラリです。
 
+## 目次
+
+- [インストール](#インストール)
+- [クイックスタート](#クイックスタート)
+- [特徴](#特徴)
+- [ノード](#ノード)
+- [マスタースライド](#マスタースライド)
+- [LLM 連携](#llm-連携)
+- [ライセンス](#ライセンス)
+
+## インストール
+
+```bash
+npm install @hirokisakabe/pom
+```
+
+## クイックスタート
+
+```typescript
+import { buildPptx, POMNode } from "@hirokisakabe/pom";
+
+const slide: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 24,
+  alignItems: "start",
+  children: [
+    {
+      type: "text",
+      text: "プレゼンテーションタイトル",
+      fontPx: 48,
+      bold: true,
+    },
+    {
+      type: "text",
+      text: "サブタイトル",
+      fontPx: 24,
+      color: "666666",
+    },
+  ],
+};
+
+const pptx = await buildPptx([slide], { w: 1280, h: 720 });
+await pptx.writeFile({ fileName: "presentation.pptx" });
+```
+
 ## 特徴
 
 - **型安全**: TypeScript による厳密な型定義
@@ -399,3 +447,7 @@ await pptx.writeFile({ fileName: "sales-report.pptx" });
 | `inputVStackNodeSchema`         | VStackノード用                                 |
 | `inputHStackNodeSchema`         | HStackノード用                                 |
 | `inputMasterSlideOptionsSchema` | マスタースライド設定用                         |
+
+## ライセンス
+
+MIT
