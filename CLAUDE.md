@@ -51,6 +51,7 @@ PPTX 生成は3段階のパイプライン:
 - `PositionedNode` - 位置情報付きノード（x, y, w, h を持つ）
 - `MasterSlideOptions` - マスタースライド設定（header, footer, pageNumber, date）
 - `ChartNode` - グラフノード（bar, line, pie をサポート）
+- `BulletOptions` - 箇条書き設定（type, indent, numberType, numberStartAt）
 
 ### 入力スキーマ（LLM連携用）
 
@@ -64,3 +65,17 @@ PPTX 生成は3段階のパイプライン:
 - ユーザー入力: ピクセル（px）
 - 内部レイアウト: ピクセル（yoga-layout）
 - PPTX 出力: インチ（`pxToIn` で変換、96 DPI 基準）
+
+## 機能追加時のチェックリスト
+
+新しいプロパティや機能を追加する際は、以下のファイルを更新すること：
+
+1. **型定義**: `src/types.ts` - 新しい型やプロパティを追加
+2. **入力スキーマ**: `src/inputSchema.ts` - Zod スキーマを追加（LLM 連携用）
+3. **描画処理**: `src/renderPptx/` 配下 - pptxgenjs への変換処理を実装
+4. **VRT テストデータ**: `vrt/lib/generatePptx.ts` - 新機能のテストケースを追加
+5. **VRT ベースライン更新**: `npm run vrt:docker:update` を実行
+6. **ドキュメント更新**:
+   - `README.md` - ユーザー向けドキュメント
+   - `CLAUDE.md` - 主要な型セクションに追加
+   - `llm-guide.md` - LLM 向けガイド

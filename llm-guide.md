@@ -14,7 +14,7 @@ pom は PowerPoint を JSON で宣言的に記述する形式。以下の仕様�
 
 | type   | 用途     | 主要プロパティ                                     |
 | ------ | -------- | -------------------------------------------------- |
-| text   | テキスト | text, fontPx, color, bold, alignText               |
+| text   | テキスト | text, fontPx, color, bold, alignText, bullet       |
 | vstack | 縦並び   | children[], gap, alignItems, justifyContent        |
 | hstack | 横並び   | children[], gap, alignItems, justifyContent        |
 | box    | ラッパー | children（単一ノード）                             |
@@ -96,11 +96,29 @@ pom は PowerPoint を JSON で宣言的に記述する形式。以下の仕様�
 ```json
 {
   "type": "text",
-  "text": "・項目1\n・項目2\n・項目3",
+  "text": "項目1\n項目2\n項目3",
   "fontPx": 14,
-  "lineSpacingMultiple": 1.5
+  "bullet": true
 }
 ```
+
+番号付きリスト：
+
+```json
+{
+  "type": "text",
+  "text": "ステップ1\nステップ2\nステップ3",
+  "fontPx": 14,
+  "bullet": { "type": "number" }
+}
+```
+
+bullet オプション：
+
+- `bullet: true` - 通常の箇条書き（•）
+- `bullet: { type: "number" }` - 番号付き（1. 2. 3.）
+- `bullet: { type: "number", numberType: "alphaLcPeriod" }` - アルファベット（a. b. c.）
+- `bullet: { type: "number", numberStartAt: 5 }` - 開始番号指定
 
 ### 4. テーブル
 

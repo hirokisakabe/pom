@@ -49,6 +49,32 @@ export const shadowStyleSchema = z.object({
   color: z.string().optional(),
 });
 
+export const bulletNumberTypeSchema = z.enum([
+  "alphaLcParenBoth",
+  "alphaLcParenR",
+  "alphaLcPeriod",
+  "alphaUcParenBoth",
+  "alphaUcParenR",
+  "alphaUcPeriod",
+  "arabicParenBoth",
+  "arabicParenR",
+  "arabicPeriod",
+  "arabicPlain",
+  "romanLcParenBoth",
+  "romanLcParenR",
+  "romanLcPeriod",
+  "romanUcParenBoth",
+  "romanUcParenR",
+  "romanUcPeriod",
+]);
+
+export const bulletOptionsSchema = z.object({
+  type: z.enum(["bullet", "number"]).optional(),
+  indent: z.number().optional(),
+  numberType: bulletNumberTypeSchema.optional(),
+  numberStartAt: z.number().optional(),
+});
+
 export const alignItemsSchema = z.enum(["start", "center", "end", "stretch"]);
 
 export const justifyContentSchema = z.enum([
@@ -250,6 +276,8 @@ export type BorderDash = z.infer<typeof borderDashSchema>;
 export type BorderStyle = z.infer<typeof borderStyleSchema>;
 export type FillStyle = z.infer<typeof fillStyleSchema>;
 export type ShadowStyle = z.infer<typeof shadowStyleSchema>;
+export type BulletNumberType = z.infer<typeof bulletNumberTypeSchema>;
+export type BulletOptions = z.infer<typeof bulletOptionsSchema>;
 export type AlignItems = z.infer<typeof alignItemsSchema>;
 export type JustifyContent = z.infer<typeof justifyContentSchema>;
 export type FlexDirection = z.infer<typeof flexDirectionSchema>;
@@ -281,6 +309,7 @@ export const textNodeSchema = basePOMNodeSchema.extend({
   bold: z.boolean().optional(),
   fontFamily: z.string().optional(),
   lineSpacingMultiple: z.number().optional(),
+  bullet: z.union([z.boolean(), bulletOptionsSchema]).optional(),
 });
 
 export const imageNodeSchema = basePOMNodeSchema.extend({
