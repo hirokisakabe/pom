@@ -166,64 +166,7 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 - `rows` の `height` を省略すると `defaultRowHeight`（未指定なら32px）が適用されます。
 - セル背景やフォント装飾を `cells` の各要素で個別に指定できます。
 
-#### 4. Box
-
-単一の子要素をラップする汎用コンテナ。
-
-- 子要素は **1つ**
-- padding や固定サイズを与えてグルーピングに使う
-
-```typescript
-{
-  type: "box";
-  children: POMNode;
-
-  // 共通プロパティ
-  w?: number | "max" | `${number}%`;
-  h?: number | "max" | `${number}%`;
-  ...
-}
-```
-
-#### 5. VStack
-
-子要素を **縦方向** に並べる。
-
-```typescript
-{
-  type: "vstack";
-  children: POMNode[];
-  alignItems: "start" | "center" | "end" | "stretch";
-  justifyContent: "start" | "center" | "end" | "spaceBetween";
-  gap?: number;
-
-  // 共通プロパティ
-  w?: number | "max" | `${number}%`;
-  h?: number | "max" | `${number}%`;
-  ...
-}
-```
-
-#### 6. HStack
-
-子要素を **横方向** に並べる。
-
-```typescript
-{
-  type: "hstack";
-  children: POMNode[];
-  alignItems: "start" | "center" | "end" | "stretch";
-  justifyContent: "start" | "center" | "end" | "spaceBetween";
-  gap?: number;
-
-  // 共通プロパティ
-  w?: number | "max" | `${number}%`;
-  h?: number | "max" | `${number}%`;
-  ...
-}
-```
-
-#### 7. Shape
+#### 4. Shape
 
 図形を描画するノード。テキスト付き/なしで異なる表現が可能で、複雑なビジュアル効果をサポートしています。
 
@@ -269,6 +212,63 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 - `cloudCallout`: 雲吹き出し（コメント）
 - `star5`: 5つ星（強調、デコレーション）
 - `downArrow`: 下矢印（フロー図）
+
+#### 5. Box
+
+単一の子要素をラップする汎用コンテナ。
+
+- 子要素は **1つ**
+- padding や固定サイズを与えてグルーピングに使う
+
+```typescript
+{
+  type: "box";
+  children: POMNode;
+
+  // 共通プロパティ
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+#### 6. VStack
+
+子要素を **縦方向** に並べる。
+
+```typescript
+{
+  type: "vstack";
+  children: POMNode[];
+  alignItems: "start" | "center" | "end" | "stretch";
+  justifyContent: "start" | "center" | "end" | "spaceBetween";
+  gap?: number;
+
+  // 共通プロパティ
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+#### 7. HStack
+
+子要素を **横方向** に並べる。
+
+```typescript
+{
+  type: "hstack";
+  children: POMNode[];
+  alignItems: "start" | "center" | "end" | "stretch";
+  justifyContent: "start" | "center" | "end" | "spaceBetween";
+  gap?: number;
+
+  // 共通プロパティ
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
 
 ## マスタースライド
 
