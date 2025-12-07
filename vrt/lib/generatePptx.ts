@@ -718,25 +718,38 @@ const page3: POMNode = {
               backgroundColor: "FFFFFF",
               border: { color: palette.border, width: 2 },
               children: {
-                type: "vstack",
-                gap: 8,
+                type: "hstack",
+                gap: 12,
+                alignItems: "center",
                 children: [
                   {
-                    type: "text",
-                    text: "TEST_CARD_3_TITLE",
-                    fontPx: 16,
-                    color: palette.charcoal,
+                    type: "image",
+                    src: "https://raw.githubusercontent.com/hirokisakabe/pom/main/sample_images/sample_0.png",
+                    w: 60,
+                    h: 60,
                   },
                   {
-                    type: "text",
-                    text: "TEST_CARD_3_DESCRIPTION",
-                    fontPx: 13,
-                  },
-                  {
-                    type: "text",
-                    text: "KPI: TEST_KPI_VALUE_3",
-                    fontPx: 12,
-                    color: palette.blue,
+                    type: "vstack",
+                    gap: 4,
+                    children: [
+                      {
+                        type: "text",
+                        text: "TEST_CARD_3_TITLE",
+                        fontPx: 16,
+                        color: palette.charcoal,
+                      },
+                      {
+                        type: "text",
+                        text: "TEST_CARD_3_DESCRIPTION",
+                        fontPx: 13,
+                      },
+                      {
+                        type: "text",
+                        text: "KPI: TEST_KPI_VALUE_3",
+                        fontPx: 12,
+                        color: palette.blue,
+                      },
+                    ],
                   },
                 ],
               },
@@ -754,10 +767,23 @@ const page3: POMNode = {
             gap: 14,
             children: [
               {
-                type: "text",
-                text: "TEST_METRICS_TITLE",
-                fontPx: 18,
-                color: palette.charcoal,
+                type: "hstack",
+                gap: 12,
+                alignItems: "center",
+                children: [
+                  {
+                    type: "image",
+                    src: "https://raw.githubusercontent.com/hirokisakabe/pom/main/sample_images/sample_1.png",
+                    w: 40,
+                    h: 40,
+                  },
+                  {
+                    type: "text",
+                    text: "TEST_METRICS_TITLE",
+                    fontPx: 18,
+                    color: palette.charcoal,
+                  },
+                ],
               },
               {
                 type: "table",

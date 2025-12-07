@@ -2,7 +2,7 @@ import type { POMNode } from "../types";
 import { Node as YogaNode } from "yoga-layout";
 import { loadYoga } from "yoga-layout/load";
 import { measureText } from "./measureText";
-import { measureImage } from "./measureImage";
+import { measureImage, prefetchImageSize } from "./measureImage";
 import { calcTableIntrinsicSize } from "../table/utils";
 
 /**
@@ -18,6 +18,9 @@ export async function calcYogaLayout(
 ) {
   const Yoga = await getYoga();
 
+  // 事前に全画像のサイズを取得（HTTPS対応のため）
+  await prefetchAllImageSizes(root);
+
   const rootYoga = Yoga.Node.create();
   root.yogaNode = rootYoga;
 
@@ -28,6 +31,36 @@ export async function calcYogaLayout(
   rootYoga.setHeight(slideSize.h);
 
   rootYoga.calculateLayout(slideSize.w, slideSize.h, Yoga.DIRECTION_LTR);
+}
+
+/**
+ * POMNode ツリー内のすべての画像のサイズを事前取得する
+ */
+async function prefetchAllImageSizes(node: POMNode): Promise<void> {
+  const imageSources = collectImageSources(node);
+  await Promise.all(imageSources.map((src) => prefetchImageSize(src)));
+}
+
+/**
+ * POMNode ツリー内のすべての画像のsrcを収集する
+ */
+function collectImageSources(node: POMNode): string[] {
+  const sources: string[] = [];
+
+  function traverse(n: POMNode) {
+    if (n.type === "image") {
+      sources.push(n.src);
+    } else if (n.type === "box") {
+      traverse(n.children);
+    } else if (n.type === "vstack" || n.type === "hstack") {
+      for (const child of n.children) {
+        traverse(child);
+      }
+    }
+  }
+
+  traverse(node);
+  return sources;
 }
 
 /**
