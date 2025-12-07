@@ -1,6 +1,6 @@
 # pom
 
-**pom (PowerPoint Object Model)** は、PowerPoint プレゼンテーション（pptx）を TypeScript で宣言的に記述するためのライブラリです。
+**pom (PowerPoint Object Model)** は、PowerPoint プレゼンテーション（pptx）を TypeScript で宣言的に記述するためのライブラリです。生成 AI に出力させた POM 形式の JSON を、PowerPoint ファイルに変換するユースケースを想定しています。
 
 ## 目次
 
@@ -54,6 +54,7 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 
 - **型安全**: TypeScript による厳密な型定義
 - **宣言的**: JSON ライクなオブジェクトでスライドを記述
+- **PowerPoint ファースト**: Shape 機能をネイティブサポート
 - **柔軟なレイアウト**: VStack/HStack/Box による自動レイアウト
 - **ピクセル単位**: 直感的なピクセル単位での指定（内部でインチに変換）
 - **マスタースライド**: 全ページ共通のヘッダー・フッター・ページ番号を自動挿入
