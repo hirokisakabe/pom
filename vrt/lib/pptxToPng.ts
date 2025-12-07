@@ -4,7 +4,7 @@ import path from "path";
 import { PNG } from "pngjs";
 
 /**
- * LibreOfficeを使ってPPTXをPNGに変換し、全スライドを縦に連結した画像を生成
+ * LibreOfficeを使ってPPTXをPDFに変換し、ImageMagickでPNGに変換して全スライドを縦に連結した画像を生成
  */
 export async function pptxToPng(
   pptxPath: string,
@@ -19,23 +19,37 @@ export async function pptxToPng(
   fs.mkdirSync(tempDir, { recursive: true });
 
   try {
-    // LibreOfficeでPPTXをPNGに変換
+    // 1. LibreOfficeでPPTXをPDFに変換（全ページ含む）
     execSync(
-      `soffice --headless --convert-to png --outdir "${tempDir}" "${pptxPath}"`,
+      `soffice --headless --convert-to pdf --outdir "${tempDir}" "${pptxPath}"`,
       { stdio: "inherit" },
     );
 
-    // 生成されたPNGファイルを取得（スライド順にソート）
+    // PDFファイルのパスを取得
+    const pptxBasename = path.basename(pptxPath, path.extname(pptxPath));
+    const pdfPath = path.join(tempDir, `${pptxBasename}.pdf`);
+
+    if (!fs.existsSync(pdfPath)) {
+      throw new Error(`PDF file not generated: ${pdfPath}`);
+    }
+
+    // 2. ImageMagickでPDFを各ページごとにPNGに変換
+    const pngPrefix = path.join(tempDir, "page");
+    execSync(`convert -density 150 "${pdfPath}" "${pngPrefix}-%03d.png"`, {
+      stdio: "inherit",
+    });
+
+    // 生成されたPNGファイルを取得（ページ順にソート）
     const pngFiles = fs
       .readdirSync(tempDir)
-      .filter((f) => f.endsWith(".png"))
+      .filter((f) => f.startsWith("page-") && f.endsWith(".png"))
       .sort();
 
     if (pngFiles.length === 0) {
-      throw new Error("No PNG files generated from PPTX");
+      throw new Error("No PNG pages generated from PDF");
     }
 
-    // 全スライドを縦に連結
+    // 3. 全スライドを縦に連結
     const images = pngFiles.map((f) =>
       PNG.sync.read(fs.readFileSync(path.join(tempDir, f))),
     );
