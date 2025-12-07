@@ -20,3 +20,17 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:run
       - run: npx tsx main.ts
+  vrt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run VRT in Docker
+        run: docker compose run --rm vrt
+      - name: Upload diff on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vrt-diff
+          path: |
+            vrt/actual.png
+            vrt/diff.png
