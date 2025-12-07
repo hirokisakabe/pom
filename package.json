@@ -37,6 +37,9 @@
     "office"
   ],
   "author": "Hiroki Sakabe",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build && npm run lint && npm run fmt:check && npm run typecheck && npm run test:run",
