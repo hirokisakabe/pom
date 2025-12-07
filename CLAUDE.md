@@ -47,9 +47,10 @@ PPTX 生成は3段階のパイプライン:
 
 ### 主要な型
 
-- `POMNode` - 入力ノード型（Text, Image, Table, Shape, Box, VStack, HStack）
+- `POMNode` - 入力ノード型（Text, Image, Table, Shape, Chart, Box, VStack, HStack）
 - `PositionedNode` - 位置情報付きノード（x, y, w, h を持つ）
 - `MasterSlideOptions` - マスタースライド設定（header, footer, pageNumber, date）
+- `ChartNode` - グラフノード（bar, line, pie をサポート）
 
 ### 入力スキーマ（LLM連携用）
 

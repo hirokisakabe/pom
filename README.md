@@ -271,6 +271,76 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 }
 ```
 
+#### 8. Chart
+
+グラフを描画するノード。棒グラフ、折れ線グラフ、円グラフをサポート。
+
+```typescript
+{
+  type: "chart";
+  chartType: "bar" | "line" | "pie";
+  data: {
+    name?: string;           // 系列名
+    labels: string[];        // カテゴリラベル
+    values: number[];        // 値
+  }[];
+  showLegend?: boolean;      // 凡例表示（デフォルト: false）
+  showTitle?: boolean;       // タイトル表示（デフォルト: false）
+  title?: string;            // タイトル文字列
+  chartColors?: string[];    // データカラー配列（16進カラーコード）
+
+  // 共通プロパティ
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+**使用例:**
+
+```typescript
+// 棒グラフ
+{
+  type: "chart",
+  chartType: "bar",
+  w: 600,
+  h: 400,
+  data: [
+    {
+      name: "売上",
+      labels: ["1月", "2月", "3月", "4月"],
+      values: [100, 200, 150, 300],
+    },
+    {
+      name: "利益",
+      labels: ["1月", "2月", "3月", "4月"],
+      values: [30, 60, 45, 90],
+    },
+  ],
+  showLegend: true,
+  showTitle: true,
+  title: "月別売上・利益",
+  chartColors: ["0088CC", "00AA00"],
+}
+
+// 円グラフ
+{
+  type: "chart",
+  chartType: "pie",
+  w: 400,
+  h: 300,
+  data: [
+    {
+      name: "市場シェア",
+      labels: ["製品A", "製品B", "製品C", "その他"],
+      values: [40, 30, 20, 10],
+    },
+  ],
+  showLegend: true,
+  chartColors: ["0088CC", "00AA00", "FF6600", "888888"],
+}
+```
+
 ## マスタースライド
 
 全ページに共通のヘッダー・フッター・ページ番号を自動挿入できます。
@@ -444,6 +514,7 @@ await pptx.writeFile({ fileName: "sales-report.pptx" });
 | `inputImageNodeSchema`          | 画像ノード用                                   |
 | `inputTableNodeSchema`          | テーブルノード用                               |
 | `inputShapeNodeSchema`          | 図形ノード用                                   |
+| `inputChartNodeSchema`          | チャートノード用                               |
 | `inputBoxNodeSchema`            | Boxノード用                                    |
 | `inputVStackNodeSchema`         | VStackノード用                                 |
 | `inputHStackNodeSchema`         | HStackノード用                                 |
