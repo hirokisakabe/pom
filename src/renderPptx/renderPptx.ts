@@ -4,7 +4,7 @@ import type PptxGenJSType from "pptxgenjs";
 const PptxGenJS = require("pptxgenjs") as typeof PptxGenJSType;
 import type { PositionedNode } from "../types";
 import { resolveRowHeights } from "../table/utils";
-import { createTextOptions } from "./textOptions";
+import { createTextOptions, createBulletOptions } from "./textOptions";
 import { pxToIn, pxToPt } from "./units";
 
 type SlidePx = { w: number; h: number };
@@ -76,7 +76,21 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
       switch (node.type) {
         case "text": {
           const textOptions = createTextOptions(node);
-          slide.addText(node.text ?? "", textOptions);
+
+          if (node.bullet !== undefined) {
+            // bulletが設定されている場合は配列形式で渡す
+            const lines = (node.text ?? "").split("\n");
+            const bulletOption = createBulletOptions(node.bullet);
+
+            const textArray = lines.map((line) => ({
+              text: line,
+              options: { bullet: bulletOption },
+            }));
+
+            slide.addText(textArray, textOptions);
+          } else {
+            slide.addText(node.text ?? "", textOptions);
+          }
           break;
         }
 

@@ -10,7 +10,7 @@ type PptxBulletOptions = {
   numberStartAt?: number;
 };
 
-function createBulletOptions(
+export function createBulletOptions(
   bullet: boolean | BulletOptions,
 ): PptxBulletOptions | boolean {
   if (typeof bullet === "boolean") {
@@ -40,7 +40,7 @@ export function createTextOptions(node: TextNode) {
   const fontFamily = node.fontFamily ?? "Noto Sans JP";
   const lineSpacingMultiple = node.lineSpacingMultiple ?? 1.3;
 
-  const baseOptions = {
+  return {
     x: pxToIn(node.x),
     y: pxToIn(node.y),
     w: pxToIn(node.w),
@@ -54,13 +54,4 @@ export function createTextOptions(node: TextNode) {
     color: node.color,
     bold: node.bold,
   };
-
-  if (node.bullet !== undefined) {
-    return {
-      ...baseOptions,
-      bullet: createBulletOptions(node.bullet),
-    };
-  }
-
-  return baseOptions;
 }
