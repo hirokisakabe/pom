@@ -1,11 +1,60 @@
 # pom
 
-**pom (PowerPoint Object Model)** は、PowerPoint プレゼンテーション（pptx）を TypeScript で宣言的に記述するためのライブラリです。
+**pom (PowerPoint Object Model)** は、PowerPoint プレゼンテーション（pptx）を TypeScript で宣言的に記述するためのライブラリです。生成 AI に出力させた POM 形式の JSON を、PowerPoint ファイルに変換するユースケースを想定しています。
+
+## 目次
+
+- [インストール](#インストール)
+- [クイックスタート](#クイックスタート)
+- [特徴](#特徴)
+- [ノード](#ノード)
+- [マスタースライド](#マスタースライド)
+- [LLM 連携](#llm-連携)
+- [ライセンス](#ライセンス)
+
+## インストール
+
+```bash
+npm install @hirokisakabe/pom
+```
+
+## クイックスタート
+
+```typescript
+import { buildPptx, POMNode } from "@hirokisakabe/pom";
+
+const slide: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 24,
+  alignItems: "start",
+  children: [
+    {
+      type: "text",
+      text: "プレゼンテーションタイトル",
+      fontPx: 48,
+      bold: true,
+    },
+    {
+      type: "text",
+      text: "サブタイトル",
+      fontPx: 24,
+      color: "666666",
+    },
+  ],
+};
+
+const pptx = await buildPptx([slide], { w: 1280, h: 720 });
+await pptx.writeFile({ fileName: "presentation.pptx" });
+```
 
 ## 特徴
 
 - **型安全**: TypeScript による厳密な型定義
 - **宣言的**: JSON ライクなオブジェクトでスライドを記述
+- **PowerPoint ファースト**: Shape 機能をネイティブサポート
 - **柔軟なレイアウト**: VStack/HStack/Box による自動レイアウト
 - **ピクセル単位**: 直感的なピクセル単位での指定（内部でインチに変換）
 - **マスタースライド**: 全ページ共通のヘッダー・フッター・ページ番号を自動挿入
@@ -118,64 +167,7 @@
 - `rows` の `height` を省略すると `defaultRowHeight`（未指定なら32px）が適用されます。
 - セル背景やフォント装飾を `cells` の各要素で個別に指定できます。
 
-#### 4. Box
-
-単一の子要素をラップする汎用コンテナ。
-
-- 子要素は **1つ**
-- padding や固定サイズを与えてグルーピングに使う
-
-```typescript
-{
-  type: "box";
-  children: POMNode;
-
-  // 共通プロパティ
-  w?: number | "max" | `${number}%`;
-  h?: number | "max" | `${number}%`;
-  ...
-}
-```
-
-#### 5. VStack
-
-子要素を **縦方向** に並べる。
-
-```typescript
-{
-  type: "vstack";
-  children: POMNode[];
-  alignItems: "start" | "center" | "end" | "stretch";
-  justifyContent: "start" | "center" | "end" | "spaceBetween";
-  gap?: number;
-
-  // 共通プロパティ
-  w?: number | "max" | `${number}%`;
-  h?: number | "max" | `${number}%`;
-  ...
-}
-```
-
-#### 6. HStack
-
-子要素を **横方向** に並べる。
-
-```typescript
-{
-  type: "hstack";
-  children: POMNode[];
-  alignItems: "start" | "center" | "end" | "stretch";
-  justifyContent: "start" | "center" | "end" | "spaceBetween";
-  gap?: number;
-
-  // 共通プロパティ
-  w?: number | "max" | `${number}%`;
-  h?: number | "max" | `${number}%`;
-  ...
-}
-```
-
-#### 7. Shape
+#### 4. Shape
 
 図形を描画するノード。テキスト付き/なしで異なる表現が可能で、複雑なビジュアル効果をサポートしています。
 
@@ -221,6 +213,63 @@
 - `cloudCallout`: 雲吹き出し（コメント）
 - `star5`: 5つ星（強調、デコレーション）
 - `downArrow`: 下矢印（フロー図）
+
+#### 5. Box
+
+単一の子要素をラップする汎用コンテナ。
+
+- 子要素は **1つ**
+- padding や固定サイズを与えてグルーピングに使う
+
+```typescript
+{
+  type: "box";
+  children: POMNode;
+
+  // 共通プロパティ
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+#### 6. VStack
+
+子要素を **縦方向** に並べる。
+
+```typescript
+{
+  type: "vstack";
+  children: POMNode[];
+  alignItems: "start" | "center" | "end" | "stretch";
+  justifyContent: "start" | "center" | "end" | "spaceBetween";
+  gap?: number;
+
+  // 共通プロパティ
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+#### 7. HStack
+
+子要素を **横方向** に並べる。
+
+```typescript
+{
+  type: "hstack";
+  children: POMNode[];
+  alignItems: "start" | "center" | "end" | "stretch";
+  justifyContent: "start" | "center" | "end" | "spaceBetween";
+  gap?: number;
+
+  // 共通プロパティ
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
 
 ## マスタースライド
 
@@ -399,3 +448,7 @@ await pptx.writeFile({ fileName: "sales-report.pptx" });
 | `inputVStackNodeSchema`         | VStackノード用                                 |
 | `inputHStackNodeSchema`         | HStackノード用                                 |
 | `inputMasterSlideOptionsSchema` | マスタースライド設定用                         |
+
+## ライセンス
+
+MIT
