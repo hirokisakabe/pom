@@ -37,7 +37,7 @@ export function createBulletOptions(
 
 export function createTextOptions(node: TextNode) {
   const fontSizePx = node.fontPx ?? 24;
-  const fontFamily = node.fontFamily ?? "Noto Sans JP";
+  const fontFamily = node.fontFamily ?? "游ゴシック";
   const lineSpacingMultiple = node.lineSpacingMultiple ?? 1.3;
 
   const baseOptions = {
