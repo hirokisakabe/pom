@@ -502,7 +502,6 @@ export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
 
 // ===== Master Slide Options =====
 export const pageNumberPositionSchema = z.enum(["left", "center", "right"]);
-export const dateFormatSchema = z.enum(["YYYY/MM/DD", "locale"]);
 
 export const masterSlideOptionsSchema = z.object({
   header: z.lazy(() => pomNodeSchema).optional(),
@@ -514,11 +513,10 @@ export const masterSlideOptionsSchema = z.object({
     .optional(),
   date: z
     .object({
-      format: dateFormatSchema,
+      value: z.string(),
     })
     .optional(),
 });
 
 export type PageNumberPosition = z.infer<typeof pageNumberPositionSchema>;
-export type DateFormat = z.infer<typeof dateFormatSchema>;
 export type MasterSlideOptions = z.infer<typeof masterSlideOptionsSchema>;

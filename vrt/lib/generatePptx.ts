@@ -2053,7 +2053,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
           ],
         },
         date: {
-          format: "YYYY/MM/DD",
+          value: "2025/01/01",
         },
       },
     },

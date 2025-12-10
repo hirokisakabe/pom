@@ -30,7 +30,6 @@ import {
   tableColumnSchema,
   tableRowSchema,
   pageNumberPositionSchema,
-  dateFormatSchema,
   chartTypeSchema,
   chartDataSchema,
   bulletOptionsSchema,
@@ -209,7 +208,7 @@ export const inputMasterSlideOptionsSchema = z.object({
     .optional(),
   date: z
     .object({
-      format: dateFormatSchema,
+      value: z.string(),
     })
     .optional(),
 });
