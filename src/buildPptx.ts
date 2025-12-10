@@ -53,10 +53,7 @@ function composePage(
     return content;
   }
 
-  const date =
-    master.date?.format === "locale"
-      ? new Date().toLocaleDateString()
-      : new Date().toISOString().split("T")[0].replace(/-/g, "/");
+  const date = master.date?.value ?? "";
 
   const children: POMNode[] = [];
 
