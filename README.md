@@ -541,39 +541,6 @@ if (result.success) {
 }
 ```
 
-### OpenAI Structured Outputs との連携
-
-OpenAI SDK の `zodResponseFormat` を使用して、LLM に直接スキーマ準拠の JSON を生成させることができます。
-
-```typescript
-import { inputPomNodeSchema, buildPptx } from "@hirokisakabe/pom";
-import OpenAI from "openai";
-import { zodResponseFormat } from "openai/helpers/zod";
-
-const openai = new OpenAI();
-
-const response = await openai.chat.completions.create({
-  model: "gpt-4o",
-  messages: [
-    {
-      role: "system",
-      content:
-        "あなたはプレゼンテーション作成アシスタントです。指定されたスキーマに従ってスライドのJSONを生成してください。",
-    },
-    {
-      role: "user",
-      content:
-        "売上報告のスライドを作成して。タイトルと3つの箇条書きを含めて。",
-    },
-  ],
-  response_format: zodResponseFormat(inputPomNodeSchema, "slide"),
-});
-
-const slideData = JSON.parse(response.choices[0].message.content!);
-const pptx = await buildPptx([slideData], { w: 1280, h: 720 });
-await pptx.writeFile({ fileName: "sales-report.pptx" });
-```
-
 ### 利用可能な入力用スキーマ
 
 | スキーマ                        | 説明                                           |
