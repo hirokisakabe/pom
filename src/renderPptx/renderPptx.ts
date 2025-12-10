@@ -182,7 +182,7 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
               ...shapeOptions,
               shape: node.shapeType,
               fontSize: pxToPt(node.fontPx ?? 24),
-              fontFace: "Noto Sans JP",
+              fontFace: "游ゴシック",
               color: node.color,
               align: node.alignText ?? "center",
               valign: "middle" as const,
