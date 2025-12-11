@@ -54,6 +54,7 @@ PPTX 生成は3段階のパイプライン:
 - `MasterSlideOptions` - マスタースライド設定（header, footer, pageNumber, date）
 - `ChartNode` - グラフノード（bar, line, pie をサポート）
 - `BulletOptions` - 箇条書き設定（type, indent, numberType, numberStartAt）
+- `TextMeasurementMode` - テキスト計測モード（`"canvas"` | `"fallback"` | `"auto"`）
 
 ### 入力スキーマ（LLM連携用）
 
@@ -67,6 +68,16 @@ PPTX 生成は3段階のパイプライン:
 - ユーザー入力: ピクセル（px）
 - 内部レイアウト: ピクセル（yoga-layout）
 - PPTX 出力: インチ（`pxToIn` で変換、96 DPI 基準）
+
+### テキスト計測
+
+テキストの幅計測には `canvas` パッケージを使用。フォントがインストールされていない環境（サーバーレス環境など）では自動的にフォールバック計算に切り替わる。
+
+- `src/calcYogaLayout/measureText.ts` - テキスト計測ロジック
+- `buildPptx` の `textMeasurement` オプションで計測方法を明示的に指定可能
+  - `"canvas"`: 常に canvas で計測
+  - `"fallback"`: 常にフォールバック計算（CJK文字=1em、英数字=0.5em）
+  - `"auto"`: フォント利用可否を自動検出（デフォルト）
 
 ## 機能追加時のチェックリスト
 
