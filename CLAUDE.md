@@ -19,6 +19,7 @@ npm run test              # テスト（watchモード）
 npx tsx main.ts           # サンプル実行（sample.pptx生成）
 npm run vrt:docker        # VRT実行（Docker環境）
 npm run vrt:docker:update # VRTベースライン更新（Docker環境）
+npm run preview:docker    # プレビュー（main.tsのPPTXをPNG化）
 ```
 
 ## ディレクトリ構造
@@ -35,6 +36,7 @@ src/
 └── table/                # テーブルユーティリティ
 
 vrt/                      # Visual Regression Test
+preview/                  # プレビュー基盤（Claude Code用）
 ```
 
 ## アーキテクチャ
@@ -79,3 +81,18 @@ PPTX 生成は3段階のパイプライン:
    - `README.md` - ユーザー向けドキュメント
    - `CLAUDE.md` - 主要な型セクションに追加
    - `llm-guide.md` - LLM 向けガイド
+
+## プレビューワークフロー（Claude Code用）
+
+main.ts を修正して PPTX の出力を確認する際は、以下の手順で行う:
+
+1. main.ts を編集（必要に応じて src/ 配下のロジックも修正）
+2. `npm run preview:docker` を実行して PNG を生成
+3. `preview/output/sample.png` を Read ツールで視覚的に確認
+4. レイアウトに問題があれば修正して 2 に戻る
+5. 問題なければコミット
+
+### 出力ファイル
+
+- `preview/output/sample.pptx` - 生成された PPTX
+- `preview/output/sample.png` - PNG 化された画像（レイアウト確認用）

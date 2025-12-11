@@ -11,6 +11,7 @@ export default defineConfig([
       "node_modules/**",
       "main.ts",
       "vrt/**",
+      "preview/**",
       "eslint.config.mts",
       "vitest.config.ts",
     ],
