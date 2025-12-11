@@ -1,7 +1,13 @@
 import { calcYogaLayout } from "./calcYogaLayout/calcYogaLayout";
+import {
+  setTextMeasurementMode,
+  TextMeasurementMode,
+} from "./calcYogaLayout/measureText";
 import { renderPptx } from "./renderPptx/renderPptx";
 import { toPositioned } from "./toPositioned/toPositioned";
 import { POMNode, PositionedNode, MasterSlideOptions } from "./types";
+
+export type { TextMeasurementMode };
 
 function replacePlaceholders(
   node: POMNode,
@@ -98,8 +104,17 @@ function composePage(
 export async function buildPptx(
   nodes: POMNode[],
   slideSize: { w: number; h: number },
-  options?: { master?: MasterSlideOptions },
+  options?: {
+    master?: MasterSlideOptions;
+    textMeasurement?: TextMeasurementMode;
+  },
 ) {
+  // テキスト計測モードを設定（デフォルトは auto）
+  if (options?.textMeasurement) {
+    setTextMeasurementMode(options.textMeasurement);
+  } else {
+    setTextMeasurementMode("auto");
+  }
   const positionedPages: PositionedNode[] = [];
   const totalPages = nodes.length;
 
