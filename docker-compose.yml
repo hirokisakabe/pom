@@ -16,3 +16,12 @@ services:
       # expected.png を更新するため vrt ディレクトリ全体をマウント
       - ./vrt:/app/vrt
     command: npm run vrt:update
+
+  preview:
+    build:
+      context: .
+      dockerfile: vrt/Dockerfile
+    volumes:
+      # preview 結果をホストに出力するためマウント
+      - ./preview/output:/app/preview/output
+    command: npm run preview
