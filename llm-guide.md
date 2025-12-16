@@ -12,16 +12,16 @@ pom は PowerPoint を JSON で宣言的に記述する形式。以下の仕様�
 
 ## ノード一覧
 
-| type   | 用途     | 主要プロパティ                                     |
-| ------ | -------- | -------------------------------------------------- |
-| text   | テキスト | text, fontPx, color, bold, alignText, bullet       |
-| vstack | 縦並び   | children[], gap, alignItems, justifyContent        |
-| hstack | 横並び   | children[], gap, alignItems, justifyContent        |
-| box    | ラッパー | children（単一ノード）                             |
-| table  | 表       | columns[], rows[], defaultRowHeight                |
-| shape  | 図形     | shapeType, fill, line, text, fontPx                |
-| chart  | グラフ   | chartType(bar/line/pie), data[], showLegend, title |
-| image  | 画像     | src                                                |
+| type   | 用途     | 主要プロパティ                                                              |
+| ------ | -------- | --------------------------------------------------------------------------- |
+| text   | テキスト | text, fontPx, color, bold, alignText, bullet                                |
+| vstack | 縦並び   | children[], gap, alignItems, justifyContent                                 |
+| hstack | 横並び   | children[], gap, alignItems, justifyContent                                 |
+| box    | ラッパー | children（単一ノード）                                                      |
+| table  | 表       | columns[], rows[], defaultRowHeight                                         |
+| shape  | 図形     | shapeType, fill, line, text, fontPx                                         |
+| chart  | グラフ   | chartType(bar/line/pie/area/doughnut/radar), data[], showLegend, radarStyle |
+| image  | 画像     | src                                                                         |
 
 ### 共通プロパティ
 

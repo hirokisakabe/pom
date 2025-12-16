@@ -1990,6 +1990,124 @@ const page8Common: POMNode = {
   ],
 };
 
+// ============================================================
+// Page 9: Additional Chart Types Test
+// テスト対象: area, doughnut, radar
+// ============================================================
+const page9ChartAdditional: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 16,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "Page 9: Additional Chart Types",
+      fontPx: 28,
+      color: palette.charcoal,
+      bold: true,
+    },
+    {
+      type: "hstack",
+      gap: 16,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "33%",
+          padding: 12,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 8,
+            children: [
+              { type: "text", text: "Area Chart", fontPx: 14, bold: true },
+              {
+                type: "chart",
+                chartType: "area",
+                w: 350,
+                h: 200,
+                data: [
+                  {
+                    name: "Revenue",
+                    labels: ["Jan", "Feb", "Mar", "Apr", "May"],
+                    values: [30, 50, 40, 70, 60],
+                  },
+                ],
+                showLegend: true,
+                chartColors: ["0088CC"],
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "33%",
+          padding: 12,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 8,
+            children: [
+              { type: "text", text: "Doughnut Chart", fontPx: 14, bold: true },
+              {
+                type: "chart",
+                chartType: "doughnut",
+                w: 350,
+                h: 200,
+                data: [
+                  {
+                    name: "Share",
+                    labels: ["A", "B", "C", "D"],
+                    values: [35, 25, 25, 15],
+                  },
+                ],
+                showLegend: true,
+                chartColors: ["0088CC", "00AA00", "FF6600", "888888"],
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "33%",
+          padding: 12,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 8,
+            children: [
+              { type: "text", text: "Radar Chart", fontPx: 14, bold: true },
+              {
+                type: "chart",
+                chartType: "radar",
+                w: 350,
+                h: 200,
+                data: [
+                  {
+                    name: "Skills",
+                    labels: ["Tech", "Design", "PM", "Sales", "Support"],
+                    values: [80, 60, 70, 50, 90],
+                  },
+                ],
+                showLegend: true,
+                chartColors: ["0088CC"],
+                radarStyle: "filled",
+              },
+            ],
+          },
+        },
+      ],
+    },
+  ],
+};
+
 export async function generatePptx(outputPath: string): Promise<void> {
   const pptx = await buildPptx(
     [
@@ -2001,6 +2119,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
       page6Chart,
       page7Layout,
       page8Common,
+      page9ChartAdditional,
     ],
     {
       w: 1280,

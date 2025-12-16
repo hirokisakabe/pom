@@ -333,12 +333,12 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 
 #### 8. Chart
 
-グラフを描画するノード。棒グラフ、折れ線グラフ、円グラフをサポート。
+グラフを描画するノード。棒グラフ、折れ線グラフ、円グラフ、エリアチャート、ドーナツチャート、レーダーチャートをサポート。
 
 ```typescript
 {
   type: "chart";
-  chartType: "bar" | "line" | "pie";
+  chartType: "bar" | "line" | "pie" | "area" | "doughnut" | "radar";
   data: {
     name?: string;           // 系列名
     labels: string[];        // カテゴリラベル
@@ -348,6 +348,7 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
   showTitle?: boolean;       // タイトル表示（デフォルト: false）
   title?: string;            // タイトル文字列
   chartColors?: string[];    // データカラー配列（16進カラーコード）
+  radarStyle?: "standard" | "marker" | "filled";  // radar専用: チャートスタイル
 
   // 共通プロパティ
   w?: number | "max" | `${number}%`;
@@ -398,6 +399,24 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
   ],
   showLegend: true,
   chartColors: ["0088CC", "00AA00", "FF6600", "888888"],
+}
+
+// レーダーチャート
+{
+  type: "chart",
+  chartType: "radar",
+  w: 400,
+  h: 300,
+  data: [
+    {
+      name: "スキル評価",
+      labels: ["技術", "デザイン", "PM", "営業", "サポート"],
+      values: [80, 60, 70, 50, 90],
+    },
+  ],
+  showLegend: true,
+  radarStyle: "filled",
+  chartColors: ["0088CC"],
 }
 ```
 

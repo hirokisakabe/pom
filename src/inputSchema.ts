@@ -33,6 +33,7 @@ import {
   chartTypeSchema,
   chartDataSchema,
   bulletOptionsSchema,
+  radarStyleSchema,
   type AlignItems,
   type JustifyContent,
 } from "./types";
@@ -97,6 +98,8 @@ export const inputChartNodeSchema = inputBaseNodeSchema.extend({
   showTitle: z.boolean().optional(),
   title: z.string().optional(),
   chartColors: z.array(z.string()).optional(),
+  // radar専用オプション
+  radarStyle: radarStyleSchema.optional(),
 });
 
 export type InputTextNode = z.infer<typeof inputTextNodeSchema>;
