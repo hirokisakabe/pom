@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: vrt/Dockerfile
+    image: pom-vrt:latest
     volumes:
       # 結果をホストに出力するため output ディレクトリをマウント
       - ./vrt/output:/app/vrt/output
@@ -12,6 +13,7 @@ services:
     build:
       context: .
       dockerfile: vrt/Dockerfile
+    image: pom-vrt:latest
     volumes:
       # expected.png を更新するため vrt ディレクトリ全体をマウント
       - ./vrt:/app/vrt
@@ -21,6 +23,7 @@ services:
     build:
       context: .
       dockerfile: vrt/Dockerfile
+    image: pom-vrt:latest
     volumes:
       # preview 結果をホストに出力するためマウント
       - ./preview/output:/app/preview/output
