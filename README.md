@@ -7,7 +7,7 @@
 - Node.js 18 以上
 
 > [!NOTE]
-> pom は Node.js 環境でのみ動作します。ブラウザ環境では動作しません。
+> PPTX生成機能（`buildPptx`）は Node.js 環境でのみ動作します。ただし、入力スキーマのみを使用する場合は `@hirokisakabe/pom/schema` からブラウザ環境でもimport可能です。
 
 ## 目次
 
@@ -19,6 +19,7 @@
 - [マスタースライド](#マスタースライド)
 - [サーバーレス環境での利用](#サーバーレス環境での利用)
 - [LLM 連携](#llm-連携)
+  - [ブラウザ環境での入力検証](#ブラウザ環境での入力検証)
 - [ライセンス](#ライセンス)
 
 ## インストール
@@ -586,6 +587,37 @@ if (result.success) {
 | `inputVStackNodeSchema`         | VStackノード用                                 |
 | `inputHStackNodeSchema`         | HStackノード用                                 |
 | `inputMasterSlideOptionsSchema` | マスタースライド設定用                         |
+
+### ブラウザ環境での入力検証
+
+ブラウザ環境（React、Vue、SvelteなどのSPA）で LLM の出力を検証したい場合は、`@hirokisakabe/pom/schema` からスキーマをimportできます。このサブパスは Node.js 依存のないスキーマのみをエクスポートするため、ブラウザでも問題なく動作します。
+
+```typescript
+// ブラウザ環境で使用可能
+import { inputPomNodeSchema } from "@hirokisakabe/pom/schema";
+
+// LLMからのレスポンスを検証
+const result = inputPomNodeSchema.safeParse(llmResponse);
+
+if (result.success) {
+  // 検証成功 - サーバーサイドに送信してPPTX生成
+  await fetch("/api/generate-pptx", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(result.data),
+  });
+} else {
+  // 検証失敗 - エラーをユーザーに表示
+  console.error("Validation failed:", result.error.format());
+}
+```
+
+**`@hirokisakabe/pom` vs `@hirokisakabe/pom/schema` の違い:**
+
+| インポートパス             | 環境       | 含まれる機能                               |
+| -------------------------- | ---------- | ------------------------------------------ |
+| `@hirokisakabe/pom`        | Node.js    | すべて（PPTX生成、スキーマ、型定義）       |
+| `@hirokisakabe/pom/schema` | ブラウザ可 | スキーマと型定義のみ（PPTX生成は含まない） |
 
 ## ライセンス
 
