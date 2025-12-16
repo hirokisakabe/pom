@@ -81,13 +81,20 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
         }
 
         case "image": {
-          slide.addImage({
-            path: node.src,
+          const imageOptions = {
             x: pxToIn(node.x),
             y: pxToIn(node.y),
             w: pxToIn(node.w),
             h: pxToIn(node.h),
-          });
+          };
+
+          if (node.imageData) {
+            // Base64 データがある場合は data プロパティを使用（リモート画像）
+            slide.addImage({ ...imageOptions, data: node.imageData });
+          } else {
+            // ローカルパスの場合は path プロパティを使用
+            slide.addImage({ ...imageOptions, path: node.src });
+          }
           break;
         }
 

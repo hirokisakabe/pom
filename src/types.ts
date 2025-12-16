@@ -473,7 +473,7 @@ type PositionedBase = z.infer<typeof positionedBaseSchema>;
 
 export type PositionedNode =
   | (TextNode & PositionedBase)
-  | (ImageNode & PositionedBase)
+  | (ImageNode & PositionedBase & { imageData?: string })
   | (TableNode & PositionedBase)
   | (BoxNode & PositionedBase & { children: PositionedNode })
   | (VStackNode & PositionedBase & { children: PositionedNode[] })
@@ -484,7 +484,9 @@ export type PositionedNode =
 export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
   z.union([
     textNodeSchema.merge(positionedBaseSchema),
-    imageNodeSchema.merge(positionedBaseSchema),
+    imageNodeSchema.merge(positionedBaseSchema).extend({
+      imageData: z.string().optional(),
+    }),
     tableNodeSchema.merge(positionedBaseSchema),
     boxNodeSchemaBase.merge(positionedBaseSchema).extend({
       children: z.lazy(() => positionedNodeSchema),

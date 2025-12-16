@@ -1,4 +1,5 @@
 import type { POMNode, PositionedNode } from "../types";
+import { getImageData } from "../calcYogaLayout/measureImage";
 
 /**
  * POMNode ツリーを絶対座標付きの PositionedNode ツリーに変換する
@@ -31,12 +32,14 @@ export function toPositioned(
       };
     }
     case "image": {
+      const imageData = getImageData(pom.src);
       return {
         ...pom,
         x: absoluteX,
         y: absoluteY,
         w: layout.width,
         h: layout.height,
+        imageData,
       };
     }
     case "table": {
