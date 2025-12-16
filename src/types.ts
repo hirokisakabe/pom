@@ -355,7 +355,16 @@ export const shapeNodeSchema = basePOMNodeSchema.extend({
   bold: z.boolean().optional(),
 });
 
-export const chartTypeSchema = z.enum(["bar", "line", "pie"]);
+export const chartTypeSchema = z.enum([
+  "bar",
+  "line",
+  "pie",
+  "area",
+  "doughnut",
+  "radar",
+]);
+
+export const radarStyleSchema = z.enum(["standard", "marker", "filled"]);
 
 export const chartDataSchema = z.object({
   name: z.string().optional(),
@@ -371,6 +380,8 @@ export const chartNodeSchema = basePOMNodeSchema.extend({
   showTitle: z.boolean().optional(),
   title: z.string().optional(),
   chartColors: z.array(z.string()).optional(),
+  // radar専用オプション
+  radarStyle: radarStyleSchema.optional(),
 });
 
 export type TextNode = z.infer<typeof textNodeSchema>;
@@ -383,6 +394,7 @@ export type ShapeNode = z.infer<typeof shapeNodeSchema>;
 export type ChartType = z.infer<typeof chartTypeSchema>;
 export type ChartData = z.infer<typeof chartDataSchema>;
 export type ChartNode = z.infer<typeof chartNodeSchema>;
+export type RadarStyle = z.infer<typeof radarStyleSchema>;
 
 // ===== Recursive Types with Explicit Type Definitions =====
 

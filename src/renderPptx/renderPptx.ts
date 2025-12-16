@@ -209,7 +209,7 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
             values: d.values,
           }));
 
-          const chartOptions = {
+          const chartOptions: Record<string, unknown> = {
             x: pxToIn(node.x),
             y: pxToIn(node.y),
             w: pxToIn(node.w),
@@ -219,6 +219,11 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
             title: node.title,
             chartColors: node.chartColors,
           };
+
+          // radar専用オプション
+          if (node.chartType === "radar" && node.radarStyle) {
+            chartOptions.radarStyle = node.radarStyle;
+          }
 
           slide.addChart(node.chartType, chartData, chartOptions);
           break;
