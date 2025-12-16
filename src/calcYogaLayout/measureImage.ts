@@ -7,6 +7,20 @@ import * as fs from "fs";
 const imageSizeCache = new Map<string, { widthPx: number; heightPx: number }>();
 
 /**
+ * 画像データのキャッシュ（Base64形式、リモート画像用）
+ */
+const imageDataCache = new Map<string, string>();
+
+/**
+ * キャッシュされた画像データ（Base64）を取得する
+ * @param src 画像のパス
+ * @returns Base64形式の画像データ、またはキャッシュがない場合はundefined
+ */
+export function getImageData(src: string): string | undefined {
+  return imageDataCache.get(src);
+}
+
+/**
  * 画像サイズを事前取得してキャッシュする（非同期）
  * HTTPS URLの画像を処理する際に使用
  * @param src 画像のパス（ローカルパス、base64データ、またはHTTPS URL）
@@ -38,6 +52,11 @@ export async function prefetchImageSize(src: string): Promise<{
       }
       const arrayBuffer = await response.arrayBuffer();
       buffer = new Uint8Array(arrayBuffer);
+
+      // 画像データをBase64形式でキャッシュ（pptxgenjs用）
+      const contentType = response.headers.get("content-type") || "image/png";
+      const base64 = Buffer.from(arrayBuffer).toString("base64");
+      imageDataCache.set(src, `${contentType};base64,${base64}`);
     }
     // ローカルファイルパスの場合
     else {
