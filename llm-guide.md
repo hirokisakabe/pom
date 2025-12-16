@@ -210,3 +210,12 @@ bullet オプション：
 | `"left"`                 | `"start"`         | alignItems/justifyContentはstart/end |
 | `children: [...]` in box | `children: {...}` | boxのchildrenは単一ノード            |
 | `width: "100%"`          | `w: "100%"`       | プロパティ名はw/h                    |
+
+## スキーマ検証
+
+生成した JSON は `inputPomNodeSchema` で検証可能。ブラウザ環境では `@hirokisakabe/pom/schema` からimport。
+
+```typescript
+import { inputPomNodeSchema } from "@hirokisakabe/pom/schema";
+const result = inputPomNodeSchema.safeParse(json);
+```
