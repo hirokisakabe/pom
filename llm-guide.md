@@ -1,54 +1,54 @@
-# pom 仕様
+# pom Specification
 
-pom は PowerPoint を JSON で宣言的に記述する形式。以下の仕様に従って JSON を生成すること。
+pom is a format for declaratively describing PowerPoint in JSON. Generate JSON according to the following specification.
 
-## 標準設定
+## Standard Settings
 
 ```
-スライドサイズ: { w: 1280, h: 720 }
-標準padding: 48px（スライド全体）、18-24px（内部ボックス）
-標準gap: 12-24px
+Slide size: { w: 1280, h: 720 }
+Standard padding: 48px (entire slide), 18-24px (internal boxes)
+Standard gap: 12-24px
 ```
 
-## ノード一覧
+## Node List
 
-| type   | 用途     | 主要プロパティ                                                              |
-| ------ | -------- | --------------------------------------------------------------------------- |
-| text   | テキスト | text, fontPx, color, bold, alignText, bullet                                |
-| vstack | 縦並び   | children[], gap, alignItems, justifyContent                                 |
-| hstack | 横並び   | children[], gap, alignItems, justifyContent                                 |
-| box    | ラッパー | children（単一ノード）                                                      |
-| table  | 表       | columns[], rows[], defaultRowHeight                                         |
-| shape  | 図形     | shapeType, fill, line, text, fontPx                                         |
-| chart  | グラフ   | chartType(bar/line/pie/area/doughnut/radar), data[], showLegend, radarStyle |
-| image  | 画像     | src                                                                         |
+| type   | Purpose    | Main Properties                                                             |
+| ------ | ---------- | --------------------------------------------------------------------------- |
+| text   | Text       | text, fontPx, color, bold, alignText, bullet                                |
+| vstack | Vertical   | children[], gap, alignItems, justifyContent                                 |
+| hstack | Horizontal | children[], gap, alignItems, justifyContent                                 |
+| box    | Wrapper    | children (single node)                                                      |
+| table  | Table      | columns[], rows[], defaultRowHeight                                         |
+| shape  | Shape      | shapeType, fill, line, text, fontPx                                         |
+| chart  | Chart      | chartType(bar/line/pie/area/doughnut/radar), data[], showLegend, radarStyle |
+| image  | Image      | src                                                                         |
 
-### 共通プロパティ
+### Common Properties
 
-すべてのノードで使用可能：
+Available for all nodes:
 
-- `w`, `h`: サイズ（数値px / `"max"` / `"50%"`）
-- `padding`: 余白（数値 or `{ top, right, bottom, left }`）
-- `backgroundColor`: 背景色（6桁hex、例: `"F8FAFC"`）
-- `border`: 枠線（`{ color, width, dashType }`）
+- `w`, `h`: Size (number in px / `"max"` / `"50%"`)
+- `padding`: Margin (number or `{ top, right, bottom, left }`)
+- `backgroundColor`: Background color (6-digit hex, e.g., `"F8FAFC"`)
+- `border`: Border (`{ color, width, dashType }`)
 
 ### alignItems / justifyContent
 
 - alignItems: `"start"` | `"center"` | `"end"` | `"stretch"`
 - justifyContent: `"start"` | `"center"` | `"end"` | `"spaceBetween"`
 
-## フォントサイズ目安
+## Font Size Guidelines
 
-| 用途     | fontPx |
-| -------- | ------ |
-| タイトル | 28-40  |
-| 見出し   | 18-24  |
-| 本文     | 13-16  |
-| 注釈     | 10-12  |
+| Purpose   | fontPx |
+| --------- | ------ |
+| Title     | 28-40  |
+| Heading   | 18-24  |
+| Body      | 13-16  |
+| Footnotes | 10-12  |
 
-## パターン例
+## Pattern Examples
 
-### 1. 基本スライド構造
+### 1. Basic Slide Structure
 
 ```json
 {
@@ -59,13 +59,13 @@ pom は PowerPoint を JSON で宣言的に記述する形式。以下の仕様�
   "gap": 24,
   "alignItems": "stretch",
   "children": [
-    { "type": "text", "text": "タイトル", "fontPx": 32, "bold": true },
-    { "type": "text", "text": "本文テキスト", "fontPx": 14 }
+    { "type": "text", "text": "Title", "fontPx": 32, "bold": true },
+    { "type": "text", "text": "Body text", "fontPx": 14 }
   ]
 }
 ```
 
-### 2. 2カラムレイアウト
+### 2. Two-Column Layout
 
 ```json
 {
@@ -78,49 +78,49 @@ pom は PowerPoint を JSON で宣言的に記述する形式。以下の仕様�
       "w": "50%",
       "padding": 20,
       "backgroundColor": "FFFFFF",
-      "children": { "type": "text", "text": "左カラム", "fontPx": 14 }
+      "children": { "type": "text", "text": "Left column", "fontPx": 14 }
     },
     {
       "type": "box",
       "w": "50%",
       "padding": 20,
       "backgroundColor": "FFFFFF",
-      "children": { "type": "text", "text": "右カラム", "fontPx": 14 }
+      "children": { "type": "text", "text": "Right column", "fontPx": 14 }
     }
   ]
 }
 ```
 
-### 3. 箇条書き
+### 3. Bullet Points
 
 ```json
 {
   "type": "text",
-  "text": "項目1\n項目2\n項目3",
+  "text": "Item 1\nItem 2\nItem 3",
   "fontPx": 14,
   "bullet": true
 }
 ```
 
-番号付きリスト：
+Numbered list:
 
 ```json
 {
   "type": "text",
-  "text": "ステップ1\nステップ2\nステップ3",
+  "text": "Step 1\nStep 2\nStep 3",
   "fontPx": 14,
   "bullet": { "type": "number" }
 }
 ```
 
-bullet オプション：
+Bullet options:
 
-- `bullet: true` - 通常の箇条書き（•）
-- `bullet: { type: "number" }` - 番号付き（1. 2. 3.）
-- `bullet: { type: "number", numberType: "alphaLcPeriod" }` - アルファベット（a. b. c.）
-- `bullet: { type: "number", numberStartAt: 5 }` - 開始番号指定
+- `bullet: true` - Standard bullet points (•)
+- `bullet: { type: "number" }` - Numbered (1. 2. 3.)
+- `bullet: { type: "number", numberType: "alphaLcPeriod" }` - Alphabet (a. b. c.)
+- `bullet: { type: "number", numberStartAt: 5 }` - Specify starting number
 
-### 4. テーブル
+### 4. Table
 
 ```json
 {
@@ -131,13 +131,13 @@ bullet オプション：
     {
       "cells": [
         {
-          "text": "項目",
+          "text": "Item",
           "fontPx": 14,
           "bold": true,
           "backgroundColor": "DBEAFE"
         },
         {
-          "text": "値",
+          "text": "Value",
           "fontPx": 14,
           "bold": true,
           "backgroundColor": "DBEAFE"
@@ -146,15 +146,15 @@ bullet オプション：
     },
     {
       "cells": [
-        { "text": "売上", "fontPx": 13 },
-        { "text": "100万円", "fontPx": 13 }
+        { "text": "Sales", "fontPx": 13 },
+        { "text": "$1M", "fontPx": 13 }
       ]
     }
   ]
 }
 ```
 
-カラム幅省略（テーブル幅から均等分割）：
+Omitting column width (evenly distributed from table width):
 
 ```json
 {
@@ -165,7 +165,7 @@ bullet オプション：
 }
 ```
 
-### 5. 図形（テキスト付き）
+### 5. Shape (with text)
 
 ```json
 {
@@ -173,16 +173,16 @@ bullet オプション：
   "shapeType": "roundRect",
   "w": 200,
   "h": 60,
-  "text": "ボタン風",
+  "text": "Button style",
   "fontPx": 16,
   "fill": { "color": "1D4ED8" },
   "color": "FFFFFF"
 }
 ```
 
-主な shapeType: `rect`, `roundRect`, `ellipse`, `triangle`, `star5`, `cloud`, `downArrow`
+Common shapeTypes: `rect`, `roundRect`, `ellipse`, `triangle`, `star5`, `cloud`, `downArrow`
 
-### 6. グラフ
+### 6. Chart
 
 ```json
 {
@@ -192,8 +192,8 @@ bullet オプション：
   "h": 300,
   "data": [
     {
-      "name": "売上",
-      "labels": ["1月", "2月", "3月"],
+      "name": "Sales",
+      "labels": ["Jan", "Feb", "Mar"],
       "values": [100, 150, 200]
     }
   ],
@@ -202,18 +202,18 @@ bullet オプション：
 }
 ```
 
-## 注意点
+## Important Notes
 
-| NG                       | OK                | 説明                                 |
-| ------------------------ | ----------------- | ------------------------------------ |
-| `"#FF0000"`              | `"FF0000"`        | colorに#は不要                       |
-| `"left"`                 | `"start"`         | alignItems/justifyContentはstart/end |
-| `children: [...]` in box | `children: {...}` | boxのchildrenは単一ノード            |
-| `width: "100%"`          | `w: "100%"`       | プロパティ名はw/h                    |
+| NG                       | OK                | Description                             |
+| ------------------------ | ----------------- | --------------------------------------- |
+| `"#FF0000"`              | `"FF0000"`        | No # needed for color                   |
+| `"left"`                 | `"start"`         | alignItems/justifyContent use start/end |
+| `children: [...]` in box | `children: {...}` | box's children is a single node         |
+| `width: "100%"`          | `w: "100%"`       | Property names are w/h                  |
 
-## スキーマ検証
+## Schema Validation
 
-生成した JSON は `inputPomNodeSchema` で検証可能。ブラウザ環境では `@hirokisakabe/pom/schema` からimport。
+Generated JSON can be validated with `inputPomNodeSchema`. In browser environments, import from `@hirokisakabe/pom/schema`.
 
 ```typescript
 import { inputPomNodeSchema } from "@hirokisakabe/pom/schema";
