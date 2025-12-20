@@ -364,9 +364,11 @@ function convertTreeNodeToPOM(node: ContainmentTreeNode): POMNode {
   // 子がある場合
   const backgroundColor = getBackgroundColor(element);
 
-  // 子要素の位置情報を使って配置
+  // 子要素の位置情報を親基準の相対座標に変換
   const childElements: ElementWithPosition[] = children.map((child) => ({
     ...child.element,
+    left: child.element.left - element.left, // 親基準に変換
+    top: child.element.top - element.top, // 親基準に変換
     node: convertTreeNodeToPOM(child),
   }));
 
