@@ -14,8 +14,6 @@ export function convertText(element: Text): TextNode {
   const result: TextNode = {
     type: "text",
     text,
-    w: ptToPx(element.width),
-    h: ptToPx(element.height),
   };
 
   // スタイル情報を設定

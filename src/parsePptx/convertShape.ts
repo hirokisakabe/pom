@@ -93,8 +93,6 @@ export function convertShape(element: Shape): ShapeNode {
   const result: ShapeNode = {
     type: "shape",
     shapeType: mapShapeType(element.shapType),
-    w: ptToPx(element.width),
-    h: ptToPx(element.height),
   };
 
   // テキストがある場合

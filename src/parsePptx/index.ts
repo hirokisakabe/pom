@@ -207,6 +207,7 @@ function getBackgroundColor(el: ElementWithPosition): string | undefined {
 
 /**
  * 複数の要素を行グループ化してVStack/HStack構造に変換
+ * padding による位置調整あり、w/h は指定しない
  */
 function arrangeElements(elements: ElementWithPosition[]): POMNode {
   if (elements.length === 0) {
@@ -244,7 +245,7 @@ function arrangeElements(elements: ElementWithPosition[]): POMNode {
     row.sort((a, b) => a.left - b.left);
   }
 
-  // VStack + HStack 構造を生成
+  // VStack + HStack 構造を生成（padding 付き、w/h なし）
   let prevRowBottom = 0;
   const vstackChildren: POMNode[] = [];
 
