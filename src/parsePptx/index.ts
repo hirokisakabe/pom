@@ -1,5 +1,5 @@
 import { createRequire } from "module";
-import type { POMNode, BoxNode, HStackNode, VStackNode } from "../types";
+import type { POMNode, HStackNode, VStackNode } from "../types";
 import type { ParsedPptx, ParsePptxOptions, Element, Slide } from "./types";
 import { ptToPx } from "./units";
 import { convertText } from "./convertText";
@@ -240,8 +240,60 @@ function getBackgroundColor(el: ElementWithPosition): string | undefined {
 }
 
 /**
+ * 行内の要素間のgapを計算
+ * 連続する要素間の最小距離を返す
+ */
+function calculateRowGap(row: ElementWithPosition[]): number {
+  if (row.length < 2) return 0;
+
+  let minGap = Infinity;
+  for (let i = 0; i < row.length - 1; i++) {
+    const current = row[i];
+    const next = row[i + 1];
+    const measured = measureNodeSize(
+      current.node,
+      current.width,
+      current.height,
+    );
+    const gap = next.left - (current.left + measured.width);
+    if (gap > 0 && gap < minGap) {
+      minGap = gap;
+    }
+  }
+  return minGap === Infinity ? 0 : Math.round(minGap);
+}
+
+/**
+ * 行間のgapを計算
+ */
+function calculateVGap(rows: ElementWithPosition[][]): number {
+  if (rows.length < 2) return 0;
+
+  let minGap = Infinity;
+  for (let i = 0; i < rows.length - 1; i++) {
+    const currentRow = rows[i];
+    const nextRow = rows[i + 1];
+
+    // 現在の行の最下端を計算
+    const currentBottom = Math.max(
+      ...currentRow.map((el) => {
+        const measured = measureNodeSize(el.node, el.width, el.height);
+        return el.top + measured.height;
+      }),
+    );
+    // 次の行の最上端
+    const nextTop = Math.min(...nextRow.map((el) => el.top));
+    const gap = nextTop - currentBottom;
+    if (gap > 0 && gap < minGap) {
+      minGap = gap;
+    }
+  }
+  return minGap === Infinity ? 0 : Math.round(minGap);
+}
+
+/**
  * 複数の要素を行グループ化してVStack/HStack構造に変換
- * padding による位置調整あり、w/h は指定しない
+ * gap を使用してシンプルな構造を生成
  */
 function arrangeElements(elements: ElementWithPosition[]): POMNode {
   if (elements.length === 0) {
@@ -279,64 +331,27 @@ function arrangeElements(elements: ElementWithPosition[]): POMNode {
     row.sort((a, b) => a.left - b.left);
   }
 
-  // VStack + HStack 構造を生成（padding 付き、w/h なし）
-  let prevRowBottom = 0;
+  // 行間のgapを計算
+  const vGap = calculateVGap(rows);
+
+  // 各行をPOMNodeに変換
   const vstackChildren: POMNode[] = [];
 
   for (const row of rows) {
-    const rowTop = row[0].top;
-    const paddingTop = Math.max(0, rowTop - prevRowBottom);
-
-    let prevRight = 0;
-    const rowChildren: BoxNode[] = [];
-
-    for (const el of row) {
-      // 実際のコンテンツサイズを計測
-      const measured = measureNodeSize(el.node, el.width, el.height);
-
-      const paddingLeft = Math.max(0, el.left - prevRight);
-      prevRight = el.left + measured.width; // 計測サイズを使用
-
-      const box: BoxNode = {
-        type: "box",
-        padding: { left: paddingLeft },
-        // w/h は指定しない - Yoga が自動計算
-        children: el.node,
-      };
-
-      rowChildren.push(box);
-    }
-
-    // prevRowBottom も計測サイズで更新
-    prevRowBottom = Math.max(
-      ...row.map((el) => {
-        const measured = measureNodeSize(el.node, el.width, el.height);
-        return el.top + measured.height;
-      }),
-    );
-
-    if (rowChildren.length === 1) {
-      const singleBox = rowChildren[0];
-      const existingPadding =
-        typeof singleBox.padding === "object" ? singleBox.padding : {};
-      singleBox.padding = {
-        ...existingPadding,
-        top: paddingTop,
-      };
-      vstackChildren.push(singleBox);
+    if (row.length === 1) {
+      // 単一要素はそのまま追加
+      vstackChildren.push(row[0].node);
     } else {
+      // 複数要素はHStackで配置
+      const hGap = calculateRowGap(row);
       const hstack: HStackNode = {
         type: "hstack",
-        children: rowChildren,
+        w: "max",
+        gap: hGap > 0 ? hGap : undefined,
+        alignItems: "center",
+        children: row.map((el) => el.node),
       };
-
-      const rowBox: BoxNode = {
-        type: "box",
-        padding: { top: paddingTop },
-        children: hstack,
-      };
-
-      vstackChildren.push(rowBox);
+      vstackChildren.push(hstack);
     }
   }
 
@@ -346,6 +361,8 @@ function arrangeElements(elements: ElementWithPosition[]): POMNode {
 
   return {
     type: "vstack",
+    w: "max",
+    gap: vGap > 0 ? vGap : undefined,
     children: vstackChildren,
   };
 }
