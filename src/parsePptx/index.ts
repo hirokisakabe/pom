@@ -375,11 +375,13 @@ function convertTreeNodeToPOM(node: ContainmentTreeNode): POMNode {
   const arrangedChildren = arrangeElements(childElements);
 
   // 親要素が背景色を持つ場合、BoxでラップしてbackgroundColorを設定
+  // 背景Boxは子要素の配置基準となるため、元のサイズを維持
   if (backgroundColor) {
     return {
       type: "box",
+      w: element.width,
+      h: element.height,
       backgroundColor,
-      // w/h は指定しない - Yoga が自動計算
       children: arrangedChildren,
     };
   }
