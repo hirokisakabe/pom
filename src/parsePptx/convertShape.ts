@@ -93,6 +93,8 @@ export function convertShape(element: Shape): ShapeNode {
   const result: ShapeNode = {
     type: "shape",
     shapeType: mapShapeType(element.shapType),
+    w: ptToPx(element.width),
+    h: ptToPx(element.height),
   };
 
   // テキストがある場合
@@ -115,12 +117,6 @@ export function convertShape(element: Shape): ShapeNode {
         result.alignText = styles.textAlign;
       }
     }
-  }
-
-  // テキストなし Shape は w/h を指定（自動計算できないため）
-  if (!result.text) {
-    result.w = ptToPx(element.width);
-    result.h = ptToPx(element.height);
   }
 
   // 塗りつぶし
