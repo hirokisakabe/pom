@@ -28,3 +28,13 @@ services:
       # preview 結果をホストに出力するためマウント
       - ./preview/output:/app/preview/output
     command: npm run preview
+
+  compare:
+    build:
+      context: .
+      dockerfile: vrt/Dockerfile
+    image: pom-vrt:latest
+    volumes:
+      # 比較結果をホストに出力するためマウント
+      - ./vrt/output:/app/vrt/output
+    command: npm run compare

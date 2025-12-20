@@ -90,27 +90,84 @@ type ElementWithPosition = {
 
 /**
  * 行グループ化の閾値（px）
- * Y座標がこの値以内なら同じ行として扱う
+ * top座標がこの値以内なら同じ行として扱う
  */
-const ROW_THRESHOLD = 20;
+const ROW_THRESHOLD_TOP = 20;
+
+/**
+ * 要素Aが要素Bを完全に包含しているかチェック
+ * 背景シェイプの検出に使用
+ */
+function containsElement(
+  container: ElementWithPosition,
+  contained: ElementWithPosition,
+): boolean {
+  return (
+    container.left <= contained.left &&
+    container.top <= contained.top &&
+    container.left + container.width >= contained.left + contained.width &&
+    container.top + container.height >= contained.top + contained.height
+  );
+}
+
+/**
+ * 背景と思われる要素をフィルタリング
+ * 他の要素を完全に包含している大きな要素は背景とみなしてスキップ
+ */
+function filterBackgroundElements(
+  elements: ElementWithPosition[],
+): ElementWithPosition[] {
+  const backgroundIndices = new Set<number>();
+
+  for (let i = 0; i < elements.length; i++) {
+    for (let j = 0; j < elements.length; j++) {
+      if (i === j) continue;
+
+      // elements[i] が elements[j] を包含しているかチェック
+      if (containsElement(elements[i], elements[j])) {
+        // 包含している要素を背景としてマーク
+        backgroundIndices.add(i);
+        break;
+      }
+    }
+  }
+
+  return elements.filter((_, index) => !backgroundIndices.has(index));
+}
 
 /**
  * 要素を行にグループ化
- * Y座標が近い要素を同じ行としてグループ化する
+ * top座標が近い要素を同じ行としてグループ化する
+ *
+ * 戦略:
+ * 1. 背景要素（他を包含する要素）をフィルタリング
+ * 2. top座標を主基準とし、同じtopの要素を同じ行にグループ化
  */
 function groupIntoRows(
   elements: ElementWithPosition[],
 ): ElementWithPosition[][] {
   if (elements.length === 0) return [];
 
-  // Y座標でソート
-  const sorted = [...elements].sort((a, b) => a.top - b.top);
+  // 背景要素をフィルタリング
+  const filteredElements = filterBackgroundElements(elements);
+
+  // top座標でソート
+  const sorted = [...filteredElements].sort((a, b) => a.top - b.top);
 
   const rows: ElementWithPosition[][] = [];
 
   for (const el of sorted) {
     const lastRow = rows[rows.length - 1];
-    if (!lastRow || el.top - lastRow[0].top > ROW_THRESHOLD) {
+
+    if (!lastRow) {
+      rows.push([el]);
+      continue;
+    }
+
+    // 行の最小top座標と比較
+    const rowMinTop = Math.min(...lastRow.map((e) => e.top));
+
+    if (el.top - rowMinTop > ROW_THRESHOLD_TOP) {
       // 新しい行を開始
       rows.push([el]);
     } else {
