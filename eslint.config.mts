@@ -10,6 +10,8 @@ export default defineConfig([
       "**/*.test.ts",
       "node_modules/**",
       "main.ts",
+      "compare-pptx.ts",
+      "debug-fill.ts",
       "vrt/**",
       "preview/**",
       "eslint.config.mts",

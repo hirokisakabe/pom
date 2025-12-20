@@ -186,3 +186,4 @@ dist
 # End of https://www.toptal.com/developers/gitignore/api/node
 
 *sample.pptx
+output.pptx

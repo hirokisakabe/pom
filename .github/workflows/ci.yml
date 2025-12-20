@@ -19,7 +19,6 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test:run
-      - run: npx tsx main.ts
   vrt:
     runs-on: ubuntu-latest
     steps:
