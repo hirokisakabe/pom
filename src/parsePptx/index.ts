@@ -327,6 +327,7 @@ function arrangeElements(elements: ElementWithPosition[]): POMNode {
     } else {
       const hstack: HStackNode = {
         type: "hstack",
+        alignItems: "start",
         children: rowChildren,
       };
 
@@ -346,6 +347,7 @@ function arrangeElements(elements: ElementWithPosition[]): POMNode {
 
   return {
     type: "vstack",
+    alignItems: "start",
     children: vstackChildren,
   };
 }
