@@ -1,4 +1,4 @@
-import { parse } from "pptxtojson";
+import * as pptxtojson from "pptxtojson";
 import type { POMNode, VStackNode } from "../types";
 import type { ParsedPptx, ParsePptxOptions, Element, Slide } from "./types";
 import { ptToPx } from "./units";
@@ -114,7 +114,7 @@ export async function parsePptx(
   ) as ArrayBuffer;
 
   // pptxtojsonでパース
-  const result = await parse(arrayBuffer, {
+  const result = await pptxtojson.parse(arrayBuffer, {
     slideFactor: options?.slideFactor,
     fontsizeFactor: options?.fontsizeFactor,
   });
