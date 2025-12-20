@@ -89,6 +89,14 @@ type ElementWithPosition = {
 };
 
 /**
+ * 包含関係ツリーのノード
+ */
+type ContainmentTreeNode = {
+  element: ElementWithPosition;
+  children: ContainmentTreeNode[];
+};
+
+/**
  * 行グループ化の閾値（px）
  * top座標がこの値以内なら同じ行として扱う
  */
@@ -96,7 +104,6 @@ const ROW_THRESHOLD_TOP = 20;
 
 /**
  * 要素Aが要素Bを完全に包含しているかチェック
- * 背景シェイプの検出に使用
  */
 function containsElement(
   container: ElementWithPosition,
@@ -111,48 +118,98 @@ function containsElement(
 }
 
 /**
- * 背景と思われる要素をフィルタリング
- * 他の要素を完全に包含している大きな要素は背景とみなしてスキップ
+ * 要素の面積を計算
  */
-function filterBackgroundElements(
-  elements: ElementWithPosition[],
-): ElementWithPosition[] {
-  const backgroundIndices = new Set<number>();
-
-  for (let i = 0; i < elements.length; i++) {
-    for (let j = 0; j < elements.length; j++) {
-      if (i === j) continue;
-
-      // elements[i] が elements[j] を包含しているかチェック
-      if (containsElement(elements[i], elements[j])) {
-        // 包含している要素を背景としてマーク
-        backgroundIndices.add(i);
-        break;
-      }
-    }
-  }
-
-  return elements.filter((_, index) => !backgroundIndices.has(index));
+function getArea(el: ElementWithPosition): number {
+  return el.width * el.height;
 }
 
 /**
- * 要素を行にグループ化
- * top座標が近い要素を同じ行としてグループ化する
- *
- * 戦略:
- * 1. 背景要素（他を包含する要素）をフィルタリング
- * 2. top座標を主基準とし、同じtopの要素を同じ行にグループ化
+ * 各要素の直接の親を決定
+ * 親 = その要素を包含する要素のうち、最も面積が小さいもの
  */
-function groupIntoRows(
+function findDirectParents(
   elements: ElementWithPosition[],
-): ElementWithPosition[][] {
+): Map<ElementWithPosition, ElementWithPosition | null> {
+  const directParent = new Map<
+    ElementWithPosition,
+    ElementWithPosition | null
+  >();
+
+  for (const el of elements) {
+    // この要素を包含する全ての要素を収集
+    const containers = elements.filter(
+      (other) => other !== el && containsElement(other, el),
+    );
+
+    if (containers.length === 0) {
+      // 親なし（ルート要素）
+      directParent.set(el, null);
+    } else {
+      // 最小面積の包含要素を親とする
+      const smallestContainer = containers.reduce((a, b) =>
+        getArea(a) < getArea(b) ? a : b,
+      );
+      directParent.set(el, smallestContainer);
+    }
+  }
+
+  return directParent;
+}
+
+/**
+ * 包含関係ツリーを構築
+ */
+function buildContainmentTree(
+  elements: ElementWithPosition[],
+): ContainmentTreeNode[] {
   if (elements.length === 0) return [];
 
-  // 背景要素をフィルタリング
-  const filteredElements = filterBackgroundElements(elements);
+  const directParent = findDirectParents(elements);
+
+  // ルート要素（親がない要素）を収集
+  const roots = elements.filter((el) => directParent.get(el) === null);
+
+  // 再帰的にツリーを構築
+  function buildNode(element: ElementWithPosition): ContainmentTreeNode {
+    const children = elements
+      .filter((el) => directParent.get(el) === element)
+      .map(buildNode);
+    return { element, children };
+  }
+
+  return roots.map(buildNode);
+}
+
+/**
+ * 要素から背景色を取得
+ */
+function getBackgroundColor(el: ElementWithPosition): string | undefined {
+  if (el.element.type !== "shape") {
+    return undefined;
+  }
+  const fill = el.element.fill;
+  if (fill && fill.type === "color") {
+    // #RRGGBB → RRGGBB
+    return fill.value.replace("#", "").toUpperCase();
+  }
+  return undefined;
+}
+
+/**
+ * 複数の要素を行グループ化してVStack/HStack構造に変換
+ */
+function arrangeElements(elements: ElementWithPosition[]): POMNode {
+  if (elements.length === 0) {
+    return { type: "vstack", children: [] };
+  }
+
+  if (elements.length === 1) {
+    return elements[0].node;
+  }
 
   // top座標でソート
-  const sorted = [...filteredElements].sort((a, b) => a.top - b.top);
+  const sorted = [...elements].sort((a, b) => a.top - b.top);
 
   const rows: ElementWithPosition[][] = [];
 
@@ -164,14 +221,11 @@ function groupIntoRows(
       continue;
     }
 
-    // 行の最小top座標と比較
     const rowMinTop = Math.min(...lastRow.map((e) => e.top));
 
     if (el.top - rowMinTop > ROW_THRESHOLD_TOP) {
-      // 新しい行を開始
       rows.push([el]);
     } else {
-      // 既存の行に追加
       lastRow.push(el);
     }
   }
@@ -181,12 +235,122 @@ function groupIntoRows(
     row.sort((a, b) => a.left - b.left);
   }
 
-  return rows;
+  // VStack + HStack 構造を生成
+  let prevRowBottom = 0;
+  const vstackChildren: POMNode[] = [];
+
+  for (const row of rows) {
+    const rowTop = row[0].top;
+    const paddingTop = Math.max(0, rowTop - prevRowBottom);
+
+    let prevRight = 0;
+    const rowChildren: BoxNode[] = [];
+
+    for (const el of row) {
+      const paddingLeft = Math.max(0, el.left - prevRight);
+      prevRight = el.left + el.width;
+
+      const box: BoxNode = {
+        type: "box",
+        padding: { left: paddingLeft },
+        w: el.width,
+        h: el.height,
+        children: el.node,
+      };
+
+      rowChildren.push(box);
+    }
+
+    prevRowBottom = Math.max(...row.map((el) => el.top + el.height));
+
+    if (rowChildren.length === 1) {
+      const singleBox = rowChildren[0];
+      const existingPadding =
+        typeof singleBox.padding === "object" ? singleBox.padding : {};
+      singleBox.padding = {
+        ...existingPadding,
+        top: paddingTop,
+      };
+      vstackChildren.push(singleBox);
+    } else {
+      const hstack: HStackNode = {
+        type: "hstack",
+        children: rowChildren,
+      };
+
+      const rowBox: BoxNode = {
+        type: "box",
+        padding: { top: paddingTop },
+        children: hstack,
+      };
+
+      vstackChildren.push(rowBox);
+    }
+  }
+
+  if (vstackChildren.length === 1) {
+    return vstackChildren[0];
+  }
+
+  return {
+    type: "vstack",
+    children: vstackChildren,
+  };
+}
+
+/**
+ * 包含関係ツリーノードをPOMNodeに変換
+ */
+function convertTreeNodeToPOM(node: ContainmentTreeNode): POMNode {
+  const { element, children } = node;
+
+  if (children.length === 0) {
+    // 葉ノード: そのまま返す
+    return element.node;
+  }
+
+  // 子がある場合
+  const backgroundColor = getBackgroundColor(element);
+
+  // 子要素の位置情報を使って配置
+  const childElements: ElementWithPosition[] = children.map((child) => ({
+    ...child.element,
+    node: convertTreeNodeToPOM(child),
+  }));
+
+  const arrangedChildren = arrangeElements(childElements);
+
+  // 親要素が背景色を持つ場合、BoxでラップしてbackgroundColorを設定
+  if (backgroundColor) {
+    return {
+      type: "box",
+      w: element.width,
+      h: element.height,
+      backgroundColor,
+      children: arrangedChildren,
+    };
+  }
+
+  // 背景色がない場合、親要素のノードと子をどう扱うか
+  // 親がテキストなしshapeなら子だけ返す、そうでなければVStackで並べる
+  const parentHasContent =
+    element.element.type === "shape" && element.element.content;
+
+  if (!parentHasContent) {
+    // 親はただの包含枠なので、子だけ返す
+    return arrangedChildren;
+  }
+
+  // 親にもコンテンツがある場合、親のノードと子をVStackで並べる
+  return {
+    type: "vstack",
+    children: [element.node, arrangedChildren],
+  };
 }
 
 /**
  * スライドをPOMNodeに変換
- * 行グループ化アルゴリズムを使用して、絶対位置を相対位置に変換
+ * 包含関係ツリーアルゴリズムを使用して、レイヤー構造を正しく表現
  */
 function convertSlide(
   slide: Slide,
@@ -214,72 +378,38 @@ function convertSlide(
     }
   }
 
-  // 行にグループ化
-  const rows = groupIntoRows(elementsWithPosition);
-
-  // VStack + HStack 構造を生成
-  let prevRowBottom = 0;
-  const vstackChildren: POMNode[] = [];
-
-  for (const row of rows) {
-    const rowTop = row[0].top;
-    const paddingTop = Math.max(0, rowTop - prevRowBottom);
-
-    // 行内の要素を処理
-    let prevRight = 0;
-    const rowChildren: BoxNode[] = [];
-
-    for (const el of row) {
-      const paddingLeft = Math.max(0, el.left - prevRight);
-      prevRight = el.left + el.width;
-
-      const box: BoxNode = {
-        type: "box",
-        padding: { left: paddingLeft },
-        w: el.width,
-        h: el.height,
-        children: el.node,
-      };
-
-      rowChildren.push(box);
-    }
-
-    // 行のbottomを更新
-    prevRowBottom = Math.max(...row.map((el) => el.top + el.height));
-
-    if (rowChildren.length === 1) {
-      // 単一要素の場合は HStack 不要
-      const singleBox = rowChildren[0];
-      const existingPadding =
-        typeof singleBox.padding === "object" ? singleBox.padding : {};
-      singleBox.padding = {
-        ...existingPadding,
-        top: paddingTop,
-      };
-      vstackChildren.push(singleBox);
-    } else {
-      // 複数要素の場合は HStack でラップ
-      const hstack: HStackNode = {
-        type: "hstack",
-        children: rowChildren,
-      };
-
-      const rowBox: BoxNode = {
-        type: "box",
-        padding: { top: paddingTop },
-        children: hstack,
-      };
-
-      vstackChildren.push(rowBox);
-    }
+  if (elementsWithPosition.length === 0) {
+    return {
+      type: "vstack",
+      w: slideWidth,
+      h: slideHeight,
+      children: [],
+    };
   }
+
+  // 包含関係ツリーを構築
+  const containmentTree = buildContainmentTree(elementsWithPosition);
+
+  // ルートノードをPOMNodeに変換
+  const rootPOMNodes: ElementWithPosition[] = containmentTree.map(
+    (treeNode) => ({
+      ...treeNode.element,
+      node: convertTreeNodeToPOM(treeNode),
+    }),
+  );
+
+  // ルートノードを配置
+  const arrangedContent = arrangeElements(rootPOMNodes);
 
   // VStackでラップして返す
   const result: VStackNode = {
     type: "vstack",
     w: slideWidth,
     h: slideHeight,
-    children: vstackChildren,
+    children:
+      arrangedContent.type === "vstack"
+        ? arrangedContent.children
+        : [arrangedContent],
   };
 
   return result;
