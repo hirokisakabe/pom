@@ -15,6 +15,7 @@
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Features](#features)
+- [PPTX Parsing](#pptx-parsing)
 - [Nodes](#nodes)
 - [Master Slide](#master-slide)
 - [Serverless Environments](#serverless-environments)
@@ -69,6 +70,64 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 - **Pixel Units**: Intuitive pixel-based sizing (internally converted to inches)
 - **Master Slide**: Automatically insert common headers, footers, and page numbers across all pages
 - **AI Friendly**: Simple structure that makes it easy for LLMs to generate code
+- **Bi-directional**: Parse existing PPTX files back to POMNode format
+
+## PPTX Parsing
+
+You can parse existing PPTX files and convert them to POMNode format.
+
+### Basic Usage
+
+```typescript
+import { parsePptx, buildPptx } from "@hirokisakabe/pom";
+import fs from "fs";
+
+// Read PPTX file
+const data = new Uint8Array(fs.readFileSync("presentation.pptx"));
+const result = await parsePptx(data);
+
+// Check parse result
+console.log(`Slide count: ${result.slides.length}`);
+console.log(
+  `Size: ${result.metadata.slideWidth}x${result.metadata.slideHeight}`,
+);
+
+// Regenerate PPTX (round-trip)
+const pptx = await buildPptx(result.slides, result.metadata);
+await pptx.writeFile({ fileName: "output.pptx" });
+```
+
+### ParsedPptx Type
+
+```typescript
+type ParsedPptx = {
+  slides: POMNode[]; // Root node for each slide
+  images: Map<string, Uint8Array>; // Embedded images
+  metadata: {
+    slideWidth: number; // px
+    slideHeight: number; // px
+  };
+};
+```
+
+### Supported Elements
+
+| Element Type | Support Status |
+| ------------ | -------------- |
+| Text         | Supported      |
+| Image        | Supported      |
+| Shape        | Supported      |
+| Table        | Supported      |
+| Chart        | Supported      |
+| Video/Audio  | Not supported  |
+| Animation    | Not supported  |
+
+### Limitations
+
+- Layout is restored as absolute coordinates, not VStack/HStack
+- 3D charts are treated as 2D equivalents
+- Master layout inheritance is not reflected
+- Animations and transitions are not supported
 
 ## Nodes
 
