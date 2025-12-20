@@ -87,6 +87,7 @@ function mapShapeType(shapType: string): ShapeType {
 
 /**
  * pptxtojsonのShape要素をPOMのShapeNodeに変換
+ * 位置情報は含まない（convertSlide で処理）
  */
 export function convertShape(element: Shape): ShapeNode {
   const result: ShapeNode = {

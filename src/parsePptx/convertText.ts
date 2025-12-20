@@ -5,6 +5,7 @@ import { extractPlainText, extractStyles } from "./parseHtml";
 
 /**
  * pptxtojsonのText要素をPOMのTextNodeに変換
+ * 位置情報は含まない（convertSlide で処理）
  */
 export function convertText(element: Text): TextNode {
   const text = extractPlainText(element.content);

@@ -1,5 +1,5 @@
 import { createRequire } from "module";
-import type { POMNode, VStackNode } from "../types";
+import type { POMNode, BoxNode, HStackNode, VStackNode } from "../types";
 import type { ParsedPptx, ParsePptxOptions, Element, Slide } from "./types";
 import { ptToPx } from "./units";
 import { convertText } from "./convertText";
@@ -77,25 +77,143 @@ function convertElement(element: Element): POMNode | null {
 }
 
 /**
+ * 位置情報を持つ要素
+ */
+type ElementWithPosition = {
+  element: Element;
+  node: POMNode;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+};
+
+/**
+ * 行グループ化の閾値（px）
+ * Y座標がこの値以内なら同じ行として扱う
+ */
+const ROW_THRESHOLD = 20;
+
+/**
+ * 要素を行にグループ化
+ * Y座標が近い要素を同じ行としてグループ化する
+ */
+function groupIntoRows(
+  elements: ElementWithPosition[],
+): ElementWithPosition[][] {
+  if (elements.length === 0) return [];
+
+  // Y座標でソート
+  const sorted = [...elements].sort((a, b) => a.top - b.top);
+
+  const rows: ElementWithPosition[][] = [];
+
+  for (const el of sorted) {
+    const lastRow = rows[rows.length - 1];
+    if (!lastRow || el.top - lastRow[0].top > ROW_THRESHOLD) {
+      // 新しい行を開始
+      rows.push([el]);
+    } else {
+      // 既存の行に追加
+      lastRow.push(el);
+    }
+  }
+
+  // 各行をX座標でソート
+  for (const row of rows) {
+    row.sort((a, b) => a.left - b.left);
+  }
+
+  return rows;
+}
+
+/**
  * スライドをPOMNodeに変換
- * 各スライドはVStackとして返す
+ * 行グループ化アルゴリズムを使用して、絶対位置を相対位置に変換
  */
 function convertSlide(
   slide: Slide,
   slideWidth: number,
   slideHeight: number,
 ): POMNode {
-  const children: POMNode[] = [];
-
-  // 要素をorder順にソート
-  const sortedElements = [...slide.elements]
+  // サポートされている要素のみ抽出し、order順にソート
+  const supportedElements = [...slide.elements]
     .filter(isSupported)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-  for (const element of sortedElements) {
+  // 各要素をPOMNodeに変換し、位置情報を保持
+  const elementsWithPosition: ElementWithPosition[] = [];
+  for (const element of supportedElements) {
     const node = convertElement(element);
     if (node) {
-      children.push(node);
+      elementsWithPosition.push({
+        element,
+        node,
+        left: ptToPx(element.left),
+        top: ptToPx(element.top),
+        width: ptToPx(element.width),
+        height: ptToPx(element.height),
+      });
+    }
+  }
+
+  // 行にグループ化
+  const rows = groupIntoRows(elementsWithPosition);
+
+  // VStack + HStack 構造を生成
+  let prevRowBottom = 0;
+  const vstackChildren: POMNode[] = [];
+
+  for (const row of rows) {
+    const rowTop = row[0].top;
+    const paddingTop = Math.max(0, rowTop - prevRowBottom);
+
+    // 行内の要素を処理
+    let prevRight = 0;
+    const rowChildren: BoxNode[] = [];
+
+    for (const el of row) {
+      const paddingLeft = Math.max(0, el.left - prevRight);
+      prevRight = el.left + el.width;
+
+      const box: BoxNode = {
+        type: "box",
+        padding: { left: paddingLeft },
+        w: el.width,
+        h: el.height,
+        children: el.node,
+      };
+
+      rowChildren.push(box);
+    }
+
+    // 行のbottomを更新
+    prevRowBottom = Math.max(...row.map((el) => el.top + el.height));
+
+    if (rowChildren.length === 1) {
+      // 単一要素の場合は HStack 不要
+      const singleBox = rowChildren[0];
+      const existingPadding =
+        typeof singleBox.padding === "object" ? singleBox.padding : {};
+      singleBox.padding = {
+        ...existingPadding,
+        top: paddingTop,
+      };
+      vstackChildren.push(singleBox);
+    } else {
+      // 複数要素の場合は HStack でラップ
+      const hstack: HStackNode = {
+        type: "hstack",
+        children: rowChildren,
+      };
+
+      const rowBox: BoxNode = {
+        type: "box",
+        padding: { top: paddingTop },
+        children: hstack,
+      };
+
+      vstackChildren.push(rowBox);
     }
   }
 
@@ -104,7 +222,7 @@ function convertSlide(
     type: "vstack",
     w: slideWidth,
     h: slideHeight,
-    children,
+    children: vstackChildren,
   };
 
   return result;

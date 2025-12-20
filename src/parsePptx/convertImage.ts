@@ -5,6 +5,7 @@ import { ptToPx } from "./units";
 /**
  * pptxtojsonのImage要素をPOMのImageNodeに変換
  * pptxtojsonは画像をBase64形式で提供する
+ * 位置情報は含まない（convertSlide で処理）
  */
 export function convertImage(element: Image): ImageNode {
   return {

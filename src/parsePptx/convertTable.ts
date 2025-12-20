@@ -28,6 +28,7 @@ function convertCell(cell: PptxTableCell): TableCell {
 
 /**
  * pptxtojsonのTable要素をPOMのTableNodeに変換
+ * 位置情報は含まない（convertSlide で処理）
  */
 export function convertTable(element: Table): TableNode {
   // 列幅の変換

@@ -45,6 +45,7 @@ function isCommonChart(chart: Chart): chart is CommonChart {
 /**
  * pptxtojsonのChart要素をPOMのChartNodeに変換
  * scatter/bubbleチャートはサポートされていないためnullを返す
+ * 位置情報は含まない（convertSlide で処理）
  */
 export function convertChart(element: Chart): ChartNode | null {
   // scatter/bubbleチャートはサポートされていない
