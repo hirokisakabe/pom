@@ -7,6 +7,7 @@ import { convertImage } from "./convertImage";
 import { convertShape } from "./convertShape";
 import { convertTable } from "./convertTable";
 import { convertChart } from "./convertChart";
+import { measureText } from "../calcYogaLayout/measureText";
 
 export type { ParsedPptx, ParsePptxOptions };
 
@@ -101,6 +102,39 @@ type ContainmentTreeNode = {
  * top座標がこの値以内なら同じ行として扱う
  */
 const ROW_THRESHOLD_TOP = 20;
+
+/**
+ * POMNode の実際のコンテンツサイズを計測
+ * measureText を使ってテキストの実際のサイズを取得する
+ */
+function measureNodeSize(
+  node: POMNode,
+  originalWidth: number,
+  originalHeight: number,
+): { width: number; height: number } {
+  if (node.type === "text") {
+    const { widthPx, heightPx } = measureText(node.text, originalWidth, {
+      fontFamily: node.fontFamily ?? "sans-serif",
+      fontSizePx: node.fontPx ?? 16,
+      fontWeight: node.bold ? "bold" : "normal",
+      lineHeight: 1.2,
+    });
+    return { width: widthPx, height: heightPx };
+  }
+
+  if (node.type === "shape" && node.text) {
+    const { widthPx, heightPx } = measureText(node.text, originalWidth, {
+      fontFamily: "sans-serif",
+      fontSizePx: node.fontPx ?? 16,
+      fontWeight: node.bold ? "bold" : "normal",
+      lineHeight: 1.2,
+    });
+    return { width: widthPx, height: heightPx };
+  }
+
+  // Image, Table, Chart, テキストなしShape は元のサイズを使用
+  return { width: originalWidth, height: originalHeight };
+}
 
 /**
  * 要素Aが要素Bを完全に包含しているかチェック
@@ -257,21 +291,29 @@ function arrangeElements(elements: ElementWithPosition[]): POMNode {
     const rowChildren: BoxNode[] = [];
 
     for (const el of row) {
+      // 実際のコンテンツサイズを計測
+      const measured = measureNodeSize(el.node, el.width, el.height);
+
       const paddingLeft = Math.max(0, el.left - prevRight);
-      prevRight = el.left + el.width;
+      prevRight = el.left + measured.width; // 計測サイズを使用
 
       const box: BoxNode = {
         type: "box",
         padding: { left: paddingLeft },
-        w: el.width,
-        h: el.height,
+        // w/h は指定しない - Yoga が自動計算
         children: el.node,
       };
 
       rowChildren.push(box);
     }
 
-    prevRowBottom = Math.max(...row.map((el) => el.top + el.height));
+    // prevRowBottom も計測サイズで更新
+    prevRowBottom = Math.max(
+      ...row.map((el) => {
+        const measured = measureNodeSize(el.node, el.width, el.height);
+        return el.top + measured.height;
+      }),
+    );
 
     if (rowChildren.length === 1) {
       const singleBox = rowChildren[0];
@@ -334,9 +376,8 @@ function convertTreeNodeToPOM(node: ContainmentTreeNode): POMNode {
   if (backgroundColor) {
     return {
       type: "box",
-      w: element.width,
-      h: element.height,
       backgroundColor,
+      // w/h は指定しない - Yoga が自動計算
       children: arrangedChildren,
     };
   }
