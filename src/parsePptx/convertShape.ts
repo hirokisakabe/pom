@@ -117,6 +117,12 @@ export function convertShape(element: Shape): ShapeNode {
     }
   }
 
+  // テキストなし Shape は w/h を指定（自動計算できないため）
+  if (!result.text) {
+    result.w = ptToPx(element.width);
+    result.h = ptToPx(element.height);
+  }
+
   // 塗りつぶし
   if (element.fill && element.fill.type === "color") {
     result.fill = {
