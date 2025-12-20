@@ -104,11 +104,20 @@ const ROW_THRESHOLD_TOP = 20;
 
 /**
  * 要素Aが要素Bを完全に包含しているかチェック
+ * order（Z順序）も考慮: 背面の要素（order小）が前面の要素（order大）を包含する関係のみ許可
  */
 function containsElement(
   container: ElementWithPosition,
   contained: ElementWithPosition,
 ): boolean {
+  // order チェック: container は contained より背面（order が小さい）でなければならない
+  const containerOrder = container.element.order ?? 0;
+  const containedOrder = contained.element.order ?? 0;
+  if (containerOrder >= containedOrder) {
+    return false;
+  }
+
+  // 位置による完全包含チェック
   return (
     container.left <= contained.left &&
     container.top <= contained.top &&
