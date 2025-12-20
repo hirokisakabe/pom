@@ -1,4 +1,4 @@
-import * as pptxtojson from "pptxtojson";
+import { createRequire } from "module";
 import type { POMNode, VStackNode } from "../types";
 import type { ParsedPptx, ParsePptxOptions, Element, Slide } from "./types";
 import { ptToPx } from "./units";
@@ -9,6 +9,32 @@ import { convertTable } from "./convertTable";
 import { convertChart } from "./convertChart";
 
 export type { ParsedPptx, ParsePptxOptions };
+
+// ESM/CJS互換性のため、createRequireを使用してpptxtojsonをインポート
+// pptxtojsonはUMD形式を提供しており、ESMインポートでは問題が発生する環境がある
+const require = createRequire(import.meta.url);
+
+type ParseFn = (
+  file: ArrayBuffer,
+  options?: { slideFactor?: number; fontsizeFactor?: number },
+) => Promise<{ slides: Slide[]; size: { width: number; height: number } }>;
+
+type PptxtojsonModule = {
+  parse?: ParseFn;
+  default?: { parse?: ParseFn };
+};
+
+const pptxtojson: PptxtojsonModule = require("pptxtojson") as PptxtojsonModule;
+
+function getParseFn(): ParseFn {
+  if (typeof pptxtojson.parse === "function") {
+    return pptxtojson.parse;
+  }
+  if (pptxtojson.default && typeof pptxtojson.default.parse === "function") {
+    return pptxtojson.default.parse;
+  }
+  throw new Error("pptxtojson.parse function not found");
+}
 
 /**
  * サポートされる要素タイプ
@@ -114,7 +140,8 @@ export async function parsePptx(
   ) as ArrayBuffer;
 
   // pptxtojsonでパース
-  const result = await pptxtojson.parse(arrayBuffer, {
+  const parse = getParseFn();
+  const result = await parse(arrayBuffer, {
     slideFactor: options?.slideFactor,
     fontsizeFactor: options?.fontsizeFactor,
   });
