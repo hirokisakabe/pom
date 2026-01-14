@@ -490,6 +490,67 @@ export type TreeNodeShape = z.infer<typeof treeNodeShapeSchema>;
 export type TreeConnectorStyle = z.infer<typeof treeConnectorStyleSchema>;
 export type TreeNode = z.infer<typeof treeNodeSchema>;
 
+// ===== Flow Node =====
+export const flowDirectionSchema = z.enum(["horizontal", "vertical"]);
+
+export const flowNodeShapeSchema = z.enum([
+  "flowChartTerminator",
+  "flowChartProcess",
+  "flowChartDecision",
+  "flowChartInputOutput",
+  "flowChartDocument",
+  "flowChartPredefinedProcess",
+  "flowChartConnector",
+  "flowChartPreparation",
+  "flowChartManualInput",
+  "flowChartManualOperation",
+  "flowChartDelay",
+  "flowChartMagneticDisk",
+]);
+
+export const flowNodeItemSchema = z.object({
+  id: z.string(),
+  shape: flowNodeShapeSchema,
+  text: z.string(),
+  color: z.string().optional(),
+  textColor: z.string().optional(),
+  width: z.number().optional(),
+  height: z.number().optional(),
+});
+
+export const flowConnectionSchema = z.object({
+  from: z.string(),
+  to: z.string(),
+  label: z.string().optional(),
+  color: z.string().optional(),
+});
+
+export const flowConnectorStyleSchema = z.object({
+  color: z.string().optional(),
+  width: z.number().optional(),
+  arrowType: z
+    .enum(["none", "arrow", "diamond", "oval", "stealth", "triangle"])
+    .optional(),
+});
+
+export const flowNodeSchema = basePOMNodeSchema.extend({
+  type: z.literal("flow"),
+  direction: flowDirectionSchema.optional(),
+  nodes: z.array(flowNodeItemSchema),
+  connections: z.array(flowConnectionSchema),
+  connectorStyle: flowConnectorStyleSchema.optional(),
+  nodeWidth: z.number().optional(),
+  nodeHeight: z.number().optional(),
+  nodeGap: z.number().optional(),
+});
+
+export type FlowDirection = z.infer<typeof flowDirectionSchema>;
+export type FlowNodeShape = z.infer<typeof flowNodeShapeSchema>;
+export type FlowNodeItem = z.infer<typeof flowNodeItemSchema>;
+export type FlowConnection = z.infer<typeof flowConnectionSchema>;
+export type FlowConnectorStyle = z.infer<typeof flowConnectorStyleSchema>;
+export type FlowNode = z.infer<typeof flowNodeSchema>;
+
 // ===== Recursive Types with Explicit Type Definitions =====
 
 // Define the types explicitly to avoid 'any' inference
@@ -525,7 +586,8 @@ export type POMNode =
   | ChartNode
   | TimelineNode
   | MatrixNode
-  | TreeNode;
+  | TreeNode
+  | FlowNode;
 
 // Define schemas using passthrough to maintain type safety
 const boxNodeSchemaBase = basePOMNodeSchema.extend({
@@ -570,6 +632,7 @@ export const pomNodeSchema: z.ZodType<POMNode> = z.lazy(() =>
     timelineNodeSchema,
     matrixNodeSchema,
     treeNodeSchema,
+    flowNodeSchema,
   ]),
 ) as z.ZodType<POMNode>;
 
@@ -594,7 +657,8 @@ export type PositionedNode =
   | (ChartNode & PositionedBase)
   | (TimelineNode & PositionedBase)
   | (MatrixNode & PositionedBase)
-  | (TreeNode & PositionedBase);
+  | (TreeNode & PositionedBase)
+  | (FlowNode & PositionedBase);
 
 export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
   z.union([
@@ -617,6 +681,7 @@ export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
     timelineNodeSchema.merge(positionedBaseSchema),
     matrixNodeSchema.merge(positionedBaseSchema),
     treeNodeSchema.merge(positionedBaseSchema),
+    flowNodeSchema.merge(positionedBaseSchema),
   ]),
 ) as z.ZodType<PositionedNode>;
 
