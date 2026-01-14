@@ -112,6 +112,7 @@ async function buildPomWithYogaTree(
     case "image":
     case "table":
     case "shape":
+    case "timeline":
       // 子要素なし
       break;
   }
@@ -391,6 +392,10 @@ async function applyStyleToYogaNode(node: POMNode, yn: YogaNode) {
         }
         // テキストがない場合は、明示的にサイズが指定されていることを期待
       }
+      break;
+
+    case "timeline":
+      // 明示的にサイズが指定されていることを期待
       break;
   }
 }

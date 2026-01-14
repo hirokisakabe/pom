@@ -397,6 +397,26 @@ export type ChartData = z.infer<typeof chartDataSchema>;
 export type ChartNode = z.infer<typeof chartNodeSchema>;
 export type RadarStyle = z.infer<typeof radarStyleSchema>;
 
+// ===== Timeline Node =====
+export const timelineDirectionSchema = z.enum(["horizontal", "vertical"]);
+
+export const timelineItemSchema = z.object({
+  date: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  color: z.string().optional(),
+});
+
+export const timelineNodeSchema = basePOMNodeSchema.extend({
+  type: z.literal("timeline"),
+  direction: timelineDirectionSchema.optional(),
+  items: z.array(timelineItemSchema),
+});
+
+export type TimelineDirection = z.infer<typeof timelineDirectionSchema>;
+export type TimelineItem = z.infer<typeof timelineItemSchema>;
+export type TimelineNode = z.infer<typeof timelineNodeSchema>;
+
 // ===== Recursive Types with Explicit Type Definitions =====
 
 // Define the types explicitly to avoid 'any' inference
@@ -429,7 +449,8 @@ export type POMNode =
   | VStackNode
   | HStackNode
   | ShapeNode
-  | ChartNode;
+  | ChartNode
+  | TimelineNode;
 
 // Define schemas using passthrough to maintain type safety
 const boxNodeSchemaBase = basePOMNodeSchema.extend({
@@ -471,6 +492,7 @@ export const pomNodeSchema: z.ZodType<POMNode> = z.lazy(() =>
     hStackNodeSchemaBase,
     shapeNodeSchema,
     chartNodeSchema,
+    timelineNodeSchema,
   ]),
 ) as z.ZodType<POMNode>;
 
@@ -492,7 +514,8 @@ export type PositionedNode =
   | (VStackNode & PositionedBase & { children: PositionedNode[] })
   | (HStackNode & PositionedBase & { children: PositionedNode[] })
   | (ShapeNode & PositionedBase)
-  | (ChartNode & PositionedBase);
+  | (ChartNode & PositionedBase)
+  | (TimelineNode & PositionedBase);
 
 export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
   z.union([
@@ -512,6 +535,7 @@ export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
     }),
     shapeNodeSchema.merge(positionedBaseSchema),
     chartNodeSchema.merge(positionedBaseSchema),
+    timelineNodeSchema.merge(positionedBaseSchema),
   ]),
 ) as z.ZodType<PositionedNode>;
 
