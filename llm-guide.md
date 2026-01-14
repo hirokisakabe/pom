@@ -22,6 +22,7 @@ Standard gap: 12-24px
 | shape    | Shape      | shapeType, fill, line, text, fontPx                                         |
 | chart    | Chart      | chartType(bar/line/pie/area/doughnut/radar), data[], showLegend, radarStyle |
 | timeline | Timeline   | direction(horizontal/vertical), items[]                                     |
+| matrix   | Matrix     | axes, quadrants, items[]                                                    |
 | image    | Image      | src                                                                         |
 
 ### Common Properties
@@ -250,6 +251,29 @@ Vertical timeline:
   ]
 }
 ```
+
+### 8. Matrix (Positioning Map)
+
+```json
+{
+  "type": "matrix",
+  "w": 600,
+  "h": 500,
+  "axes": { "x": "Cost", "y": "Effect" },
+  "quadrants": {
+    "topLeft": "Quick Wins",
+    "topRight": "Strategic",
+    "bottomLeft": "Low Priority",
+    "bottomRight": "Avoid"
+  },
+  "items": [
+    { "label": "A", "x": 0.2, "y": 0.8, "color": "4CAF50" },
+    { "label": "B", "x": 0.7, "y": 0.6 }
+  ]
+}
+```
+
+Note: x/y coordinates are 0-1 relative values. (0,0) = bottom-left, (1,1) = top-right.
 
 ## Important Notes
 

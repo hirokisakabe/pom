@@ -475,6 +475,77 @@ A node for creating timeline/roadmap visualizations. Supports horizontal and ver
 }
 ```
 
+#### 10. Matrix
+
+A node for creating 2x2 matrix/positioning maps. Commonly used for cost-effectiveness analysis, impact-effort prioritization, etc.
+
+```typescript
+{
+  type: "matrix";
+  axes: {
+    x: string;  // X-axis label (e.g., "Cost")
+    y: string;  // Y-axis label (e.g., "Effect")
+  };
+  quadrants?: {
+    topLeft: string;     // Top-left quadrant label
+    topRight: string;    // Top-right quadrant label
+    bottomLeft: string;  // Bottom-left quadrant label
+    bottomRight: string; // Bottom-right quadrant label
+  };
+  items: {
+    label: string;       // Item label
+    x: number;           // X coordinate (0-1, relative)
+    y: number;           // Y coordinate (0-1, relative)
+    color?: string;      // Item color (hex, default: "1D4ED8")
+  }[];
+
+  // Common properties
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+**Note:** The coordinate system uses (0, 0) as bottom-left and (1, 1) as top-right (mathematical coordinate system).
+
+**Usage Examples:**
+
+```typescript
+// Cost-Effectiveness Matrix
+{
+  type: "matrix",
+  w: 600,
+  h: 500,
+  axes: { x: "Cost", y: "Effect" },
+  quadrants: {
+    topLeft: "Low Cost / High Effect\n(Priority)",
+    topRight: "High Cost / High Effect\n(Consider)",
+    bottomLeft: "Low Cost / Low Effect\n(Low Priority)",
+    bottomRight: "High Cost / Low Effect\n(Avoid)",
+  },
+  items: [
+    { label: "Initiative A", x: 0.2, y: 0.8, color: "4CAF50" },
+    { label: "Initiative B", x: 0.7, y: 0.6, color: "2196F3" },
+    { label: "Initiative C", x: 0.3, y: 0.3, color: "FF9800" },
+    { label: "Initiative D", x: 0.8, y: 0.2, color: "E91E63" },
+  ],
+}
+
+// Simple Impact-Effort Matrix (without quadrant labels)
+{
+  type: "matrix",
+  w: 500,
+  h: 400,
+  axes: { x: "Effort", y: "Impact" },
+  items: [
+    { label: "Quick Win", x: 0.15, y: 0.85 },
+    { label: "Major Project", x: 0.75, y: 0.75 },
+    { label: "Fill-In", x: 0.25, y: 0.25 },
+    { label: "Time Sink", x: 0.85, y: 0.15 },
+  ],
+}
+```
+
 ## Master Slide
 
 You can automatically insert common headers, footers, and page numbers across all pages.
@@ -658,6 +729,7 @@ if (result.success) {
 | `inputShapeNodeSchema`          | For shape nodes                            |
 | `inputChartNodeSchema`          | For chart nodes                            |
 | `inputTimelineNodeSchema`       | For timeline nodes                         |
+| `inputMatrixNodeSchema`         | For matrix nodes                           |
 | `inputBoxNodeSchema`            | For Box nodes                              |
 | `inputVStackNodeSchema`         | For VStack nodes                           |
 | `inputHStackNodeSchema`         | For HStack nodes                           |
