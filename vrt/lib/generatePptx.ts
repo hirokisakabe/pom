@@ -1994,10 +1994,166 @@ const page8Common: POMNode = {
 };
 
 // ============================================================
-// Page 9: Additional Chart Types Test
+// Page 9: Timeline Test
+// テスト対象: direction (horizontal/vertical), items, color
+// ============================================================
+const page9Timeline: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 20,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "Page 9: Timeline Test",
+      fontPx: 28,
+      color: palette.charcoal,
+      bold: true,
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "Horizontal Timeline (Roadmap):",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "timeline",
+            direction: "horizontal",
+            w: 1100,
+            h: 120,
+            items: [
+              {
+                date: "2025/Q1",
+                title: "Phase 1",
+                description: "基盤構築",
+                color: "4CAF50",
+              },
+              {
+                date: "2025/Q2",
+                title: "Phase 2",
+                description: "機能開発",
+                color: "2196F3",
+              },
+              {
+                date: "2025/Q3",
+                title: "Phase 3",
+                description: "テスト",
+                color: "FF9800",
+              },
+              {
+                date: "2025/Q4",
+                title: "Phase 4",
+                description: "リリース",
+                color: "E91E63",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "hstack",
+      gap: 16,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Vertical Timeline (Project Plan):",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "timeline",
+                direction: "vertical",
+                w: 500,
+                h: 300,
+                items: [
+                  {
+                    date: "Week 1",
+                    title: "Planning",
+                    description: "要件定義・設計",
+                    color: palette.blue,
+                  },
+                  {
+                    date: "Week 2-3",
+                    title: "Development",
+                    description: "実装・レビュー",
+                    color: palette.accent,
+                  },
+                  {
+                    date: "Week 4",
+                    title: "Release",
+                    description: "デプロイ・監視",
+                    color: palette.green,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Milestones (Default color):",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "timeline",
+                direction: "vertical",
+                w: 500,
+                h: 300,
+                items: [
+                  { date: "Jan", title: "Kickoff" },
+                  { date: "Mar", title: "MVP Launch" },
+                  { date: "Jun", title: "GA Release" },
+                  { date: "Dec", title: "v2.0" },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+    },
+  ],
+};
+
+// ============================================================
+// Page 10: Additional Chart Types Test
 // テスト対象: area, doughnut, radar
 // ============================================================
-const page9ChartAdditional: POMNode = {
+const page10ChartAdditional: POMNode = {
   type: "vstack",
   w: "100%",
   h: "max",
@@ -2008,7 +2164,7 @@ const page9ChartAdditional: POMNode = {
   children: [
     {
       type: "text",
-      text: "Page 9: Additional Chart Types",
+      text: "Page 10: Additional Chart Types",
       fontPx: 28,
       color: palette.charcoal,
       bold: true,
@@ -2122,7 +2278,8 @@ export async function generatePptx(outputPath: string): Promise<void> {
       page6Chart,
       page7Layout,
       page8Common,
-      page9ChartAdditional,
+      page9Timeline,
+      page10ChartAdditional,
     ],
     {
       w: 1280,

@@ -12,16 +12,17 @@ Standard gap: 12-24px
 
 ## Node List
 
-| type   | Purpose    | Main Properties                                                             |
-| ------ | ---------- | --------------------------------------------------------------------------- |
-| text   | Text       | text, fontPx, color, bold, alignText, bullet                                |
-| vstack | Vertical   | children[], gap, alignItems, justifyContent                                 |
-| hstack | Horizontal | children[], gap, alignItems, justifyContent                                 |
-| box    | Wrapper    | children (single node)                                                      |
-| table  | Table      | columns[], rows[], defaultRowHeight                                         |
-| shape  | Shape      | shapeType, fill, line, text, fontPx                                         |
-| chart  | Chart      | chartType(bar/line/pie/area/doughnut/radar), data[], showLegend, radarStyle |
-| image  | Image      | src                                                                         |
+| type     | Purpose    | Main Properties                                                             |
+| -------- | ---------- | --------------------------------------------------------------------------- |
+| text     | Text       | text, fontPx, color, bold, alignText, bullet                                |
+| vstack   | Vertical   | children[], gap, alignItems, justifyContent                                 |
+| hstack   | Horizontal | children[], gap, alignItems, justifyContent                                 |
+| box      | Wrapper    | children (single node)                                                      |
+| table    | Table      | columns[], rows[], defaultRowHeight                                         |
+| shape    | Shape      | shapeType, fill, line, text, fontPx                                         |
+| chart    | Chart      | chartType(bar/line/pie/area/doughnut/radar), data[], showLegend, radarStyle |
+| timeline | Timeline   | direction(horizontal/vertical), items[]                                     |
+| image    | Image      | src                                                                         |
 
 ### Common Properties
 
@@ -200,6 +201,53 @@ Common shapeTypes: `rect`, `roundRect`, `ellipse`, `triangle`, `star5`, `cloud`,
   ],
   "showLegend": true,
   "chartColors": ["0088CC"]
+}
+```
+
+### 7. Timeline (Roadmap)
+
+```json
+{
+  "type": "timeline",
+  "direction": "horizontal",
+  "w": 1000,
+  "h": 120,
+  "items": [
+    {
+      "date": "Q1",
+      "title": "Phase 1",
+      "description": "Foundation",
+      "color": "4CAF50"
+    },
+    {
+      "date": "Q2",
+      "title": "Phase 2",
+      "description": "Development",
+      "color": "2196F3"
+    },
+    {
+      "date": "Q3",
+      "title": "Phase 3",
+      "description": "Release",
+      "color": "FF9800"
+    }
+  ]
+}
+```
+
+Vertical timeline:
+
+```json
+{
+  "type": "timeline",
+  "direction": "vertical",
+  "w": 400,
+  "h": 300,
+  "items": [
+    { "date": "Week 1", "title": "Planning" },
+    { "date": "Week 2-3", "title": "Development" },
+    { "date": "Week 4", "title": "Release" }
+  ]
 }
 ```
 
