@@ -29,7 +29,7 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
     const slide = pptx.addSlide();
 
     function renderBackgroundAndBorder(node: PositionedNode) {
-      const { backgroundColor, border } = node;
+      const { backgroundColor, border, borderRadius } = node;
       const hasBackground = Boolean(backgroundColor);
       const hasBorder = Boolean(
         border &&
@@ -55,6 +55,16 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
           }
         : { type: "none" as const };
 
+      // borderRadius がある場合は roundRect を使用し、rectRadius を計算
+      const shapeType = borderRadius
+        ? pptx.ShapeType.roundRect
+        : pptx.ShapeType.rect;
+
+      // px を 0-1 の正規化値に変換
+      const rectRadius = borderRadius
+        ? Math.min((borderRadius / Math.min(node.w, node.h)) * 2, 1)
+        : undefined;
+
       const shapeOptions = {
         x: pxToIn(node.x),
         y: pxToIn(node.y),
@@ -62,9 +72,10 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
         h: pxToIn(node.h),
         fill,
         line,
+        rectRadius,
       };
 
-      slide.addShape(pptx.ShapeType.rect, shapeOptions);
+      slide.addShape(shapeType, shapeOptions);
     }
 
     /**

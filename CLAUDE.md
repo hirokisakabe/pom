@@ -55,6 +55,7 @@ PPTX 生成は3段階のパイプライン:
 - `ChartNode` - グラフノード（bar, line, pie, area, doughnut, radar をサポート）
 - `BulletOptions` - 箇条書き設定（type, indent, numberType, numberStartAt）
 - `TextMeasurementMode` - テキスト計測モード（`"canvas"` | `"fallback"` | `"auto"`）
+- `BasePOMNode` - 全ノード共通プロパティ（w, h, padding, backgroundColor, border, borderRadius）
 
 ### 入力スキーマ（LLM連携用）
 

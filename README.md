@@ -91,11 +91,13 @@ Layout attributes that all nodes can have.
     width?: number;
     dashType?: "solid" | "dash" | "dashDot" | "lgDash" | "lgDashDot" | "lgDashDotDot" | "sysDash" | "sysDot";
   };
+  borderRadius?: number;
 }
 ```
 
 - `backgroundColor` applies a fill to the entire node (e.g., `"F8F9FA"`).
 - `border.width` is specified in px and can be combined with color and `dashType` to control the border.
+- `borderRadius` specifies the corner radius in px. When specified, the background/border shape becomes a rounded rectangle.
 
 ### Node List
 
