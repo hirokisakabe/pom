@@ -36,6 +36,9 @@ import {
   radarStyleSchema,
   timelineDirectionSchema,
   timelineItemSchema,
+  matrixAxisSchema,
+  matrixQuadrantsSchema,
+  matrixItemSchema,
   type AlignItems,
   type JustifyContent,
 } from "./types";
@@ -111,12 +114,20 @@ export const inputTimelineNodeSchema = inputBaseNodeSchema.extend({
   items: z.array(timelineItemSchema),
 });
 
+export const inputMatrixNodeSchema = inputBaseNodeSchema.extend({
+  type: z.literal("matrix"),
+  axes: matrixAxisSchema,
+  quadrants: matrixQuadrantsSchema.optional(),
+  items: z.array(matrixItemSchema),
+});
+
 export type InputTextNode = z.infer<typeof inputTextNodeSchema>;
 export type InputImageNode = z.infer<typeof inputImageNodeSchema>;
 export type InputTableNode = z.infer<typeof inputTableNodeSchema>;
 export type InputShapeNode = z.infer<typeof inputShapeNodeSchema>;
 export type InputChartNode = z.infer<typeof inputChartNodeSchema>;
 export type InputTimelineNode = z.infer<typeof inputTimelineNodeSchema>;
+export type InputMatrixNode = z.infer<typeof inputMatrixNodeSchema>;
 
 // ===== Recursive Types =====
 export type InputBoxNode = InputBaseNode & {
@@ -149,7 +160,8 @@ export type InputPOMNode =
   | InputHStackNode
   | InputShapeNode
   | InputChartNode
-  | InputTimelineNode;
+  | InputTimelineNode
+  | InputMatrixNode;
 
 // ===== Recursive Node Schemas =====
 const inputBoxNodeSchemaBase = inputBaseNodeSchema.extend({
@@ -209,6 +221,7 @@ export const inputPomNodeSchema: z.ZodType<InputPOMNode> = z.lazy(() =>
     inputShapeNodeSchema,
     inputChartNodeSchema,
     inputTimelineNodeSchema,
+    inputMatrixNodeSchema,
   ]),
 ) as z.ZodType<InputPOMNode>;
 
