@@ -39,8 +39,12 @@ import {
   matrixAxisSchema,
   matrixQuadrantsSchema,
   matrixItemSchema,
+  treeLayoutSchema,
+  treeNodeShapeSchema,
+  treeConnectorStyleSchema,
   type AlignItems,
   type JustifyContent,
+  type TreeDataItem,
 } from "./types";
 
 // ===== Base Node Schema =====
@@ -121,6 +125,26 @@ export const inputMatrixNodeSchema = inputBaseNodeSchema.extend({
   items: z.array(matrixItemSchema),
 });
 
+export const inputTreeDataItemSchema: z.ZodType<TreeDataItem> = z.lazy(() =>
+  z.object({
+    label: z.string(),
+    color: z.string().optional(),
+    children: z.array(inputTreeDataItemSchema).optional(),
+  }),
+);
+
+export const inputTreeNodeSchema = inputBaseNodeSchema.extend({
+  type: z.literal("tree"),
+  layout: treeLayoutSchema.optional(),
+  nodeShape: treeNodeShapeSchema.optional(),
+  data: inputTreeDataItemSchema,
+  connectorStyle: treeConnectorStyleSchema.optional(),
+  nodeWidth: z.number().optional(),
+  nodeHeight: z.number().optional(),
+  levelGap: z.number().optional(),
+  siblingGap: z.number().optional(),
+});
+
 export type InputTextNode = z.infer<typeof inputTextNodeSchema>;
 export type InputImageNode = z.infer<typeof inputImageNodeSchema>;
 export type InputTableNode = z.infer<typeof inputTableNodeSchema>;
@@ -128,6 +152,7 @@ export type InputShapeNode = z.infer<typeof inputShapeNodeSchema>;
 export type InputChartNode = z.infer<typeof inputChartNodeSchema>;
 export type InputTimelineNode = z.infer<typeof inputTimelineNodeSchema>;
 export type InputMatrixNode = z.infer<typeof inputMatrixNodeSchema>;
+export type InputTreeNode = z.infer<typeof inputTreeNodeSchema>;
 
 // ===== Recursive Types =====
 export type InputBoxNode = InputBaseNode & {
@@ -161,7 +186,8 @@ export type InputPOMNode =
   | InputShapeNode
   | InputChartNode
   | InputTimelineNode
-  | InputMatrixNode;
+  | InputMatrixNode
+  | InputTreeNode;
 
 // ===== Recursive Node Schemas =====
 const inputBoxNodeSchemaBase = inputBaseNodeSchema.extend({
@@ -222,6 +248,7 @@ export const inputPomNodeSchema: z.ZodType<InputPOMNode> = z.lazy(() =>
     inputChartNodeSchema,
     inputTimelineNodeSchema,
     inputMatrixNodeSchema,
+    inputTreeNodeSchema,
   ]),
 ) as z.ZodType<InputPOMNode>;
 

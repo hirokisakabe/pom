@@ -275,6 +275,68 @@ Vertical timeline:
 
 Note: x/y coordinates are 0-1 relative values. (0,0) = bottom-left, (1,1) = top-right.
 
+### 9. Tree (Organization Chart / Decision Tree)
+
+```json
+{
+  "type": "tree",
+  "layout": "vertical",
+  "nodeShape": "roundRect",
+  "w": 600,
+  "h": 400,
+  "data": {
+    "label": "CEO",
+    "color": "1D4ED8",
+    "children": [
+      {
+        "label": "CTO",
+        "color": "0EA5E9",
+        "children": [{ "label": "Engineer A" }, { "label": "Engineer B" }]
+      },
+      {
+        "label": "CFO",
+        "color": "16A34A",
+        "children": [{ "label": "Accountant" }]
+      }
+    ]
+  },
+  "connectorStyle": { "color": "333333", "width": 2 }
+}
+```
+
+Horizontal tree (decision tree):
+
+```json
+{
+  "type": "tree",
+  "layout": "horizontal",
+  "nodeShape": "rect",
+  "w": 600,
+  "h": 300,
+  "data": {
+    "label": "Start",
+    "children": [
+      {
+        "label": "Option A",
+        "children": [{ "label": "Result 1" }, { "label": "Result 2" }]
+      },
+      {
+        "label": "Option B",
+        "children": [{ "label": "Result 3" }]
+      }
+    ]
+  }
+}
+```
+
+Options:
+
+- `layout`: "vertical" (top to bottom) or "horizontal" (left to right)
+- `nodeShape`: "rect", "roundRect", or "ellipse"
+- `nodeWidth`, `nodeHeight`: Node size in px (default: 120x40)
+- `levelGap`: Gap between levels (default: 60)
+- `siblingGap`: Gap between siblings (default: 20)
+
 ## Important Notes
 
 | NG                       | OK                | Description                             |

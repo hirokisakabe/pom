@@ -546,6 +546,98 @@ A node for creating 2x2 matrix/positioning maps. Commonly used for cost-effectiv
 }
 ```
 
+#### 11. Tree
+
+A node for creating tree structures such as organization charts, decision trees, and hierarchical diagrams.
+
+```typescript
+{
+  type: "tree";
+  layout?: "vertical" | "horizontal";  // Tree direction (default: "vertical")
+  nodeShape?: "rect" | "roundRect" | "ellipse";  // Node shape (default: "rect")
+  data: {
+    label: string;       // Node label
+    color?: string;      // Node color (hex, default: "1D4ED8")
+    children?: TreeDataItem[];  // Child nodes
+  };
+  connectorStyle?: {
+    color?: string;      // Connector line color (default: "333333")
+    width?: number;      // Connector line width (default: 2)
+  };
+  nodeWidth?: number;    // Node width in px (default: 120)
+  nodeHeight?: number;   // Node height in px (default: 40)
+  levelGap?: number;     // Gap between levels in px (default: 60)
+  siblingGap?: number;   // Gap between siblings in px (default: 20)
+
+  // Common properties
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+**Usage Examples:**
+
+```typescript
+// Vertical Organization Chart
+{
+  type: "tree",
+  layout: "vertical",
+  nodeShape: "roundRect",
+  w: 600,
+  h: 400,
+  data: {
+    label: "CEO",
+    color: "1D4ED8",
+    children: [
+      {
+        label: "CTO",
+        color: "0EA5E9",
+        children: [
+          { label: "Engineer A" },
+          { label: "Engineer B" },
+        ],
+      },
+      {
+        label: "CFO",
+        color: "16A34A",
+        children: [
+          { label: "Accountant" },
+        ],
+      },
+    ],
+  },
+  connectorStyle: { color: "333333", width: 2 },
+}
+
+// Horizontal Decision Tree
+{
+  type: "tree",
+  layout: "horizontal",
+  nodeShape: "rect",
+  w: 600,
+  h: 300,
+  data: {
+    label: "Start",
+    children: [
+      {
+        label: "Option A",
+        children: [
+          { label: "Result 1" },
+          { label: "Result 2" },
+        ],
+      },
+      {
+        label: "Option B",
+        children: [
+          { label: "Result 3" },
+        ],
+      },
+    ],
+  },
+}
+```
+
 ## Master Slide
 
 You can automatically insert common headers, footers, and page numbers across all pages.
@@ -730,6 +822,7 @@ if (result.success) {
 | `inputChartNodeSchema`          | For chart nodes                            |
 | `inputTimelineNodeSchema`       | For timeline nodes                         |
 | `inputMatrixNodeSchema`         | For matrix nodes                           |
+| `inputTreeNodeSchema`           | For tree nodes                             |
 | `inputBoxNodeSchema`            | For Box nodes                              |
 | `inputVStackNodeSchema`         | For VStack nodes                           |
 | `inputHStackNodeSchema`         | For HStack nodes                           |
