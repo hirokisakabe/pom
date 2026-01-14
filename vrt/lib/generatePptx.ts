@@ -2564,6 +2564,230 @@ const page12Tree: POMNode = {
   ],
 };
 
+// ============================================================
+// Page 13: Flow Node Test
+// テスト対象: FlowNode - direction, nodes, connections, connectorStyle
+// ============================================================
+const page13Flow: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 16,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "Page 13: Flow Node Test",
+      fontPx: 28,
+      color: palette.charcoal,
+      bold: true,
+    },
+    {
+      type: "hstack",
+      gap: 16,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Horizontal Flow (Basic Process):",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "flow",
+                direction: "horizontal",
+                w: 550,
+                h: 150,
+                nodes: [
+                  { id: "start", shape: "flowChartTerminator", text: "開始" },
+                  { id: "process1", shape: "flowChartProcess", text: "処理A" },
+                  { id: "process2", shape: "flowChartProcess", text: "処理B" },
+                  { id: "end", shape: "flowChartTerminator", text: "終了" },
+                ],
+                connections: [
+                  { from: "start", to: "process1" },
+                  { from: "process1", to: "process2" },
+                  { from: "process2", to: "end" },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Vertical Flow (Simple):",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "flow",
+                direction: "vertical",
+                w: 550,
+                h: 300,
+                nodes: [
+                  {
+                    id: "start",
+                    shape: "flowChartTerminator",
+                    text: "開始",
+                    color: "4CAF50",
+                  },
+                  {
+                    id: "input",
+                    shape: "flowChartInputOutput",
+                    text: "データ入力",
+                  },
+                  { id: "process", shape: "flowChartProcess", text: "処理" },
+                  {
+                    id: "end",
+                    shape: "flowChartTerminator",
+                    text: "終了",
+                    color: "E91E63",
+                  },
+                ],
+                connections: [
+                  { from: "start", to: "input" },
+                  { from: "input", to: "process" },
+                  { from: "process", to: "end" },
+                ],
+                connectorStyle: { color: "333333", width: 2 },
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      type: "hstack",
+      gap: 16,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Flow with Decision:",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "flow",
+                direction: "horizontal",
+                w: 550,
+                h: 150,
+                nodes: [
+                  { id: "start", shape: "flowChartTerminator", text: "開始" },
+                  {
+                    id: "decision",
+                    shape: "flowChartDecision",
+                    text: "条件?",
+                    color: "FF9800",
+                  },
+                  {
+                    id: "yes",
+                    shape: "flowChartProcess",
+                    text: "Yes処理",
+                    color: "4CAF50",
+                  },
+                  { id: "end", shape: "flowChartTerminator", text: "終了" },
+                ],
+                connections: [
+                  { from: "start", to: "decision" },
+                  { from: "decision", to: "yes", label: "Yes" },
+                  { from: "yes", to: "end" },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Custom Node Colors:",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "flow",
+                direction: "horizontal",
+                w: 550,
+                h: 150,
+                nodes: [
+                  {
+                    id: "doc",
+                    shape: "flowChartDocument",
+                    text: "ドキュメント",
+                    color: "2196F3",
+                  },
+                  {
+                    id: "db",
+                    shape: "flowChartMagneticDisk",
+                    text: "DB",
+                    color: "9C27B0",
+                  },
+                  {
+                    id: "prep",
+                    shape: "flowChartPreparation",
+                    text: "準備",
+                    color: "009688",
+                  },
+                ],
+                connections: [
+                  { from: "doc", to: "db" },
+                  { from: "db", to: "prep" },
+                ],
+                connectorStyle: {
+                  color: "64748B",
+                  width: 2,
+                  arrowType: "arrow",
+                },
+              },
+            ],
+          },
+        },
+      ],
+    },
+  ],
+};
+
 export async function generatePptx(outputPath: string): Promise<void> {
   const pptx = await buildPptx(
     [
@@ -2579,6 +2803,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
       page10ChartAdditional,
       page11Matrix,
       page12Tree,
+      page13Flow,
     ],
     {
       w: 1280,

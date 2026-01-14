@@ -42,6 +42,10 @@ import {
   treeLayoutSchema,
   treeNodeShapeSchema,
   treeConnectorStyleSchema,
+  flowDirectionSchema,
+  flowNodeItemSchema,
+  flowConnectionSchema,
+  flowConnectorStyleSchema,
   type AlignItems,
   type JustifyContent,
   type TreeDataItem,
@@ -145,6 +149,17 @@ export const inputTreeNodeSchema = inputBaseNodeSchema.extend({
   siblingGap: z.number().optional(),
 });
 
+export const inputFlowNodeSchema = inputBaseNodeSchema.extend({
+  type: z.literal("flow"),
+  direction: flowDirectionSchema.optional(),
+  nodes: z.array(flowNodeItemSchema),
+  connections: z.array(flowConnectionSchema),
+  connectorStyle: flowConnectorStyleSchema.optional(),
+  nodeWidth: z.number().optional(),
+  nodeHeight: z.number().optional(),
+  nodeGap: z.number().optional(),
+});
+
 export type InputTextNode = z.infer<typeof inputTextNodeSchema>;
 export type InputImageNode = z.infer<typeof inputImageNodeSchema>;
 export type InputTableNode = z.infer<typeof inputTableNodeSchema>;
@@ -153,6 +168,7 @@ export type InputChartNode = z.infer<typeof inputChartNodeSchema>;
 export type InputTimelineNode = z.infer<typeof inputTimelineNodeSchema>;
 export type InputMatrixNode = z.infer<typeof inputMatrixNodeSchema>;
 export type InputTreeNode = z.infer<typeof inputTreeNodeSchema>;
+export type InputFlowNode = z.infer<typeof inputFlowNodeSchema>;
 
 // ===== Recursive Types =====
 export type InputBoxNode = InputBaseNode & {
@@ -187,7 +203,8 @@ export type InputPOMNode =
   | InputChartNode
   | InputTimelineNode
   | InputMatrixNode
-  | InputTreeNode;
+  | InputTreeNode
+  | InputFlowNode;
 
 // ===== Recursive Node Schemas =====
 const inputBoxNodeSchemaBase = inputBaseNodeSchema.extend({
@@ -249,6 +266,7 @@ export const inputPomNodeSchema: z.ZodType<InputPOMNode> = z.lazy(() =>
     inputTimelineNodeSchema,
     inputMatrixNodeSchema,
     inputTreeNodeSchema,
+    inputFlowNodeSchema,
   ]),
 ) as z.ZodType<InputPOMNode>;
 
