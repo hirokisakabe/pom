@@ -449,6 +449,47 @@ export type MatrixQuadrants = z.infer<typeof matrixQuadrantsSchema>;
 export type MatrixItem = z.infer<typeof matrixItemSchema>;
 export type MatrixNode = z.infer<typeof matrixNodeSchema>;
 
+// ===== Tree Node =====
+export const treeLayoutSchema = z.enum(["vertical", "horizontal"]);
+
+export const treeNodeShapeSchema = z.enum(["rect", "roundRect", "ellipse"]);
+
+export const treeConnectorStyleSchema = z.object({
+  color: z.string().optional(),
+  width: z.number().optional(),
+});
+
+export type TreeDataItem = {
+  label: string;
+  color?: string;
+  children?: TreeDataItem[];
+};
+
+export const treeDataItemSchema: z.ZodType<TreeDataItem> = z.lazy(() =>
+  z.object({
+    label: z.string(),
+    color: z.string().optional(),
+    children: z.array(treeDataItemSchema).optional(),
+  }),
+);
+
+export const treeNodeSchema = basePOMNodeSchema.extend({
+  type: z.literal("tree"),
+  layout: treeLayoutSchema.optional(),
+  nodeShape: treeNodeShapeSchema.optional(),
+  data: treeDataItemSchema,
+  connectorStyle: treeConnectorStyleSchema.optional(),
+  nodeWidth: z.number().optional(),
+  nodeHeight: z.number().optional(),
+  levelGap: z.number().optional(),
+  siblingGap: z.number().optional(),
+});
+
+export type TreeLayout = z.infer<typeof treeLayoutSchema>;
+export type TreeNodeShape = z.infer<typeof treeNodeShapeSchema>;
+export type TreeConnectorStyle = z.infer<typeof treeConnectorStyleSchema>;
+export type TreeNode = z.infer<typeof treeNodeSchema>;
+
 // ===== Recursive Types with Explicit Type Definitions =====
 
 // Define the types explicitly to avoid 'any' inference
@@ -483,7 +524,8 @@ export type POMNode =
   | ShapeNode
   | ChartNode
   | TimelineNode
-  | MatrixNode;
+  | MatrixNode
+  | TreeNode;
 
 // Define schemas using passthrough to maintain type safety
 const boxNodeSchemaBase = basePOMNodeSchema.extend({
@@ -527,6 +569,7 @@ export const pomNodeSchema: z.ZodType<POMNode> = z.lazy(() =>
     chartNodeSchema,
     timelineNodeSchema,
     matrixNodeSchema,
+    treeNodeSchema,
   ]),
 ) as z.ZodType<POMNode>;
 
@@ -550,7 +593,8 @@ export type PositionedNode =
   | (ShapeNode & PositionedBase)
   | (ChartNode & PositionedBase)
   | (TimelineNode & PositionedBase)
-  | (MatrixNode & PositionedBase);
+  | (MatrixNode & PositionedBase)
+  | (TreeNode & PositionedBase);
 
 export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
   z.union([
@@ -572,6 +616,7 @@ export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
     chartNodeSchema.merge(positionedBaseSchema),
     timelineNodeSchema.merge(positionedBaseSchema),
     matrixNodeSchema.merge(positionedBaseSchema),
+    treeNodeSchema.merge(positionedBaseSchema),
   ]),
 ) as z.ZodType<PositionedNode>;
 

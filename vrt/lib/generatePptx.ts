@@ -2366,6 +2366,204 @@ const page11Matrix: POMNode = {
   ],
 };
 
+// ============================================================
+// Page 12: Tree Node Test
+// テスト対象: TreeNode - layout, nodeShape, data, connectorStyle
+// ============================================================
+const page12Tree: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 16,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "Page 12: Tree Node Test",
+      fontPx: 28,
+      color: palette.charcoal,
+      bold: true,
+    },
+    {
+      type: "hstack",
+      gap: 16,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Vertical Tree (Organization Chart):",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "tree",
+                layout: "vertical",
+                nodeShape: "roundRect",
+                w: 550,
+                h: 350,
+                data: {
+                  label: "CEO",
+                  color: "1D4ED8",
+                  children: [
+                    {
+                      label: "CTO",
+                      color: "0EA5E9",
+                      children: [
+                        { label: "Engineer A" },
+                        { label: "Engineer B" },
+                      ],
+                    },
+                    {
+                      label: "CFO",
+                      color: "16A34A",
+                      children: [{ label: "Accountant" }],
+                    },
+                  ],
+                },
+                connectorStyle: { color: "333333", width: 2 },
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Horizontal Tree (Decision Tree):",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "tree",
+                layout: "horizontal",
+                nodeShape: "rect",
+                w: 550,
+                h: 350,
+                data: {
+                  label: "Start",
+                  children: [
+                    {
+                      label: "Option A",
+                      children: [{ label: "Result 1" }, { label: "Result 2" }],
+                    },
+                    {
+                      label: "Option B",
+                      children: [{ label: "Result 3" }],
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      type: "hstack",
+      gap: 16,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Ellipse Nodes:",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "tree",
+                layout: "vertical",
+                nodeShape: "ellipse",
+                w: 550,
+                h: 200,
+                nodeWidth: 100,
+                nodeHeight: 50,
+                data: {
+                  label: "Root",
+                  color: "DC2626",
+                  children: [
+                    { label: "Child 1", color: "2563EB" },
+                    { label: "Child 2", color: "16A34A" },
+                    { label: "Child 3", color: "CA8A04" },
+                  ],
+                },
+                connectorStyle: { color: "64748B", width: 1 },
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Custom Spacing:",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "tree",
+                layout: "horizontal",
+                nodeShape: "roundRect",
+                w: 550,
+                h: 200,
+                nodeWidth: 80,
+                nodeHeight: 30,
+                levelGap: 80,
+                siblingGap: 10,
+                data: {
+                  label: "A",
+                  children: [
+                    { label: "B", children: [{ label: "D" }, { label: "E" }] },
+                    { label: "C", children: [{ label: "F" }] },
+                  ],
+                },
+                connectorStyle: { color: "0EA5E9", width: 3 },
+              },
+            ],
+          },
+        },
+      ],
+    },
+  ],
+};
+
 export async function generatePptx(outputPath: string): Promise<void> {
   const pptx = await buildPptx(
     [
@@ -2380,6 +2578,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
       page9Timeline,
       page10ChartAdditional,
       page11Matrix,
+      page12Tree,
     ],
     {
       w: 1280,
