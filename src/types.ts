@@ -295,6 +295,7 @@ const basePOMNodeSchema = z.object({
   padding: paddingSchema.optional(),
   backgroundColor: z.string().optional(),
   border: borderStyleSchema.optional(),
+  borderRadius: z.number().optional(),
 });
 
 type BasePOMNode = z.infer<typeof basePOMNodeSchema>;

@@ -1966,6 +1966,7 @@ const page8Common: POMNode = {
                 w: 80,
                 h: 40,
                 backgroundColor: palette.navy,
+                borderRadius: 8,
                 children: { type: "text", text: "" },
               },
               {
@@ -1973,6 +1974,7 @@ const page8Common: POMNode = {
                 w: 80,
                 h: 40,
                 backgroundColor: palette.blue,
+                borderRadius: 16,
                 children: { type: "text", text: "" },
               },
               {
@@ -1980,6 +1982,7 @@ const page8Common: POMNode = {
                 w: 80,
                 h: 40,
                 backgroundColor: palette.green,
+                borderRadius: 20,
                 children: { type: "text", text: "" },
               },
             ],
