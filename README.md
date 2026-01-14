@@ -422,6 +422,59 @@ A node for drawing charts. Supports bar charts, line charts, pie charts, area ch
 }
 ```
 
+#### 9. Timeline
+
+A node for creating timeline/roadmap visualizations. Supports horizontal and vertical layouts.
+
+```typescript
+{
+  type: "timeline";
+  direction?: "horizontal" | "vertical";  // Default: "horizontal"
+  items: {
+    date: string;           // Date/period label
+    title: string;          // Item title
+    description?: string;   // Optional description
+    color?: string;         // Node color (hex, default: "1D4ED8")
+  }[];
+
+  // Common properties
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+**Usage Examples:**
+
+```typescript
+// Horizontal roadmap
+{
+  type: "timeline",
+  direction: "horizontal",
+  w: 1000,
+  h: 120,
+  items: [
+    { date: "2025/Q1", title: "Phase 1", description: "Foundation", color: "4CAF50" },
+    { date: "2025/Q2", title: "Phase 2", description: "Development", color: "2196F3" },
+    { date: "2025/Q3", title: "Phase 3", description: "Testing", color: "FF9800" },
+    { date: "2025/Q4", title: "Phase 4", description: "Release", color: "E91E63" },
+  ],
+}
+
+// Vertical project plan
+{
+  type: "timeline",
+  direction: "vertical",
+  w: 400,
+  h: 300,
+  items: [
+    { date: "Week 1", title: "Planning" },
+    { date: "Week 2-3", title: "Development" },
+    { date: "Week 4", title: "Release" },
+  ],
+}
+```
+
 ## Master Slide
 
 You can automatically insert common headers, footers, and page numbers across all pages.
@@ -604,6 +657,7 @@ if (result.success) {
 | `inputTableNodeSchema`          | For table nodes                            |
 | `inputShapeNodeSchema`          | For shape nodes                            |
 | `inputChartNodeSchema`          | For chart nodes                            |
+| `inputTimelineNodeSchema`       | For timeline nodes                         |
 | `inputBoxNodeSchema`            | For Box nodes                              |
 | `inputVStackNodeSchema`         | For VStack nodes                           |
 | `inputHStackNodeSchema`         | For HStack nodes                           |
