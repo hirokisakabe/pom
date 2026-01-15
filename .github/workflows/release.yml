@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: [main]
+    branches: [docs/add-changeset-instruction] # テスト用（後で main に戻す）
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -21,15 +21,30 @@ jobs:
           cache: npm
           registry-url: https://registry.npmjs.org
 
+      - name: Upgrade npm for Trusted Publishing
+        run: npm install -g npm@latest
+
       - run: npm ci
       - run: npm run build
       - run: npm run test:run
 
-      - name: Create Release PR or Publish
+      - name: Check for changesets
+        id: changesets
+        run: |
+          if [ -n "$(ls -A .changeset/*.md 2>/dev/null | grep -v README.md)" ]; then
+            echo "has_changesets=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changesets=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release PR
+        if: steps.changesets.outputs.has_changesets == 'true'
         uses: changesets/action@v1
         with:
-          publish: npx changeset publish
           version: npx changeset version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
+
+      - name: Publish to npm
+        if: steps.changesets.outputs.has_changesets == 'false'
+        run: npm publish --provenance --access public
