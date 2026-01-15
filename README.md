@@ -59,20 +59,21 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 
 ## Available Nodes
 
-| Node     | Description                                    |
-| -------- | ---------------------------------------------- |
-| text     | Text with font styling and bullet points       |
-| image    | Images from file path, URL, or base64          |
-| table    | Tables with customizable columns and rows      |
-| shape    | PowerPoint shapes (roundRect, ellipse, etc.)   |
-| chart    | Charts (bar, line, pie, area, doughnut, radar) |
-| timeline | Timeline/roadmap visualizations                |
-| matrix   | 2x2 positioning maps                           |
-| tree     | Organization charts and decision trees         |
-| flow     | Flowcharts with nodes and edges                |
-| box      | Container for single child with padding        |
-| vstack   | Vertical stack layout                          |
-| hstack   | Horizontal stack layout                        |
+| Node         | Description                                    |
+| ------------ | ---------------------------------------------- |
+| text         | Text with font styling and bullet points       |
+| image        | Images from file path, URL, or base64          |
+| table        | Tables with customizable columns and rows      |
+| shape        | PowerPoint shapes (roundRect, ellipse, etc.)   |
+| chart        | Charts (bar, line, pie, area, doughnut, radar) |
+| timeline     | Timeline/roadmap visualizations                |
+| matrix       | 2x2 positioning maps                           |
+| tree         | Organization charts and decision trees         |
+| flow         | Flowcharts with nodes and edges                |
+| processArrow | Chevron-style process diagrams                 |
+| box          | Container for single child with padding        |
+| vstack       | Vertical stack layout                          |
+| hstack       | Horizontal stack layout                        |
 
 For detailed node documentation, see [Nodes Reference](./docs/nodes.md).
 

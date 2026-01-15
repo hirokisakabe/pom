@@ -116,6 +116,7 @@ async function buildPomWithYogaTree(
     case "matrix":
     case "tree":
     case "flow":
+    case "processArrow":
       // 子要素なし
       break;
   }
@@ -401,6 +402,7 @@ async function applyStyleToYogaNode(node: POMNode, yn: YogaNode) {
     case "matrix":
     case "tree":
     case "flow":
+    case "processArrow":
       // 明示的にサイズが指定されていることを期待
       break;
   }

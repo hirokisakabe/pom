@@ -664,3 +664,80 @@ A node for creating flowcharts. Supports various node shapes and automatic layou
   ],
 }
 ```
+
+### 13. ProcessArrow
+
+A node for creating chevron-style process diagrams. Commonly used for visualizing sequential steps in a workflow.
+
+![ProcessArrow Node Example](./images/processArrow.png)
+
+```typescript
+{
+  type: "processArrow";
+  direction?: "horizontal" | "vertical";  // Default: "horizontal"
+  steps: {
+    label: string;       // Step label
+    color?: string;      // Step color (hex, default: "4472C4")
+    textColor?: string;  // Text color (hex, default: "FFFFFF")
+  }[];
+  itemWidth?: number;    // Step width in px (default: 150)
+  itemHeight?: number;   // Step height in px (default: 60)
+  gap?: number;          // Gap between steps in px (default: -15, negative for overlap)
+  fontPx?: number;       // Font size (default: 14)
+  bold?: boolean;        // Bold text (default: false)
+
+  // Common properties
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+**Usage Examples:**
+
+```typescript
+// Horizontal process arrow with colors
+{
+  type: "processArrow",
+  direction: "horizontal",
+  w: 1000,
+  h: 80,
+  steps: [
+    { label: "Planning", color: "#4472C4" },
+    { label: "Design", color: "#5B9BD5" },
+    { label: "Development", color: "#70AD47" },
+    { label: "Testing", color: "#FFC000" },
+    { label: "Release", color: "#ED7D31" },
+  ],
+}
+
+// Vertical process arrow
+{
+  type: "processArrow",
+  direction: "vertical",
+  w: 200,
+  h: 250,
+  steps: [
+    { label: "Phase 1", color: "#4CAF50" },
+    { label: "Phase 2", color: "#2196F3" },
+    { label: "Phase 3", color: "#9C27B0" },
+  ],
+}
+
+// Custom styling
+{
+  type: "processArrow",
+  direction: "horizontal",
+  w: 600,
+  h: 80,
+  itemWidth: 180,
+  itemHeight: 70,
+  fontPx: 16,
+  bold: true,
+  steps: [
+    { label: "Input", color: "#2196F3" },
+    { label: "Process", color: "#00BCD4" },
+    { label: "Output", color: "#009688" },
+  ],
+}
+```
