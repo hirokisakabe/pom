@@ -611,6 +611,89 @@ export const flowSample: POMNode = {
   ],
 };
 
+export const processArrowSample: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 40,
+  gap: 24,
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "ProcessArrow Node Example",
+      fontPx: 28,
+      bold: true,
+      color: palette.navy,
+    },
+    {
+      type: "processArrow",
+      direction: "horizontal",
+      w: "100%",
+      h: 100,
+      steps: [
+        { label: "Planning", color: "4472C4" },
+        { label: "Design", color: "5B9BD5" },
+        { label: "Development", color: "70AD47" },
+        { label: "Testing", color: "FFC000" },
+        { label: "Release", color: "ED7D31" },
+      ],
+    },
+    {
+      type: "hstack",
+      gap: 32,
+      children: [
+        {
+          type: "vstack",
+          gap: 8,
+          children: [
+            {
+              type: "text",
+              text: "Default Style",
+              fontPx: 14,
+              bold: true,
+            },
+            {
+              type: "processArrow",
+              direction: "horizontal",
+              w: 400,
+              h: 60,
+              steps: [
+                { label: "Input" },
+                { label: "Process" },
+                { label: "Output" },
+              ],
+            },
+          ],
+        },
+        {
+          type: "vstack",
+          gap: 8,
+          children: [
+            {
+              type: "text",
+              text: "Custom Text Color",
+              fontPx: 14,
+              bold: true,
+            },
+            {
+              type: "processArrow",
+              direction: "horizontal",
+              w: 400,
+              h: 60,
+              steps: [
+                { label: "Light BG", color: "FFEB3B", textColor: "333333" },
+                { label: "Dark BG", color: palette.navy, textColor: "FFFFFF" },
+                { label: "Blue BG", color: palette.blue, textColor: "FFFFFF" },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 export const boxSample: POMNode = {
   type: "vstack",
   w: "100%",
@@ -965,6 +1048,7 @@ export const sampleNodes: Record<NodeType, POMNode> = {
   matrix: matrixSample,
   tree: treeSample,
   flow: flowSample,
+  processArrow: processArrowSample,
   box: boxSample,
   vstack: vstackSample,
   hstack: hstackSample,
