@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: [docs/add-changeset-instruction] # テスト用（後で main に戻す）
+    branches: [main]
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -28,23 +28,11 @@ jobs:
       - run: npm run build
       - run: npm run test:run
 
-      - name: Check for changesets
-        id: changesets
-        run: |
-          if [ -n "$(ls -A .changeset/*.md 2>/dev/null | grep -v README.md)" ]; then
-            echo "has_changesets=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_changesets=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create Release PR
-        if: steps.changesets.outputs.has_changesets == 'true'
+      - name: Create Release PR or Publish
         uses: changesets/action@v1
         with:
+          publish: npx changeset publish
           version: npx changeset version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish to npm
-        if: steps.changesets.outputs.has_changesets == 'false'
-        run: npm publish --provenance --access public
+          NPM_CONFIG_PROVENANCE: true
