@@ -35,6 +35,8 @@ Layout attributes that all nodes can have.
 
 A node for displaying text.
 
+![Text Node Example](./images/text.png)
+
 ```typescript
 {
   type: "text";
@@ -111,6 +113,8 @@ A node for displaying text.
 
 A node for displaying images.
 
+![Image Node Example](./images/image.png)
+
 - If `w` and `h` are not specified, the actual image size is automatically used
 - If size is specified, the image is displayed at that size (aspect ratio is not preserved)
 
@@ -129,6 +133,8 @@ A node for displaying images.
 ### 3. Table
 
 A node for drawing tables. Column widths and row heights are declared in px, with fine-grained control over cell decoration.
+
+![Table Node Example](./images/table.png)
 
 ```typescript
 {
@@ -162,6 +168,8 @@ A node for drawing tables. Column widths and row heights are declared in px, wit
 ### 4. Shape
 
 A node for drawing shapes. Different representations are possible with or without text, supporting complex visual effects.
+
+![Shape Node Example](./images/shape.png)
 
 ```typescript
 {
@@ -210,6 +218,8 @@ A node for drawing shapes. Different representations are possible with or withou
 
 A generic container that wraps a single child element.
 
+![Box Node Example](./images/box.png)
+
 - Only **one** child element
 - Used for grouping with padding or fixed size
 
@@ -228,6 +238,8 @@ A generic container that wraps a single child element.
 ### 6. VStack
 
 Arranges child elements **vertically**.
+
+![VStack Node Example](./images/vstack.png)
 
 ```typescript
 {
@@ -248,6 +260,8 @@ Arranges child elements **vertically**.
 
 Arranges child elements **horizontally**.
 
+![HStack Node Example](./images/hstack.png)
+
 ```typescript
 {
   type: "hstack";
@@ -266,6 +280,8 @@ Arranges child elements **horizontally**.
 ### 8. Chart
 
 A node for drawing charts. Supports bar charts, line charts, pie charts, area charts, doughnut charts, and radar charts.
+
+![Chart Node Example](./images/chart.png)
 
 ```typescript
 {
@@ -356,6 +372,8 @@ A node for drawing charts. Supports bar charts, line charts, pie charts, area ch
 
 A node for creating timeline/roadmap visualizations. Supports horizontal and vertical layouts.
 
+![Timeline Node Example](./images/timeline.png)
+
 ```typescript
 {
   type: "timeline";
@@ -408,6 +426,8 @@ A node for creating timeline/roadmap visualizations. Supports horizontal and ver
 ### 10. Matrix
 
 A node for creating 2x2 matrix/positioning maps. Commonly used for cost-effectiveness analysis, impact-effort prioritization, etc.
+
+![Matrix Node Example](./images/matrix.png)
 
 ```typescript
 {
@@ -479,6 +499,8 @@ A node for creating 2x2 matrix/positioning maps. Commonly used for cost-effectiv
 ### 11. Tree
 
 A node for creating tree structures such as organization charts, decision trees, and hierarchical diagrams.
+
+![Tree Node Example](./images/tree.png)
 
 ```typescript
 {
@@ -571,6 +593,8 @@ A node for creating tree structures such as organization charts, decision trees,
 ### 12. Flow
 
 A node for creating flowcharts. Supports various node shapes and automatic layout.
+
+![Flow Node Example](./images/flow.png)
 
 ```typescript
 {

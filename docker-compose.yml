@@ -28,3 +28,13 @@ services:
       # preview 結果をホストに出力するためマウント
       - ./preview/output:/app/preview/output
     command: npm run preview
+
+  docs-images:
+    build:
+      context: .
+      dockerfile: vrt/Dockerfile
+    image: pom-vrt:latest
+    volumes:
+      # ドキュメント用画像をホストに出力するためマウント
+      - ./docs/images:/app/docs/images
+    command: npm run docs:images
