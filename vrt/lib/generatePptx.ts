@@ -2788,6 +2788,223 @@ const page13Flow: POMNode = {
   ],
 };
 
+// ============================================================
+// Page 14: ProcessArrow Node Test
+// テスト対象: ProcessArrowNode - direction, steps, itemWidth, itemHeight, gap
+// ============================================================
+const page14ProcessArrow: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 16,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "Page 14: ProcessArrow Node Test",
+      fontPx: 28,
+      color: palette.charcoal,
+      bold: true,
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "Horizontal Process Arrow (5 steps with colors):",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "processArrow",
+            direction: "horizontal",
+            w: 1100,
+            h: 80,
+            steps: [
+              { label: "企画", color: "#4472C4" },
+              { label: "設計", color: "#5B9BD5" },
+              { label: "開発", color: "#70AD47" },
+              { label: "テスト", color: "#FFC000" },
+              { label: "リリース", color: "#ED7D31" },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "hstack",
+      gap: 16,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "3 Steps (Auto width):",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "processArrow",
+                direction: "horizontal",
+                w: 500,
+                h: 60,
+                steps: [
+                  { label: "Input" },
+                  { label: "Process" },
+                  { label: "Output" },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Single Step:",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "processArrow",
+                direction: "horizontal",
+                w: 500,
+                h: 60,
+                steps: [{ label: "Only One Step", color: "#E91E63" }],
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "Custom itemWidth, itemHeight & fontPx:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "processArrow",
+            direction: "horizontal",
+            w: 1100,
+            h: 100,
+            itemWidth: 200,
+            itemHeight: 80,
+            fontPx: 18,
+            bold: true,
+            steps: [
+              { label: "Step 1", color: "#2196F3" },
+              { label: "Step 2", color: "#00BCD4" },
+              { label: "Step 3", color: "#009688" },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "hstack",
+      gap: 16,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Vertical Process Arrow:",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "processArrow",
+                direction: "vertical",
+                w: 200,
+                h: 250,
+                steps: [
+                  { label: "Phase 1", color: "#4CAF50" },
+                  { label: "Phase 2", color: "#2196F3" },
+                  { label: "Phase 3", color: "#9C27B0" },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Custom textColor:",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "processArrow",
+                direction: "horizontal",
+                w: 500,
+                h: 60,
+                steps: [
+                  { label: "Light BG", color: "#FFEB3B", textColor: "#333333" },
+                  { label: "Dark BG", color: "#1E293B", textColor: "#FFFFFF" },
+                  { label: "Blue BG", color: "#1D4ED8", textColor: "#FFFFFF" },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+    },
+  ],
+};
+
 export async function generatePptx(outputPath: string): Promise<void> {
   const pptx = await buildPptx(
     [
@@ -2804,6 +3021,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
       page11Matrix,
       page12Tree,
       page13Flow,
+      page14ProcessArrow,
     ],
     {
       w: 1280,

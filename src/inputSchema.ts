@@ -46,6 +46,8 @@ import {
   flowNodeItemSchema,
   flowConnectionSchema,
   flowConnectorStyleSchema,
+  processArrowDirectionSchema,
+  processArrowStepSchema,
   type AlignItems,
   type JustifyContent,
   type TreeDataItem,
@@ -160,6 +162,17 @@ export const inputFlowNodeSchema = inputBaseNodeSchema.extend({
   nodeGap: z.number().optional(),
 });
 
+export const inputProcessArrowNodeSchema = inputBaseNodeSchema.extend({
+  type: z.literal("processArrow"),
+  direction: processArrowDirectionSchema.optional(),
+  steps: z.array(processArrowStepSchema),
+  itemWidth: z.number().optional(),
+  itemHeight: z.number().optional(),
+  gap: z.number().optional(),
+  fontPx: z.number().optional(),
+  bold: z.boolean().optional(),
+});
+
 export type InputTextNode = z.infer<typeof inputTextNodeSchema>;
 export type InputImageNode = z.infer<typeof inputImageNodeSchema>;
 export type InputTableNode = z.infer<typeof inputTableNodeSchema>;
@@ -169,6 +182,7 @@ export type InputTimelineNode = z.infer<typeof inputTimelineNodeSchema>;
 export type InputMatrixNode = z.infer<typeof inputMatrixNodeSchema>;
 export type InputTreeNode = z.infer<typeof inputTreeNodeSchema>;
 export type InputFlowNode = z.infer<typeof inputFlowNodeSchema>;
+export type InputProcessArrowNode = z.infer<typeof inputProcessArrowNodeSchema>;
 
 // ===== Recursive Types =====
 export type InputBoxNode = InputBaseNode & {
@@ -204,7 +218,8 @@ export type InputPOMNode =
   | InputTimelineNode
   | InputMatrixNode
   | InputTreeNode
-  | InputFlowNode;
+  | InputFlowNode
+  | InputProcessArrowNode;
 
 // ===== Recursive Node Schemas =====
 const inputBoxNodeSchemaBase = inputBaseNodeSchema.extend({
@@ -267,6 +282,7 @@ export const inputPomNodeSchema: z.ZodType<InputPOMNode> = z.lazy(() =>
     inputMatrixNodeSchema,
     inputTreeNodeSchema,
     inputFlowNodeSchema,
+    inputProcessArrowNodeSchema,
   ]),
 ) as z.ZodType<InputPOMNode>;
 

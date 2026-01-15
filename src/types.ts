@@ -490,6 +490,30 @@ export type TreeNodeShape = z.infer<typeof treeNodeShapeSchema>;
 export type TreeConnectorStyle = z.infer<typeof treeConnectorStyleSchema>;
 export type TreeNode = z.infer<typeof treeNodeSchema>;
 
+// ===== ProcessArrow Node =====
+export const processArrowDirectionSchema = z.enum(["horizontal", "vertical"]);
+
+export const processArrowStepSchema = z.object({
+  label: z.string(),
+  color: z.string().optional(),
+  textColor: z.string().optional(),
+});
+
+export const processArrowNodeSchema = basePOMNodeSchema.extend({
+  type: z.literal("processArrow"),
+  direction: processArrowDirectionSchema.optional(),
+  steps: z.array(processArrowStepSchema),
+  itemWidth: z.number().optional(),
+  itemHeight: z.number().optional(),
+  gap: z.number().optional(),
+  fontPx: z.number().optional(),
+  bold: z.boolean().optional(),
+});
+
+export type ProcessArrowDirection = z.infer<typeof processArrowDirectionSchema>;
+export type ProcessArrowStep = z.infer<typeof processArrowStepSchema>;
+export type ProcessArrowNode = z.infer<typeof processArrowNodeSchema>;
+
 // ===== Flow Node =====
 export const flowDirectionSchema = z.enum(["horizontal", "vertical"]);
 
@@ -587,7 +611,8 @@ export type POMNode =
   | TimelineNode
   | MatrixNode
   | TreeNode
-  | FlowNode;
+  | FlowNode
+  | ProcessArrowNode;
 
 // Define schemas using passthrough to maintain type safety
 const boxNodeSchemaBase = basePOMNodeSchema.extend({
@@ -633,6 +658,7 @@ export const pomNodeSchema: z.ZodType<POMNode> = z.lazy(() =>
     matrixNodeSchema,
     treeNodeSchema,
     flowNodeSchema,
+    processArrowNodeSchema,
   ]),
 ) as z.ZodType<POMNode>;
 
@@ -658,7 +684,8 @@ export type PositionedNode =
   | (TimelineNode & PositionedBase)
   | (MatrixNode & PositionedBase)
   | (TreeNode & PositionedBase)
-  | (FlowNode & PositionedBase);
+  | (FlowNode & PositionedBase)
+  | (ProcessArrowNode & PositionedBase);
 
 export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
   z.union([
@@ -682,6 +709,7 @@ export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
     matrixNodeSchema.merge(positionedBaseSchema),
     treeNodeSchema.merge(positionedBaseSchema),
     flowNodeSchema.merge(positionedBaseSchema),
+    processArrowNodeSchema.merge(positionedBaseSchema),
   ]),
 ) as z.ZodType<PositionedNode>;
 

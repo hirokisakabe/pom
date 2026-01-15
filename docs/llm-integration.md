@@ -16,20 +16,21 @@ Standard gap: 12-24px
 
 ### Node List
 
-| type     | Purpose    | Main Properties                                                             |
-| -------- | ---------- | --------------------------------------------------------------------------- |
-| text     | Text       | text, fontPx, color, bold, alignText, bullet                                |
-| vstack   | Vertical   | children[], gap, alignItems, justifyContent                                 |
-| hstack   | Horizontal | children[], gap, alignItems, justifyContent                                 |
-| box      | Wrapper    | children (single node)                                                      |
-| table    | Table      | columns[], rows[], defaultRowHeight                                         |
-| shape    | Shape      | shapeType, fill, line, text, fontPx                                         |
-| chart    | Chart      | chartType(bar/line/pie/area/doughnut/radar), data[], showLegend, radarStyle |
-| timeline | Timeline   | direction(horizontal/vertical), items[]                                     |
-| matrix   | Matrix     | axes, quadrants, items[]                                                    |
-| tree     | Tree       | layout, nodeShape, data, connectorStyle                                     |
-| flow     | Flowchart  | direction(TB/LR), nodes[], edges[]                                          |
-| image    | Image      | src                                                                         |
+| type         | Purpose      | Main Properties                                                             |
+| ------------ | ------------ | --------------------------------------------------------------------------- |
+| text         | Text         | text, fontPx, color, bold, alignText, bullet                                |
+| vstack       | Vertical     | children[], gap, alignItems, justifyContent                                 |
+| hstack       | Horizontal   | children[], gap, alignItems, justifyContent                                 |
+| box          | Wrapper      | children (single node)                                                      |
+| table        | Table        | columns[], rows[], defaultRowHeight                                         |
+| shape        | Shape        | shapeType, fill, line, text, fontPx                                         |
+| chart        | Chart        | chartType(bar/line/pie/area/doughnut/radar), data[], showLegend, radarStyle |
+| timeline     | Timeline     | direction(horizontal/vertical), items[]                                     |
+| matrix       | Matrix       | axes, quadrants, items[]                                                    |
+| tree         | Tree         | layout, nodeShape, data, connectorStyle                                     |
+| flow         | Flowchart    | direction(TB/LR), nodes[], edges[]                                          |
+| processArrow | ProcessArrow | direction(horizontal/vertical), steps[]                                     |
+| image        | Image        | src                                                                         |
 
 ### Common Properties
 
@@ -373,6 +374,35 @@ Options:
 - `nodeGap`: Gap between nodes (default: 60)
 - `rankGap`: Gap between ranks (default: 80)
 
+#### 11. ProcessArrow (Chevron Process Diagram)
+
+```json
+{
+  "type": "processArrow",
+  "direction": "horizontal",
+  "w": 1000,
+  "h": 80,
+  "steps": [
+    { "label": "Planning", "color": "4472C4" },
+    { "label": "Design", "color": "5B9BD5" },
+    { "label": "Development", "color": "70AD47" },
+    { "label": "Testing", "color": "FFC000" },
+    { "label": "Release", "color": "ED7D31" }
+  ]
+}
+```
+
+Options:
+
+- `direction`: "horizontal" or "vertical"
+- `steps[].label`: Step label
+- `steps[].color`: Step color (hex, default: "4472C4")
+- `steps[].textColor`: Text color (hex, default: "FFFFFF")
+- `itemWidth`, `itemHeight`: Step size in px (default: 150x60)
+- `gap`: Gap between steps (default: -15, negative for overlap)
+- `fontPx`: Font size (default: 14)
+- `bold`: Bold text (default: false)
+
 ### Important Notes
 
 | NG                       | OK                | Description                             |
@@ -427,6 +457,7 @@ if (result.success) {
 | `inputMatrixNodeSchema`         | For matrix nodes                           |
 | `inputTreeNodeSchema`           | For tree nodes                             |
 | `inputFlowNodeSchema`           | For flow nodes                             |
+| `inputProcessArrowNodeSchema`   | For processArrow nodes                     |
 | `inputBoxNodeSchema`            | For Box nodes                              |
 | `inputVStackNodeSchema`         | For VStack nodes                           |
 | `inputHStackNodeSchema`         | For HStack nodes                           |
