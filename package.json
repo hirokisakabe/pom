@@ -59,7 +59,10 @@
     "vrt:docker": "docker compose build vrt && docker compose run --rm vrt",
     "vrt:docker:update": "docker compose build vrt-update && docker compose run --rm vrt-update",
     "preview": "tsx preview/lib/previewPptx.ts",
-    "preview:docker": "docker compose build preview && docker compose run --rm preview"
+    "preview:docker": "docker compose build preview && docker compose run --rm preview",
+    "docs:images": "tsx docs/lib/generateNodeImages.ts",
+    "docs:images:docker": "docker compose run --rm docs-images",
+    "docs:images:docker:update": "docker compose build docs-images && docker compose run --rm docs-images"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
