@@ -21,6 +21,9 @@ jobs:
           cache: npm
           registry-url: https://registry.npmjs.org
 
+      - name: Upgrade npm for Trusted Publishing
+        run: npm install -g npm@latest
+
       - run: npm ci
       - run: npm run build
       - run: npm run test:run
