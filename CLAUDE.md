@@ -99,6 +99,7 @@ PPTX 生成は3段階のパイプライン:
    - `docs/nodes.md` - ノードリファレンス
    - `docs/llm-integration.md` - LLM 向けガイド
    - `CLAUDE.md` - 主要な型セクションに追加
+7. **changeset 追加**: PR 作成前に `npx changeset add` を実行
 
 ## プレビューワークフロー（Claude Code用）
 
