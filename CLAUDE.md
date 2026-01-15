@@ -49,13 +49,14 @@ PPTX 生成は3段階のパイプライン:
 
 ### 主要な型
 
-- `POMNode` - 入力ノード型（Text, Image, Table, Shape, Chart, Timeline, Matrix, Tree, Box, VStack, HStack）
+- `POMNode` - 入力ノード型（Text, Image, Table, Shape, Chart, Timeline, Matrix, Tree, Flow, Box, VStack, HStack）
 - `PositionedNode` - 位置情報付きノード（x, y, w, h を持つ）
 - `MasterSlideOptions` - マスタースライド設定（header, footer, pageNumber, date）
 - `ChartNode` - グラフノード（bar, line, pie, area, doughnut, radar をサポート）
 - `TimelineNode` - タイムラインノード（direction, items をサポート）
 - `MatrixNode` - マトリクスノード（axes, quadrants, items をサポート）
 - `TreeNode` - ツリーノード（layout, nodeShape, data, connectorStyle をサポート）
+- `FlowNode` - フローチャートノード（direction, nodes, edges をサポート）
 - `BulletOptions` - 箇条書き設定（type, indent, numberType, numberStartAt）
 - `TextMeasurementMode` - テキスト計測モード（`"canvas"` | `"fallback"` | `"auto"`）
 - `BasePOMNode` - 全ノード共通プロパティ（w, h, padding, backgroundColor, border, borderRadius）
@@ -94,8 +95,9 @@ PPTX 生成は3段階のパイプライン:
 5. **VRT ベースライン更新**: `npm run vrt:docker:update` を実行
 6. **ドキュメント更新**:
    - `README.md` - ユーザー向けドキュメント
+   - `docs/nodes.md` - ノードリファレンス
+   - `docs/llm-integration.md` - LLM 向けガイド
    - `CLAUDE.md` - 主要な型セクションに追加
-   - `llm-guide.md` - LLM 向けガイド
 
 ## プレビューワークフロー（Claude Code用）
 
