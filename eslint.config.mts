@@ -13,6 +13,7 @@ export default defineConfig([
       "vrt/**",
       "preview/**",
       "docs/lib/**",
+      "scripts/**",
       "eslint.config.mts",
       "vitest.config.ts",
     ],

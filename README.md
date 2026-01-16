@@ -4,10 +4,11 @@
 
 ## Requirements
 
-- Node.js 18 or higher
+- Node.js 18 or higher (for Node.js environments)
+- Modern browser with ES2020+ support (for browser environments)
 
 > [!NOTE]
-> The PPTX generation feature (`buildPptx`) only works in Node.js environments. However, if you only need the input schema, you can import it from `@hirokisakabe/pom/schema` for use in browser environments.
+> pom works in both Node.js and browser environments. Text measurement uses opentype.js with bundled Noto Sans JP fonts, ensuring consistent layout across all environments.
 
 ## Installation
 
