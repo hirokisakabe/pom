@@ -94,6 +94,69 @@ function estimateTextWidth(text: string, fontSizePx: number): number {
   return width;
 }
 
+/**
+ * テキスト幅計測関数の型
+ */
+type MeasureTextWidthFn = (text: string) => number;
+
+/**
+ * テキストを折り返して行ごとの幅を計算する
+ */
+function wrapText(
+  text: string,
+  maxWidthPx: number,
+  measureWidth: MeasureTextWidthFn,
+): { widthPx: number }[] {
+  const paragraphs = text.split("\n");
+  const lines: { widthPx: number }[] = [];
+
+  for (const paragraph of paragraphs) {
+    if (paragraph === "") {
+      lines.push({ widthPx: 0 });
+      continue;
+    }
+
+    const words = splitForWrap(paragraph);
+    let current = "";
+    let currentWidth = 0;
+
+    for (const word of words) {
+      const candidate = current ? current + word : word;
+      const w = measureWidth(candidate);
+
+      if (w <= maxWidthPx || !current) {
+        current = candidate;
+        currentWidth = w;
+      } else {
+        lines.push({ widthPx: currentWidth });
+        current = word;
+        currentWidth = measureWidth(word);
+      }
+    }
+
+    if (current) {
+      lines.push({ widthPx: currentWidth });
+    }
+  }
+
+  return lines;
+}
+
+/**
+ * 行情報から最終的なサイズを計算する
+ */
+function calculateResult(
+  lines: { widthPx: number }[],
+  opts: MeasureOptions,
+): { widthPx: number; heightPx: number } {
+  const lineHeightRatio = opts.lineHeight ?? 1.3;
+  const lineHeightPx = opts.fontSizePx * lineHeightRatio;
+  const widthPx = lines.length ? Math.max(...lines.map((l) => l.widthPx)) : 0;
+  const heightPx = lines.length * lineHeightPx;
+  // 端数切り上げ＋余裕分 10px を足す
+  return { widthPx: widthPx + 10, heightPx };
+}
+
 // 現在のテキスト計測モード
 let currentMode: TextMeasurementMode = "auto";
 
@@ -150,56 +213,10 @@ function measureTextCanvas(
   text: string,
   maxWidthPx: number,
   opts: MeasureOptions,
-): {
-  widthPx: number;
-  heightPx: number;
-} {
+): { widthPx: number; heightPx: number } {
   applyFontStyle(opts);
-
-  // まず改行で段落に分割
-  const paragraphs = text.split("\n");
-  const lines: { widthPx: number }[] = [];
-
-  for (const paragraph of paragraphs) {
-    // 空の段落（連続した改行）も1行としてカウント
-    if (paragraph === "") {
-      lines.push({ widthPx: 0 });
-      continue;
-    }
-
-    const words = splitForWrap(paragraph);
-
-    let current = "";
-    let currentWidth = 0;
-
-    for (const word of words) {
-      const candidate = current ? current + word : word;
-      const w = ctx.measureText(candidate).width;
-
-      if (w <= maxWidthPx || !current) {
-        // まだ詰められる
-        current = candidate;
-        currentWidth = w;
-      } else {
-        // 折り返す
-        lines.push({ widthPx: currentWidth });
-        current = word;
-        currentWidth = ctx.measureText(word).width;
-      }
-    }
-
-    if (current) {
-      lines.push({ widthPx: currentWidth });
-    }
-  }
-
-  const lineHeightRatio = opts.lineHeight ?? 1.3;
-  const lineHeightPx = opts.fontSizePx * lineHeightRatio;
-  const widthPx = lines.length ? Math.max(...lines.map((l) => l.widthPx)) : 0;
-  const heightPx = lines.length * lineHeightPx;
-
-  // 端数切り上げ＋余裕分 10px を足す
-  return { widthPx: widthPx + 10, heightPx };
+  const lines = wrapText(text, maxWidthPx, (t) => ctx.measureText(t).width);
+  return calculateResult(lines, opts);
 }
 
 /**
@@ -209,56 +226,12 @@ function measureTextFallback(
   text: string,
   maxWidthPx: number,
   opts: MeasureOptions,
-): {
-  widthPx: number;
-  heightPx: number;
-} {
+): { widthPx: number; heightPx: number } {
   const { fontSizePx } = opts;
-
-  // まず改行で段落に分割
-  const paragraphs = text.split("\n");
-  const lines: { widthPx: number }[] = [];
-
-  for (const paragraph of paragraphs) {
-    // 空の段落（連続した改行）も1行としてカウント
-    if (paragraph === "") {
-      lines.push({ widthPx: 0 });
-      continue;
-    }
-
-    const words = splitForWrap(paragraph);
-
-    let current = "";
-    let currentWidth = 0;
-
-    for (const word of words) {
-      const candidate = current ? current + word : word;
-      const w = estimateTextWidth(candidate, fontSizePx);
-
-      if (w <= maxWidthPx || !current) {
-        // まだ詰められる
-        current = candidate;
-        currentWidth = w;
-      } else {
-        // 折り返す
-        lines.push({ widthPx: currentWidth });
-        current = word;
-        currentWidth = estimateTextWidth(word, fontSizePx);
-      }
-    }
-
-    if (current) {
-      lines.push({ widthPx: currentWidth });
-    }
-  }
-
-  const lineHeightRatio = opts.lineHeight ?? 1.3;
-  const lineHeightPx = fontSizePx * lineHeightRatio;
-  const widthPx = lines.length ? Math.max(...lines.map((l) => l.widthPx)) : 0;
-  const heightPx = lines.length * lineHeightPx;
-
-  // 端数切り上げ＋余裕分 10px を足す
-  return { widthPx: widthPx + 10, heightPx };
+  const lines = wrapText(text, maxWidthPx, (t) =>
+    estimateTextWidth(t, fontSizePx),
+  );
+  return calculateResult(lines, opts);
 }
 
 function applyFontStyle(opts: MeasureOptions) {
