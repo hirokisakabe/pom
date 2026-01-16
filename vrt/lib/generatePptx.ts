@@ -3029,52 +3029,59 @@ export async function generatePptx(outputPath: string): Promise<void> {
     },
     {
       master: {
-        header: {
-          type: "hstack",
-          h: 40,
-          padding: { left: 48, right: 48, top: 12, bottom: 0 },
-          justifyContent: "spaceBetween",
-          alignItems: "center",
-          backgroundColor: palette.navy,
-          children: [
-            {
-              type: "text",
-              text: "VRT Test Suite",
-              fontPx: 14,
-              color: "FFFFFF",
-            },
-            {
-              type: "text",
-              text: "{{date}}",
-              fontPx: 12,
-              color: "E2E8F0",
-            },
-          ],
-        },
-        footer: {
-          type: "hstack",
+        title: "VRT_MASTER",
+        objects: [
+          // ヘッダー背景
+          {
+            type: "rect",
+            x: 0,
+            y: 0,
+            w: 1280,
+            h: 40,
+            fill: { color: palette.navy },
+          },
+          // ヘッダーテキスト（左）
+          {
+            type: "text",
+            text: "VRT Test Suite",
+            x: 48,
+            y: 12,
+            w: 200,
+            h: 28,
+            fontPx: 14,
+            color: "FFFFFF",
+          },
+          // ヘッダーテキスト（右）- 日付は固定値
+          {
+            type: "text",
+            text: "2025/01/01",
+            x: 1032,
+            y: 12,
+            w: 200,
+            h: 28,
+            fontPx: 12,
+            color: "E2E8F0",
+            alignText: "right",
+          },
+          // フッターテキスト（左）
+          {
+            type: "text",
+            text: "pom VRT",
+            x: 48,
+            y: 682,
+            w: 200,
+            h: 30,
+            fontPx: 10,
+            color: palette.charcoal,
+          },
+        ],
+        slideNumber: {
+          x: 1032,
+          y: 682,
+          w: 200,
           h: 30,
-          padding: { left: 48, right: 48, top: 0, bottom: 8 },
-          justifyContent: "spaceBetween",
-          alignItems: "center",
-          children: [
-            {
-              type: "text",
-              text: "pom VRT",
-              fontPx: 10,
-              color: palette.charcoal,
-            },
-            {
-              type: "text",
-              text: "Page {{page}} / {{totalPages}}",
-              fontPx: 10,
-              color: palette.charcoal,
-              alignText: "right",
-            },
-          ],
-        },
-        date: {
-          value: "2025/01/01",
+          fontPx: 10,
+          color: palette.charcoal,
         },
       },
     },
