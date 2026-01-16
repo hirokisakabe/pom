@@ -1,4 +1,4 @@
-import { createCanvas } from "canvas";
+import { measureTextWidth as measureTextWidthOpentype } from "./fontLoader.js";
 
 type MeasureOptions = {
   fontFamily: string;
@@ -7,44 +7,7 @@ type MeasureOptions = {
   lineHeight?: number;
 };
 
-export type TextMeasurementMode = "canvas" | "fallback" | "auto";
-
-const canvas = createCanvas(1, 1);
-const ctx = canvas.getContext("2d");
-
-// フォント利用可否のキャッシュ
-const fontAvailabilityCache = new Map<string, boolean>();
-
-/**
- * 指定されたフォントが利用可能かどうかをチェックする
- * 既知のフォントと未知のフォントで同じ幅になるかチェックし、
- * 同じなら「フォントが利用できない」と判定する
- */
-function isFontAvailable(fontFamily: string, fontSizePx: number): boolean {
-  const cacheKey = `${fontFamily}:${fontSizePx}`;
-  const cached = fontAvailabilityCache.get(cacheKey);
-  if (cached !== undefined) {
-    return cached;
-  }
-
-  // テスト文字列（日本語と英語を含む）
-  const testString = "あいうABC123";
-
-  // 存在しないフォント名でテスト
-  const nonExistentFont = "NonExistentFont_12345_XYZ";
-
-  ctx.font = `${fontSizePx}px "${fontFamily}"`;
-  const targetWidth = ctx.measureText(testString).width;
-
-  ctx.font = `${fontSizePx}px "${nonExistentFont}"`;
-  const fallbackWidth = ctx.measureText(testString).width;
-
-  // 幅が同じなら、フォントが利用できない（フォールバックされている）
-  const isAvailable = Math.abs(targetWidth - fallbackWidth) > 0.1;
-
-  fontAvailabilityCache.set(cacheKey, isAvailable);
-  return isAvailable;
-}
+export type TextMeasurementMode = "opentype" | "fallback" | "auto";
 
 /**
  * 文字がCJK（日本語・中国語・韓国語）文字かどうかを判定する
@@ -175,6 +138,18 @@ export function getTextMeasurementMode(): TextMeasurementMode {
 }
 
 /**
+ * fontWeight を "normal" | "bold" に正規化する
+ */
+function normalizeFontWeight(
+  weight: "normal" | "bold" | number | undefined,
+): "normal" | "bold" {
+  if (weight === "bold" || weight === 700) {
+    return "bold";
+  }
+  return "normal";
+}
+
+/**
  * テキストを折り返し付きでレイアウトし、そのサイズを測定する
  */
 export function measureText(
@@ -185,17 +160,16 @@ export function measureText(
   widthPx: number;
   heightPx: number;
 } {
-  const { fontFamily, fontSizePx } = opts;
-
   // 計測方法を決定
   const shouldUseFallback = (() => {
     switch (currentMode) {
-      case "canvas":
+      case "opentype":
         return false;
       case "fallback":
         return true;
       case "auto":
-        return !isFontAvailable(fontFamily, fontSizePx);
+        // opentype.js はバンドルされたフォントを使うため常に利用可能
+        return false;
     }
   })();
 
@@ -203,19 +177,21 @@ export function measureText(
     return measureTextFallback(text, maxWidthPx, opts);
   }
 
-  return measureTextCanvas(text, maxWidthPx, opts);
+  return measureTextWithOpentype(text, maxWidthPx, opts);
 }
 
 /**
- * canvas を使ったテキスト計測
+ * opentype.js を使ったテキスト計測
  */
-function measureTextCanvas(
+function measureTextWithOpentype(
   text: string,
   maxWidthPx: number,
   opts: MeasureOptions,
 ): { widthPx: number; heightPx: number } {
-  applyFontStyle(opts);
-  const lines = wrapText(text, maxWidthPx, (t) => ctx.measureText(t).width);
+  const fontWeight = normalizeFontWeight(opts.fontWeight);
+  const lines = wrapText(text, maxWidthPx, (t) =>
+    measureTextWidthOpentype(t, opts.fontSizePx, fontWeight),
+  );
   return calculateResult(lines, opts);
 }
 
@@ -232,11 +208,6 @@ function measureTextFallback(
     estimateTextWidth(t, fontSizePx),
   );
   return calculateResult(lines, opts);
-}
-
-function applyFontStyle(opts: MeasureOptions) {
-  const { fontFamily, fontSizePx, fontWeight = "normal" } = opts;
-  ctx.font = `${fontWeight} ${fontSizePx}px "${fontFamily}"`;
 }
 
 // ラップ用の分割ロジック

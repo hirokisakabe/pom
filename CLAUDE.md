@@ -59,7 +59,7 @@ PPTX 生成は3段階のパイプライン:
 - `FlowNode` - フローチャートノード（direction, nodes, edges をサポート）
 - `ProcessArrowNode` - プロセスアローノード（direction, steps をサポート）
 - `BulletOptions` - 箇条書き設定（type, indent, numberType, numberStartAt）
-- `TextMeasurementMode` - テキスト計測モード（`"canvas"` | `"fallback"` | `"auto"`）
+- `TextMeasurementMode` - テキスト計測モード（`"opentype"` | `"fallback"` | `"auto"`）
 - `BasePOMNode` - 全ノード共通プロパティ（w, h, padding, backgroundColor, border, borderRadius）
 
 ### 入力スキーマ（LLM連携用）
@@ -77,13 +77,15 @@ PPTX 生成は3段階のパイプライン:
 
 ### テキスト計測
 
-テキストの幅計測には `canvas` パッケージを使用。フォントがインストールされていない環境（サーバーレス環境など）では自動的にフォールバック計算に切り替わる。
+テキストの幅計測には `opentype.js` を使用。Noto Sans JP フォントをライブラリにバンドルしており、Node.js とブラウザの両方で動作する。
 
 - `src/calcYogaLayout/measureText.ts` - テキスト計測ロジック
+- `src/calcYogaLayout/fontLoader.ts` - フォント読み込み（opentype.js）
+- `src/calcYogaLayout/fonts/` - バンドルされたフォント（Base64）
 - `buildPptx` の `textMeasurement` オプションで計測方法を明示的に指定可能
-  - `"canvas"`: 常に canvas で計測
+  - `"opentype"`: 常に opentype.js で計測（デフォルト）
   - `"fallback"`: 常にフォールバック計算（CJK文字=1em、英数字=0.5em）
-  - `"auto"`: フォント利用可否を自動検出（デフォルト）
+  - `"auto"`: opentype.js で計測（デフォルト）
 
 ## 機能追加時のチェックリスト
 
