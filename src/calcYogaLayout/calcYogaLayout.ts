@@ -1,4 +1,4 @@
-import type { POMNode } from "../types";
+import type { POMNode, VStackNode, HStackNode } from "../types";
 import { Node as YogaNode } from "yoga-layout";
 import { loadYoga } from "yoga-layout/load";
 import { measureText } from "./measureText";
@@ -199,101 +199,13 @@ async function applyStyleToYogaNode(node: POMNode, yn: YogaNode) {
 
     case "vstack": {
       yn.setFlexDirection(yoga.FLEX_DIRECTION_COLUMN);
-
-      if (node.gap !== undefined) {
-        yn.setGap(yoga.GUTTER_ROW, node.gap);
-        yn.setGap(yoga.GUTTER_COLUMN, node.gap);
-      }
-
-      if (node.alignItems !== undefined) {
-        switch (node.alignItems) {
-          case "start":
-            yn.setAlignItems(yoga.ALIGN_FLEX_START);
-            break;
-          case "center":
-            yn.setAlignItems(yoga.ALIGN_CENTER);
-            break;
-          case "end":
-            yn.setAlignItems(yoga.ALIGN_FLEX_END);
-            break;
-          case "stretch":
-            yn.setAlignItems(yoga.ALIGN_STRETCH);
-            break;
-        }
-      }
-
-      if (node.justifyContent !== undefined) {
-        switch (node.justifyContent) {
-          case "start":
-            yn.setJustifyContent(yoga.JUSTIFY_FLEX_START);
-            break;
-          case "center":
-            yn.setJustifyContent(yoga.JUSTIFY_CENTER);
-            break;
-          case "end":
-            yn.setJustifyContent(yoga.JUSTIFY_FLEX_END);
-            break;
-          case "spaceBetween":
-            yn.setJustifyContent(yoga.JUSTIFY_SPACE_BETWEEN);
-            break;
-          case "spaceAround":
-            yn.setJustifyContent(yoga.JUSTIFY_SPACE_AROUND);
-            break;
-          case "spaceEvenly":
-            yn.setJustifyContent(yoga.JUSTIFY_SPACE_EVENLY);
-            break;
-        }
-      }
+      applyFlexProperties(node, yn, yoga);
       break;
     }
 
     case "hstack": {
       yn.setFlexDirection(yoga.FLEX_DIRECTION_ROW);
-
-      if (node.gap !== undefined) {
-        yn.setGap(yoga.GUTTER_ROW, node.gap);
-        yn.setGap(yoga.GUTTER_COLUMN, node.gap);
-      }
-
-      if (node.alignItems !== undefined) {
-        switch (node.alignItems) {
-          case "start":
-            yn.setAlignItems(yoga.ALIGN_FLEX_START);
-            break;
-          case "center":
-            yn.setAlignItems(yoga.ALIGN_CENTER);
-            break;
-          case "end":
-            yn.setAlignItems(yoga.ALIGN_FLEX_END);
-            break;
-          case "stretch":
-            yn.setAlignItems(yoga.ALIGN_STRETCH);
-            break;
-        }
-      }
-
-      if (node.justifyContent !== undefined) {
-        switch (node.justifyContent) {
-          case "start":
-            yn.setJustifyContent(yoga.JUSTIFY_FLEX_START);
-            break;
-          case "center":
-            yn.setJustifyContent(yoga.JUSTIFY_CENTER);
-            break;
-          case "end":
-            yn.setJustifyContent(yoga.JUSTIFY_FLEX_END);
-            break;
-          case "spaceBetween":
-            yn.setJustifyContent(yoga.JUSTIFY_SPACE_BETWEEN);
-            break;
-          case "spaceAround":
-            yn.setJustifyContent(yoga.JUSTIFY_SPACE_AROUND);
-            break;
-          case "spaceEvenly":
-            yn.setJustifyContent(yoga.JUSTIFY_SPACE_EVENLY);
-            break;
-        }
-      }
+      applyFlexProperties(node, yn, yoga);
       break;
     }
 
@@ -405,5 +317,59 @@ async function applyStyleToYogaNode(node: POMNode, yn: YogaNode) {
     case "processArrow":
       // 明示的にサイズが指定されていることを期待
       break;
+  }
+}
+
+/**
+ * vstack/hstack 共通の Flex プロパティを適用する
+ */
+function applyFlexProperties(
+  node: VStackNode | HStackNode,
+  yn: YogaNode,
+  yoga: Yoga,
+): void {
+  if (node.gap !== undefined) {
+    yn.setGap(yoga.GUTTER_ROW, node.gap);
+    yn.setGap(yoga.GUTTER_COLUMN, node.gap);
+  }
+
+  if (node.alignItems !== undefined) {
+    switch (node.alignItems) {
+      case "start":
+        yn.setAlignItems(yoga.ALIGN_FLEX_START);
+        break;
+      case "center":
+        yn.setAlignItems(yoga.ALIGN_CENTER);
+        break;
+      case "end":
+        yn.setAlignItems(yoga.ALIGN_FLEX_END);
+        break;
+      case "stretch":
+        yn.setAlignItems(yoga.ALIGN_STRETCH);
+        break;
+    }
+  }
+
+  if (node.justifyContent !== undefined) {
+    switch (node.justifyContent) {
+      case "start":
+        yn.setJustifyContent(yoga.JUSTIFY_FLEX_START);
+        break;
+      case "center":
+        yn.setJustifyContent(yoga.JUSTIFY_CENTER);
+        break;
+      case "end":
+        yn.setJustifyContent(yoga.JUSTIFY_FLEX_END);
+        break;
+      case "spaceBetween":
+        yn.setJustifyContent(yoga.JUSTIFY_SPACE_BETWEEN);
+        break;
+      case "spaceAround":
+        yn.setJustifyContent(yoga.JUSTIFY_SPACE_AROUND);
+        break;
+      case "spaceEvenly":
+        yn.setJustifyContent(yoga.JUSTIFY_SPACE_EVENLY);
+        break;
+    }
   }
 }
