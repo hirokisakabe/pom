@@ -2,9 +2,13 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 import type PptxGenJSType from "pptxgenjs";
 const PptxGenJS = require("pptxgenjs") as typeof PptxGenJSType;
-import type { PositionedNode } from "../types";
+import type {
+  PositionedNode,
+  SlideMasterOptions,
+  MasterObject,
+} from "../types";
 import type { RenderContext } from "./types";
-import { pxToIn } from "./units";
+import { pxToIn, pxToPt } from "./units";
 import { renderBackgroundAndBorder } from "./utils/backgroundBorder";
 import {
   renderTextNode,
@@ -23,13 +27,161 @@ type SlidePx = { w: number; h: number };
 export { createTextOptions } from "./textOptions";
 export { PX_PER_IN, pxToIn, pxToPt } from "./units";
 
+const DEFAULT_MASTER_NAME = "POM_MASTER";
+
+/**
+ * MasterObject を pptxgenjs の objects 形式に変換する
+ */
+function convertMasterObject(
+  obj: MasterObject,
+): PptxGenJSType.SlideMasterProps["objects"] extends (infer T)[] | undefined
+  ? T
+  : never {
+  switch (obj.type) {
+    case "text":
+      return {
+        text: {
+          text: obj.text,
+          options: {
+            x: pxToIn(obj.x),
+            y: pxToIn(obj.y),
+            w: pxToIn(obj.w),
+            h: pxToIn(obj.h),
+            fontSize: obj.fontPx ? pxToPt(obj.fontPx) : undefined,
+            fontFace: obj.fontFamily,
+            color: obj.color,
+            bold: obj.bold,
+            align: obj.alignText,
+          },
+        },
+      };
+    case "image": {
+      const imageProps: PptxGenJSType.ImageProps = {
+        x: pxToIn(obj.x),
+        y: pxToIn(obj.y),
+        w: pxToIn(obj.w),
+        h: pxToIn(obj.h),
+      };
+      // src が data URI かパスかを判定
+      if (obj.src.startsWith("data:")) {
+        imageProps.data = obj.src;
+      } else {
+        imageProps.path = obj.src;
+      }
+      return { image: imageProps };
+    }
+    case "rect":
+      return {
+        rect: {
+          x: pxToIn(obj.x),
+          y: pxToIn(obj.y),
+          w: pxToIn(obj.w),
+          h: pxToIn(obj.h),
+          fill: obj.fill
+            ? { color: obj.fill.color, transparency: obj.fill.transparency }
+            : undefined,
+          line: obj.border
+            ? {
+                color: obj.border.color,
+                width: obj.border.width,
+                dashType: obj.border.dashType,
+              }
+            : undefined,
+        },
+      };
+    case "line":
+      return {
+        line: {
+          x: pxToIn(obj.x),
+          y: pxToIn(obj.y),
+          w: pxToIn(obj.w),
+          h: pxToIn(obj.h),
+          line: obj.line
+            ? {
+                color: obj.line.color,
+                width: obj.line.width,
+                dashType: obj.line.dashType,
+              }
+            : { color: "000000", width: 1 },
+        },
+      };
+  }
+}
+
+/**
+ * SlideMasterOptions から pptxgenjs の defineSlideMaster を呼び出す
+ */
+function defineSlideMasterFromOptions(
+  pptx: PptxGenJSType,
+  master: SlideMasterOptions,
+): string {
+  const masterName = master.title || DEFAULT_MASTER_NAME;
+
+  const masterProps: PptxGenJSType.SlideMasterProps = {
+    title: masterName,
+  };
+
+  // background の変換
+  if (master.background) {
+    if ("color" in master.background) {
+      masterProps.background = { color: master.background.color };
+    } else if ("path" in master.background) {
+      masterProps.background = { path: master.background.path };
+    } else if ("data" in master.background) {
+      masterProps.background = { data: master.background.data };
+    }
+  }
+
+  // margin の変換 (px -> inches)
+  if (master.margin !== undefined) {
+    if (typeof master.margin === "number") {
+      masterProps.margin = pxToIn(master.margin);
+    } else {
+      masterProps.margin = [
+        pxToIn(master.margin.top ?? 0),
+        pxToIn(master.margin.right ?? 0),
+        pxToIn(master.margin.bottom ?? 0),
+        pxToIn(master.margin.left ?? 0),
+      ];
+    }
+  }
+
+  // objects の変換
+  if (master.objects && master.objects.length > 0) {
+    masterProps.objects = master.objects.map((obj) => convertMasterObject(obj));
+  }
+
+  // slideNumber の変換
+  if (master.slideNumber) {
+    masterProps.slideNumber = {
+      x: pxToIn(master.slideNumber.x),
+      y: pxToIn(master.slideNumber.y),
+      w: master.slideNumber.w ? pxToIn(master.slideNumber.w) : undefined,
+      h: master.slideNumber.h ? pxToIn(master.slideNumber.h) : undefined,
+      fontSize: master.slideNumber.fontPx
+        ? pxToPt(master.slideNumber.fontPx)
+        : undefined,
+      fontFace: master.slideNumber.fontFamily,
+      color: master.slideNumber.color,
+    };
+  }
+
+  pptx.defineSlideMaster(masterProps);
+  return masterName;
+}
+
 /**
  * PositionedNode ツリーを PptxGenJS スライドに変換する
  * @param pages PositionedNode ツリーの配列（各要素が1ページ）
  * @param slidePx スライド全体のサイズ（px）
+ * @param master スライドマスターオプション（省略可能）
  * @returns PptxGenJS インスタンス
  */
-export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
+export function renderPptx(
+  pages: PositionedNode[],
+  slidePx: SlidePx,
+  master?: SlideMasterOptions,
+) {
   const slideIn = { w: pxToIn(slidePx.w), h: pxToIn(slidePx.h) }; // layout(=px) → PptxGenJS(=inch) への最終変換
 
   const pptx = new PptxGenJS();
@@ -37,8 +189,14 @@ export function renderPptx(pages: PositionedNode[], slidePx: SlidePx) {
   pptx.defineLayout({ name: "custom", width: slideIn.w, height: slideIn.h });
   pptx.layout = "custom";
 
+  // マスターが指定されている場合、defineSlideMaster を呼び出す
+  const masterName = master
+    ? defineSlideMasterFromOptions(pptx, master)
+    : undefined;
+
   for (const data of pages) {
-    const slide = pptx.addSlide();
+    // マスターが指定されている場合は masterName を使用
+    const slide = masterName ? pptx.addSlide({ masterName }) : pptx.addSlide();
     const ctx: RenderContext = { slide, pptx };
 
     /**

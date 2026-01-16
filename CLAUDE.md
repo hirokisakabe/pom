@@ -51,7 +51,7 @@ PPTX 生成は3段階のパイプライン:
 
 - `POMNode` - 入力ノード型（Text, Image, Table, Shape, Chart, Timeline, Matrix, Tree, Flow, ProcessArrow, Box, VStack, HStack）
 - `PositionedNode` - 位置情報付きノード（x, y, w, h を持つ）
-- `MasterSlideOptions` - マスタースライド設定（header, footer, pageNumber, date）
+- `SlideMasterOptions` - スライドマスター設定（title, background, margin, objects, slideNumber）
 - `ChartNode` - グラフノード（bar, line, pie, area, doughnut, radar をサポート）
 - `TimelineNode` - タイムラインノード（direction, items をサポート）
 - `MatrixNode` - マトリクスノード（axes, quadrants, items をサポート）
@@ -67,7 +67,7 @@ PPTX 生成は3段階のパイプライン:
 `inputSchema.ts` に Zod スキーマを定義。LLM が生成した JSON を検証するために使用。
 
 - `inputPomNodeSchema` - メインの入力スキーマ
-- `inputMasterSlideOptionsSchema` - マスタースライド設定用
+- `inputSlideMasterOptionsSchema` - スライドマスター設定用
 
 ### 単位変換
 

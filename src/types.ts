@@ -713,23 +713,96 @@ export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
   ]),
 ) as z.ZodType<PositionedNode>;
 
-// ===== Master Slide Options =====
-export const pageNumberPositionSchema = z.enum(["left", "center", "right"]);
-
-export const masterSlideOptionsSchema = z.object({
-  header: z.lazy(() => pomNodeSchema).optional(),
-  footer: z.lazy(() => pomNodeSchema).optional(),
-  pageNumber: z
-    .object({
-      position: pageNumberPositionSchema,
-    })
-    .optional(),
-  date: z
-    .object({
-      value: z.string(),
-    })
-    .optional(),
+// ===== Slide Master Options =====
+export const masterTextObjectSchema = z.object({
+  type: z.literal("text"),
+  text: z.string(),
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+  fontPx: z.number().optional(),
+  fontFamily: z.string().optional(),
+  color: z.string().optional(),
+  bold: z.boolean().optional(),
+  alignText: z.enum(["left", "center", "right"]).optional(),
 });
 
-export type PageNumberPosition = z.infer<typeof pageNumberPositionSchema>;
-export type MasterSlideOptions = z.infer<typeof masterSlideOptionsSchema>;
+export const masterImageObjectSchema = z.object({
+  type: z.literal("image"),
+  src: z.string(),
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+});
+
+export const masterRectObjectSchema = z.object({
+  type: z.literal("rect"),
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+  fill: fillStyleSchema.optional(),
+  border: borderStyleSchema.optional(),
+});
+
+export const masterLineObjectSchema = z.object({
+  type: z.literal("line"),
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+  line: borderStyleSchema.optional(),
+});
+
+export const masterObjectSchema = z.discriminatedUnion("type", [
+  masterTextObjectSchema,
+  masterImageObjectSchema,
+  masterRectObjectSchema,
+  masterLineObjectSchema,
+]);
+
+export const slideNumberOptionsSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  w: z.number().optional(),
+  h: z.number().optional(),
+  fontPx: z.number().optional(),
+  fontFamily: z.string().optional(),
+  color: z.string().optional(),
+});
+
+export const slideMasterBackgroundSchema = z.union([
+  z.object({ color: z.string() }),
+  z.object({ path: z.string() }),
+  z.object({ data: z.string() }),
+]);
+
+export const slideMasterMarginSchema = z.union([
+  z.number(),
+  z.object({
+    top: z.number().optional(),
+    right: z.number().optional(),
+    bottom: z.number().optional(),
+    left: z.number().optional(),
+  }),
+]);
+
+export const slideMasterOptionsSchema = z.object({
+  title: z.string().optional(),
+  background: slideMasterBackgroundSchema.optional(),
+  margin: slideMasterMarginSchema.optional(),
+  objects: z.array(masterObjectSchema).optional(),
+  slideNumber: slideNumberOptionsSchema.optional(),
+});
+
+export type MasterTextObject = z.infer<typeof masterTextObjectSchema>;
+export type MasterImageObject = z.infer<typeof masterImageObjectSchema>;
+export type MasterRectObject = z.infer<typeof masterRectObjectSchema>;
+export type MasterLineObject = z.infer<typeof masterLineObjectSchema>;
+export type MasterObject = z.infer<typeof masterObjectSchema>;
+export type SlideNumberOptions = z.infer<typeof slideNumberOptionsSchema>;
+export type SlideMasterBackground = z.infer<typeof slideMasterBackgroundSchema>;
+export type SlideMasterMargin = z.infer<typeof slideMasterMarginSchema>;
+export type SlideMasterOptions = z.infer<typeof slideMasterOptionsSchema>;

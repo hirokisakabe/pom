@@ -29,7 +29,6 @@ import {
   shapeTypeSchema,
   tableColumnSchema,
   tableRowSchema,
-  pageNumberPositionSchema,
   chartTypeSchema,
   chartDataSchema,
   bulletOptionsSchema,
@@ -286,22 +285,109 @@ export const inputPomNodeSchema: z.ZodType<InputPOMNode> = z.lazy(() =>
   ]),
 ) as z.ZodType<InputPOMNode>;
 
-// ===== Master Slide Options Schema =====
-export const inputMasterSlideOptionsSchema = z.object({
-  header: z.lazy(() => inputPomNodeSchema).optional(),
-  footer: z.lazy(() => inputPomNodeSchema).optional(),
-  pageNumber: z
-    .object({
-      position: pageNumberPositionSchema,
-    })
-    .optional(),
-  date: z
-    .object({
-      value: z.string(),
-    })
-    .optional(),
+// ===== Slide Master Options Schema =====
+export const inputMasterTextObjectSchema = z.object({
+  type: z.literal("text"),
+  text: z.string(),
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+  fontPx: z.number().optional(),
+  fontFamily: z.string().optional(),
+  color: z.string().optional(),
+  bold: z.boolean().optional(),
+  alignText: z.enum(["left", "center", "right"]).optional(),
 });
 
-export type InputMasterSlideOptions = z.infer<
-  typeof inputMasterSlideOptionsSchema
+export const inputMasterImageObjectSchema = z.object({
+  type: z.literal("image"),
+  src: z.string(),
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+});
+
+export const inputMasterRectObjectSchema = z.object({
+  type: z.literal("rect"),
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+  fill: fillStyleSchema.optional(),
+  border: borderStyleSchema.optional(),
+});
+
+export const inputMasterLineObjectSchema = z.object({
+  type: z.literal("line"),
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+  line: borderStyleSchema.optional(),
+});
+
+export const inputMasterObjectSchema = z.discriminatedUnion("type", [
+  inputMasterTextObjectSchema,
+  inputMasterImageObjectSchema,
+  inputMasterRectObjectSchema,
+  inputMasterLineObjectSchema,
+]);
+
+export const inputSlideNumberOptionsSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  w: z.number().optional(),
+  h: z.number().optional(),
+  fontPx: z.number().optional(),
+  fontFamily: z.string().optional(),
+  color: z.string().optional(),
+});
+
+export const inputSlideMasterBackgroundSchema = z.union([
+  z.object({ color: z.string() }),
+  z.object({ path: z.string() }),
+  z.object({ data: z.string() }),
+]);
+
+export const inputSlideMasterMarginSchema = z.union([
+  z.number(),
+  z.object({
+    top: z.number().optional(),
+    right: z.number().optional(),
+    bottom: z.number().optional(),
+    left: z.number().optional(),
+  }),
+]);
+
+/**
+ * Input schema for slide master options (for LLM/external input validation)
+ *
+ * @example
+ * ```typescript
+ * import { inputSlideMasterOptionsSchema, buildPptx } from "@hirokisakabe/pom";
+ *
+ * const masterOptions = inputSlideMasterOptionsSchema.parse({
+ *   title: "MY_MASTER",
+ *   background: { color: "F0F0F0" },
+ *   objects: [
+ *     { type: "text", text: "Header", x: 48, y: 12, w: 200, h: 28, fontPx: 14 },
+ *   ],
+ *   slideNumber: { x: 1100, y: 680, fontPx: 10 },
+ * });
+ *
+ * const pptx = await buildPptx([page], { w: 1280, h: 720 }, { master: masterOptions });
+ * ```
+ */
+export const inputSlideMasterOptionsSchema = z.object({
+  title: z.string().optional(),
+  background: inputSlideMasterBackgroundSchema.optional(),
+  margin: inputSlideMasterMarginSchema.optional(),
+  objects: z.array(inputMasterObjectSchema).optional(),
+  slideNumber: inputSlideNumberOptionsSchema.optional(),
+});
+
+export type InputSlideMasterOptions = z.infer<
+  typeof inputSlideMasterOptionsSchema
 >;
