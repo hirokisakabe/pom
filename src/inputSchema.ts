@@ -22,6 +22,7 @@ import {
   lengthSchema,
   paddingSchema,
   borderStyleSchema,
+  borderDashSchema,
   fillStyleSchema,
   shadowStyleSchema,
   alignItemsSchema,
@@ -47,6 +48,7 @@ import {
   flowConnectorStyleSchema,
   processArrowDirectionSchema,
   processArrowStepSchema,
+  lineArrowSchema,
   type AlignItems,
   type JustifyContent,
   type TreeDataItem,
@@ -172,6 +174,19 @@ export const inputProcessArrowNodeSchema = inputBaseNodeSchema.extend({
   bold: z.boolean().optional(),
 });
 
+export const inputLineNodeSchema = inputBaseNodeSchema.extend({
+  type: z.literal("line"),
+  x1: z.number(),
+  y1: z.number(),
+  x2: z.number(),
+  y2: z.number(),
+  color: z.string().optional(),
+  lineWidth: z.number().optional(),
+  dashType: borderDashSchema.optional(),
+  beginArrow: lineArrowSchema.optional(),
+  endArrow: lineArrowSchema.optional(),
+});
+
 export type InputTextNode = z.infer<typeof inputTextNodeSchema>;
 export type InputImageNode = z.infer<typeof inputImageNodeSchema>;
 export type InputTableNode = z.infer<typeof inputTableNodeSchema>;
@@ -182,6 +197,7 @@ export type InputMatrixNode = z.infer<typeof inputMatrixNodeSchema>;
 export type InputTreeNode = z.infer<typeof inputTreeNodeSchema>;
 export type InputFlowNode = z.infer<typeof inputFlowNodeSchema>;
 export type InputProcessArrowNode = z.infer<typeof inputProcessArrowNodeSchema>;
+export type InputLineNode = z.infer<typeof inputLineNodeSchema>;
 
 // ===== Recursive Types =====
 export type InputBoxNode = InputBaseNode & {
@@ -218,7 +234,8 @@ export type InputPOMNode =
   | InputMatrixNode
   | InputTreeNode
   | InputFlowNode
-  | InputProcessArrowNode;
+  | InputProcessArrowNode
+  | InputLineNode;
 
 // ===== Recursive Node Schemas =====
 const inputBoxNodeSchemaBase = inputBaseNodeSchema.extend({
@@ -282,6 +299,7 @@ export const inputPomNodeSchema: z.ZodType<InputPOMNode> = z.lazy(() =>
     inputTreeNodeSchema,
     inputFlowNodeSchema,
     inputProcessArrowNodeSchema,
+    inputLineNodeSchema,
   ]),
 ) as z.ZodType<InputPOMNode>;
 
