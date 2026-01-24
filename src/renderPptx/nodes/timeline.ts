@@ -1,6 +1,6 @@
-import type { PositionedNode } from "../../types";
-import type { RenderContext } from "../types";
-import { pxToIn, pxToPt } from "../units";
+import type { PositionedNode } from "../../types.ts";
+import type { RenderContext } from "../types.ts";
+import { pxToIn, pxToPt } from "../units.ts";
 
 type TimelinePositionedNode = Extract<PositionedNode, { type: "timeline" }>;
 

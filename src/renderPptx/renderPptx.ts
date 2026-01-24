@@ -1,15 +1,28 @@
 import { createRequire } from "module";
+
+// pptxgenjs の型定義（NodeNext 互換）
+type PptxGenJSInstance = import("pptxgenjs").default;
+
 const require = createRequire(import.meta.url);
-import type PptxGenJSType from "pptxgenjs";
-const PptxGenJS = require("pptxgenjs") as typeof PptxGenJSType;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+const PptxGenJS = require("pptxgenjs").default as new () => PptxGenJSInstance;
+type SlideMasterProps = Parameters<PptxGenJSInstance["defineSlideMaster"]>[0];
+type ImageProps = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  path?: string;
+  data?: string;
+};
 import type {
   PositionedNode,
   SlideMasterOptions,
   MasterObject,
-} from "../types";
-import type { RenderContext } from "./types";
-import { pxToIn, pxToPt } from "./units";
-import { renderBackgroundAndBorder } from "./utils/backgroundBorder";
+} from "../types.ts";
+import type { RenderContext } from "./types.ts";
+import { pxToIn, pxToPt } from "./units.ts";
+import { renderBackgroundAndBorder } from "./utils/backgroundBorder.ts";
 import {
   renderTextNode,
   renderImageNode,
@@ -22,11 +35,11 @@ import {
   renderFlowNode,
   renderProcessArrowNode,
   renderLineNode,
-} from "./nodes";
+} from "./nodes/index.ts";
 
 type SlidePx = { w: number; h: number };
-export { createTextOptions } from "./textOptions";
-export { PX_PER_IN, pxToIn, pxToPt } from "./units";
+export { createTextOptions } from "./textOptions.ts";
+export { PX_PER_IN, pxToIn, pxToPt } from "./units.ts";
 
 const DEFAULT_MASTER_NAME = "POM_MASTER";
 
@@ -35,9 +48,7 @@ const DEFAULT_MASTER_NAME = "POM_MASTER";
  */
 function convertMasterObject(
   obj: MasterObject,
-): PptxGenJSType.SlideMasterProps["objects"] extends (infer T)[] | undefined
-  ? T
-  : never {
+): SlideMasterProps["objects"] extends (infer T)[] | undefined ? T : never {
   switch (obj.type) {
     case "text":
       return {
@@ -57,7 +68,7 @@ function convertMasterObject(
         },
       };
     case "image": {
-      const imageProps: PptxGenJSType.ImageProps = {
+      const imageProps: ImageProps = {
         x: pxToIn(obj.x),
         y: pxToIn(obj.y),
         w: pxToIn(obj.w),
@@ -113,12 +124,12 @@ function convertMasterObject(
  * SlideMasterOptions から pptxgenjs の defineSlideMaster を呼び出す
  */
 function defineSlideMasterFromOptions(
-  pptx: PptxGenJSType,
+  pptx: PptxGenJSInstance,
   master: SlideMasterOptions,
 ): string {
   const masterName = master.title || DEFAULT_MASTER_NAME;
 
-  const masterProps: PptxGenJSType.SlideMasterProps = {
+  const masterProps: SlideMasterProps = {
     title: masterName,
   };
 

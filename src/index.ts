@@ -1,4 +1,4 @@
-export * from "./types";
-export * from "./inputSchema";
-export { buildPptx } from "./buildPptx";
-export type { TextMeasurementMode } from "./buildPptx";
+export * from "./types.ts";
+export * from "./inputSchema.ts";
+export { buildPptx } from "./buildPptx.ts";
+export type { TextMeasurementMode } from "./buildPptx.ts";

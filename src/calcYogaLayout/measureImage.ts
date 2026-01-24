@@ -1,4 +1,6 @@
-import imageSize from "image-size";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const imageSize = require("image-size") as typeof import("image-size").default;
 import * as fs from "fs";
 
 /**

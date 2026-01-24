@@ -3,9 +3,9 @@ import type {
   TreeDataItem,
   TreeNodeShape,
   TreeConnectorStyle,
-} from "../../types";
-import type { RenderContext } from "../types";
-import { pxToIn, pxToPt } from "../units";
+} from "../../types.ts";
+import type { RenderContext } from "../types.ts";
+import { pxToIn, pxToPt } from "../units.ts";
 
 type TreePositionedNode = Extract<PositionedNode, { type: "tree" }>;
 

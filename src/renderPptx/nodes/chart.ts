@@ -1,6 +1,6 @@
-import type { PositionedNode } from "../../types";
-import type { RenderContext } from "../types";
-import { pxToIn } from "../units";
+import type { PositionedNode } from "../../types.ts";
+import type { RenderContext } from "../types.ts";
+import { pxToIn } from "../units.ts";
 
 type ChartPositionedNode = Extract<PositionedNode, { type: "chart" }>;
 

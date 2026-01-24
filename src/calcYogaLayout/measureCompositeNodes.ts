@@ -5,7 +5,7 @@ import type {
   TreeNode,
   FlowNode,
   TreeDataItem,
-} from "../types";
+} from "../types.ts";
 
 /**
  * ProcessArrow ノードの intrinsic size を計算する

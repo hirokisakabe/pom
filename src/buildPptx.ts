@@ -1,11 +1,11 @@
-import { calcYogaLayout } from "./calcYogaLayout/calcYogaLayout";
+import { calcYogaLayout } from "./calcYogaLayout/calcYogaLayout.ts";
 import {
   setTextMeasurementMode,
   TextMeasurementMode,
-} from "./calcYogaLayout/measureText";
-import { renderPptx } from "./renderPptx/renderPptx";
-import { toPositioned } from "./toPositioned/toPositioned";
-import { POMNode, PositionedNode, SlideMasterOptions } from "./types";
+} from "./calcYogaLayout/measureText.ts";
+import { renderPptx } from "./renderPptx/renderPptx.ts";
+import { toPositioned } from "./toPositioned/toPositioned.ts";
+import { POMNode, PositionedNode, SlideMasterOptions } from "./types.ts";
 
 export type { TextMeasurementMode };
 

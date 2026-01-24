@@ -1,5 +1,5 @@
-import type { POMNode, PositionedNode } from "../types";
-import { getImageData } from "../calcYogaLayout/measureImage";
+import type { POMNode, PositionedNode } from "../types.ts";
+import { getImageData } from "../calcYogaLayout/measureImage.ts";
 
 /**
  * POMNode ツリーを絶対座標付きの PositionedNode ツリーに変換する
