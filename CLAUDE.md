@@ -58,6 +58,7 @@ PPTX 生成は3段階のパイプライン:
 - `TreeNode` - ツリーノード（layout, nodeShape, data, connectorStyle をサポート）
 - `FlowNode` - フローチャートノード（direction, nodes, edges をサポート）
 - `ProcessArrowNode` - プロセスアローノード（direction, steps をサポート）
+- `DiagramNode` - ダイアグラムノード（areas, elements, connections, splitConnections をサポート）
 - `BulletOptions` - 箇条書き設定（type, indent, numberType, numberStartAt）
 - `TextMeasurementMode` - テキスト計測モード（`"opentype"` | `"fallback"` | `"auto"`）
 - `BasePOMNode` - 全ノード共通プロパティ（w, h, padding, backgroundColor, border, borderRadius）

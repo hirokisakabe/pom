@@ -8,3 +8,4 @@ export { renderMatrixNode } from "./matrix";
 export { renderTreeNode } from "./tree";
 export { renderFlowNode } from "./flow";
 export { renderProcessArrowNode } from "./processArrow";
+export { renderDiagramNode } from "./diagram";

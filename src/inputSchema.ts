@@ -47,6 +47,12 @@ import {
   flowConnectorStyleSchema,
   processArrowDirectionSchema,
   processArrowStepSchema,
+  diagramElementSchema,
+  diagramConnectionSchema,
+  diagramSplitConnectionSchema,
+  diagramAreaSchema,
+  diagramDefaultElementStyleSchema,
+  diagramDefaultConnectionStyleSchema,
   type AlignItems,
   type JustifyContent,
   type TreeDataItem,
@@ -172,6 +178,16 @@ export const inputProcessArrowNodeSchema = inputBaseNodeSchema.extend({
   bold: z.boolean().optional(),
 });
 
+export const inputDiagramNodeSchema = inputBaseNodeSchema.extend({
+  type: z.literal("diagram"),
+  areas: z.array(diagramAreaSchema).optional(),
+  elements: z.array(diagramElementSchema),
+  connections: z.array(diagramConnectionSchema).optional(),
+  splitConnections: z.array(diagramSplitConnectionSchema).optional(),
+  defaultElementStyle: diagramDefaultElementStyleSchema.optional(),
+  defaultConnectionStyle: diagramDefaultConnectionStyleSchema.optional(),
+});
+
 export type InputTextNode = z.infer<typeof inputTextNodeSchema>;
 export type InputImageNode = z.infer<typeof inputImageNodeSchema>;
 export type InputTableNode = z.infer<typeof inputTableNodeSchema>;
@@ -182,6 +198,7 @@ export type InputMatrixNode = z.infer<typeof inputMatrixNodeSchema>;
 export type InputTreeNode = z.infer<typeof inputTreeNodeSchema>;
 export type InputFlowNode = z.infer<typeof inputFlowNodeSchema>;
 export type InputProcessArrowNode = z.infer<typeof inputProcessArrowNodeSchema>;
+export type InputDiagramNode = z.infer<typeof inputDiagramNodeSchema>;
 
 // ===== Recursive Types =====
 export type InputBoxNode = InputBaseNode & {
@@ -218,7 +235,8 @@ export type InputPOMNode =
   | InputMatrixNode
   | InputTreeNode
   | InputFlowNode
-  | InputProcessArrowNode;
+  | InputProcessArrowNode
+  | InputDiagramNode;
 
 // ===== Recursive Node Schemas =====
 const inputBoxNodeSchemaBase = inputBaseNodeSchema.extend({
@@ -282,6 +300,7 @@ export const inputPomNodeSchema: z.ZodType<InputPOMNode> = z.lazy(() =>
     inputTreeNodeSchema,
     inputFlowNodeSchema,
     inputProcessArrowNodeSchema,
+    inputDiagramNodeSchema,
   ]),
 ) as z.ZodType<InputPOMNode>;
 
