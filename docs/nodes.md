@@ -741,3 +741,181 @@ A node for creating chevron-style process diagrams. Commonly used for visualizin
   ],
 }
 ```
+
+### 14. Diagram
+
+A node for creating network diagrams, architecture diagrams, and other complex diagrams with absolute positioning. Supports background areas, various element shapes, connection lines (straight and elbow), and split/branch connections.
+
+```typescript
+{
+  type: "diagram";
+
+  // Background areas (drawn first, behind everything)
+  areas?: {
+    id?: string;
+    x: number;              // Absolute X position (px)
+    y: number;              // Absolute Y position (px)
+    w: number;              // Width (px)
+    h: number;              // Height (px)
+    label?: string;         // Area label
+    labelPosition?: "topLeft" | "topCenter" | "topRight" | "bottomLeft" | "bottomCenter" | "bottomRight";
+    fill?: { color: string; transparency?: number };
+    border?: { color?: string; width?: number; dashType?: "solid" | "dash" | "dashDot" | ... };
+    borderRadius?: number;
+  }[];
+
+  // Elements (nodes in the diagram)
+  elements: {
+    id: string;             // Unique identifier
+    x: number;              // Absolute X position (px)
+    y: number;              // Absolute Y position (px)
+    w?: number;             // Width (px, default: 100)
+    h?: number;             // Height (px, default: 60)
+    shape?: "rect" | "roundRect" | "ellipse" | "cloud" | "can" | "cube" | "hexagon" | "diamond" | "parallelogram" | "triangle";
+    text?: string;          // Element label
+    subText?: string;       // Sub-label (displayed below)
+    fill?: { color: string; transparency?: number };
+    line?: { color?: string; width?: number };
+    fontPx?: number;
+    color?: string;         // Text color
+    bold?: boolean;
+  }[];
+
+  // Connections between elements
+  connections?: {
+    from: string;           // Source element ID
+    to: string;             // Target element ID
+    fromAnchor?: "top" | "bottom" | "left" | "right" | "center";
+    toAnchor?: "top" | "bottom" | "left" | "right" | "center";
+    lineType?: "straight" | "elbow";
+    color?: string;
+    width?: number;
+    dashType?: "solid" | "dash" | "dashDot" | ...;
+    arrowType?: "none" | "end" | "start" | "both";
+    label?: string;         // Connection label
+  }[];
+
+  // Split connections (1-to-many branching)
+  splitConnections?: {
+    from: string;           // Source element ID
+    fromAnchor?: "top" | "bottom" | "left" | "right" | "center";
+    to: {
+      id: string;           // Target element ID
+      anchor?: "top" | "bottom" | "left" | "right" | "center";
+      label?: string;       // Branch label
+    }[];
+    splitPoint?: { x?: number; y?: number };  // Custom split point
+    color?: string;
+    width?: number;
+    arrowType?: "none" | "end";
+  }[];
+
+  // Default styles
+  defaultElementStyle?: {
+    shape?: string;
+    fill?: { color: string; transparency?: number };
+    line?: { color?: string; width?: number };
+    fontPx?: number;
+    color?: string;
+    bold?: boolean;
+  };
+  defaultConnectionStyle?: {
+    color?: string;
+    width?: number;
+    lineType?: "straight" | "elbow";
+    arrowType?: "none" | "end" | "start" | "both";
+  };
+
+  // Common properties
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+**Usage Examples:**
+
+```typescript
+// Basic network diagram
+{
+  type: "diagram",
+  w: 600,
+  h: 300,
+  areas: [
+    {
+      x: 10,
+      y: 10,
+      w: 150,
+      h: 280,
+      label: "Client",
+      labelPosition: "topCenter",
+      fill: { color: "EBF5FF" },
+      border: { color: "93C5FD", width: 1 },
+      borderRadius: 8,
+    },
+    {
+      x: 440,
+      y: 10,
+      w: 150,
+      h: 280,
+      label: "Server",
+      labelPosition: "topCenter",
+      fill: { color: "F0FDF4" },
+      border: { color: "86EFAC", width: 1 },
+      borderRadius: 8,
+    },
+  ],
+  elements: [
+    { id: "pc", x: 40, y: 80, w: 90, h: 50, shape: "rect", text: "PC", fill: { color: "3B82F6" } },
+    { id: "fw", x: 250, y: 120, w: 100, h: 50, shape: "hexagon", text: "FW", fill: { color: "F59E0B" } },
+    { id: "web", x: 470, y: 80, w: 90, h: 50, shape: "roundRect", text: "Web", fill: { color: "22C55E" } },
+    { id: "db", x: 470, y: 180, w: 90, h: 60, shape: "can", text: "DB", fill: { color: "22C55E" } },
+  ],
+  connections: [
+    { from: "pc", to: "fw", arrowType: "end" },
+    { from: "fw", to: "web", arrowType: "end" },
+    { from: "fw", to: "db", arrowType: "end" },
+  ],
+}
+
+// Diagram with split connections
+{
+  type: "diagram",
+  w: 500,
+  h: 250,
+  elements: [
+    { id: "source", x: 200, y: 20, w: 100, h: 50, shape: "roundRect", text: "Source", fill: { color: "6366F1" } },
+    { id: "dest1", x: 50, y: 180, w: 100, h: 50, shape: "roundRect", text: "Dest 1", fill: { color: "EC4899" } },
+    { id: "dest2", x: 200, y: 180, w: 100, h: 50, shape: "roundRect", text: "Dest 2", fill: { color: "EC4899" } },
+    { id: "dest3", x: 350, y: 180, w: 100, h: 50, shape: "roundRect", text: "Dest 3", fill: { color: "EC4899" } },
+  ],
+  splitConnections: [
+    {
+      from: "source",
+      fromAnchor: "bottom",
+      to: [
+        { id: "dest1", anchor: "top", label: "A" },
+        { id: "dest2", anchor: "top", label: "B" },
+        { id: "dest3", anchor: "top", label: "C" },
+      ],
+      arrowType: "end",
+    },
+  ],
+}
+
+// Diagram with elbow connections
+{
+  type: "diagram",
+  w: 500,
+  h: 200,
+  elements: [
+    { id: "a", x: 30, y: 30, w: 80, h: 50, shape: "roundRect", text: "A", fill: { color: "3B82F6" } },
+    { id: "b", x: 250, y: 110, w: 80, h: 50, shape: "roundRect", text: "B", fill: { color: "10B981" } },
+    { id: "c", x: 400, y: 30, w: 80, h: 50, shape: "roundRect", text: "C", fill: { color: "F59E0B" } },
+  ],
+  connections: [
+    { from: "a", to: "b", fromAnchor: "right", toAnchor: "left", lineType: "elbow", arrowType: "end" },
+    { from: "b", to: "c", fromAnchor: "right", toAnchor: "bottom", lineType: "elbow", arrowType: "both" },
+  ],
+}
+```

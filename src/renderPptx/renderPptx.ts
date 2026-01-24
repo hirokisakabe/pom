@@ -21,6 +21,7 @@ import {
   renderTreeNode,
   renderFlowNode,
   renderProcessArrowNode,
+  renderDiagramNode,
 } from "./nodes";
 
 type SlidePx = { w: number; h: number };
@@ -300,6 +301,10 @@ export function renderPptx(
 
         case "processArrow":
           renderProcessArrowNode(node, ctx);
+          break;
+
+        case "diagram":
+          renderDiagramNode(node, ctx);
           break;
       }
     }

@@ -72,6 +72,7 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 | tree         | Organization charts and decision trees         |
 | flow         | Flowcharts with nodes and edges                |
 | processArrow | Chevron-style process diagrams                 |
+| diagram      | Network/architecture diagrams with connections |
 | box          | Container for single child with padding        |
 | vstack       | Vertical stack layout                          |
 | hstack       | Horizontal stack layout                        |

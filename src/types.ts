@@ -575,6 +575,155 @@ export type FlowConnection = z.infer<typeof flowConnectionSchema>;
 export type FlowConnectorStyle = z.infer<typeof flowConnectorStyleSchema>;
 export type FlowNode = z.infer<typeof flowNodeSchema>;
 
+// ===== Diagram Node =====
+export const diagramElementShapeSchema = z.enum([
+  "rect",
+  "roundRect",
+  "ellipse",
+  "cloud",
+  "can",
+  "cube",
+  "hexagon",
+  "diamond",
+  "parallelogram",
+  "triangle",
+]);
+
+export const diagramElementSchema = z.object({
+  id: z.string(),
+  x: z.number(),
+  y: z.number(),
+  w: z.number().optional(),
+  h: z.number().optional(),
+  shape: diagramElementShapeSchema.optional(),
+  text: z.string().optional(),
+  subText: z.string().optional(),
+  fill: fillStyleSchema.optional(),
+  line: borderStyleSchema.optional(),
+  fontPx: z.number().optional(),
+  color: z.string().optional(),
+  bold: z.boolean().optional(),
+});
+
+export const connectionAnchorSchema = z.enum([
+  "top",
+  "bottom",
+  "left",
+  "right",
+  "center",
+]);
+
+export const diagramLineTypeSchema = z.enum(["straight", "elbow"]);
+
+export const diagramArrowTypeSchema = z.enum(["none", "end", "start", "both"]);
+
+export const diagramConnectionSchema = z.object({
+  from: z.string(),
+  to: z.string(),
+  fromAnchor: connectionAnchorSchema.optional(),
+  toAnchor: connectionAnchorSchema.optional(),
+  lineType: diagramLineTypeSchema.optional(),
+  color: z.string().optional(),
+  width: z.number().optional(),
+  dashType: borderDashSchema.optional(),
+  arrowType: diagramArrowTypeSchema.optional(),
+  label: z.string().optional(),
+});
+
+export const diagramSplitConnectionTargetSchema = z.object({
+  id: z.string(),
+  anchor: connectionAnchorSchema.optional(),
+  label: z.string().optional(),
+});
+
+export const diagramSplitConnectionSchema = z.object({
+  from: z.string(),
+  fromAnchor: connectionAnchorSchema.optional(),
+  to: z.array(diagramSplitConnectionTargetSchema),
+  splitPoint: z
+    .object({
+      x: z.number().optional(),
+      y: z.number().optional(),
+    })
+    .optional(),
+  color: z.string().optional(),
+  width: z.number().optional(),
+  arrowType: z.enum(["none", "end"]).optional(),
+});
+
+export const diagramAreaLabelPositionSchema = z.enum([
+  "topLeft",
+  "topCenter",
+  "topRight",
+  "bottomLeft",
+  "bottomCenter",
+  "bottomRight",
+]);
+
+export const diagramAreaSchema = z.object({
+  id: z.string().optional(),
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+  label: z.string().optional(),
+  labelPosition: diagramAreaLabelPositionSchema.optional(),
+  fill: fillStyleSchema.optional(),
+  border: borderStyleSchema.optional(),
+  borderRadius: z.number().optional(),
+});
+
+export const diagramDefaultElementStyleSchema = z.object({
+  w: z.number().optional(),
+  h: z.number().optional(),
+  shape: diagramElementShapeSchema.optional(),
+  fill: fillStyleSchema.optional(),
+  line: borderStyleSchema.optional(),
+  fontPx: z.number().optional(),
+  color: z.string().optional(),
+});
+
+export const diagramDefaultConnectionStyleSchema = z.object({
+  color: z.string().optional(),
+  width: z.number().optional(),
+  arrowType: diagramArrowTypeSchema.optional(),
+  lineType: diagramLineTypeSchema.optional(),
+});
+
+export const diagramNodeSchema = basePOMNodeSchema.extend({
+  type: z.literal("diagram"),
+  areas: z.array(diagramAreaSchema).optional(),
+  elements: z.array(diagramElementSchema),
+  connections: z.array(diagramConnectionSchema).optional(),
+  splitConnections: z.array(diagramSplitConnectionSchema).optional(),
+  defaultElementStyle: diagramDefaultElementStyleSchema.optional(),
+  defaultConnectionStyle: diagramDefaultConnectionStyleSchema.optional(),
+});
+
+export type DiagramElementShape = z.infer<typeof diagramElementShapeSchema>;
+export type DiagramElement = z.infer<typeof diagramElementSchema>;
+export type ConnectionAnchor = z.infer<typeof connectionAnchorSchema>;
+export type DiagramLineType = z.infer<typeof diagramLineTypeSchema>;
+export type DiagramArrowType = z.infer<typeof diagramArrowTypeSchema>;
+export type DiagramConnection = z.infer<typeof diagramConnectionSchema>;
+export type DiagramSplitConnectionTarget = z.infer<
+  typeof diagramSplitConnectionTargetSchema
+>;
+export type DiagramSplitConnection = z.infer<
+  typeof diagramSplitConnectionSchema
+>;
+export type DiagramAreaLabelPosition = z.infer<
+  typeof diagramAreaLabelPositionSchema
+>;
+export type DiagramArea = z.infer<typeof diagramAreaSchema>;
+export type DiagramDefaultElementStyle = z.infer<
+  typeof diagramDefaultElementStyleSchema
+>;
+export type DiagramDefaultConnectionStyle = z.infer<
+  typeof diagramDefaultConnectionStyleSchema
+>;
+export type DiagramNode = z.infer<typeof diagramNodeSchema>;
+
 // ===== Recursive Types with Explicit Type Definitions =====
 
 // Define the types explicitly to avoid 'any' inference
@@ -612,7 +761,8 @@ export type POMNode =
   | MatrixNode
   | TreeNode
   | FlowNode
-  | ProcessArrowNode;
+  | ProcessArrowNode
+  | DiagramNode;
 
 // Define schemas using passthrough to maintain type safety
 const boxNodeSchemaBase = basePOMNodeSchema.extend({
@@ -659,6 +809,7 @@ export const pomNodeSchema: z.ZodType<POMNode> = z.lazy(() =>
     treeNodeSchema,
     flowNodeSchema,
     processArrowNodeSchema,
+    diagramNodeSchema,
   ]),
 ) as z.ZodType<POMNode>;
 
@@ -685,7 +836,8 @@ export type PositionedNode =
   | (MatrixNode & PositionedBase)
   | (TreeNode & PositionedBase)
   | (FlowNode & PositionedBase)
-  | (ProcessArrowNode & PositionedBase);
+  | (ProcessArrowNode & PositionedBase)
+  | (DiagramNode & PositionedBase);
 
 export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
   z.union([
@@ -710,6 +862,7 @@ export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
     treeNodeSchema.merge(positionedBaseSchema),
     flowNodeSchema.merge(positionedBaseSchema),
     processArrowNodeSchema.merge(positionedBaseSchema),
+    diagramNodeSchema.merge(positionedBaseSchema),
   ]),
 ) as z.ZodType<PositionedNode>;
 
