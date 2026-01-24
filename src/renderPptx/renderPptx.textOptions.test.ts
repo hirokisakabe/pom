@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createTextOptions } from "./textOptions";
-import { pxToIn, pxToPt } from "./units";
+import { createTextOptions } from "./textOptions.ts";
+import { pxToIn, pxToPt } from "./units.ts";
 
 describe("createTextOptions", () => {
   it("指定した色と配置をオプションに反映する", () => {

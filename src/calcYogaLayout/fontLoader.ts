@@ -4,8 +4,8 @@
  */
 
 import opentype, { Font } from "opentype.js";
-import { NOTO_SANS_JP_REGULAR_BASE64 } from "./fonts/notoSansJPRegular.js";
-import { NOTO_SANS_JP_BOLD_BASE64 } from "./fonts/notoSansJPBold.js";
+import { NOTO_SANS_JP_REGULAR_BASE64 } from "./fonts/notoSansJPRegular.ts";
+import { NOTO_SANS_JP_BOLD_BASE64 } from "./fonts/notoSansJPBold.ts";
 
 // フォントキャッシュ
 const fontCache = new Map<string, Font>();

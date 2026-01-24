@@ -1,6 +1,6 @@
-import type { PositionedNode } from "../../types";
-import type { RenderContext } from "../types";
-import { createTextOptions } from "../textOptions";
+import type { PositionedNode } from "../../types.ts";
+import type { RenderContext } from "../types.ts";
+import { createTextOptions } from "../textOptions.ts";
 
 type TextPositionedNode = Extract<PositionedNode, { type: "text" }>;
 

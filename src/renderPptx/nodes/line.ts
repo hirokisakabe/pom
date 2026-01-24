@@ -1,6 +1,6 @@
-import type { PositionedNode, LineArrow } from "../../types";
-import type { RenderContext } from "../types";
-import { pxToIn, pxToPt } from "../units";
+import type { PositionedNode, LineArrow } from "../../types.ts";
+import type { RenderContext } from "../types.ts";
+import { pxToIn, pxToPt } from "../units.ts";
 
 type LinePositionedNode = Extract<PositionedNode, { type: "line" }>;
 

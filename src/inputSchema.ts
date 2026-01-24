@@ -52,7 +52,7 @@ import {
   type AlignItems,
   type JustifyContent,
   type TreeDataItem,
-} from "./types";
+} from "./types.ts";
 
 // ===== Base Node Schema =====
 export const inputBaseNodeSchema = z.object({

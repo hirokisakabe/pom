@@ -50,7 +50,7 @@ export {
   type InputShapeNode,
   type InputChartNode,
   type InputSlideMasterOptions,
-} from "./inputSchema";
+} from "./inputSchema.ts";
 
 // Basic type schemas (browser-compatible)
 export {
@@ -104,4 +104,4 @@ export {
   type SlideNumberOptions,
   type SlideMasterBackground,
   type SlideMasterMargin,
-} from "./types";
+} from "./types.ts";

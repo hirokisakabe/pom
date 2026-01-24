@@ -1,5 +1,5 @@
-import type { PositionedNode, BulletOptions } from "../types";
-import { pxToIn, pxToPt } from "./units";
+import type { PositionedNode, BulletOptions } from "../types.ts";
+import { pxToIn, pxToPt } from "./units.ts";
 
 type TextNode = Extract<PositionedNode, { type: "text" }>;
 

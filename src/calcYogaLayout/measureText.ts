@@ -1,4 +1,4 @@
-import { measureTextWidth as measureTextWidthOpentype } from "./fontLoader.js";
+import { measureTextWidth as measureTextWidthOpentype } from "./fontLoader.ts";
 
 type MeasureOptions = {
   fontFamily: string;

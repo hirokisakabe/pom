@@ -1,10 +1,8 @@
-import type PptxGenJSType from "pptxgenjs";
-import type { PositionedNode } from "../types";
+import type { PositionedNode } from "../types.ts";
 
-export type SlideInstance = ReturnType<
-  InstanceType<typeof PptxGenJSType>["addSlide"]
->;
-export type PptxInstance = InstanceType<typeof PptxGenJSType>;
+type PptxGenJSClass = import("pptxgenjs").default;
+export type SlideInstance = ReturnType<PptxGenJSClass["addSlide"]>;
+export type PptxInstance = PptxGenJSClass;
 
 export type RenderContext = {
   slide: SlideInstance;

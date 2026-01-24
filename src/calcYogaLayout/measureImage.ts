@@ -1,5 +1,14 @@
-import imageSize from "image-size";
+import { createRequire } from "module";
 import * as fs from "fs";
+
+const require = createRequire(import.meta.url);
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const imageSizeModule = require("image-size");
+// CommonJS モジュールは .default または直接エクスポートされる場合がある
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+const imageSize: typeof import("image-size").default =
+  imageSizeModule.default ?? imageSizeModule;
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 
 /**
  * 画像サイズのキャッシュ（事前取得した画像サイズを保持）

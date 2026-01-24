@@ -1,16 +1,16 @@
-import type { POMNode, VStackNode, HStackNode } from "../types";
+import type { POMNode, VStackNode, HStackNode } from "../types.ts";
 import { Node as YogaNode } from "yoga-layout";
 import { loadYoga } from "yoga-layout/load";
-import { measureText } from "./measureText";
-import { measureImage, prefetchImageSize } from "./measureImage";
-import { calcTableIntrinsicSize } from "../table/utils";
+import { measureText } from "./measureText.ts";
+import { measureImage, prefetchImageSize } from "./measureImage.ts";
+import { calcTableIntrinsicSize } from "../table/utils.ts";
 import {
   measureProcessArrow,
   measureTimeline,
   measureMatrix,
   measureTree,
   measureFlow,
-} from "./measureCompositeNodes";
+} from "./measureCompositeNodes.ts";
 
 /**
  * POMNode ツリーを Yoga でレイアウト計算する

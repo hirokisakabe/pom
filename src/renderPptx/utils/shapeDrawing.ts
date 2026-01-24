@@ -1,5 +1,5 @@
-import type { RenderContext } from "../types";
-import { pxToIn, pxToPt } from "../units";
+import type { RenderContext } from "../types.ts";
+import { pxToIn, pxToPt } from "../units.ts";
 
 export type CircleOptions = {
   cx: number; // 中心X (px)
