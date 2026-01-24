@@ -1,5 +1,20 @@
 # @hirokisakabe/pom
 
+## 1.1.2
+
+### Patch Changes
+
+- [#177](https://github.com/hirokisakabe/pom/pull/177) [`1350df4`](https://github.com/hirokisakabe/pom/commit/1350df4fc4953bd5839313a668a5c845105feecf) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - fix: schema.ts に不足していたノードスキーマのエクスポートを追加
+
+  以下のスキーマと型を `@hirokisakabe/pom/schema` からエクスポートするように修正:
+  - inputTimelineNodeSchema / InputTimelineNode
+  - inputMatrixNodeSchema / InputMatrixNode
+  - inputTreeNodeSchema / InputTreeNode
+  - inputFlowNodeSchema / InputFlowNode
+  - inputProcessArrowNodeSchema / InputProcessArrowNode
+  - inputLineNodeSchema / InputLineNode
+  - inputLayerNodeSchema / InputLayerNode
+
 ## 1.1.1
 
 ### Patch Changes
