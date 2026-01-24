@@ -1,5 +1,26 @@
 # @hirokisakabe/pom
 
+## 1.1.0
+
+### Minor Changes
+
+- [#171](https://github.com/hirokisakabe/pom/pull/171) [`ad7cd40`](https://github.com/hirokisakabe/pom/commit/ad7cd400794ee4b7c48947e187bc046dd505702e) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - feat: `layer` ノードの追加（絶対配置コンテナ）
+
+  子要素を絶対座標（x, y）で配置できる `layer` ノードを追加しました。
+  - 子要素は `x`, `y` を必須プロパティとして持つ
+  - 描画順序は配列の順序（後の要素が上に来る）
+  - layer は VStack/HStack 内に配置可能（layer 自体のサイズは Flexbox で決まる）
+  - layer 内に layer をネスト可能
+  - layer 内に VStack/HStack を配置可能
+
+- [#168](https://github.com/hirokisakabe/pom/pull/168) [`9885a29`](https://github.com/hirokisakabe/pom/commit/9885a29076a9d355acfa0c7d1548fc94314d9de8) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - feat: line ノードの追加
+
+  接続線・矢印を描画するための `line` ノードを追加しました。
+  - 絶対座標（x1, y1, x2, y2）で始点・終点を指定
+  - 線の色（color）、太さ（lineWidth）、破線パターン（dashType）をサポート
+  - 矢印オプション（beginArrow, endArrow）をサポート
+  - 矢印タイプ（none, arrow, triangle, diamond, oval, stealth）を指定可能
+
 ## 1.0.0
 
 ### Major Changes
