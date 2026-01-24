@@ -4,6 +4,13 @@ import { loadYoga } from "yoga-layout/load";
 import { measureText } from "./measureText";
 import { measureImage, prefetchImageSize } from "./measureImage";
 import { calcTableIntrinsicSize } from "../table/utils";
+import {
+  measureProcessArrow,
+  measureTimeline,
+  measureMatrix,
+  measureTree,
+  measureFlow,
+} from "./measureCompositeNodes";
 
 /**
  * POMNode ツリーを Yoga でレイアウト計算する
@@ -323,12 +330,49 @@ async function applyStyleToYogaNode(node: POMNode, yn: YogaNode) {
       }
       break;
 
-    case "timeline":
-    case "matrix":
-    case "tree":
-    case "flow":
     case "processArrow":
-      // 明示的にサイズが指定されていることを期待
+      {
+        yn.setMeasureFunc(() => {
+          const { width, height } = measureProcessArrow(node);
+          return { width, height };
+        });
+      }
+      break;
+
+    case "timeline":
+      {
+        yn.setMeasureFunc(() => {
+          const { width, height } = measureTimeline(node);
+          return { width, height };
+        });
+      }
+      break;
+
+    case "matrix":
+      {
+        yn.setMeasureFunc(() => {
+          const { width, height } = measureMatrix(node);
+          return { width, height };
+        });
+      }
+      break;
+
+    case "tree":
+      {
+        yn.setMeasureFunc(() => {
+          const { width, height } = measureTree(node);
+          return { width, height };
+        });
+      }
+      break;
+
+    case "flow":
+      {
+        yn.setMeasureFunc(() => {
+          const { width, height } = measureFlow(node);
+          return { width, height };
+        });
+      }
       break;
 
     case "line":
