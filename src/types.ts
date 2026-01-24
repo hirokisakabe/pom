@@ -609,6 +609,9 @@ export type LineArrowOptions = z.infer<typeof lineArrowOptionsSchema>;
 export type LineArrow = z.infer<typeof lineArrowSchema>;
 export type LineNode = z.infer<typeof lineNodeSchema>;
 
+// ===== Layer Node =====
+// LayerChild, LayerNode types are defined below after POMNode
+
 // ===== Recursive Types with Explicit Type Definitions =====
 
 // Define the types explicitly to avoid 'any' inference
@@ -633,6 +636,17 @@ export type HStackNode = BasePOMNode & {
   justifyContent?: JustifyContent;
 };
 
+// Layer の子要素は x, y を必須とする
+export type LayerChild = POMNode & {
+  x: number;
+  y: number;
+};
+
+export type LayerNode = BasePOMNode & {
+  type: "layer";
+  children: LayerChild[];
+};
+
 export type POMNode =
   | TextNode
   | ImageNode
@@ -647,7 +661,8 @@ export type POMNode =
   | TreeNode
   | FlowNode
   | ProcessArrowNode
-  | LineNode;
+  | LineNode
+  | LayerNode;
 
 // Define schemas using passthrough to maintain type safety
 const boxNodeSchemaBase = basePOMNodeSchema.extend({
@@ -671,6 +686,20 @@ const hStackNodeSchemaBase = basePOMNodeSchema.extend({
   justifyContent: justifyContentSchema.optional(),
 });
 
+const layerChildSchemaBase = z.lazy(() =>
+  pomNodeSchema.and(
+    z.object({
+      x: z.number(),
+      y: z.number(),
+    }),
+  ),
+);
+
+const layerNodeSchemaBase = basePOMNodeSchema.extend({
+  type: z.literal("layer"),
+  children: z.array(layerChildSchemaBase),
+});
+
 // Export with proper type annotations using z.ZodType
 export const boxNodeSchema: z.ZodType<BoxNode> =
   boxNodeSchemaBase as z.ZodType<BoxNode>;
@@ -678,6 +707,8 @@ export const vStackNodeSchema: z.ZodType<VStackNode> =
   vStackNodeSchemaBase as z.ZodType<VStackNode>;
 export const hStackNodeSchema: z.ZodType<HStackNode> =
   hStackNodeSchemaBase as z.ZodType<HStackNode>;
+export const layerNodeSchema: z.ZodType<LayerNode> =
+  layerNodeSchemaBase as z.ZodType<LayerNode>;
 
 export const pomNodeSchema: z.ZodType<POMNode> = z.lazy(() =>
   z.discriminatedUnion("type", [
@@ -695,6 +726,7 @@ export const pomNodeSchema: z.ZodType<POMNode> = z.lazy(() =>
     flowNodeSchema,
     processArrowNodeSchema,
     lineNodeSchema,
+    layerNodeSchemaBase,
   ]),
 ) as z.ZodType<POMNode>;
 
@@ -707,6 +739,12 @@ const positionedBaseSchema = z.object({
 });
 
 type PositionedBase = z.infer<typeof positionedBaseSchema>;
+
+// Layer の子要素（位置情報付き）
+export type PositionedLayerChild = PositionedNode & {
+  x: number;
+  y: number;
+};
 
 export type PositionedNode =
   | (TextNode & PositionedBase)
@@ -722,7 +760,17 @@ export type PositionedNode =
   | (TreeNode & PositionedBase)
   | (FlowNode & PositionedBase)
   | (ProcessArrowNode & PositionedBase)
-  | (LineNode & PositionedBase);
+  | (LineNode & PositionedBase)
+  | (LayerNode & PositionedBase & { children: PositionedLayerChild[] });
+
+const positionedLayerChildSchema: z.ZodType<PositionedLayerChild> = z.lazy(() =>
+  positionedNodeSchema.and(
+    z.object({
+      x: z.number(),
+      y: z.number(),
+    }),
+  ),
+) as z.ZodType<PositionedLayerChild>;
 
 export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
   z.union([
@@ -748,6 +796,9 @@ export const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
     flowNodeSchema.merge(positionedBaseSchema),
     processArrowNodeSchema.merge(positionedBaseSchema),
     lineNodeSchema.merge(positionedBaseSchema),
+    layerNodeSchemaBase.merge(positionedBaseSchema).extend({
+      children: z.array(positionedLayerChildSchema),
+    }),
   ]),
 ) as z.ZodType<PositionedNode>;
 

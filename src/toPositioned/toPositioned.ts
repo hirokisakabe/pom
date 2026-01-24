@@ -159,5 +159,26 @@ export function toPositioned(
         h: Math.abs(pom.y2 - pom.y1),
       };
     }
+    case "layer": {
+      // layer の子要素は layer 内の相対座標（child.x, child.y）を持つ
+      // layer の絶対座標に加算してスライド上の絶対座標に変換
+      return {
+        ...pom,
+        x: absoluteX,
+        y: absoluteY,
+        w: layout.width,
+        h: layout.height,
+        children: pom.children.map((child) => {
+          // 子要素自体の yogaNode から計算された位置情報を取得
+          const childPositioned = toPositioned(child, absoluteX, absoluteY);
+          // layer 内の相対座標で上書き
+          return {
+            ...childPositioned,
+            x: absoluteX + child.x,
+            y: absoluteY + child.y,
+          };
+        }),
+      };
+    }
   }
 }
