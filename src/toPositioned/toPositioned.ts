@@ -169,14 +169,46 @@ export function toPositioned(
         w: layout.width,
         h: layout.height,
         children: pom.children.map((child) => {
-          // 子要素自体の yogaNode から計算された位置情報を取得
-          const childPositioned = toPositioned(child, absoluteX, absoluteY);
-          // layer 内の相対座標で上書き
-          return {
-            ...childPositioned,
-            x: absoluteX + child.x,
-            y: absoluteY + child.y,
-          };
+          // layer 内での子要素の絶対座標（child.x, child.y がない場合は 0）
+          const childX = child.x ?? 0;
+          const childY = child.y ?? 0;
+
+          // line ノードは特別な処理が必要
+          // x1, y1, x2, y2 は layer 内の相対座標として扱い、layer の座標を加算
+          if (child.type === "line") {
+            const lineAbsoluteX = absoluteX + childX;
+            const lineAbsoluteY = absoluteY + childY;
+            const adjustedX1 = child.x1 + lineAbsoluteX;
+            const adjustedY1 = child.y1 + lineAbsoluteY;
+            const adjustedX2 = child.x2 + lineAbsoluteX;
+            const adjustedY2 = child.y2 + lineAbsoluteY;
+
+            return {
+              ...child,
+              x1: adjustedX1,
+              y1: adjustedY1,
+              x2: adjustedX2,
+              y2: adjustedY2,
+              x: Math.min(adjustedX1, adjustedX2),
+              y: Math.min(adjustedY1, adjustedY2),
+              w: Math.abs(adjustedX2 - adjustedX1),
+              h: Math.abs(adjustedY2 - adjustedY1),
+            };
+          }
+
+          // その他のノードは通常の処理
+          // Yoga で計算された子要素の相対座標を取得
+          const childLayout = child.yogaNode.getComputedLayout();
+          // 正しい親座標を計算: layer の座標 + child.x - Yoga の相対座標
+          // こうすることで toPositioned 内で:
+          // absoluteX = adjustedParentX + childLayout.left
+          //           = (absoluteX + child.x - childLayout.left) + childLayout.left
+          //           = absoluteX + child.x
+          // となり、子要素とその内部の子要素が正しい座標で配置される
+          const adjustedParentX = absoluteX + childX - childLayout.left;
+          const adjustedParentY = absoluteY + childY - childLayout.top;
+
+          return toPositioned(child, adjustedParentX, adjustedParentY);
         }),
       };
     }
