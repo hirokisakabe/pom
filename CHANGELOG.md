@@ -1,5 +1,11 @@
 # @hirokisakabe/pom
 
+## 1.1.3
+
+### Patch Changes
+
+- [#179](https://github.com/hirokisakabe/pom/pull/179) [`d3b8428`](https://github.com/hirokisakabe/pom/commit/d3b8428e833ead6b01eeb1f9d60e594fcec511ea) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - chore: zod を 4.1.12 から 4.3.6 にアップデート
+
 ## 1.1.2
 
 ### Patch Changes
