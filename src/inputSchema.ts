@@ -221,6 +221,17 @@ export type InputHStackNode = InputBaseNode & {
   justifyContent?: JustifyContent;
 };
 
+// Layer の子要素は x, y を必須とする
+export type InputLayerChild = InputPOMNode & {
+  x: number;
+  y: number;
+};
+
+export type InputLayerNode = InputBaseNode & {
+  type: "layer";
+  children: InputLayerChild[];
+};
+
 export type InputPOMNode =
   | InputTextNode
   | InputImageNode
@@ -235,7 +246,8 @@ export type InputPOMNode =
   | InputTreeNode
   | InputFlowNode
   | InputProcessArrowNode
-  | InputLineNode;
+  | InputLineNode
+  | InputLayerNode;
 
 // ===== Recursive Node Schemas =====
 const inputBoxNodeSchemaBase = inputBaseNodeSchema.extend({
@@ -259,12 +271,28 @@ const inputHStackNodeSchemaBase = inputBaseNodeSchema.extend({
   justifyContent: justifyContentSchema.optional(),
 });
 
+const inputLayerChildSchemaBase = z.lazy(() =>
+  inputPomNodeSchema.and(
+    z.object({
+      x: z.number(),
+      y: z.number(),
+    }),
+  ),
+);
+
+const inputLayerNodeSchemaBase = inputBaseNodeSchema.extend({
+  type: z.literal("layer"),
+  children: z.array(inputLayerChildSchemaBase),
+});
+
 export const inputBoxNodeSchema: z.ZodType<InputBoxNode> =
   inputBoxNodeSchemaBase as z.ZodType<InputBoxNode>;
 export const inputVStackNodeSchema: z.ZodType<InputVStackNode> =
   inputVStackNodeSchemaBase as z.ZodType<InputVStackNode>;
 export const inputHStackNodeSchema: z.ZodType<InputHStackNode> =
   inputHStackNodeSchemaBase as z.ZodType<InputHStackNode>;
+export const inputLayerNodeSchema: z.ZodType<InputLayerNode> =
+  inputLayerNodeSchemaBase as z.ZodType<InputLayerNode>;
 
 /**
  * Input schema for POM nodes (for LLM/external input validation)
@@ -300,6 +328,7 @@ export const inputPomNodeSchema: z.ZodType<InputPOMNode> = z.lazy(() =>
     inputFlowNodeSchema,
     inputProcessArrowNodeSchema,
     inputLineNodeSchema,
+    inputLayerNodeSchemaBase,
   ]),
 ) as z.ZodType<InputPOMNode>;
 

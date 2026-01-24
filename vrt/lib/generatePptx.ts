@@ -3218,6 +3218,336 @@ const page15Line: POMNode = {
   ],
 };
 
+// ============================================================
+// Page 16: Layer Node Test
+// テスト対象: LayerNode - 絶対配置、子要素のオーバーラップ、layer in VStack
+// ============================================================
+const page16Layer: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 20,
+  alignItems: "stretch",
+  backgroundColor: palette.background,
+  children: [
+    {
+      type: "text",
+      text: "Page 16: Layer Node Test",
+      fontPx: 28,
+      color: palette.charcoal,
+      bold: true,
+    },
+    // 基本的な絶対配置（重なり合う図形）
+    {
+      type: "hstack",
+      gap: 16,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "Overlapping Shapes:",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "layer",
+                w: 500,
+                h: 200,
+                backgroundColor: "F0F4F8",
+                children: [
+                  {
+                    type: "shape",
+                    shapeType: "rect",
+                    w: 120,
+                    h: 100,
+                    x: 30,
+                    y: 30,
+                    fill: { color: palette.blue },
+                    text: "Back",
+                    color: "FFFFFF",
+                    fontPx: 14,
+                  },
+                  {
+                    type: "shape",
+                    shapeType: "rect",
+                    w: 120,
+                    h: 100,
+                    x: 80,
+                    y: 60,
+                    fill: { color: palette.red },
+                    text: "Front",
+                    color: "FFFFFF",
+                    fontPx: 14,
+                  },
+                  {
+                    type: "text",
+                    text: "Shapes overlap (red is on top)",
+                    x: 220,
+                    y: 80,
+                    fontPx: 12,
+                    color: palette.charcoal,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundColor: "FFFFFF",
+          border: { color: palette.border, width: 1 },
+          children: {
+            type: "vstack",
+            gap: 12,
+            children: [
+              {
+                type: "text",
+                text: "VStack inside Layer:",
+                fontPx: 14,
+                bold: true,
+              },
+              {
+                type: "layer",
+                w: 500,
+                h: 200,
+                backgroundColor: "F0F4F8",
+                children: [
+                  {
+                    type: "vstack",
+                    x: 20,
+                    y: 20,
+                    w: 180,
+                    gap: 8,
+                    padding: 12,
+                    backgroundColor: "FFFFFF",
+                    border: { color: palette.border, width: 1 },
+                    children: [
+                      {
+                        type: "text",
+                        text: "Left VStack",
+                        fontPx: 12,
+                        bold: true,
+                      },
+                      { type: "text", text: "Item 1", fontPx: 11 },
+                      { type: "text", text: "Item 2", fontPx: 11 },
+                    ],
+                  },
+                  {
+                    type: "vstack",
+                    x: 260,
+                    y: 20,
+                    w: 180,
+                    gap: 8,
+                    padding: 12,
+                    backgroundColor: "FFFFFF",
+                    border: { color: palette.border, width: 1 },
+                    children: [
+                      {
+                        type: "text",
+                        text: "Right VStack",
+                        fontPx: 12,
+                        bold: true,
+                      },
+                      { type: "text", text: "Item A", fontPx: 11 },
+                      { type: "text", text: "Item B", fontPx: 11 },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+    },
+    // Line ノードとの組み合わせ
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "Layer with Line (connection diagram):",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "layer",
+            w: 1100,
+            h: 200,
+            backgroundColor: "F8FAFC",
+            children: [
+              // 左のボックス
+              {
+                type: "shape",
+                shapeType: "roundRect",
+                w: 150,
+                h: 80,
+                x: 50,
+                y: 60,
+                fill: { color: palette.blue },
+                text: "Service A",
+                color: "FFFFFF",
+                fontPx: 14,
+              },
+              // 中央のボックス
+              {
+                type: "shape",
+                shapeType: "roundRect",
+                w: 150,
+                h: 80,
+                x: 350,
+                y: 60,
+                fill: { color: palette.green },
+                text: "Service B",
+                color: "FFFFFF",
+                fontPx: 14,
+              },
+              // 右のボックス
+              {
+                type: "shape",
+                shapeType: "roundRect",
+                w: 150,
+                h: 80,
+                x: 650,
+                y: 60,
+                fill: { color: palette.accent },
+                text: "Service C",
+                color: "FFFFFF",
+                fontPx: 14,
+              },
+              // 接続線
+              {
+                type: "line",
+                x1: 200,
+                y1: 100,
+                x2: 350,
+                y2: 100,
+                color: "333333",
+                lineWidth: 2,
+                endArrow: true,
+              },
+              {
+                type: "line",
+                x1: 500,
+                y1: 100,
+                x2: 650,
+                y2: 100,
+                color: "333333",
+                lineWidth: 2,
+                endArrow: true,
+              },
+              // ラベル
+              {
+                type: "text",
+                text: "API Call",
+                x: 240,
+                y: 70,
+                fontPx: 10,
+                color: palette.charcoal,
+              },
+              {
+                type: "text",
+                text: "Event",
+                x: 550,
+                y: 70,
+                fontPx: 10,
+                color: palette.charcoal,
+              },
+            ],
+          },
+        ],
+      },
+    },
+    // ネストした layer
+    {
+      type: "box",
+      padding: 16,
+      backgroundColor: "FFFFFF",
+      border: { color: palette.border, width: 1 },
+      children: {
+        type: "vstack",
+        gap: 12,
+        children: [
+          {
+            type: "text",
+            text: "Nested Layer:",
+            fontPx: 14,
+            bold: true,
+          },
+          {
+            type: "layer",
+            w: 600,
+            h: 150,
+            backgroundColor: "E3F2FD",
+            children: [
+              {
+                type: "text",
+                text: "Outer Layer",
+                x: 10,
+                y: 10,
+                fontPx: 12,
+                bold: true,
+              },
+              {
+                type: "layer",
+                x: 50,
+                y: 40,
+                w: 200,
+                h: 80,
+                backgroundColor: "FFF3E0",
+                children: [
+                  {
+                    type: "text",
+                    text: "Inner Layer 1",
+                    x: 10,
+                    y: 30,
+                    fontPx: 11,
+                  },
+                ],
+              },
+              {
+                type: "layer",
+                x: 280,
+                y: 40,
+                w: 200,
+                h: 80,
+                backgroundColor: "E8F5E9",
+                children: [
+                  {
+                    type: "text",
+                    text: "Inner Layer 2",
+                    x: 10,
+                    y: 30,
+                    fontPx: 11,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+};
+
 export async function generatePptx(outputPath: string): Promise<void> {
   const pptx = await buildPptx(
     [
@@ -3236,6 +3566,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
       page13Flow,
       page14ProcessArrow,
       page15Line,
+      page16Layer,
     ],
     {
       w: 1280,

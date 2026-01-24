@@ -311,6 +311,13 @@ export function renderPptx(
         case "line":
           renderLineNode(node, ctx);
           break;
+
+        case "layer":
+          // layer の子要素を配列順に描画（後の要素が上に来る）
+          for (const child of node.children) {
+            renderNode(child);
+          }
+          break;
       }
     }
 

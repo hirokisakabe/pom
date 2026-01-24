@@ -56,6 +56,10 @@ function collectImageSources(node: POMNode): string[] {
       for (const child of n.children) {
         traverse(child);
       }
+    } else if (n.type === "layer") {
+      for (const child of n.children) {
+        traverse(child);
+      }
     }
   }
 
@@ -103,6 +107,14 @@ async function buildPomWithYogaTree(
     }
     case "vstack":
     case "hstack": {
+      for (const child of node.children) {
+        await buildPomWithYogaTree(child, yn, node);
+      }
+      break;
+    }
+    case "layer": {
+      // layer の子要素は絶対配置なので、各子要素のサイズ計算のみ行う
+      // x, y は toPositioned で適用される
       for (const child of node.children) {
         await buildPomWithYogaTree(child, yn, node);
       }
@@ -323,6 +335,11 @@ async function applyStyleToYogaNode(node: POMNode, yn: YogaNode) {
       // line ノードは絶対座標を使用するため、Yoga レイアウトではサイズ 0 として扱う
       yn.setWidth(0);
       yn.setHeight(0);
+      break;
+
+    case "layer":
+      // layer は子を絶対配置するコンテナ
+      // サイズは明示的に指定されることを期待
       break;
   }
 }

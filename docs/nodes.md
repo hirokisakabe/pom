@@ -799,3 +799,117 @@ A node for drawing lines and arrows. Uses absolute coordinates (x1, y1, x2, y2) 
 // Custom arrow type (diamond)
 { type: "line", x1: 100, y1: 300, x2: 300, y2: 300, color: "1D4ED8", lineWidth: 2, endArrow: { type: "diamond" } }
 ```
+
+### 15. Layer
+
+A container for absolute positioning of child elements. Child elements are positioned using `x` and `y` coordinates relative to the layer's top-left corner.
+
+![Layer Node Example](./images/layer.png)
+
+```typescript
+{
+  type: "layer";
+  children: (POMNode & { x: number; y: number })[];
+
+  // Common properties
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+- Child elements are positioned absolutely within the layer using `x` and `y` coordinates
+- `x`, `y` are relative to the layer's top-left corner
+- Drawing order follows array order (later elements are drawn on top)
+- Layer itself participates in Flexbox layout (can be placed in VStack/HStack)
+- Layers can be nested
+
+**Usage Examples:**
+
+```typescript
+// Basic absolute positioning with overlapping shapes
+{
+  type: "layer",
+  w: 600,
+  h: 400,
+  backgroundColor: "F0F4F8",
+  children: [
+    // Back shape (drawn first)
+    { type: "shape", shapeType: "rect", x: 50, y: 50, w: 120, h: 100, fill: { color: "1D4ED8" }, text: "Back", color: "FFFFFF" },
+    // Front shape (drawn on top)
+    { type: "shape", shapeType: "rect", x: 100, y: 80, w: 120, h: 100, fill: { color: "DC2626" }, text: "Front", color: "FFFFFF" },
+  ],
+}
+
+// Layer with VStack children for free-form layout
+{
+  type: "layer",
+  w: 800,
+  h: 300,
+  backgroundColor: "F8FAFC",
+  children: [
+    {
+      type: "vstack",
+      x: 20,
+      y: 20,
+      w: 200,
+      gap: 8,
+      padding: 12,
+      backgroundColor: "FFFFFF",
+      children: [
+        { type: "text", text: "Left Column", fontPx: 14, bold: true },
+        { type: "text", text: "Content A", fontPx: 12 },
+      ],
+    },
+    {
+      type: "vstack",
+      x: 300,
+      y: 20,
+      w: 200,
+      gap: 8,
+      padding: 12,
+      backgroundColor: "FFFFFF",
+      children: [
+        { type: "text", text: "Right Column", fontPx: 14, bold: true },
+        { type: "text", text: "Content B", fontPx: 12 },
+      ],
+    },
+  ],
+}
+
+// Connection diagram with lines
+{
+  type: "layer",
+  w: 800,
+  h: 200,
+  backgroundColor: "F8FAFC",
+  children: [
+    { type: "shape", shapeType: "roundRect", x: 50, y: 60, w: 150, h: 80, fill: { color: "1D4ED8" }, text: "Service A", color: "FFFFFF" },
+    { type: "shape", shapeType: "roundRect", x: 350, y: 60, w: 150, h: 80, fill: { color: "16A34A" }, text: "Service B", color: "FFFFFF" },
+    { type: "line", x1: 200, y1: 100, x2: 350, y2: 100, color: "333333", lineWidth: 2, endArrow: true },
+    { type: "text", text: "API Call", x: 240, y: 70, fontPx: 10 },
+  ],
+}
+
+// Nested layers
+{
+  type: "layer",
+  w: 600,
+  h: 150,
+  backgroundColor: "E3F2FD",
+  children: [
+    { type: "text", text: "Outer Layer", x: 10, y: 10, fontPx: 12, bold: true },
+    {
+      type: "layer",
+      x: 50,
+      y: 40,
+      w: 200,
+      h: 80,
+      backgroundColor: "FFF3E0",
+      children: [
+        { type: "text", text: "Inner Layer", x: 10, y: 30, fontPx: 11 },
+      ],
+    },
+  ],
+}
+```
