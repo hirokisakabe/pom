@@ -117,6 +117,7 @@ async function buildPomWithYogaTree(
     case "tree":
     case "flow":
     case "processArrow":
+    case "line":
       // 子要素なし
       break;
   }
@@ -316,6 +317,12 @@ async function applyStyleToYogaNode(node: POMNode, yn: YogaNode) {
     case "flow":
     case "processArrow":
       // 明示的にサイズが指定されていることを期待
+      break;
+
+    case "line":
+      // line ノードは絶対座標を使用するため、Yoga レイアウトではサイズ 0 として扱う
+      yn.setWidth(0);
+      yn.setHeight(0);
       break;
   }
 }

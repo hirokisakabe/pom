@@ -148,5 +148,16 @@ export function toPositioned(
         ),
       };
     }
+    case "line": {
+      // line ノードは絶対座標（x1, y1, x2, y2）を持つため、
+      // yogaNode の座標ではなく自身の座標からバウンディングボックスを計算
+      return {
+        ...pom,
+        x: Math.min(pom.x1, pom.x2),
+        y: Math.min(pom.y1, pom.y2),
+        w: Math.abs(pom.x2 - pom.x1),
+        h: Math.abs(pom.y2 - pom.y1),
+      };
+    }
   }
 }

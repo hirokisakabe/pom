@@ -21,6 +21,7 @@ import {
   renderTreeNode,
   renderFlowNode,
   renderProcessArrowNode,
+  renderLineNode,
 } from "./nodes";
 
 type SlidePx = { w: number; h: number };
@@ -201,7 +202,9 @@ export function renderPptx(
 
     // ルートノードの backgroundColor はスライドの background プロパティとして適用
     // これにより、マスタースライドのオブジェクトを覆い隠さない
-    const rootBackgroundColor = data.backgroundColor;
+    // line ノードは backgroundColor を持たないためスキップ
+    const rootBackgroundColor =
+      data.type !== "line" ? data.backgroundColor : undefined;
     if (rootBackgroundColor) {
       slide.background = { color: rootBackgroundColor };
     }
@@ -211,41 +214,44 @@ export function renderPptx(
      * @param isRoot ルートノードかどうか（ルートノードの background は slide.background で処理済み）
      */
     function renderNode(node: PositionedNode, isRoot = false) {
-      // ルートノードの backgroundColor は既に slide.background に適用済みなのでスキップ
-      if (isRoot && rootBackgroundColor) {
-        // border のみ描画（backgroundColor はスキップ）
-        const { border, borderRadius } = node;
-        const hasBorder = Boolean(
-          border &&
-            (border.color !== undefined ||
-              border.width !== undefined ||
-              border.dashType !== undefined),
-        );
-        if (hasBorder) {
-          const line = {
-            color: border?.color ?? "000000",
-            width:
-              border?.width !== undefined ? pxToPt(border.width) : undefined,
-            dashType: border?.dashType,
-          };
-          const shapeType = borderRadius
-            ? ctx.pptx.ShapeType.roundRect
-            : ctx.pptx.ShapeType.rect;
-          const rectRadius = borderRadius
-            ? Math.min((borderRadius / Math.min(node.w, node.h)) * 2, 1)
-            : undefined;
-          ctx.slide.addShape(shapeType, {
-            x: pxToIn(node.x),
-            y: pxToIn(node.y),
-            w: pxToIn(node.w),
-            h: pxToIn(node.h),
-            fill: { type: "none" },
-            line,
-            rectRadius,
-          });
+      // line ノードは backgroundColor/border を持たないため、background/border の描画をスキップ
+      if (node.type !== "line") {
+        // ルートノードの backgroundColor は既に slide.background に適用済みなのでスキップ
+        if (isRoot && rootBackgroundColor) {
+          // border のみ描画（backgroundColor はスキップ）
+          const { border, borderRadius } = node;
+          const hasBorder = Boolean(
+            border &&
+              (border.color !== undefined ||
+                border.width !== undefined ||
+                border.dashType !== undefined),
+          );
+          if (hasBorder) {
+            const line = {
+              color: border?.color ?? "000000",
+              width:
+                border?.width !== undefined ? pxToPt(border.width) : undefined,
+              dashType: border?.dashType,
+            };
+            const shapeType = borderRadius
+              ? ctx.pptx.ShapeType.roundRect
+              : ctx.pptx.ShapeType.rect;
+            const rectRadius = borderRadius
+              ? Math.min((borderRadius / Math.min(node.w, node.h)) * 2, 1)
+              : undefined;
+            ctx.slide.addShape(shapeType, {
+              x: pxToIn(node.x),
+              y: pxToIn(node.y),
+              w: pxToIn(node.w),
+              h: pxToIn(node.h),
+              fill: { type: "none" },
+              line,
+              rectRadius,
+            });
+          }
+        } else {
+          renderBackgroundAndBorder(node, ctx);
         }
-      } else {
-        renderBackgroundAndBorder(node, ctx);
       }
 
       switch (node.type) {
@@ -300,6 +306,10 @@ export function renderPptx(
 
         case "processArrow":
           renderProcessArrowNode(node, ctx);
+          break;
+
+        case "line":
+          renderLineNode(node, ctx);
           break;
       }
     }

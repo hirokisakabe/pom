@@ -741,3 +741,61 @@ A node for creating chevron-style process diagrams. Commonly used for visualizin
   ],
 }
 ```
+
+### 14. Line
+
+A node for drawing lines and arrows. Uses absolute coordinates (x1, y1, x2, y2) for start and end points.
+
+![Line Node Example](./images/line.png)
+
+```typescript
+{
+  type: "line";
+  x1: number;      // Start point X (px)
+  y1: number;      // Start point Y (px)
+  x2: number;      // End point X (px)
+  y2: number;      // End point Y (px)
+  color?: string;  // Line color (hex, default: "000000")
+  lineWidth?: number;  // Line width (px, default: 1)
+  dashType?: "solid" | "dash" | "dashDot" | "lgDash" | "lgDashDot" | "lgDashDotDot" | "sysDash" | "sysDot";
+  beginArrow?: boolean | ArrowOptions;  // Arrow at start point
+  endArrow?: boolean | ArrowOptions;    // Arrow at end point
+
+  // Common properties (optional, not typically used with line)
+  w?: number | "max" | `${number}%`;
+  h?: number | "max" | `${number}%`;
+  ...
+}
+```
+
+**ArrowOptions:**
+
+```typescript
+{
+  type?: "none" | "arrow" | "triangle" | "diamond" | "oval" | "stealth";
+}
+```
+
+**Note:** Line nodes use absolute coordinates on the slide and are not affected by Yoga layout calculations. They are drawn at the exact positions specified by x1, y1, x2, y2.
+
+**Usage Examples:**
+
+```typescript
+// Simple horizontal line
+{ type: "line", x1: 100, y1: 100, x2: 300, y2: 100, color: "333333", lineWidth: 2 }
+
+// Arrow pointing right
+{ type: "line", x1: 100, y1: 150, x2: 300, y2: 150, color: "333333", lineWidth: 2, endArrow: true }
+
+// Bidirectional arrow
+{ type: "line", x1: 100, y1: 200, x2: 300, y2: 200, color: "333333", lineWidth: 2, beginArrow: true, endArrow: true }
+
+// Diagonal line with arrow (bottom-right direction)
+{ type: "line", x1: 100, y1: 100, x2: 250, y2: 200, color: "1D4ED8", lineWidth: 2, endArrow: true }
+
+// Dashed line
+{ type: "line", x1: 100, y1: 250, x2: 300, y2: 250, color: "333333", lineWidth: 2, dashType: "dash" }
+
+// Custom arrow type (diamond)
+{ type: "line", x1: 100, y1: 300, x2: 300, y2: 300, color: "1D4ED8", lineWidth: 2, endArrow: { type: "diamond" } }
+```
