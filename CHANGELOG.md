@@ -1,5 +1,13 @@
 # @hirokisakabe/pom
 
+## 1.1.1
+
+### Patch Changes
+
+- [#175](https://github.com/hirokisakabe/pom/pull/175) [`21f31a5`](https://github.com/hirokisakabe/pom/commit/21f31a55f984d9a65c16c95b710d92a4a14e5941) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - fix: ESM 環境での import 拡張子問題を修正
+  - TypeScript の `moduleResolution: NodeNext` と `rewriteRelativeImportExtensions` を使用して、ビルド時に相対 import に `.js` 拡張子を自動追加
+  - これにより `@hirokisakabe/pom/schema` を ESM 環境でインポートした際に発生していた `ERR_MODULE_NOT_FOUND` エラーを解消
+
 ## 1.1.0
 
 ### Minor Changes
