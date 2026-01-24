@@ -4,8 +4,12 @@ import { createRequire } from "module";
 type PptxGenJSInstance = import("pptxgenjs").default;
 
 const require = createRequire(import.meta.url);
-// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-const PptxGenJS = require("pptxgenjs").default as new () => PptxGenJSInstance;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const pptxModule = require("pptxgenjs");
+// CommonJS モジュールは .default または直接エクスポートされる場合がある
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+const PptxGenJS: new () => PptxGenJSInstance = pptxModule.default ?? pptxModule;
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 type SlideMasterProps = Parameters<PptxGenJSInstance["defineSlideMaster"]>[0];
 type ImageProps = {
   x: number;
