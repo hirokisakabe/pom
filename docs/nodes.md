@@ -16,6 +16,14 @@ Layout attributes that all nodes can have.
   maxH?: number;
   padding?: number;
   backgroundColor?: string;
+  backgroundGradient?: {
+    type: "linear";
+    angle?: number;  // Angle in degrees (0-360, default: 0). 0°=left→right, 90°=top→bottom
+    stops: Array<{
+      color: string;      // Hex color code (e.g., "FF6B6B")
+      position: number;   // Position (0-100)
+    }>;
+  };
   border?: {
     color?: string;
     width?: number;
@@ -26,6 +34,7 @@ Layout attributes that all nodes can have.
 ```
 
 - `backgroundColor` applies a fill to the entire node (e.g., `"F8F9FA"`).
+- `backgroundGradient` applies a linear gradient fill. When both `backgroundColor` and `backgroundGradient` are specified, `backgroundGradient` takes priority.
 - `border.width` is specified in px and can be combined with color and `dashType` to control the border.
 - `borderRadius` specifies the corner radius in px. When specified, the background/border shape becomes a rounded rectangle.
 
@@ -206,6 +215,11 @@ A node for drawing shapes. Different representations are possible with or withou
   fill?: {
     color?: string;
     transparency?: number;
+  };
+  fillGradient?: {
+    type: "linear";
+    angle?: number;  // Angle in degrees (0-360)
+    stops: Array<{ color: string; position: number }>;
   };
   line?: {
     color?: string;

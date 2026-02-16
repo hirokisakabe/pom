@@ -1,6 +1,7 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { pxToIn, pxToPt } from "../units.ts";
+import { toGradientFillProps } from "./gradientFill.ts";
 
 /**
  * ノードの背景色とボーダーを描画する
@@ -11,7 +12,9 @@ export function renderBackgroundAndBorder(
   ctx: RenderContext,
 ): void {
   const { backgroundColor, border, borderRadius } = node;
-  const hasBackground = Boolean(backgroundColor);
+  const backgroundGradient =
+    "backgroundGradient" in node ? node.backgroundGradient : undefined;
+  const hasBackground = Boolean(backgroundColor) || Boolean(backgroundGradient);
   const hasBorder = Boolean(
     border &&
       (border.color !== undefined ||
@@ -23,9 +26,14 @@ export function renderBackgroundAndBorder(
     return;
   }
 
-  const fill = hasBackground
-    ? { color: backgroundColor }
-    : { type: "none" as const };
+  let fill: Record<string, unknown>;
+  if (backgroundGradient) {
+    fill = toGradientFillProps(backgroundGradient);
+  } else if (backgroundColor) {
+    fill = { color: backgroundColor };
+  } else {
+    fill = { type: "none" as const };
+  }
 
   const line = hasBorder
     ? {

@@ -28,6 +28,7 @@ import type { RenderContext } from "./types.ts";
 import { pxToIn, pxToPt } from "./units.ts";
 import { convertUnderline, convertStrike } from "./textOptions.ts";
 import { renderBackgroundAndBorder } from "./utils/backgroundBorder.ts";
+import { toGradientFillProps } from "./utils/gradientFill.ts";
 import {
   renderTextNode,
   renderImageNode,
@@ -154,6 +155,13 @@ function defineSlideMasterFromOptions(
       masterProps.background = { path: master.background.path };
     } else if ("data" in master.background) {
       masterProps.background = { data: master.background.data };
+    } else if ("gradient" in master.background) {
+      // pptxgenjs の型にグラデーションが含まれないためキャストが必要
+      /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
+      masterProps.background = toGradientFillProps(
+        master.background.gradient,
+      ) as any;
+      /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
     }
   }
 
@@ -224,12 +232,19 @@ export function renderPptx(
     const slide = masterName ? pptx.addSlide({ masterName }) : pptx.addSlide();
     const ctx: RenderContext = { slide, pptx };
 
-    // ルートノードの backgroundColor はスライドの background プロパティとして適用
+    // ルートノードの backgroundColor / backgroundGradient はスライドの background プロパティとして適用
     // これにより、マスタースライドのオブジェクトを覆い隠さない
     // line ノードは backgroundColor を持たないためスキップ
     const rootBackgroundColor =
       data.type !== "line" ? data.backgroundColor : undefined;
-    if (rootBackgroundColor) {
+    const rootBackgroundGradient =
+      data.type !== "line" && "backgroundGradient" in data
+        ? data.backgroundGradient
+        : undefined;
+    if (rootBackgroundGradient) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+      slide.background = toGradientFillProps(rootBackgroundGradient) as any;
+    } else if (rootBackgroundColor) {
       slide.background = { color: rootBackgroundColor };
     }
 
@@ -240,8 +255,8 @@ export function renderPptx(
     function renderNode(node: PositionedNode, isRoot = false) {
       // line ノードは backgroundColor/border を持たないため、background/border の描画をスキップ
       if (node.type !== "line") {
-        // ルートノードの backgroundColor は既に slide.background に適用済みなのでスキップ
-        if (isRoot && rootBackgroundColor) {
+        // ルートノードの backgroundColor / backgroundGradient は既に slide.background に適用済みなのでスキップ
+        if (isRoot && (rootBackgroundColor || rootBackgroundGradient)) {
           // border のみ描画（backgroundColor はスキップ）
           const { border, borderRadius } = node;
           const hasBorder = Boolean(

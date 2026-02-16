@@ -3860,6 +3860,159 @@ const page17HStackTable: POMNode = {
   ],
 };
 
+const page18GradientBackground: POMNode = {
+  type: "vstack",
+  w: "100%",
+  h: "max",
+  padding: 48,
+  gap: 20,
+  alignItems: "stretch",
+  backgroundGradient: {
+    type: "linear",
+    angle: 90,
+    stops: [
+      { color: "1E3A5F", position: 0 },
+      { color: "4A90D9", position: 100 },
+    ],
+  },
+  children: [
+    {
+      type: "text",
+      text: "Page 18: Gradient Background Test",
+      fontPx: 28,
+      color: "FFFFFF",
+      bold: true,
+    },
+    // Box with linear gradient
+    {
+      type: "hstack",
+      gap: 20,
+      alignItems: "stretch",
+      children: [
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundGradient: {
+            type: "linear",
+            angle: 0,
+            stops: [
+              { color: "FF6B6B", position: 0 },
+              { color: "4ECDC4", position: 100 },
+            ],
+          },
+          borderRadius: 8,
+          children: {
+            type: "text",
+            text: "Box gradient (0°: left to right)",
+            fontPx: 16,
+            color: "FFFFFF",
+          },
+        },
+        {
+          type: "box",
+          w: "50%",
+          padding: 16,
+          backgroundGradient: {
+            type: "linear",
+            angle: 135,
+            stops: [
+              { color: "667EEA", position: 0 },
+              { color: "764BA2", position: 50 },
+              { color: "F093FB", position: 100 },
+            ],
+          },
+          borderRadius: 8,
+          children: {
+            type: "text",
+            text: "Box 3-stop gradient (135°)",
+            fontPx: 16,
+            color: "FFFFFF",
+          },
+        },
+      ],
+    },
+    // Shape with fillGradient
+    {
+      type: "hstack",
+      gap: 24,
+      alignItems: "center",
+      children: [
+        {
+          type: "shape",
+          shapeType: "roundRect",
+          text: "Gradient Shape",
+          w: 300,
+          h: 120,
+          fillGradient: {
+            type: "linear",
+            angle: 45,
+            stops: [
+              { color: "667EEA", position: 0 },
+              { color: "764BA2", position: 100 },
+            ],
+          },
+          color: "FFFFFF",
+          fontPx: 18,
+        },
+        {
+          type: "shape",
+          shapeType: "ellipse",
+          text: "Ellipse",
+          w: 160,
+          h: 160,
+          fillGradient: {
+            type: "linear",
+            angle: 90,
+            stops: [
+              { color: "FF0000", position: 0 },
+              { color: "00FF00", position: 50 },
+              { color: "0000FF", position: 100 },
+            ],
+          },
+          color: "FFFFFF",
+          fontPx: 14,
+        },
+        {
+          type: "shape",
+          shapeType: "rect",
+          w: 200,
+          h: 120,
+          fillGradient: {
+            type: "linear",
+            angle: 270,
+            stops: [
+              { color: "F8FAFC", position: 0 },
+              { color: "1E293B", position: 100 },
+            ],
+          },
+        },
+      ],
+    },
+    // Box with gradient + border
+    {
+      type: "box",
+      padding: 16,
+      backgroundGradient: {
+        type: "linear",
+        angle: 0,
+        stops: [
+          { color: "0EA5E9", position: 0 },
+          { color: "8B5CF6", position: 100 },
+        ],
+      },
+      border: { color: "FFFFFF", width: 2 },
+      borderRadius: 12,
+      children: {
+        type: "text",
+        text: "Gradient with border and borderRadius",
+        fontPx: 16,
+        color: "FFFFFF",
+      },
+    },
+  ],
+};
+
 export async function generatePptx(outputPath: string): Promise<void> {
   const pptx = await buildPptx(
     [
@@ -3881,6 +4034,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
       page15Line,
       page16Layer,
       page17HStackTable,
+      page18GradientBackground,
     ],
     {
       w: 1280,

@@ -2,6 +2,7 @@ import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 import { convertUnderline, convertStrike } from "../textOptions.ts";
+import { toGradientFillProps } from "../utils/gradientFill.ts";
 
 type ShapePositionedNode = Extract<PositionedNode, { type: "shape" }>;
 
@@ -9,17 +10,22 @@ export function renderShapeNode(
   node: ShapePositionedNode,
   ctx: RenderContext,
 ): void {
+  let fill: Record<string, unknown> | undefined;
+  if (node.fillGradient) {
+    fill = toGradientFillProps(node.fillGradient);
+  } else if (node.fill) {
+    fill = {
+      color: node.fill.color,
+      transparency: node.fill.transparency,
+    };
+  }
+
   const shapeOptions = {
     x: pxToIn(node.x),
     y: pxToIn(node.y),
     w: pxToIn(node.w),
     h: pxToIn(node.h),
-    fill: node.fill
-      ? {
-          color: node.fill.color,
-          transparency: node.fill.transparency,
-        }
-      : undefined,
+    fill,
     line: node.line
       ? {
           color: node.line.color,

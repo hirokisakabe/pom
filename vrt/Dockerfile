@@ -18,6 +18,7 @@ WORKDIR /app
 
 # npm依存のインストール（BuildKitキャッシュマウント使用）
 COPY package*.json ./
+COPY patches/ ./patches/
 RUN --mount=type=cache,target=/root/.npm \
     npm ci
 

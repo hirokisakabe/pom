@@ -45,6 +45,7 @@
     "node": ">=18"
   },
   "scripts": {
+    "postinstall": "patch-package",
     "build": "tsc",
     "prepublishOnly": "npm run build && npm run lint && npm run fmt:check && npm run typecheck && npm run test:run",
     "fmt": "prettier --write .",
@@ -79,6 +80,7 @@
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
     "jiti": "2.6.1",
+    "patch-package": "^8.0.1",
     "pixelmatch": "7.1.0",
     "pngjs": "7.0.0",
     "prettier": "3.6.2",

@@ -23,7 +23,7 @@ Standard gap: 12-24px
 | hstack       | Horizontal   | children[], gap, alignItems, justifyContent                                        |
 | box          | Wrapper      | children (single node)                                                             |
 | table        | Table        | columns[], rows[], defaultRowHeight                                                |
-| shape        | Shape        | shapeType, fill, line, text, fontPx                                                |
+| shape        | Shape        | shapeType, fill, fillGradient, line, text, fontPx                                  |
 | chart        | Chart        | chartType(bar/line/pie/area/doughnut/radar), data[], showLegend, radarStyle        |
 | timeline     | Timeline     | direction(horizontal/vertical), items[]                                            |
 | matrix       | Matrix       | axes, quadrants, items[]                                                           |
@@ -39,6 +39,7 @@ Available for all nodes:
 - `w`, `h`: Size (number in px / `"max"` / `"50%"`)
 - `padding`: Margin (number or `{ top, right, bottom, left }`)
 - `backgroundColor`: Background color (6-digit hex, e.g., `"F8FAFC"`)
+- `backgroundGradient`: Linear gradient (`{ type: "linear", angle?, stops: [{ color, position }] }`)
 - `border`: Border (`{ color, width, dashType }`)
 - `borderRadius`: Corner radius in px (e.g., `8`, `16`)
 
@@ -191,6 +192,28 @@ Omitting column width (evenly distributed from table width):
 ```
 
 Common shapeTypes: `rect`, `roundRect`, `ellipse`, `triangle`, `star5`, `cloud`, `downArrow`
+
+#### 5b. Shape (with gradient fill)
+
+```json
+{
+  "type": "shape",
+  "shapeType": "roundRect",
+  "w": 300,
+  "h": 80,
+  "text": "Gradient button",
+  "fontPx": 16,
+  "fillGradient": {
+    "type": "linear",
+    "angle": 0,
+    "stops": [
+      { "color": "667EEA", "position": 0 },
+      { "color": "764BA2", "position": 100 }
+    ]
+  },
+  "color": "FFFFFF"
+}
+```
 
 #### 6. Chart
 

@@ -40,6 +40,21 @@ export const fillStyleSchema = z.object({
   transparency: z.number().optional(),
 });
 
+// ===== Gradient Types =====
+export const gradientStopSchema = z.object({
+  color: z.string(),
+  position: z.number().min(0).max(100),
+});
+
+export const gradientFillSchema = z.object({
+  type: z.literal("linear"),
+  angle: z.number().optional(),
+  stops: z.array(gradientStopSchema).min(2),
+});
+
+export type GradientStop = z.infer<typeof gradientStopSchema>;
+export type GradientFill = z.infer<typeof gradientFillSchema>;
+
 export const shadowStyleSchema = z.object({
   type: z.enum(["outer", "inner"]).optional(),
   opacity: z.number().optional(),
@@ -322,6 +337,7 @@ const basePOMNodeSchema = z.object({
   maxH: z.number().optional(),
   padding: paddingSchema.optional(),
   backgroundColor: z.string().optional(),
+  backgroundGradient: gradientFillSchema.optional(),
   border: borderStyleSchema.optional(),
   borderRadius: z.number().optional(),
 });
@@ -393,6 +409,7 @@ export const shapeNodeSchema = basePOMNodeSchema.extend({
   shapeType: shapeTypeSchema,
   text: z.string().optional(),
   fill: fillStyleSchema.optional(),
+  fillGradient: gradientFillSchema.optional(),
   line: borderStyleSchema.optional(),
   shadow: shadowStyleSchema.optional(),
   fontPx: z.number().optional(),
@@ -924,6 +941,7 @@ export const slideMasterBackgroundSchema = z.union([
   z.object({ color: z.string() }),
   z.object({ path: z.string() }),
   z.object({ data: z.string() }),
+  z.object({ gradient: gradientFillSchema }),
 ]);
 
 export const slideMasterMarginSchema = z.union([
