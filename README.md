@@ -78,6 +78,120 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 
 For detailed node documentation, see [Nodes Reference](./docs/nodes.md).
 
+## Components
+
+pom provides a `defineComponent` helper for creating reusable component templates. Components are simple functions that take props and return a `POMNode` — no runtime magic, no new node types.
+
+```typescript
+import { defineComponent, mergeTheme, POMNode, Theme } from "@hirokisakabe/pom";
+
+// Define a reusable card component
+const SectionCard = defineComponent<{
+  title: string;
+  content: POMNode; // Slot: any POMNode
+  theme?: Partial<Theme>; // Theme override
+}>((props) => {
+  const t = mergeTheme(props.theme);
+  return {
+    type: "box",
+    padding: t.spacing.md,
+    backgroundColor: "FFFFFF",
+    border: { color: t.colors.border, width: 1 },
+    borderRadius: 8,
+    children: {
+      type: "vstack",
+      gap: t.spacing.sm,
+      children: [
+        {
+          type: "text",
+          text: props.title,
+          fontPx: t.fontPx.heading,
+          bold: true,
+        },
+        props.content,
+      ],
+    },
+  };
+});
+
+// Use the component
+const slide: POMNode = {
+  type: "vstack",
+  w: 1280,
+  h: 720,
+  padding: 48,
+  gap: 24,
+  children: [
+    SectionCard({
+      title: "Revenue",
+      content: { type: "text", text: "$1,000,000" },
+    }),
+    SectionCard({
+      title: "Custom Theme",
+      content: { type: "text", text: "Styled card" },
+      theme: { colors: { border: "CBD5E1" } },
+    }),
+  ],
+};
+```
+
+Components support:
+
+- **Slots**: Pass `POMNode` or `POMNode[]` as props for content injection
+- **Theme**: Use `mergeTheme()` for colors, spacing, and font size overrides
+- **Nesting**: Components can call other components
+- **JSON / LLM**: Use `expandComponents()` to resolve component references in JSON
+
+### Using Components with LLM-generated JSON
+
+When an LLM outputs JSON containing `{ type: "component", name: "...", props: {...} }`, use `expandComponentSlides()` to resolve them before building:
+
+```typescript
+import {
+  buildPptx,
+  defineComponent,
+  expandComponentSlides,
+} from "@hirokisakabe/pom";
+
+// Register components
+const SectionCard = defineComponent<{ title: string; content: unknown }>(
+  (props) => ({
+    type: "box",
+    padding: 16,
+    children: {
+      type: "vstack",
+      gap: 8,
+      children: [
+        { type: "text", text: props.title, bold: true },
+        props.content,
+      ],
+    },
+  }),
+);
+
+const registry = { SectionCard };
+
+// LLM output (JSON with component references)
+const llmOutput = [
+  {
+    type: "vstack",
+    w: 1280,
+    h: 720,
+    children: [
+      {
+        type: "component",
+        name: "SectionCard",
+        props: { title: "KPI", content: { type: "text", text: "$1M" } },
+      },
+    ],
+  },
+];
+
+// Expand → Build
+const slides = expandComponentSlides(llmOutput, registry);
+const pptx = await buildPptx(slides, { w: 1280, h: 720 });
+```
+
 ## Documentation
 
 | Document                                        | Description                             |
@@ -86,6 +200,7 @@ For detailed node documentation, see [Nodes Reference](./docs/nodes.md).
 | [Master Slide](./docs/master-slide.md)          | Headers, footers, and page numbers      |
 | [Serverless Environments](./docs/serverless.md) | Text measurement options for serverless |
 | [LLM Integration](./docs/llm-integration.md)    | Guide for generating slides with AI/LLM |
+| [Components](./docs/nodes.md#components)        | Reusable component templates            |
 
 ## License
 

@@ -55,6 +55,11 @@ function collectImageSources(node: POMNode): string[] {
   const sources: string[] = [];
 
   function traverse(n: POMNode) {
+    // backgroundImage の src を収集（全ノード共通）
+    if (n.backgroundImage) {
+      sources.push(n.backgroundImage.src);
+    }
+
     if (n.type === "image") {
       sources.push(n.src);
     } else if (n.type === "box") {

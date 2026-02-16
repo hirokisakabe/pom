@@ -78,7 +78,11 @@ const pptx = await buildPptx(
 ```typescript
 type SlideMasterOptions = {
   title?: string; // Master slide name (auto-generated if omitted)
-  background?: { color: string } | { path: string } | { data: string };
+  background?:
+    | { color: string }
+    | { path: string }
+    | { data: string }
+    | { image: string };
   margin?:
     | number
     | { top?: number; right?: number; bottom?: number; left?: number };
@@ -169,6 +173,11 @@ background: {
 // Base64-encoded image
 background: {
   data: "data:image/png;base64,...";
+}
+
+// Image from URL or file path
+background: {
+  image: "https://example.com/cover.jpg";
 }
 ```
 

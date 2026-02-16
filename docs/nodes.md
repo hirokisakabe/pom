@@ -2,6 +2,200 @@
 
 This document provides a complete reference for all node types available in pom.
 
+## Components
+
+pom provides `defineComponent` for creating reusable templates. Components are plain functions — they expand to `POMNode` at call time with no impact on the rendering pipeline.
+
+### defineComponent
+
+```typescript
+import { defineComponent, POMNode } from "@hirokisakabe/pom";
+
+const Card = defineComponent<{
+  title: string;
+  content: POMNode;
+}>((props) => ({
+  type: "box",
+  padding: 16,
+  backgroundColor: "FFFFFF",
+  border: { color: "E2E8F0", width: 1 },
+  borderRadius: 8,
+  children: {
+    type: "vstack",
+    gap: 8,
+    children: [
+      { type: "text", text: props.title, fontPx: 18, bold: true },
+      props.content,
+    ],
+  },
+}));
+
+// Usage
+const node = Card({ title: "Hello", content: { type: "text", text: "World" } });
+```
+
+### Slots
+
+Pass `POMNode` or `POMNode[]` as props to inject content into specific positions:
+
+```typescript
+const PageLayout = defineComponent<{
+  title: POMNode;
+  content: POMNode[];
+  sidebar?: POMNode;
+}>((props) => ({
+  type: "vstack",
+  w: 1280,
+  h: 720,
+  padding: 48,
+  gap: 24,
+  children: [
+    props.title,
+    {
+      type: "hstack",
+      gap: 24,
+      children: [
+        {
+          type: "vstack",
+          w: props.sidebar ? "70%" : "100%",
+          gap: 16,
+          children: props.content,
+        },
+        ...(props.sidebar ? [props.sidebar] : []),
+      ],
+    },
+  ],
+}));
+```
+
+### Theme
+
+Use `Theme` type and `mergeTheme()` to apply consistent styling across components:
+
+```typescript
+import { defineComponent, mergeTheme, Theme } from "@hirokisakabe/pom";
+
+const StyledCard = defineComponent<{
+  title: string;
+  theme?: Partial<Theme>;
+}>((props) => {
+  const t = mergeTheme(props.theme);
+  return {
+    type: "box",
+    padding: t.spacing.md,
+    backgroundColor: t.colors.background,
+    children: {
+      type: "text",
+      text: props.title,
+      fontPx: t.fontPx.heading,
+      color: t.colors.text,
+    },
+  };
+});
+
+// Override specific theme values
+StyledCard({ title: "Custom", theme: { colors: { primary: "FF0000" } } });
+```
+
+**Theme properties:**
+
+| Category  | Keys                                                 | Defaults                                                   |
+| --------- | ---------------------------------------------------- | ---------------------------------------------------------- |
+| `colors`  | primary, secondary, background, text, border, accent | `1D4ED8`, `64748B`, `F8FAFC`, `1E293B`, `E2E8F0`, `0EA5E9` |
+| `spacing` | xs, sm, md, lg, xl                                   | `4`, `8`, `16`, `24`, `48`                                 |
+| `fontPx`  | title, heading, body, caption                        | `32`, `20`, `14`, `11`                                     |
+
+### Nesting Components
+
+Components can call other components:
+
+```typescript
+const Badge = defineComponent<{ label: string }>((props) => ({
+  type: "text",
+  text: props.label,
+  fontPx: 12,
+  bold: true,
+}));
+
+const CardWithBadge = defineComponent<{ title: string; badge: string }>(
+  (props) => ({
+    type: "hstack",
+    gap: 8,
+    children: [
+      Badge({ label: props.badge }),
+      { type: "text", text: props.title },
+    ],
+  }),
+);
+```
+
+### Using Components with JSON (LLM Integration)
+
+When an LLM outputs JSON, it can reference registered components using `{ type: "component", name: "...", props: {...} }`. Use `expandComponents()` or `expandComponentSlides()` to resolve them before passing to `buildPptx()`.
+
+```typescript
+import {
+  buildPptx,
+  defineComponent,
+  expandComponentSlides,
+} from "@hirokisakabe/pom";
+
+// Define and register components
+const SectionCard = defineComponent<{ title: string; content: unknown }>(
+  (props) => ({
+    type: "box",
+    padding: 16,
+    children: {
+      type: "vstack",
+      gap: 8,
+      children: [
+        { type: "text", text: props.title, bold: true },
+        props.content,
+      ],
+    },
+  }),
+);
+
+const registry = { SectionCard };
+
+// LLM outputs JSON with component references
+const llmOutput = [
+  {
+    type: "vstack",
+    w: 1280,
+    h: 720,
+    children: [
+      {
+        type: "component",
+        name: "SectionCard",
+        props: { title: "KPI", content: { type: "text", text: "$1M" } },
+      },
+    ],
+  },
+];
+
+// Expand components, then build
+const slides = expandComponentSlides(llmOutput, registry);
+const pptx = await buildPptx(slides, { w: 1280, h: 720 });
+```
+
+**Component node format:**
+
+```json
+{
+  "type": "component",
+  "name": "ComponentName",
+  "props": {
+    "title": "...",
+    "content": { "type": "text", "text": "..." }
+  }
+}
+```
+
+- `name`: Must match a key in the component registry
+- `props`: Passed to the component function. Props can contain POMNode objects (slots) or nested component references
+- Component references in props are recursively expanded before the component function is called
+
 ## Common Properties
 
 Layout attributes that all nodes can have.
@@ -24,19 +218,26 @@ Layout attributes that all nodes can have.
       position: number;   // Position (0-100)
     }>;
   };
+  backgroundImage?: {
+    src: string;
+    sizing?: "cover" | "contain";
+  };
   border?: {
     color?: string;
     width?: number;
     dashType?: "solid" | "dash" | "dashDot" | "lgDash" | "lgDashDot" | "lgDashDotDot" | "sysDash" | "sysDot";
   };
   borderRadius?: number;
+  opacity?: number;
 }
 ```
 
 - `backgroundColor` applies a fill to the entire node (e.g., `"F8F9FA"`).
 - `backgroundGradient` applies a linear gradient fill. When both `backgroundColor` and `backgroundGradient` are specified, `backgroundGradient` takes priority.
+- `backgroundImage` sets a background image on the node. `src` accepts a URL or local file path. `sizing` controls how the image fits: `"cover"` (default) fills the area, `"contain"` fits within the area.
 - `border.width` is specified in px and can be combined with color and `dashType` to control the border.
 - `borderRadius` specifies the corner radius in px. When specified, the background/border shape becomes a rounded rectangle.
+- `opacity` specifies the transparency of the background color (0 = fully transparent, 1 = fully opaque). Useful for semi-transparent overlays with Layer nodes.
 
 ## Node List
 
@@ -153,6 +354,14 @@ A node for displaying images.
     h?: number;   // Sizing height (defaults to node height)
     x?: number;   // Crop X offset (crop only)
     y?: number;   // Crop Y offset (crop only)
+  };
+  shadow?: {
+    type: "outer" | "inner";
+    opacity?: number;
+    blur?: number;
+    angle?: number;
+    offset?: number;
+    color?: string;
   };
 
   // Common properties
@@ -273,6 +482,14 @@ A generic container that wraps a single child element.
 {
   type: "box";
   children: POMNode;
+  shadow?: {
+    type: "outer" | "inner";
+    opacity?: number;
+    blur?: number;
+    angle?: number;
+    offset?: number;
+    color?: string;
+  };
 
   // Common properties
   w?: number | "max" | `${number}%`;

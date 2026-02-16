@@ -51,9 +51,11 @@ import {
   lineArrowSchema,
   underlineSchema,
   gradientFillSchema,
+  backgroundImageSchema,
   type AlignItems,
   type JustifyContent,
   type TreeDataItem,
+  type ShadowStyle,
 } from "./types.ts";
 
 // ===== Base Node Schema =====
@@ -67,8 +69,10 @@ export const inputBaseNodeSchema = z.object({
   padding: paddingSchema.optional(),
   backgroundColor: z.string().optional(),
   backgroundGradient: gradientFillSchema.optional(),
+  backgroundImage: backgroundImageSchema.optional(),
   border: borderStyleSchema.optional(),
   borderRadius: z.number().optional(),
+  opacity: z.number().min(0).max(1).optional(),
 });
 
 type InputBaseNode = z.infer<typeof inputBaseNodeSchema>;
@@ -102,6 +106,7 @@ export const inputImageNodeSchema = inputBaseNodeSchema.extend({
   type: z.literal("image"),
   src: z.string(),
   sizing: inputImageSizingSchema.optional(),
+  shadow: shadowStyleSchema.optional(),
 });
 
 export const inputTableNodeSchema = inputBaseNodeSchema.extend({
@@ -229,6 +234,7 @@ export type InputLineNode = z.infer<typeof inputLineNodeSchema>;
 export type InputBoxNode = InputBaseNode & {
   type: "box";
   children: InputPOMNode;
+  shadow?: ShadowStyle;
 };
 
 export type InputVStackNode = InputBaseNode & {
@@ -279,6 +285,7 @@ export type InputPOMNode =
 const inputBoxNodeSchemaBase = inputBaseNodeSchema.extend({
   type: z.literal("box"),
   children: z.lazy(() => inputPomNodeSchema),
+  shadow: shadowStyleSchema.optional(),
 });
 
 const inputVStackNodeSchemaBase = inputBaseNodeSchema.extend({
@@ -427,6 +434,7 @@ export const inputSlideMasterBackgroundSchema = z.union([
   z.object({ path: z.string() }),
   z.object({ data: z.string() }),
   z.object({ gradient: gradientFillSchema }),
+  z.object({ image: z.string() }),
 ]);
 
 export const inputSlideMasterMarginSchema = z.union([

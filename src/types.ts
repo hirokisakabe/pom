@@ -326,6 +326,17 @@ export type ShapeType = z.infer<typeof shapeTypeSchema>;
 export type UnderlineStyle = z.infer<typeof underlineStyleSchema>;
 export type Underline = z.infer<typeof underlineSchema>;
 
+// ===== Background Image =====
+export const backgroundImageSizingSchema = z.enum(["cover", "contain"]);
+
+export const backgroundImageSchema = z.object({
+  src: z.string(),
+  sizing: backgroundImageSizingSchema.optional(),
+});
+
+export type BackgroundImageSizing = z.infer<typeof backgroundImageSizingSchema>;
+export type BackgroundImage = z.infer<typeof backgroundImageSchema>;
+
 // ===== Base Node =====
 const basePOMNodeSchema = z.object({
   yogaNode: z.custom<YogaNode>().optional(),
@@ -338,8 +349,10 @@ const basePOMNodeSchema = z.object({
   padding: paddingSchema.optional(),
   backgroundColor: z.string().optional(),
   backgroundGradient: gradientFillSchema.optional(),
+  backgroundImage: backgroundImageSchema.optional(),
   border: borderStyleSchema.optional(),
   borderRadius: z.number().optional(),
+  opacity: z.number().min(0).max(1).optional(),
 });
 
 type BasePOMNode = z.infer<typeof basePOMNodeSchema>;
@@ -373,6 +386,7 @@ export const imageNodeSchema = basePOMNodeSchema.extend({
   type: z.literal("image"),
   src: z.string(),
   sizing: imageSizingSchema.optional(),
+  shadow: shadowStyleSchema.optional(),
 });
 
 export const tableCellSchema = z.object({
@@ -689,6 +703,7 @@ export type LineNode = z.infer<typeof lineNodeSchema>;
 export type BoxNode = BasePOMNode & {
   type: "box";
   children: POMNode;
+  shadow?: ShadowStyle;
 };
 
 export type VStackNode = BasePOMNode & {
@@ -739,6 +754,7 @@ export type POMNode =
 const boxNodeSchemaBase = basePOMNodeSchema.extend({
   type: z.literal("box"),
   children: z.lazy(() => pomNodeSchema),
+  shadow: shadowStyleSchema.optional(),
 });
 
 const vStackNodeSchemaBase = basePOMNodeSchema.extend({
@@ -942,6 +958,7 @@ export const slideMasterBackgroundSchema = z.union([
   z.object({ path: z.string() }),
   z.object({ data: z.string() }),
   z.object({ gradient: gradientFillSchema }),
+  z.object({ image: z.string() }),
 ]);
 
 export const slideMasterMarginSchema = z.union([

@@ -27,6 +27,7 @@ import type {
 import type { RenderContext } from "./types.ts";
 import { pxToIn, pxToPt } from "./units.ts";
 import { convertUnderline, convertStrike } from "./textOptions.ts";
+import { getImageData } from "../calcYogaLayout/measureImage.ts";
 import { renderBackgroundAndBorder } from "./utils/backgroundBorder.ts";
 import { toGradientFillProps } from "./utils/gradientFill.ts";
 import {
@@ -162,6 +163,8 @@ function defineSlideMasterFromOptions(
         master.background.gradient,
       ) as any;
       /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
+    } else if ("image" in master.background) {
+      masterProps.background = { path: master.background.image };
     }
   }
 
@@ -235,17 +238,34 @@ export function renderPptx(
     // ルートノードの backgroundColor / backgroundGradient はスライドの background プロパティとして適用
     // これにより、マスタースライドのオブジェクトを覆い隠さない
     // line ノードは backgroundColor を持たないためスキップ
+    // ただし opacity が指定されている場合は slide.background では透過を表現できないため、
+    // renderBackgroundAndBorder で描画する
     const rootBackgroundColor =
       data.type !== "line" ? data.backgroundColor : undefined;
     const rootBackgroundGradient =
       data.type !== "line" && "backgroundGradient" in data
         ? data.backgroundGradient
         : undefined;
+    const rootHasOpacity =
+      data.type !== "line" && "opacity" in data && data.opacity !== undefined;
     if (rootBackgroundGradient) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
       slide.background = toGradientFillProps(rootBackgroundGradient) as any;
-    } else if (rootBackgroundColor) {
+    } else if (rootBackgroundColor && !rootHasOpacity) {
       slide.background = { color: rootBackgroundColor };
+    }
+
+    // ルートノードの backgroundImage はスライドの background プロパティとして適用
+    // backgroundColor と backgroundImage の両方がある場合、backgroundImage が優先
+    const rootBackgroundImage =
+      data.type !== "line" ? data.backgroundImage : undefined;
+    if (rootBackgroundImage) {
+      const cachedData = getImageData(rootBackgroundImage.src);
+      if (cachedData) {
+        slide.background = { data: cachedData };
+      } else {
+        slide.background = { path: rootBackgroundImage.src };
+      }
     }
 
     /**
@@ -255,9 +275,15 @@ export function renderPptx(
     function renderNode(node: PositionedNode, isRoot = false) {
       // line ノードは backgroundColor/border を持たないため、background/border の描画をスキップ
       if (node.type !== "line") {
-        // ルートノードの backgroundColor / backgroundGradient は既に slide.background に適用済みなのでスキップ
-        if (isRoot && (rootBackgroundColor || rootBackgroundGradient)) {
-          // border のみ描画（backgroundColor はスキップ）
+        // ルートノードの backgroundColor/backgroundGradient/backgroundImage は既に slide.background に適用済みなのでスキップ
+        // ただし opacity がある場合は slide.background では透過を表現できないため通常描画
+        if (
+          isRoot &&
+          (rootBackgroundGradient ||
+            rootBackgroundImage ||
+            (rootBackgroundColor && !rootHasOpacity))
+        ) {
+          // border のみ描画（backgroundColor/backgroundGradient/backgroundImage はスキップ）
           const { border, borderRadius } = node;
           const hasBorder = Boolean(
             border &&

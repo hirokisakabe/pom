@@ -1,5 +1,23 @@
 # @hirokisakabe/pom
 
+## 1.2.0
+
+### Minor Changes
+
+- [#183](https://github.com/hirokisakabe/pom/pull/183) [`55a2950`](https://github.com/hirokisakabe/pom/commit/55a295092e9519b501cc26ab3b81b817eb08d93a) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - feat: 画像に sizing 機能（contain/cover/crop）を追加
+
+- [#181](https://github.com/hirokisakabe/pom/pull/181) [`c6f4b37`](https://github.com/hirokisakabe/pom/commit/c6f4b3747d28bf955736d61a12f1e8c0fe9c2c71) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - feat: テキストに italic、underline、strike、highlight プロパティを追加
+
+  TextNode、TableCell、ShapeNode、ProcessArrowNode、MasterTextObject でテキストスタイルの装飾が可能に。
+
+- [#185](https://github.com/hirokisakabe/pom/pull/185) [`75eb6a0`](https://github.com/hirokisakabe/pom/commit/75eb6a0356eb78f33bd9acfd505f48ff4cc66e97) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - feat: コンポーネント/テンプレート機構を追加（defineComponent, Theme, mergeTheme）
+
+### Patch Changes
+
+- [#184](https://github.com/hirokisakabe/pom/pull/184) [`dd1e0cd`](https://github.com/hirokisakabe/pom/commit/dd1e0cda340abf8ebfc1a76f67c0a4ce0824bfd5) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - fix: HStack内のテーブルで幅が正しく計算されない問題を修正
+
+  HStackの子要素に対する均等分割（flexGrow: 1, flexBasis: 0）がテーブルノードにも適用されていた問題を修正。テーブルはsetMeasureFuncでカラム幅合計を返すため、均等分割の対象から除外。
+
 ## 1.1.3
 
 ### Patch Changes

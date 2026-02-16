@@ -13,6 +13,16 @@ export function renderImageNode(
     y: pxToIn(node.y),
     w: pxToIn(node.w),
     h: pxToIn(node.h),
+    shadow: node.shadow
+      ? {
+          type: node.shadow.type,
+          opacity: node.shadow.opacity,
+          blur: node.shadow.blur,
+          angle: node.shadow.angle,
+          offset: node.shadow.offset,
+          color: node.shadow.color,
+        }
+      : undefined,
   };
 
   if (node.sizing) {
