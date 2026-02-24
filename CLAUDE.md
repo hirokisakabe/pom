@@ -29,6 +29,7 @@ src/
 ├── index.ts              # 公開API
 ├── types.ts              # 型定義
 ├── inputSchema.ts        # LLM用入力スキーマ（Zod）
+├── parseJsx.ts           # JSX文字列パーサー（LLM出力用）
 ├── buildPptx.ts          # メイン処理（3段階パイプライン）
 ├── calcYogaLayout/       # レイアウト計算（yoga-layout）
 ├── toPositioned/         # 絶対座標変換
@@ -76,6 +77,14 @@ PPTX 生成は3段階のパイプライン:
 
 - `inputPomNodeSchema` - メインの入力スキーマ
 - `inputSlideMasterOptionsSchema` - スライドマスター設定用
+
+### JSX 入力（LLM連携用）
+
+`parseJsx.ts` に JSX 文字列パーサーを定義。LLM が生成した JSX をパースして POMNode に変換。
+
+- `parseJsx(jsx: string) → POMNode[]` - JSX 文字列を POMNode 配列に変換
+- `ParseJsxError` - パースエラー（行・列情報付き）
+- 全ノード型を PascalCase の JSX コンポーネントとしてサポート（VStack, HStack, Text 等）
 
 ### 単位変換
 

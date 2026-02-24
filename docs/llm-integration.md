@@ -453,6 +453,121 @@ const slides = expandComponentSlides(llmOutput, registry);
 const pptx = await buildPptx(slides, { w: 1280, h: 720 });
 ```
 
+## JSX Input
+
+In addition to JSON (structured output), pom supports JSX strings as an LLM output format. JSX is more token-efficient and leverages LLMs' familiarity with React/JSX syntax.
+
+### Pipeline
+
+```
+LLM → JSX string → parseJsx() → POMNode[] → buildPptx()
+LLM → JSON (structured output) → Zod validate → POMNode → buildPptx() (existing)
+```
+
+### Usage
+
+```typescript
+import { parseJsx, buildPptx } from "@hirokisakabe/pom";
+
+const jsxFromLLM = `
+  <VStack gap={16} padding={32}>
+    <Text fontPx={32} bold>Sales Report</Text>
+    <HStack gap={16}>
+      <Chart chartType="bar" w={400} h={300}
+        data={[{ name: "Q1", labels: ["Jan","Feb","Mar"], values: [100,120,90] }]}
+      />
+      <Text fontPx={18} color="00AA00">+15% YoY</Text>
+    </HStack>
+  </VStack>
+`;
+
+const nodes = parseJsx(jsxFromLLM);
+const pptx = await buildPptx(nodes, { w: 1280, h: 720 });
+await pptx.writeFile({ fileName: "report.pptx" });
+```
+
+### Component Mapping
+
+| JSX Component    | POM Node type  |
+| ---------------- | -------------- |
+| `<VStack>`       | `vstack`       |
+| `<HStack>`       | `hstack`       |
+| `<Box>`          | `box`          |
+| `<Text>`         | `text`         |
+| `<Image>`        | `image`        |
+| `<Table>`        | `table`        |
+| `<Shape>`        | `shape`        |
+| `<Chart>`        | `chart`        |
+| `<Timeline>`     | `timeline`     |
+| `<Matrix>`       | `matrix`       |
+| `<Tree>`         | `tree`         |
+| `<Flow>`         | `flow`         |
+| `<ProcessArrow>` | `processArrow` |
+| `<Line>`         | `line`         |
+| `<Layer>`        | `layer`        |
+
+### Props Syntax
+
+| Syntax                | Evaluated To                   | Example                                   |
+| --------------------- | ------------------------------ | ----------------------------------------- |
+| `prop="value"`        | String                         | `color="00AA00"`                          |
+| `prop={123}`          | Number                         | `fontPx={32}`                             |
+| `prop`                | Boolean `true`                 | `bold`                                    |
+| `prop={true/false}`   | Boolean                        | `showLegend={false}`                      |
+| `prop={[...]}`        | Array                          | `data={[{ labels: ["A"], values: [1] }]}` |
+| `prop={{ key: val }}` | Object                         | `border={{ color: "000", width: 1 }}`     |
+| Children text         | `text` property (for `<Text>`) | `<Text>Hello</Text>` → `text: "Hello"`    |
+
+### JSX vs JSON Comparison
+
+**JSON (198 tokens):**
+
+```json
+{
+  "type": "vstack",
+  "gap": 16,
+  "padding": 32,
+  "children": [
+    { "type": "text", "text": "Title", "fontPx": 32, "bold": true },
+    { "type": "text", "text": "Subtitle", "fontPx": 18, "color": "666666" }
+  ]
+}
+```
+
+**JSX (fewer tokens):**
+
+```jsx
+<VStack gap={16} padding={32}>
+  <Text fontPx={32} bold>
+    Title
+  </Text>
+  <Text fontPx={18} color="666666">
+    Subtitle
+  </Text>
+</VStack>
+```
+
+### Error Handling
+
+`parseJsx()` throws `ParseJsxError` with line/column info for:
+
+- Invalid JSX syntax
+- Unknown component names
+- Unsupported expression types (e.g., function calls, arithmetic)
+
+```typescript
+import { parseJsx, ParseJsxError } from "@hirokisakabe/pom";
+
+try {
+  const nodes = parseJsx(llmOutput);
+  const pptx = await buildPptx(nodes, { w: 1280, h: 720 });
+} catch (e) {
+  if (e instanceof ParseJsxError) {
+    console.error(`Parse error at line ${e.line}: ${e.message}`);
+  }
+}
+```
+
 ### Important Notes
 
 | NG                       | OK                | Description                             |

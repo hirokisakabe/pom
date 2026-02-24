@@ -57,6 +57,7 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 - **Pixel Units**: Intuitive pixel-based sizing (internally converted to inches)
 - **Master Slide**: Automatically insert common headers, footers, and page numbers across all pages
 - **AI Friendly**: Simple structure that makes it easy for LLMs to generate code
+- **JSX Input**: Parse JSX strings from LLMs with `parseJsx()` for more token-efficient output
 
 ## Available Nodes
 
@@ -191,6 +192,34 @@ const llmOutput = [
 const slides = expandComponentSlides(llmOutput, registry);
 const pptx = await buildPptx(slides, { w: 1280, h: 720 });
 ```
+
+## JSX Input
+
+In addition to JSON, pom supports JSX strings as input format. This is useful for LLM output because JSX is more token-efficient and natural for tree structures.
+
+```typescript
+import { parseJsx, buildPptx } from "@hirokisakabe/pom";
+
+const jsx = `
+  <VStack gap={16} padding={32}>
+    <Text fontPx={32} bold>Sales Report</Text>
+    <HStack gap={16}>
+      <Chart chartType="bar" w={400} h={300}
+        data={[{ name: "Q1", labels: ["Jan","Feb","Mar"], values: [100,120,90] }]}
+      />
+      <Text fontPx={18} color="00AA00">+15% YoY</Text>
+    </HStack>
+  </VStack>
+`;
+
+const nodes = parseJsx(jsx);
+const pptx = await buildPptx(nodes, { w: 1280, h: 720 });
+await pptx.writeFile({ fileName: "report.pptx" });
+```
+
+All POM node types are available as JSX components with PascalCase names: `<VStack>`, `<HStack>`, `<Box>`, `<Text>`, `<Image>`, `<Table>`, `<Shape>`, `<Chart>`, `<Timeline>`, `<Matrix>`, `<Tree>`, `<Flow>`, `<ProcessArrow>`, `<Line>`, `<Layer>`.
+
+For details, see [LLM Integration](./docs/llm-integration.md#jsx-input).
 
 ## Documentation
 

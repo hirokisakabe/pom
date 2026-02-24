@@ -1,4 +1,4 @@
-import { POMNode, buildPptx } from "../../src";
+import { POMNode, buildPptx, parseJsx } from "../../src";
 
 const palette = {
   background: "F8FAFC",
@@ -4390,6 +4390,57 @@ const page20BackgroundImage: POMNode = {
   ],
 };
 
+// ============================================================
+// Page 21: JSX Input Test
+// テスト対象: parseJsx によるJSX文字列からPOMNodeへの変換
+// ============================================================
+const page21JsxInput: POMNode = parseJsx(`
+  <VStack w="100%" h="max" padding={48} gap={20} alignItems="stretch" backgroundColor="${palette.background}">
+    <Text fontPx={28} color="${palette.charcoal}" bold>Page 21: JSX Input Test</Text>
+
+    <HStack gap={16} alignItems="stretch">
+      <Box padding={16} backgroundColor="FFFFFF" border={{ color: "${palette.border}", width: 1 }} w="50%">
+        <VStack gap={8}>
+          <Text fontPx={14} bold color="${palette.navy}">Text Nodes (from JSX)</Text>
+          <Text fontPx={24} color="${palette.blue}" bold>Bold Title</Text>
+          <Text fontPx={16} color="${palette.charcoal}" italic>Italic description text</Text>
+          <Text fontPx={14} color="${palette.accent}">Colored accent text</Text>
+        </VStack>
+      </Box>
+
+      <Box padding={16} backgroundColor="FFFFFF" border={{ color: "${palette.border}", width: 1 }} w="50%">
+        <VStack gap={8}>
+          <Text fontPx={14} bold color="${palette.navy}">Shape (from JSX)</Text>
+          <Shape shapeType="roundRect" w={200} h={80} text="JSX Shape" fill={{ color: "${palette.blue}" }} color="FFFFFF" fontPx={16} bold />
+          <Shape shapeType="ellipse" w={120} h={120} text="Circle" fill={{ color: "${palette.accent}" }} color="FFFFFF" fontPx={14} />
+        </VStack>
+      </Box>
+    </HStack>
+
+    <Box padding={16} backgroundColor="FFFFFF" border={{ color: "${palette.border}", width: 1 }}>
+      <HStack gap={16} alignItems="stretch">
+        <Chart chartType="bar" w={350} h={200}
+          data={[{ name: "Sales", labels: ["Q1","Q2","Q3","Q4"], values: [120,150,180,200] }]}
+          showLegend
+          chartColors={["${palette.blue}"]}
+        />
+        <VStack gap={8} w={300}>
+          <Text fontPx={14} bold color="${palette.navy}">Chart + Layout (from JSX)</Text>
+          <Text fontPx={12} color="${palette.charcoal}">This entire page is generated from a JSX string parsed by parseJsx()</Text>
+          <ProcessArrow w={280} h={60}
+            steps={[
+              { label: "JSX", color: "${palette.blue}" },
+              { label: "Parse", color: "${palette.accent}" },
+              { label: "POMNode", color: "${palette.green}" }
+            ]}
+            fontPx={11}
+          />
+        </VStack>
+      </HStack>
+    </Box>
+  </VStack>
+`)[0];
+
 export async function generatePptx(outputPath: string): Promise<void> {
   const pptx = await buildPptx(
     [
@@ -4414,6 +4465,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
       page18Opacity,
       page19Shadow,
       page20BackgroundImage,
+      page21JsxInput,
     ],
     {
       w: 1280,
