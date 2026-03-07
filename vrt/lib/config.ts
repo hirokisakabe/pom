@@ -38,6 +38,10 @@ export const PAGE_NAMES = [
   "22-composite-scale-to-fit",
   "23-table-colspan-rowspan",
   "24-pyramid",
+  "25-markdown-1",
+  "25-markdown-2",
+  "25-markdown-3",
+  "25-markdown-4",
 ] as const;
 
 export const THRESHOLD = 0.1;

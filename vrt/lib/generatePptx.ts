@@ -26,6 +26,7 @@ import {
   page22CompositeScaleToFitXml,
   page23TableColspanRowspanXml,
   page24PyramidXml,
+  page25MarkdownXml,
 } from "./slides/index.js";
 
 export async function generatePptx(outputPath: string): Promise<void> {
@@ -55,6 +56,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
     page22CompositeScaleToFitXml,
     page23TableColspanRowspanXml,
     page24PyramidXml,
+    page25MarkdownXml,
   ].join("\n");
 
   const pptx = await buildPptx(
