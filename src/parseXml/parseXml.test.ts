@@ -371,6 +371,18 @@ describe("parseXml", () => {
       });
     });
 
+    it("padding の object 変換（引用符なしキー）", () => {
+      const r = parseXml(
+        `<VStack padding='{top:24,bottom:24,left:32,right:32}'><Text>A</Text></VStack>`,
+      );
+      expect((r[0] as Record<string, unknown>).padding).toEqual({
+        top: 24,
+        bottom: 24,
+        left: 32,
+        right: 32,
+      });
+    });
+
     it("opacity を number に変換する", () => {
       const result = parseXml('<Text opacity="0.5">test</Text>');
       expect((result[0] as Record<string, unknown>).opacity).toBe(0.5);

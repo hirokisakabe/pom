@@ -353,6 +353,26 @@ function resolveZodTypeName(schema: z.ZodTypeAny): string {
   return getZodType(unwrapSchema(schema));
 }
 
+/**
+ * Normalize a relaxed JSON-like string so that unquoted keys become valid JSON.
+ * e.g. `{top:24,bottom:24}` → `{"top":24,"bottom":24}`
+ */
+function normalizeJsonLike(value: string): string {
+  return value.replace(/([{,]\s*)([a-zA-Z_]\w*)\s*:/g, '$1"$2":');
+}
+
+/**
+ * Try to parse a JSON string, normalizing unquoted keys if needed.
+ */
+function tryParseJson(value: string): unknown {
+  try {
+    return JSON.parse(value);
+  } catch {
+    const normalized = normalizeJsonLike(value);
+    return JSON.parse(normalized);
+  }
+}
+
 // ===== Value coercion =====
 // Returns { value, error } — if error is non-null, coercion failed.
 function coerceValue(
@@ -395,7 +415,7 @@ function coerceValue(
     case "record":
     case "tuple":
       try {
-        return { value: JSON.parse(value), error: null };
+        return { value: tryParseJson(value), error: null };
       } catch {
         return {
           value: undefined,
@@ -449,7 +469,7 @@ function coerceUnionValue(value: string, options: z.ZodTypeAny[]): unknown {
   ) {
     if (value.startsWith("{") || value.startsWith("[")) {
       try {
-        return JSON.parse(value);
+        return tryParseJson(value);
       } catch {
         /* ignore */
       }
@@ -467,7 +487,7 @@ function coerceFallback(value: string): unknown {
   if (value !== "" && !isNaN(num)) return num;
   if (value.startsWith("{") || value.startsWith("[")) {
     try {
-      return JSON.parse(value);
+      return tryParseJson(value);
     } catch {
       /* ignore */
     }
