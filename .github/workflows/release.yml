@@ -69,19 +69,3 @@ jobs:
         run: npx changeset publish
         env:
           NPM_CONFIG_PROVENANCE: true
-
-      - name: Update pom version in website
-        if: steps.changesets-check.outputs.has_changesets == 'false'
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          cd website
-          npm install @hirokisakabe/pom@$VERSION
-          if ! git diff --quiet -- package.json package-lock.json; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add package.json package-lock.json
-            git commit -m "chore: update @hirokisakabe/pom to v$VERSION [skip ci]"
-            git push origin HEAD:main
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
