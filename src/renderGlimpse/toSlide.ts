@@ -171,7 +171,7 @@ function makeDefaultBodyProperties(overrides?: {
     marginBottom: overrides?.marginBottom ?? asEmu(0),
     wrap: "square",
     autoFit: "noAutofit",
-    fontScale: 100,
+    fontScale: 1,
     lnSpcReduction: 0,
     numCol: 1,
     vert: "horz",
