@@ -18,6 +18,7 @@ export default defineConfig([
       "docs/**",
       "website/**",
       "packages/**",
+      "vendor/**",
       "eslint.config.mts",
       "vitest.config.ts",
       ".size-limit.js",

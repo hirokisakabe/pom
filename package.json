@@ -97,6 +97,7 @@
     "fast-xml-parser": "^5.3.7",
     "image-size": "2.0.2",
     "opentype.js": "^1.3.4",
+    "pptx-glimpse": "file:./vendor/pptx-glimpse",
     "pptxgenjs": "4.0.1",
     "yoga-layout": "3.2.1",
     "zod": "^4.3.6"

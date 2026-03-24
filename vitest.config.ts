@@ -4,7 +4,12 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    exclude: [...configDefaults.exclude, "website/**", "packages/**"],
+    exclude: [
+      ...configDefaults.exclude,
+      "website/**",
+      "packages/**",
+      "vendor/**",
+    ],
     coverage: {
       include: ["src/**/*.ts"],
       reporter: ["text", "html", "json", "json-summary"],
