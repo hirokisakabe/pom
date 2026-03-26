@@ -12,7 +12,7 @@ export default withNextra({
   outputFileTracingRoot: dirname(
     dirname(dirname(fileURLToPath(import.meta.url))),
   ),
-  serverExternalPackages: ["@resvg/resvg-js", "@hirokisakabe/pom"],
+  serverExternalPackages: ["@resvg/resvg-js"],
   webpack: (config, { isServer }) => {
     if (isServer) {
       // workspace リンクされた @hirokisakabe/pom は serverExternalPackages では
