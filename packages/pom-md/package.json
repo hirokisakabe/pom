@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
-    "@vitest/coverage-v8": "^4.1.1",
-    "typescript-eslint": "^8.47.0"
+    "@vitest/coverage-v8": "^4.1.2",
+    "typescript-eslint": "^8.58.0"
   }
 }

@@ -105,16 +105,16 @@
     "@hirokisakabe/pom": "workspace:*",
     "@hirokisakabe/pom-md": "workspace:*",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22",
+    "@types/node": "^25",
     "@types/vscode": "^1.85.0",
     "@vitest/coverage-v8": "^4.1.2",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.0.0",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.0",
     "mocha": "^11.7.5",
     "pptx-glimpse": "^0.10.2",
     "sharp": "^0.34.5",
-    "typescript-eslint": "^8.47.0"
+    "typescript-eslint": "^8.58.0"
   }
 }
