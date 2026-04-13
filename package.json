@@ -21,11 +21,11 @@
     "@changesets/cli": "^2.29.8",
     "@eslint/js": "^10.0.1",
     "eslint": "^10.2.0",
-    "globals": "^17.4.0",
+    "globals": "^17.5.0",
     "jiti": "^2.6.1",
-    "knip": "^6.3.0",
-    "prettier": "3.8.1",
+    "knip": "^6.4.1",
+    "prettier": "3.8.2",
     "typescript": "6.0.2",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.4"
   }
 }
