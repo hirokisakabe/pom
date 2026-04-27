@@ -93,16 +93,14 @@ const nodes: { name: string; image: StaticImageData }[] = [
 const codeExample = `import { buildPptx } from "@hirokisakabe/pom";
 
 const xml = \`
-<Slide>
-  <VStack w="100%" h="max" padding="48" gap="24">
-    <Text fontSize="48" bold="true">
-      Presentation Title
-    </Text>
-    <Text fontSize="24" color="666666">
-      Generated with pom
-    </Text>
-  </VStack>
-</Slide>
+<VStack w="100%" h="max" padding="48" gap="24" alignItems="start">
+  <Text fontSize="48" bold="true">
+    Presentation Title
+  </Text>
+  <Text fontSize="24" color="666666">
+    Generated with pom
+  </Text>
+</VStack>
 \`;
 
 const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
