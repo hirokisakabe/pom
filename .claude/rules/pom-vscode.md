@@ -24,6 +24,16 @@ Pipeline:
 
 To test locally: open `packages/pom-vscode` in VS Code and press F5 to launch Extension Development Host.
 
+### Documentation Symlinks
+
+`packages/pom-vscode/docs/` 配下にドキュメントファイルを追加・リネーム・削除した場合、`apps/website/content/pom-vscode/` 側にもファイル単位の symlink を追加・更新する。Next 16 / Turbopack はディレクトリ symlink を辿れないため、ファイルごとに symlink を張る方針を採用している。
+
+```bash
+# 新規ファイルを追加した場合の例
+cd apps/website/content/pom-vscode
+ln -s ../../../../packages/pom-vscode/docs/<new-file>.md <new-file>.md
+```
+
 ### Release Flow
 
 pom-vscode uses Changesets for versioning (`privatePackages` config). The release is handled by the unified `release.yml` workflow.

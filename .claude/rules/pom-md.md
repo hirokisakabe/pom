@@ -18,3 +18,13 @@ pnpm --filter @hirokisakabe/pom-md run test:run     # Run tests
 ```
 
 Pipeline: `Markdown → parseMd() → pom XML string → buildPptx() (core)`
+
+### Documentation Symlinks
+
+`packages/pom-md/docs/` 配下にドキュメントファイルを追加・リネーム・削除した場合、`apps/website/content/pom-md/` 側にもファイル単位の symlink を追加・更新する。Next 16 / Turbopack はディレクトリ symlink を辿れないため、ファイルごとに symlink を張る方針を採用している。
+
+```bash
+# 新規ファイルを追加した場合の例
+cd apps/website/content/pom-md
+ln -s ../../../../packages/pom-md/docs/<new-file>.md <new-file>.md
+```
