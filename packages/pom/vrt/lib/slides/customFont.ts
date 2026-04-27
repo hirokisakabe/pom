@@ -136,3 +136,54 @@ export const page34CustomFontWrapXml = `
   </HStack>
 </VStack>
 `;
+
+// ============================================================
+// Page 38: Custom Font Extended Test (Table / ProcessArrow / Pyramid / TextRun)
+// テスト対象: Table セル / ProcessArrow / Pyramid / TextRun の fontFamily 指定
+// ============================================================
+export const page38CustomFontExtendedXml = `
+<VStack w="100%" h="max" padding="40" gap="16" alignItems="stretch" backgroundColor="${palette.background}">
+  <Text fontSize="24" color="${palette.charcoal}" bold="true">Page 38: Font Extension</Text>
+  <!-- TextRun (Span) で fontFamily を切り替え -->
+  <VStack padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="8">
+    <Text fontSize="14" bold="true">TextRun fontFamily override:</Text>
+    <Text fontSize="16" fontFamily="Noto Sans JP">Default Noto Sans JP, <Span fontFamily="Arial">but this Span uses Arial</Span>, then back to Noto.</Text>
+    <Text fontSize="16" fontFamily="Arial">Default Arial, <Span fontFamily="Noto Sans JP">but this Span uses Noto</Span>, then back to Arial.</Text>
+  </VStack>
+  <!-- Table セルごとに fontFamily を指定 -->
+  <VStack padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="8">
+    <Text fontSize="14" bold="true">Table cell fontFamily:</Text>
+    <Table>
+      <Col width="160" />
+      <Col width="160" />
+      <Tr>
+        <Td bold="true" fontFamily="Arial" backgroundColor="${palette.lightBlue}">Arial Header</Td>
+        <Td bold="true" fontFamily="Noto Sans JP" backgroundColor="${palette.lightBlue}">Noto Header</Td>
+      </Tr>
+      <Tr>
+        <Td fontFamily="Arial">The quick brown fox</Td>
+        <Td fontFamily="Noto Sans JP">素早い茶色の狐</Td>
+      </Tr>
+    </Table>
+  </VStack>
+  <!-- ProcessArrow / Pyramid に fontFamily 指定 -->
+  <HStack gap="16" alignItems="stretch">
+    <VStack w="55%" padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="8">
+      <Text fontSize="14" bold="true">ProcessArrow with Arial:</Text>
+      <ProcessArrow direction="horizontal" w="100%" h="60" fontFamily="Arial">
+        <ProcessArrowStep label="Plan" color="4472C4" />
+        <ProcessArrowStep label="Build" color="70AD47" />
+        <ProcessArrowStep label="Ship" color="ED7D31" />
+      </ProcessArrow>
+    </VStack>
+    <VStack w="45%" padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="8">
+      <Text fontSize="14" bold="true">Pyramid with Arial:</Text>
+      <Pyramid direction="up" w="100%" h="120" fontFamily="Arial">
+        <PyramidLevel label="Vision" color="1D4ED8" />
+        <PyramidLevel label="Strategy" color="2563EB" />
+        <PyramidLevel label="Operations" color="3B82F6" />
+      </Pyramid>
+    </VStack>
+  </HStack>
+</VStack>
+`;

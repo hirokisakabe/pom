@@ -465,6 +465,7 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     underline: UNDERLINE_RULE,
     strike: "boolean",
     highlight: "string",
+    fontFamily: "string",
   },
   pyramid: {
     ...BASE_RULES,
@@ -472,6 +473,7 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     levels: "json",
     fontSize: "number",
     bold: "boolean",
+    fontFamily: "string",
   },
   line: {
     ...BASE_RULES,
@@ -569,6 +571,7 @@ export const CHILD_ELEMENT_COERCION_MAP: Record<
     underline: UNDERLINE_RULE,
     strike: "boolean",
     highlight: "string",
+    fontFamily: "string",
     textAlign: "string",
     backgroundColor: "string",
     colspan: "number",
@@ -587,5 +590,5 @@ export const CHILD_ELEMENT_COERCION_MAP: Record<
   },
   B: {},
   I: {},
-  Span: { color: "string" },
+  Span: { color: "string", fontFamily: "string" },
 };

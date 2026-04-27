@@ -395,6 +395,7 @@ type TextRunResult = {
   highlight?: string;
   color?: string;
   href?: string;
+  fontFamily?: string;
 };
 
 function extractTextRuns(
@@ -406,6 +407,7 @@ function extractTextRuns(
   inheritStrike?: boolean,
   inheritHighlight?: string,
   inheritColor?: string,
+  inheritFontFamily?: string,
 ): TextRunResult[] {
   const runs: TextRunResult[] = [];
   for (const child of children) {
@@ -418,6 +420,7 @@ function extractTextRuns(
       if (inheritHighlight) run.highlight = inheritHighlight;
       if (inheritColor) run.color = inheritColor;
       if (inheritHref) run.href = inheritHref;
+      if (inheritFontFamily) run.fontFamily = inheritFontFamily;
       runs.push(run);
     } else {
       const tag = getTagName(child);
@@ -433,6 +436,7 @@ function extractTextRuns(
             inheritStrike,
             inheritHighlight,
             inheritColor,
+            inheritFontFamily,
           ),
         );
       } else if (tag === "I") {
@@ -446,6 +450,7 @@ function extractTextRuns(
             inheritStrike,
             inheritHighlight,
             inheritColor,
+            inheritFontFamily,
           ),
         );
       } else if (tag === "A") {
@@ -460,6 +465,7 @@ function extractTextRuns(
             inheritStrike,
             inheritHighlight,
             inheritColor,
+            inheritFontFamily,
           ),
         );
       } else if (tag === "U") {
@@ -473,6 +479,7 @@ function extractTextRuns(
             inheritStrike,
             inheritHighlight,
             inheritColor,
+            inheritFontFamily,
           ),
         );
       } else if (tag === "S") {
@@ -486,6 +493,7 @@ function extractTextRuns(
             true,
             inheritHighlight,
             inheritColor,
+            inheritFontFamily,
           ),
         );
       } else if (tag === "Mark") {
@@ -501,12 +509,19 @@ function extractTextRuns(
             inheritStrike,
             color,
             inheritColor,
+            inheritFontFamily,
           ),
         );
       } else if (tag === "Span") {
-        const rawSpanColor = getAttributes(child).color;
+        const spanAttrs = getAttributes(child);
+        const rawSpanColor = spanAttrs.color;
         const spanColor =
           rawSpanColor && rawSpanColor.trim() ? rawSpanColor : inheritColor;
+        const rawSpanFontFamily = spanAttrs.fontFamily;
+        const spanFontFamily =
+          rawSpanFontFamily && rawSpanFontFamily.trim()
+            ? rawSpanFontFamily
+            : inheritFontFamily;
         runs.push(
           ...extractTextRuns(
             innerChildren,
@@ -517,6 +532,7 @@ function extractTextRuns(
             inheritStrike,
             inheritHighlight,
             spanColor,
+            spanFontFamily,
           ),
         );
       }

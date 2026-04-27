@@ -100,7 +100,7 @@ export function renderPyramidNode(
       w: pxToIn(bboxW),
       h: pxToIn(layerHeight),
       fontSize: pxToPt((node.fontSize ?? 14) * scaleFactor),
-      fontFace: "Noto Sans JP",
+      fontFace: node.fontFamily ?? "Noto Sans JP",
       color: textColor,
       bold: node.bold ?? false,
       align: "center",

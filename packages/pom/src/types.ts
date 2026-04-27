@@ -345,6 +345,7 @@ const textRunSchema = z.object({
   highlight: z.string().optional(),
   color: z.string().optional(),
   href: z.string().optional(),
+  fontFamily: z.string().optional(),
 });
 
 // ===== Non-recursive Node Types =====
@@ -470,6 +471,7 @@ const tableCellSchema = z.object({
   underline: underlineSchema.optional(),
   strike: z.boolean().optional(),
   highlight: z.string().optional(),
+  fontFamily: z.string().optional(),
   textAlign: z.enum(["left", "center", "right"]).optional(),
   backgroundColor: z.string().optional(),
   colspan: z.number().int().min(1).optional(),
@@ -658,6 +660,7 @@ export const processArrowNodeSchema = basePOMNodeSchema.extend({
   underline: underlineSchema.optional(),
   strike: z.boolean().optional(),
   highlight: z.string().optional(),
+  fontFamily: z.string().optional(),
 });
 
 export type ProcessArrowNode = z.infer<typeof processArrowNodeSchema>;
@@ -677,6 +680,7 @@ export const pyramidNodeSchema = basePOMNodeSchema.extend({
   levels: z.array(pyramidLevelSchema).min(1),
   fontSize: z.number().optional(),
   bold: z.boolean().optional(),
+  fontFamily: z.string().optional(),
 });
 
 export type PyramidNode = z.infer<typeof pyramidNodeSchema>;

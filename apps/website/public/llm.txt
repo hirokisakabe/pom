@@ -96,7 +96,10 @@ Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
 <Text fontSize="16">Normal <U>underline</U> and <S>strikethrough</S> text</Text>
 <Text fontSize="16"><Mark color="FFFF00">highlighted</Mark> text</Text>
 <Text fontSize="16">Normal <Span color="FF0000">red text</Span> normal</Text>
+<Text fontSize="16" fontFamily="Noto Sans JP">Default <Span fontFamily="Arial">Arial part</Span> default</Text>
 ```
+
+`<Span>` supports `color` and `fontFamily` (overrides the parent's `fontFamily` for that run).
 
 `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` also work inside `<Li>` and `<Td>`.
 
@@ -294,7 +297,7 @@ Others:
 - `<Table>`: `defaultRowHeight` (default 32), `cellBorder` (`{color, width, dashType}` — cell border style)
 - `<Col>`: `width` (omit for equal distribution)
 - `<Tr>`: `height` (omit to use `defaultRowHeight`, default 32)
-- `<Td>`: text content + `fontSize` `color` `bold` `italic` `underline` `strike` `highlight` `textAlign` `backgroundColor` `colspan` `rowspan`
+- `<Td>`: text content + `fontSize` `color` `bold` `italic` `underline` `strike` `highlight` `fontFamily` `textAlign` `backgroundColor` `colspan` `rowspan`
 
 ### Chart
 
@@ -429,6 +432,7 @@ Others:
 | `bold` `italic` `strike` | boolean                                                    |
 | `underline`              | `true` / `underline.style="wavy" underline.color="FF0000"` |
 | `highlight`              | hex (highlight color)                                      |
+| `fontFamily`             | string (default: `Noto Sans JP`)                           |
 
 `<ProcessArrowStep>`: `label` (required) `color` (default: `4472C4`) `textColor` (default: `FFFFFF`)
 
@@ -442,11 +446,12 @@ Others:
 </Pyramid>
 ```
 
-| Attribute   | Type / Values           |
-| ----------- | ----------------------- |
-| `direction` | `up` (default) / `down` |
-| `fontSize`  | number (default: 14)    |
-| `bold`      | boolean                 |
+| Attribute    | Type / Values                    |
+| ------------ | -------------------------------- |
+| `direction`  | `up` (default) / `down`          |
+| `fontSize`   | number (default: 14)             |
+| `bold`       | boolean                          |
+| `fontFamily` | string (default: `Noto Sans JP`) |
 
 `<PyramidLevel>`: `label` (required) `color` (default: `4472C4`) `textColor` (default: `FFFFFF`)
 

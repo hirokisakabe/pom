@@ -40,4 +40,8 @@ export {
   page31LeafPaddingCompositeXml,
 } from "./leafPadding.js";
 export { page32CenterAlignHStackXml } from "./centerAlignHStack.js";
-export { page33CustomFontXml, page34CustomFontWrapXml } from "./customFont.js";
+export {
+  page33CustomFontXml,
+  page34CustomFontWrapXml,
+  page38CustomFontExtendedXml,
+} from "./customFont.js";
