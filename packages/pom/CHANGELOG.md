@@ -1,5 +1,11 @@
 # @hirokisakabe/pom
 
+## 7.3.1
+
+### Patch Changes
+
+- [#666](https://github.com/hirokisakabe/pom/pull/666) [`a74a240`](https://github.com/hirokisakabe/pom/commit/a74a240a1744cf6f6784eb2cde3e23dad483e7e2) Thanks [@dependabot](https://github.com/apps/dependabot)! - fix: hide dynamic `require` in `renderIcon.ts` from bundler static analysis using `Function` constructor. Resolves Next.js 16 / Turbopack build failure (`Module not found: Can't resolve <dynamic>`) when consuming `@hirokisakabe/pom` in Next.js apps. Runtime behavior is unchanged.
+
 ## 7.3.0
 
 ### Minor Changes
