@@ -1,0 +1,1 @@
+../../../../packages/pom-md/docs/index.md

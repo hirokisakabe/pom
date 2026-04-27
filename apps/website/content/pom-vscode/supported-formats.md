@@ -1,0 +1,1 @@
+../../../../packages/pom-vscode/docs/supported-formats.md
