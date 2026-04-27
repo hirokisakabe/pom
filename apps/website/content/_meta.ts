@@ -6,16 +6,21 @@ export default {
   "master-slide": "Slide Master",
   "text-measurement": "Text Measurement",
   "api-reference": "API Reference",
-  "-- pom-md": {
+  "-- tools": {
     type: "separator",
+    title: "Tools",
+  },
+  "pom-md": {
     title: "pom-md",
+    display: "children",
   },
-  "pom-md": "pom-md",
-  "-- pom-vscode": {
+  "-- pom-vscode-divider": {
     type: "separator",
-    title: "pom-vscode",
   },
-  "pom-vscode": "pom-vscode",
+  "pom-vscode": {
+    title: "pom-vscode",
+    display: "children",
+  },
   "-- -": {
     type: "separator",
   },

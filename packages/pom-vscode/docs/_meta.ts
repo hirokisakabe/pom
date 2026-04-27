@@ -1,5 +1,5 @@
 export default {
-  index: "Getting Started",
+  index: "pom-vscode",
   "supported-formats": "Supported Formats",
   configuration: "Configuration",
 };

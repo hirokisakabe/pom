@@ -1,5 +1,5 @@
 export default {
-  index: "Getting Started",
+  index: "pom-md",
   "markdown-syntax": "Markdown Syntax",
   "pomxml-code-fence": "pomxml Code Fence",
 };
