@@ -45,11 +45,16 @@ jobs:
         run: pnpm exec size-limit --json > size-limit-results.json
 
       # --- main: キャッシュ保存 ---
+      - name: Copy results as baseline
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        working-directory: packages/pom
+        run: cp size-limit-results.json size-limit-baseline.json
+
       - name: Save baseline to cache
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/cache/save@v4
         with:
-          path: packages/pom/size-limit-results.json
+          path: packages/pom/size-limit-baseline.json
           key: size-limit-main-${{ github.sha }}
 
       # --- PR: ベースライン復元 ---
