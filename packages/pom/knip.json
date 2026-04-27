@@ -18,6 +18,8 @@
     "config": ["vitest.config.ts"]
   },
   "rules": {
-    "exports": "warn"
+    "exports": "warn",
+    "types": "warn",
+    "nsTypes": "warn"
   }
 }

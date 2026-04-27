@@ -1,8 +1,4 @@
-import type {
-  POMNode,
-  PositionedNode,
-  PositionedLayerChild,
-} from "../../types.ts";
+import type { POMNode, PositionedLayerChild } from "../../types.ts";
 import type { NodeDefinition } from "../types.ts";
 import { toPositioned } from "../../toPositioned/toPositioned.ts";
 
@@ -45,7 +41,7 @@ export const layerNodeDef: NodeDefinition = {
               y: Math.min(adjustedY1, adjustedY2),
               w: Math.abs(adjustedX2 - adjustedX1),
               h: Math.abs(adjustedY2 - adjustedY1),
-            } as PositionedLayerChild;
+            };
           }
 
           // その他のノードは通常の処理
@@ -56,16 +52,16 @@ export const layerNodeDef: NodeDefinition = {
           const adjustedParentX = absoluteX + childX - childLayout.left;
           const adjustedParentY = absoluteY + childY - childLayout.top;
 
-          return (await toPositioned(
+          return await toPositioned(
             child,
             ctx,
             map,
             adjustedParentX,
             adjustedParentY,
-          )) as PositionedLayerChild;
+          );
         }),
       ),
-    } as PositionedNode;
+    };
   },
   // render: category ベースの子要素再帰で対応
 };
