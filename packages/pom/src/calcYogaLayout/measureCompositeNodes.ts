@@ -67,9 +67,11 @@ export function measureTimeline(node: TimelineNode): {
 
   if (direction === "horizontal") {
     // 各アイテムの幅: 120px (ラベル幅)
-    // 最小幅: nodeRadius * 2 + (itemCount - 1) * 間隔
+    // 両端アイテムのラベルがコンテナに収まるよう labelW 込みで計算する
+    // (描画側 renderHorizontalTimeline は線端点を labelW/2 でインセットする)
+    const labelW = 120;
     const minItemSpacing = 120; // 各アイテムの最小間隔
-    const minWidth = nodeRadius * 2 + (itemCount - 1) * minItemSpacing;
+    const minWidth = labelW + (itemCount - 1) * minItemSpacing;
 
     // 高さ: 上部ラベル(40) + nodeRadius*2 + 下部ラベル(24+32) + マージン
     const height = 40 + nodeRadius * 2 + 8 + 24 + 32;
