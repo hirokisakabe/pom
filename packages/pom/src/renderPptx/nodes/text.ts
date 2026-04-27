@@ -22,7 +22,7 @@ export function renderTextNode(
       text: run.text,
       options: {
         fontSize: pxToPt(fontSizePx),
-        fontFace: fontFamily,
+        fontFace: run.fontFamily ?? fontFamily,
         color: run.color ?? node.color,
         bold: run.bold ?? node.bold,
         italic: run.italic ?? node.italic,

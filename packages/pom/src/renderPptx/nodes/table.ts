@@ -16,8 +16,10 @@ export function renderTableNode(
 ): void {
   const tableRows = node.rows.map((row) =>
     row.cells.map((cell) => {
+      const cellFontFace = cell.fontFamily;
       const cellOptions: Record<string, unknown> = {
         fontSize: pxToPt(cell.fontSize ?? 18),
+        fontFace: cellFontFace,
         color: cell.color,
         bold: cell.bold,
         italic: cell.italic,
@@ -37,6 +39,7 @@ export function renderTableNode(
           text: run.text,
           options: {
             fontSize: pxToPt(cell.fontSize ?? 18),
+            fontFace: run.fontFamily ?? cellFontFace,
             color: run.color ?? cell.color,
             bold: run.bold ?? cell.bold,
             italic: run.italic ?? cell.italic,

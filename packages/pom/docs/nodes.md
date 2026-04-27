@@ -70,7 +70,10 @@ Use `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` child elements for
 <Text fontSize="16"><B><U>Bold underline nested</U></B></Text>
 <Text fontSize="16">Normal <Span color="FF0000">red text</Span> normal</Text>
 <Text fontSize="16"><B><Span color="1D4ED8">bold blue</Span></B></Text>
+<Text fontSize="16" fontFamily="Noto Sans JP">Default <Span fontFamily="Arial">Arial section</Span> default</Text>
 ```
+
+`<Span>` supports `color` and `fontFamily` attributes. When `fontFamily` is specified, that run uses the given font face (overrides the parent Text's `fontFamily`).
 
 See [Styling Guide](./styling-guide.md#font-size-guide) for recommended font sizes.
 
@@ -179,7 +182,7 @@ A node for drawing tables. Column widths and row heights are declared in px, wit
 
 - `<Col>`: `width` (omit for even distribution)
 - `<Tr>`: `height` (omit to apply `defaultRowHeight`, default 32)
-- `<Td>`: Text content + `fontSize` `color` `bold` `italic` `underline` `strike` `highlight` `textAlign` `backgroundColor` `colspan` `rowspan`. Also supports `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` inline formatting
+- `<Td>`: Text content + `fontSize` `color` `bold` `italic` `underline` `strike` `highlight` `fontFamily` `textAlign` `backgroundColor` `colspan` `rowspan`. Also supports `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` inline formatting
 
 | Attribute          | Values                                         |
 | ------------------ | ---------------------------------------------- |
@@ -600,6 +603,7 @@ A node for creating chevron-style process diagrams. Commonly used for visualizin
 | `bold` `italic` `strike` | boolean                                                    |
 | `underline`              | `true` / `underline.style="wavy" underline.color="FF0000"` |
 | `highlight`              | hex (highlight color)                                      |
+| `fontFamily`             | string (default: `Noto Sans JP`)                           |
 
 `<ProcessArrowStep>`: `label` (required) `color` (default: `4472C4`) `textColor` (default: `FFFFFF`)
 
@@ -645,11 +649,12 @@ A node for creating pyramid diagrams. Used for visualizing hierarchies, prioriti
 </Pyramid>
 ```
 
-| Attribute   | Values                  |
-| ----------- | ----------------------- |
-| `direction` | `up` (default) / `down` |
-| `fontSize`  | number (default: 14)    |
-| `bold`      | boolean                 |
+| Attribute    | Values                           |
+| ------------ | -------------------------------- |
+| `direction`  | `up` (default) / `down`          |
+| `fontSize`   | number (default: 14)             |
+| `bold`       | boolean                          |
+| `fontFamily` | string (default: `Noto Sans JP`) |
 
 `<PyramidLevel>`: `label` (required) `color` (default: `4472C4`) `textColor` (default: `FFFFFF`)
 

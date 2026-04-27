@@ -49,6 +49,7 @@ function buildListTextItems(
           text,
           options: {
             ...baseOptions,
+            fontFace: run.fontFamily ?? style.fontFamily,
             color: run.color ?? style.color,
             bold: run.bold ?? style.bold,
             italic: run.italic ?? style.italic,
