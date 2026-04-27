@@ -60,7 +60,7 @@ export async function toPositioned(
             toPositioned(child, ctx, map, absoluteX, absoluteY),
           ),
         ),
-      } as PositionedNode;
+      };
     }
 
     case "absolute-child":

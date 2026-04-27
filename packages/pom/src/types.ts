@@ -884,7 +884,7 @@ const pomNodeSchema: z.ZodType<POMNode> = z.lazy(() =>
     iconNodeSchema,
     svgNodeSchema,
   ]),
-) as z.ZodType<POMNode>;
+);
 
 // ===== Positioned Node Types =====
 const positionedBaseSchema = z.object({
@@ -941,7 +941,7 @@ const positionedLayerChildSchema: z.ZodType<PositionedLayerChild> = z.lazy(() =>
       y: z.number(),
     }),
   ),
-) as z.ZodType<PositionedLayerChild>;
+);
 
 const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
   z.union([
@@ -977,7 +977,7 @@ const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
       iconImageData: z.string(),
     }),
   ]),
-) as z.ZodType<PositionedNode>;
+);
 
 // ===== Slide Master Options =====
 const masterTextObjectSchema = z.object({

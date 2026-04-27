@@ -1,4 +1,4 @@
-import type { POMNode, PositionedNode } from "../../types.ts";
+import type { POMNode } from "../../types.ts";
 import type { NodeDefinition, Yoga } from "../types.ts";
 import type { Node as YogaNode } from "yoga-layout";
 import { measureImage, getImageData } from "../../shared/measureImage.ts";
@@ -31,7 +31,7 @@ export const imageNodeDef: NodeDefinition = {
       w: layout.width,
       h: layout.height,
       imageData,
-    } as PositionedNode;
+    };
   },
   render(node, ctx) {
     renderImageNode(node as Extract<typeof node, { type: "image" }>, ctx);

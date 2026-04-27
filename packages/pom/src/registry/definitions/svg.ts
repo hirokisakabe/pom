@@ -1,4 +1,4 @@
-import type { POMNode, PositionedNode } from "../../types.ts";
+import type { POMNode } from "../../types.ts";
 import type { NodeDefinition } from "../types.ts";
 import { rasterizeSvgContent } from "../../icons/index.ts";
 import { renderSvgNode } from "../../renderPptx/nodes/svg.ts";
@@ -31,7 +31,7 @@ export const svgNodeDef: NodeDefinition = {
       w: layout.width,
       h: layout.height,
       iconImageData,
-    } as PositionedNode;
+    };
   },
   render(node, ctx) {
     renderSvgNode(node as Extract<typeof node, { type: "svg" }>, ctx);
