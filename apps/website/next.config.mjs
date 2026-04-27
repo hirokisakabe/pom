@@ -15,6 +15,18 @@ export default withNextra({
   // バンドラ（webpack / Turbopack）の静的解析対象から外して
   // Node.js ランタイムの require に委ねる。
   serverExternalPackages: ["@resvg/resvg-wasm", "@hirokisakabe/pom"],
+  // @hirokisakabe/pom 内の WASM ロード処理は Function コンストラクタで require を
+  // 隠蔽しているため Vercel の @vercel/nft が依存を検出できず、デプロイ成果物に
+  // @resvg/resvg-wasm が含まれない。明示的にトレース対象へ追加する。
+  // Turbopack が動的 require / import を Webpack 同等に解析できるようになれば
+  // 隠蔽自体が不要になり、本設定も削除できる。
+  // 上流 issue: https://github.com/vercel/next.js/issues/85238
+  outputFileTracingIncludes: {
+    "/api/**": [
+      "../../packages/pom/node_modules/@resvg/resvg-wasm/**/*",
+      "../../node_modules/.pnpm/@resvg+resvg-wasm@*/node_modules/@resvg/resvg-wasm/**/*",
+    ],
+  },
   webpack: (config, { isServer }) => {
     if (isServer) {
       // workspace link の @hirokisakabe/pom は dist/ を参照するため

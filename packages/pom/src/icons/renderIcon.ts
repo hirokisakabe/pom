@@ -9,6 +9,10 @@ import { ICON_DATA } from "./iconData.ts";
 // バンドラ（webpack / Turbopack）のスタティック解析が require / require.resolve を
 // 追跡してエラーにするのを避けるため、Function コンストラクタで Node.js の require を
 // 取得し、モジュール名は文字列結合で構築する。
+// Turbopack が動的 require / import を Webpack 同等に解析できるようになれば
+// 隠蔽自体が不要になり、apps/website 側の outputFileTracingIncludes 設定もまとめて
+// 撤去できる。
+// 上流 issue: https://github.com/vercel/next.js/issues/85238
 type ResvgWasm = typeof import("@resvg/resvg-wasm");
 const RESVG_PKG = ["@resvg", "resvg-wasm"].join("/");
 let resvgModule: ResvgWasm | undefined;
