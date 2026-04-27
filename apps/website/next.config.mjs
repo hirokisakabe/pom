@@ -11,7 +11,10 @@ export default withNextra({
     ignoreDuringBuilds: true,
   },
   outputFileTracingRoot: dirname(dirname(__dirname)),
-  serverExternalPackages: ["@resvg/resvg-wasm"],
+  // @hirokisakabe/pom は dist/ 内で createRequire による動的 require を含むため、
+  // バンドラ（webpack / Turbopack）の静的解析対象から外して
+  // Node.js ランタイムの require に委ねる。
+  serverExternalPackages: ["@resvg/resvg-wasm", "@hirokisakabe/pom"],
   webpack: (config, { isServer }) => {
     if (isServer) {
       // workspace link の @hirokisakabe/pom は dist/ を参照するため

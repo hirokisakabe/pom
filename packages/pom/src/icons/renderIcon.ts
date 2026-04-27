@@ -6,12 +6,28 @@ import { fileURLToPath } from "node:url";
 import { ICON_DATA } from "./iconData.ts";
 
 // @resvg/resvg-wasm を遅延ロードする。
-// webpack (Next.js) のスタティック解析が .wasm ファイルまで追跡するのを防ぐため、
-// createRequire で動的に読み込み、モジュール名は文字列結合で構築する。
+// バンドラ（webpack / Turbopack）のスタティック解析が require / require.resolve を
+// 追跡してエラーにするのを避けるため、Function コンストラクタで Node.js の require を
+// 取得し、モジュール名は文字列結合で構築する。
 type ResvgWasm = typeof import("@resvg/resvg-wasm");
 const RESVG_PKG = ["@resvg", "resvg-wasm"].join("/");
 let resvgModule: ResvgWasm | undefined;
 let wasmInitPromise: Promise<void> | undefined;
+
+// Function コンストラクタを使って require を取得することでバンドラの静的解析から
+// 完全に隠蔽する。実行時は createRequire で生成した require が利用される。
+function getNodeRequire(): NodeJS.Require {
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval
+  const factory = new Function(
+    "url",
+    "createRequire",
+    "return createRequire(url)",
+  ) as (
+    url: string,
+    createRequire: typeof import("node:module").createRequire,
+  ) => NodeJS.Require;
+  return factory(import.meta.url, createRequire);
+}
 
 /**
  * WASM バイナリのパスを解決する。
@@ -22,8 +38,7 @@ function resolveWasmPath(): string {
   const dir = dirname(fileURLToPath(import.meta.url));
   const localPath = join(dir, "index_bg.wasm");
   if (existsSync(localPath)) return localPath;
-  const require = createRequire(import.meta.url);
-  return require.resolve(`${RESVG_PKG}/index_bg.wasm`);
+  return getNodeRequire().resolve(`${RESVG_PKG}/index_bg.wasm`);
 }
 
 /**
@@ -33,8 +48,7 @@ function resolveWasmPath(): string {
 function ensureWasmInitialized(): Promise<void> {
   if (!wasmInitPromise) {
     wasmInitPromise = (async () => {
-      const req = createRequire(import.meta.url);
-      const mod = req(RESVG_PKG) as ResvgWasm;
+      const mod = getNodeRequire()(RESVG_PKG) as ResvgWasm;
       const wasmPath = resolveWasmPath();
       const wasmBuffer = await readFile(wasmPath);
       await mod.initWasm(wasmBuffer);

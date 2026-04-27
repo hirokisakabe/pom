@@ -47,9 +47,9 @@ const resvgWasmPlugin = {
 };
 
 // @resvg/resvg-wasm の JS モジュールをバンドルに含めるプラグイン。
-// renderIcon.js は文字列結合 + createRequire で動的にモジュールをロードするため、
-// esbuild が静的解析できない。onLoad で静的 require に書き換えることで
-// esbuild が依存を認識しバンドルに含めるようにする。
+// renderIcon.js は Function コンストラクタ + createRequire で動的にモジュールを
+// ロードするため（webpack / Turbopack の静的解析回避）、esbuild も静的解析できない。
+// onLoad で静的 require に書き換えることで esbuild が依存を認識しバンドルに含める。
 const resvgModulePlugin = {
   name: "resvg-module-resolve",
   setup(build) {
@@ -60,7 +60,7 @@ const resvgModulePlugin = {
       const original = contents;
       // 動的 require を静的 require に書き換え
       contents = contents.replace(
-        /const req = createRequire\(import\.meta\.url\);\s*\n\s*const mod = req\(RESVG_PKG\)/,
+        /const mod = getNodeRequire\(\)\(RESVG_PKG\)/,
         'const mod = require("@resvg/resvg-wasm")',
       );
       if (contents === original) {
@@ -81,6 +81,8 @@ const resvgModulePlugin = {
         /createRequire\(import\.meta\.url\)/g,
         "createRequire(__filename)",
       );
+      // 残りの import.meta.url（getNodeRequire の factory 引数など）→ __filename
+      contents = contents.replace(/import\.meta\.url/g, "__filename");
       return { contents, loader: "js" };
     });
   },
