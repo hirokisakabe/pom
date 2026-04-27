@@ -1,5 +1,13 @@
 # @hirokisakabe/pom
 
+## 7.3.2
+
+### Patch Changes
+
+- [#675](https://github.com/hirokisakabe/pom/pull/675) [`26355ad`](https://github.com/hirokisakabe/pom/commit/26355add8f6a173a7e29c17f7d9956caddc64447) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - fix: horizontal Timeline の両端アイテムでラベルがコンテナ外にはみ出す不具合を修正
+
+  `renderHorizontalTimeline` で線端点を `labelW / 2` でインセットし、両端アイテムのラベル矩形が Timeline コンテナの矩形内に収まるようにした。あわせて `measureTimeline` の intrinsic width を `labelW + (itemCount - 1) * minItemSpacing` に補正し、scaleFactor の過大算出も解消している。
+
 ## 7.3.1
 
 ### Patch Changes
