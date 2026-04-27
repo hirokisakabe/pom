@@ -79,8 +79,11 @@ function renderHorizontalTimeline(
 ): void {
   const itemCount = items.length;
   const lineY = node.y + node.h / 2;
-  const startX = node.x + nodeRadius;
-  const endX = node.x + node.w - nodeRadius;
+  const labelW = 120 * scaleFactor;
+  // 極端に狭い node.w でも startX <= endX を保つため、インセットを node.w/2 で頭打ちする
+  const inset = Math.min(labelW / 2, node.w / 2);
+  const startX = node.x + inset;
+  const endX = node.x + node.w - inset;
   const lineLength = endX - startX;
 
   // メインの線を描画
@@ -91,8 +94,6 @@ function renderHorizontalTimeline(
     h: 0,
     line: { color: "E2E8F0", width: pxToPt(lineWidth) },
   });
-
-  const labelW = 120 * scaleFactor;
   const dateLabelH = 24 * scaleFactor;
   const titleLabelH = 24 * scaleFactor;
   const descLabelH = 32 * scaleFactor;
