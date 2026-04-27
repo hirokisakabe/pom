@@ -1,5 +1,15 @@
 # @hirokisakabe/pom
 
+## 7.4.0
+
+### Minor Changes
+
+- [#678](https://github.com/hirokisakabe/pom/pull/678) [`63fc969`](https://github.com/hirokisakabe/pom/commit/63fc9699a04c2fdd8bb498c60a6a879486344d68) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - feat: Table セル / ProcessArrow / Pyramid / TextRun（`<Span>`）に `fontFamily` 属性を追加
+  - `<Td fontFamily="...">` でセル単位のフォント指定が可能に
+  - `<ProcessArrow fontFamily="...">` / `<Pyramid fontFamily="...">` でラベルフォントを切り替え可能に
+  - `<Text>` / `<Li>` 内の `<Span fontFamily="...">` でインラインのフォント切り替えに対応（親 `fontFamily` を上書き）
+  - 未指定時の挙動と既存ノードのデフォルト（`Noto Sans JP`）は変更なし
+
 ## 7.3.2
 
 ### Patch Changes
