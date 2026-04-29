@@ -142,10 +142,12 @@ suite("pom-vscode Extension", () => {
     // Icon ノードを含む XML でプレビュー生成を検証
     // バンドル後の環境で @resvg/resvg-wasm が正しく解決されることを確認する
     const xml = [
-      '<HStack w="1280" h="720" gap="24" alignItems="center">',
-      '  <Icon name="star" size="48" color="#f59e0b" />',
-      '  <Text fontSize="24">Icon test</Text>',
-      "</HStack>",
+      "<Slide>",
+      '  <HStack w="1280" h="720" gap="24" alignItems="center">',
+      '    <Icon name="star" size="48" color="#f59e0b" />',
+      '    <Text fontSize="24">Icon test</Text>',
+      "  </HStack>",
+      "</Slide>",
     ].join("\n");
 
     const result = await generatePreviewSvg(xml, fontDirs, "xml");

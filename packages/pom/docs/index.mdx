@@ -30,15 +30,19 @@ npm install @hirokisakabe/pom
 import { buildPptx } from "@hirokisakabe/pom";
 
 const xml = `
-<VStack w="100%" h="max" padding="48" gap="24" alignItems="start">
-  <Text fontSize="48" bold="true">Presentation Title</Text>
-  <Text fontSize="24" color="666666">Subtitle</Text>
-</VStack>
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24" alignItems="start">
+    <Text fontSize="48" bold="true">Presentation Title</Text>
+    <Text fontSize="24" color="666666">Subtitle</Text>
+  </VStack>
+</Slide>
 `;
 
 const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
 await pptx.writeFile({ fileName: "presentation.pptx" });
 ```
+
+Each slide must be wrapped in a `<Slide>` element. To produce multiple slides, list multiple `<Slide>` elements at the top level.
 
 ## Node List
 

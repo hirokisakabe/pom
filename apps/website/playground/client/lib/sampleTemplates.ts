@@ -8,7 +8,7 @@ export const SAMPLE_TEMPLATES: SampleTemplate[] = [
   {
     id: "financial-summary",
     name: "決算サマリー",
-    xml: `<VStack w="max" h="max" padding="24" backgroundColor="F8F6F0" gap="14">
+    xml: `<Slide><VStack w="max" h="max" padding="24" backgroundColor="F8F6F0" gap="14">
   <HStack w="max" justifyContent="spaceBetween" alignItems="center">
     <HStack gap="0" alignItems="center">
       <Shape w="6" h="52" shapeType="rect" fill.color="1F3864" />
@@ -196,12 +196,12 @@ export const SAMPLE_TEMPLATES: SampleTemplate[] = [
     <Text fontSize="9" color="848591">※本資料に記載の数値はダミーデータです。実際の企業業績とは関係ありません。</Text>
     <Text fontSize="9" color="1F3864">株式会社サンプルホールディングス｜IR資料｜2025年1月発表</Text>
   </HStack>
-</VStack>`,
+</VStack></Slide>`,
   },
   {
     id: "product-landing",
     name: "プロダクト紹介",
-    xml: `<VStack w="1280" h="max" padding="56" gap="36" backgroundColor="F8F6F0" alignItems="stretch">
+    xml: `<Slide><VStack w="1280" h="max" padding="56" gap="36" backgroundColor="F8F6F0" alignItems="stretch">
 
   <VStack gap="18" alignItems="center">
     <HStack gap="8" alignItems="center" padding.top="6" padding.bottom="6" padding.left="14" padding.right="14" backgroundColor="E5EAF1" borderRadius="999">
@@ -284,12 +284,12 @@ export const SAMPLE_TEMPLATES: SampleTemplate[] = [
     </HStack>
   </VStack>
 
-</VStack>`,
+</VStack></Slide>`,
   },
   {
     id: "pricing-plan",
     name: "料金プラン",
-    xml: `<VStack h="max" w="max" padding="44" backgroundColor="F8F6F0" gap="28" alignItems="center">
+    xml: `<Slide><VStack h="max" w="max" padding="44" backgroundColor="F8F6F0" gap="28" alignItems="center">
   <VStack gap="10" alignItems="center">
     <HStack gap="6" alignItems="center" padding.top="6" padding.bottom="6" padding.left="14" padding.right="14" backgroundColor="EAEEF4" borderRadius="999">
       <Icon name="tag" size="14" color="3D5A80" />
@@ -367,12 +367,12 @@ export const SAMPLE_TEMPLATES: SampleTemplate[] = [
   </HStack>
 
   <Text fontSize="12" color="475569" textAlign="center" padding.top="4">✓ いつでも解約可能 ・ ✓ クレジットカード不要 ・ ✓ 日本語サポート ・ ✓ SOC 2 Type II 準拠</Text>
-</VStack>`,
+</VStack></Slide>`,
   },
   {
     id: "chart-showcase",
     name: "チャート集",
-    xml: `<VStack w="max" h="max" padding="28" backgroundColor="F2EEE5" gap="16">
+    xml: `<Slide><VStack w="max" h="max" padding="28" backgroundColor="F2EEE5" gap="16">
   <HStack w="max" justifyContent="spaceBetween" alignItems="center">
     <HStack gap="12" alignItems="center">
       <Icon name="bar-chart-3" size="22" color="FFFFFF" variant="square-filled" bgColor="2E4F7A" w="46" h="46" />
@@ -525,12 +525,12 @@ export const SAMPLE_TEMPLATES: SampleTemplate[] = [
       </Chart>
     </VStack>
   </VStack>
-</VStack>`,
+</VStack></Slide>`,
   },
   {
     id: "project-dashboard",
     name: "プロジェクト管理ダッシュボード",
-    xml: `<VStack w="max" h="max" padding="28" backgroundColor="0B1220" gap="18">
+    xml: `<Slide><VStack w="max" h="max" padding="28" backgroundColor="0B1220" gap="18">
   <HStack w="max" justifyContent="spaceBetween" alignItems="center">
     <HStack gap="14" alignItems="center">
       <Icon name="layout-dashboard" size="24" color="7C95B5" variant="square-filled" bgColor="1A2840" w="50" h="50" />
@@ -681,12 +681,12 @@ export const SAMPLE_TEMPLATES: SampleTemplate[] = [
       </VStack>
     </VStack>
   </HStack>
-</VStack>`,
+</VStack></Slide>`,
   },
   {
     id: "strategy-analysis",
     name: "経営戦略分析",
-    xml: `<VStack w="1280" h="720" padding="32" backgroundColor="F8F6F0" gap="18">
+    xml: `<Slide><VStack w="1280" h="720" padding="32" backgroundColor="F8F6F0" gap="18">
  <HStack w="max" justifyContent="spaceBetween" alignItems="center">
  <HStack gap="14" alignItems="center">
  <Icon name="briefcase" size="26" color="2E4F7A" variant="circle-filled" bgColor="E5EAF1" w="54" h="54" />
@@ -790,12 +790,12 @@ export const SAMPLE_TEMPLATES: SampleTemplate[] = [
  </HStack>
  </VStack>
  </HStack>
-</VStack>`,
+</VStack></Slide>`,
   },
   {
     id: "saas-kpi",
     name: "SaaS KPIダッシュボード",
-    xml: `<VStack w="max" h="max" padding="28" backgroundColor="0F172A" gap="18">
+    xml: `<Slide><VStack w="max" h="max" padding="28" backgroundColor="0F172A" gap="18">
 
   <HStack w="max" alignItems="center" justifyContent="spaceBetween">
     <HStack gap="12" alignItems="center">
@@ -1042,12 +1042,12 @@ export const SAMPLE_TEMPLATES: SampleTemplate[] = [
     </HStack>
   </HStack>
 
-</VStack>`,
+</VStack></Slide>`,
   },
   {
     id: "dx-roadmap",
     name: "DX推進ロードマップ",
-    xml: `<VStack w="max" h="max" padding="28" backgroundColor="F2F0EA" gap="14">
+    xml: `<Slide><VStack w="max" h="max" padding="28" backgroundColor="F2F0EA" gap="14">
   
   <HStack w="max" gap="12" alignItems="center">
     <Icon name="rocket" size="28" color="FFFFFF" variant="square-filled" bgColor="6C3AED" w="48" h="48" />
@@ -1162,7 +1162,7 @@ export const SAMPLE_TEMPLATES: SampleTemplate[] = [
     <Text fontSize="9" color="6E7282">DX推進本部｜Corporate Digital Transformation Office</Text>
   </HStack>
 
-</VStack>`,
+</VStack></Slide>`,
   },
 ];
 

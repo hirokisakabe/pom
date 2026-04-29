@@ -12,77 +12,83 @@ import { freeYogaTree } from "../src/shared/freeYogaTree.ts";
 // ---------------------------------------------------------------------------
 
 const simpleXml = `
-<VStack w="100%" h="max" padding="48" gap="20" alignItems="stretch">
-  <Text fontSize="28" bold="true">Simple Slide</Text>
-  <Text fontSize="16">Hello World</Text>
-</VStack>
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="20" alignItems="stretch">
+    <Text fontSize="28" bold="true">Simple Slide</Text>
+    <Text fontSize="16">Hello World</Text>
+  </VStack>
+</Slide>
 `;
 
 const complexXml = `
-<VStack w="100%" h="max" padding="48" gap="16" alignItems="stretch">
-  <Text fontSize="28" bold="true">Complex Slide</Text>
-  <HStack gap="16" alignItems="stretch">
-    <VStack gap="8">
-      <Text fontSize="14" bold="true">Section A</Text>
-      <Ul fontSize="12">
-        <Li>Item 1 with some longer text content</Li>
-        <Li>Item 2 with even more detailed description</Li>
-        <Li>Item 3</Li>
-      </Ul>
-    </VStack>
-    <VStack gap="8">
-      <Text fontSize="14" bold="true">Section B</Text>
-      <Table defaultRowHeight="32">
-        <Col width="100" />
-        <Col width="100" />
-        <Col width="100" />
-        <Tr>
-          <Td fontSize="11" bold="true">Header 1</Td>
-          <Td fontSize="11" bold="true">Header 2</Td>
-          <Td fontSize="11" bold="true">Header 3</Td>
-        </Tr>
-        <Tr>
-          <Td fontSize="11">Cell A1</Td>
-          <Td fontSize="11">Cell A2</Td>
-          <Td fontSize="11">Cell A3</Td>
-        </Tr>
-        <Tr>
-          <Td fontSize="11">Cell B1</Td>
-          <Td fontSize="11">Cell B2</Td>
-          <Td fontSize="11">Cell B3</Td>
-        </Tr>
-        <Tr>
-          <Td fontSize="11">Cell C1</Td>
-          <Td fontSize="11">Cell C2</Td>
-          <Td fontSize="11">Cell C3</Td>
-        </Tr>
-      </Table>
-    </VStack>
-  </HStack>
-  <HStack gap="12">
-    <Shape shapeType="rect" w="120" h="60" fill.color="4472C4" />
-    <Shape shapeType="ellipse" w="120" h="60" fill.color="ED7D31" />
-    <Shape shapeType="roundRect" w="120" h="60" fill.color="70AD47" />
-  </HStack>
-</VStack>
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="16" alignItems="stretch">
+    <Text fontSize="28" bold="true">Complex Slide</Text>
+    <HStack gap="16" alignItems="stretch">
+      <VStack gap="8">
+        <Text fontSize="14" bold="true">Section A</Text>
+        <Ul fontSize="12">
+          <Li>Item 1 with some longer text content</Li>
+          <Li>Item 2 with even more detailed description</Li>
+          <Li>Item 3</Li>
+        </Ul>
+      </VStack>
+      <VStack gap="8">
+        <Text fontSize="14" bold="true">Section B</Text>
+        <Table defaultRowHeight="32">
+          <Col width="100" />
+          <Col width="100" />
+          <Col width="100" />
+          <Tr>
+            <Td fontSize="11" bold="true">Header 1</Td>
+            <Td fontSize="11" bold="true">Header 2</Td>
+            <Td fontSize="11" bold="true">Header 3</Td>
+          </Tr>
+          <Tr>
+            <Td fontSize="11">Cell A1</Td>
+            <Td fontSize="11">Cell A2</Td>
+            <Td fontSize="11">Cell A3</Td>
+          </Tr>
+          <Tr>
+            <Td fontSize="11">Cell B1</Td>
+            <Td fontSize="11">Cell B2</Td>
+            <Td fontSize="11">Cell B3</Td>
+          </Tr>
+          <Tr>
+            <Td fontSize="11">Cell C1</Td>
+            <Td fontSize="11">Cell C2</Td>
+            <Td fontSize="11">Cell C3</Td>
+          </Tr>
+        </Table>
+      </VStack>
+    </HStack>
+    <HStack gap="12">
+      <Shape shapeType="rect" w="120" h="60" fill.color="4472C4" />
+      <Shape shapeType="ellipse" w="120" h="60" fill.color="ED7D31" />
+      <Shape shapeType="roundRect" w="120" h="60" fill.color="70AD47" />
+    </HStack>
+  </VStack>
+</Slide>
 `;
 
 const multiSlideXml = Array.from(
   { length: 10 },
   (_, i) => `
-<VStack w="100%" h="max" padding="48" gap="16" alignItems="stretch">
-  <Text fontSize="24" bold="true">Slide ${i + 1}</Text>
-  <HStack gap="16" alignItems="stretch">
-    <VStack gap="8">
-      <Text fontSize="14">Content block A for slide ${i + 1}</Text>
-      <Text fontSize="12">Additional details and description text here</Text>
-    </VStack>
-    <VStack gap="8">
-      <Text fontSize="14">Content block B for slide ${i + 1}</Text>
-      <Shape shapeType="rect" w="200" h="100" fill.color="4472C4" />
-    </VStack>
-  </HStack>
-</VStack>
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="16" alignItems="stretch">
+    <Text fontSize="24" bold="true">Slide ${i + 1}</Text>
+    <HStack gap="16" alignItems="stretch">
+      <VStack gap="8">
+        <Text fontSize="14">Content block A for slide ${i + 1}</Text>
+        <Text fontSize="12">Additional details and description text here</Text>
+      </VStack>
+      <VStack gap="8">
+        <Text fontSize="14">Content block B for slide ${i + 1}</Text>
+        <Shape shapeType="rect" w="200" h="100" fill.color="4472C4" />
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>
 `,
 ).join("\n");
 

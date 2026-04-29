@@ -25,7 +25,7 @@ async function generateNodeImage(
 
   // PPTXを生成
   const { pptx } = await buildPptx(
-    sampleXml,
+    `<Slide>${sampleXml}</Slide>`,
     { w: SLIDE_WIDTH, h: SLIDE_HEIGHT },
     { textMeasurement: "opentype" },
   );

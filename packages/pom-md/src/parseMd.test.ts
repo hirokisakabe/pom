@@ -106,6 +106,19 @@ describe("parseMd", () => {
       const { xml } = parseMd(md);
       expect(xml).not.toContain("console.log");
     });
+
+    it("pomxml フェンスにフルスライド XML を貼り付けた場合、外側の <Slide> ラッパーを剥がす", () => {
+      const md = `\`\`\`pomxml
+<Slide>
+  <Text fontSize="24">Hello</Text>
+</Slide>
+\`\`\``;
+      const { xml } = parseMd(md);
+      // 外側の <Slide> は parseMd 自身が付与するため、内側の <Slide> はネストしない
+      expect((xml.match(/<Slide>/g) ?? []).length).toBe(1);
+      expect((xml.match(/<\/Slide>/g) ?? []).length).toBe(1);
+      expect(xml).toContain('<Text fontSize="24">Hello</Text>');
+    });
   });
 
   describe("スライド分割", () => {

@@ -72,6 +72,18 @@ function parseFrontmatter(markdown: string): {
   return { frontmatter, body };
 }
 
+/**
+ * pomxml フェンスの内容から、外側の `<Slide>...</Slide>` ラッパーを 1 段だけ
+ * 剥がす。ユーザーが pom 公式ドキュメントなどからフルスライド XML を貼り付けた
+ * 際に、parseMd の出力で `<Slide>` がネストして parseXml が失敗するのを防ぐ。
+ * `<Slide>` を含まない通常のスニペット（例: `<Text>...</Text>`）はそのまま返す。
+ */
+function stripSlideWrapper(content: string): string {
+  const trimmed = content.trim();
+  const match = trimmed.match(/^<Slide\s*>([\s\S]*)<\/Slide>$/);
+  return match ? match[1].trim() : trimmed;
+}
+
 /** XML 特殊文字をエスケープする */
 function escapeXml(str: string): string {
   return str
@@ -181,7 +193,10 @@ function tokensToXml(tokens: Token[]): string {
 
     // --- pomxml コードフェンス ---
     if (token.type === "fence" && token.info.trim() === "pomxml") {
-      parts.push(token.content.trim());
+      // フェンス内容は周囲の <Slide><VStack> 内に埋め込まれるため、ユーザーが
+      // フルスライド XML（`<Slide>...</Slide>`）を貼り付けた場合は外側の
+      // <Slide> ラッパーを剥がして、入れ子になった不正な <Slide> 出力を避ける。
+      parts.push(stripSlideWrapper(token.content.trim()));
       i++;
       continue;
     }
@@ -356,7 +371,7 @@ export function parseMd(markdown: string): ParseMdResult {
     const bgAttr = bgColor ? ` backgroundColor="${escapeXml(bgColor)}"` : "";
 
     xmlSlides.push(
-      `<VStack w="${size.w}" h="${size.h}" padding="48" gap="16"${bgAttr}>\n${content}\n</VStack>`,
+      `<Slide><VStack w="${size.w}" h="${size.h}" padding="48" gap="16"${bgAttr}>\n${content}\n</VStack></Slide>`,
     );
   }
 
