@@ -10,6 +10,27 @@ A compact reference for the pom XML format, designed to be pasted into LLM promp
 - Nested object attributes use dot notation (e.g. `fill.color="1D4ED8"`)
 - For shorthand + dot-notation attributes (e.g. `padding` + `padding.top`), both can be mixed on the same node. Shorthand sets defaults; dot-notation keys override per side/property.
 
+## Top-Level Structure
+
+The top level of every pom XML document is one or more `<Slide>` elements. Each `<Slide>` wraps the content of a single slide.
+
+```xml
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24">
+    <Text fontSize="32" bold="true">Slide 1</Text>
+  </VStack>
+</Slide>
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24">
+    <Text fontSize="32" bold="true">Slide 2</Text>
+  </VStack>
+</Slide>
+```
+
+- Top-level elements other than `<Slide>` are an error.
+- A `<Slide>` must contain at least one child element.
+- `<Slide>` does not currently take attributes; per-slide properties (background, notes, etc.) are tracked separately.
+
 ## Common Attributes (All Nodes)
 
 | Attribute         | Type                                                       | Description                                |
@@ -481,22 +502,26 @@ When the same property is specified via both attributes (JSON string) and child 
 ### Basic Structure
 
 ```xml
-<VStack w="100%" h="max" padding="48" gap="24" alignItems="stretch">
-  <Text fontSize="32" bold="true">Title</Text>
-  <Text fontSize="14">Body text</Text>
-</VStack>
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24" alignItems="stretch">
+    <Text fontSize="32" bold="true">Title</Text>
+    <Text fontSize="14">Body text</Text>
+  </VStack>
+</Slide>
 ```
 
 ### Two-Column Layout
 
 ```xml
-<VStack w="100%" h="max" padding="48" gap="24" alignItems="stretch">
-  <Text fontSize="28" bold="true">Title</Text>
-  <HStack gap="24" alignItems="start">
-    <Text w="50%" padding="20" backgroundColor="FFFFFF" borderRadius="8" fontSize="14">Left column</Text>
-    <Text w="50%" padding="20" backgroundColor="FFFFFF" borderRadius="8" fontSize="14">Right column</Text>
-  </HStack>
-</VStack>
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24" alignItems="stretch">
+    <Text fontSize="28" bold="true">Title</Text>
+    <HStack gap="24" alignItems="start">
+      <Text w="50%" padding="20" backgroundColor="FFFFFF" borderRadius="8" fontSize="14">Left column</Text>
+      <Text w="50%" padding="20" backgroundColor="FFFFFF" borderRadius="8" fontSize="14">Right column</Text>
+    </HStack>
+  </VStack>
+</Slide>
 ```
 
 ## Notes

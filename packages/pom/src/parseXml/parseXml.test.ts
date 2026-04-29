@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { parseXml, ParseXmlError } from "./parseXml.ts";
+import { parseXml as parseXmlRaw, ParseXmlError } from "./parseXml.ts";
+
+// Most tests below validate slide-content parsing. They predate the
+// `<Slide>` wrapper requirement, so a helper transparently wraps single-slide
+// content. Tests that exercise top-level behavior (multi-slide, missing
+// `<Slide>`, etc.) call `parseXmlRaw` directly.
+const parseXml = (xml: string) => parseXmlRaw(`<Slide>${xml}</Slide>`);
 
 describe("parseXml", () => {
   // ===== 基本的なノード変換 =====
@@ -870,22 +876,53 @@ describe("parseXml", () => {
     });
   });
 
-  // ===== 複数ルート要素 =====
-  describe("複数ルート要素", () => {
-    it("複数のルート要素を配列として返す", () => {
-      const xml = "<Text>Slide 1</Text><Text>Slide 2</Text>";
-      const result = parseXml(xml);
+  // ===== 複数 Slide =====
+  describe("複数 Slide", () => {
+    it("複数の <Slide> を別々のスライドとして配列で返す", () => {
+      const xml =
+        "<Slide><Text>Slide 1</Text></Slide><Slide><Text>Slide 2</Text></Slide>";
+      const result = parseXmlRaw(xml);
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({ type: "text", text: "Slide 1" });
       expect(result[1]).toEqual({ type: "text", text: "Slide 2" });
+    });
+
+    it("Slide が複数子要素を持つ場合は VStack で暗黙的にラップする", () => {
+      const xml = "<Slide><Text>A</Text><Text>B</Text></Slide>";
+      const result = parseXmlRaw(xml);
+      expect(result).toEqual([
+        {
+          type: "vstack",
+          children: [
+            { type: "text", text: "A" },
+            { type: "text", text: "B" },
+          ],
+        },
+      ]);
+    });
+
+    it("最上位 <Slide> 以外の要素はエラーになる", () => {
+      expect(() => parseXmlRaw("<Text>not in Slide</Text>")).toThrow(
+        ParseXmlError,
+      );
+    });
+
+    it("空の <Slide> はエラーになる", () => {
+      expect(() => parseXmlRaw("<Slide></Slide>")).toThrow(ParseXmlError);
+    });
+
+    it("<Slide> に属性を付けるとエラーになる", () => {
+      expect(() =>
+        parseXmlRaw('<Slide title="x"><Text>A</Text></Slide>'),
+      ).toThrow(ParseXmlError);
     });
   });
 
   // ===== エッジケース =====
   describe("エッジケース", () => {
     it("空文字列で空配列を返す", () => {
-      expect(parseXml("")).toEqual([]);
-      expect(parseXml("  ")).toEqual([]);
+      expect(parseXmlRaw("")).toEqual([]);
+      expect(parseXmlRaw("  ")).toEqual([]);
     });
 
     it("backgroundImage をドット記法で変換する", () => {

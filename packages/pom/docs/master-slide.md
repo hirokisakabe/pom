@@ -8,12 +8,16 @@ You can define a slide master with static objects (text, images, rectangles, lin
 import { buildPptx } from "@hirokisakabe/pom";
 
 const xml = `
-<VStack w="100%" h="max" padding="48">
-  <Text fontSize="32" bold="true">Page 1</Text>
-</VStack>
-<VStack w="100%" h="max" padding="48">
-  <Text fontSize="32" bold="true">Page 2</Text>
-</VStack>
+<Slide>
+  <VStack w="100%" h="max" padding="48">
+    <Text fontSize="32" bold="true">Page 1</Text>
+  </VStack>
+</Slide>
+<Slide>
+  <VStack w="100%" h="max" padding="48">
+    <Text fontSize="32" bold="true">Page 2</Text>
+  </VStack>
+</Slide>
 `;
 
 const { pptx } = await buildPptx(

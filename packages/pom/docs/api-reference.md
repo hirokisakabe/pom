@@ -23,16 +23,20 @@ async function buildPptx(
 
 #### `xml` (required)
 
-An XML string describing the slide content. Each root-level element represents one slide. See [Nodes](./nodes.md) for available node types and [llm.txt](/llm.txt) for the complete XML reference.
+An XML string describing the slide content. Each top-level `<Slide>` element represents one slide and wraps that slide's content. See [Nodes](./nodes.md) for available node types and [llm.txt](/llm.txt) for the complete XML reference.
 
 ```typescript
 const xml = `
-<VStack w="100%" h="max" padding="48">
-  <Text fontSize="32" bold="true">Slide 1</Text>
-</VStack>
-<VStack w="100%" h="max" padding="48">
-  <Text fontSize="24">Slide 2</Text>
-</VStack>
+<Slide>
+  <VStack w="100%" h="max" padding="48">
+    <Text fontSize="32" bold="true">Slide 1</Text>
+  </VStack>
+</Slide>
+<Slide>
+  <VStack w="100%" h="max" padding="48">
+    <Text fontSize="24">Slide 2</Text>
+  </VStack>
+</Slide>
 `;
 ```
 

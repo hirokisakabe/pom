@@ -8,7 +8,7 @@ import { parseMasterPptx } from "./parseMasterPptx.ts";
 async function generatePptxBuffer(
   masterBackground?: { color: string } | { data: string },
 ): Promise<Uint8Array> {
-  const xml = '<VStack><Text fontSize="24">test</Text></VStack>';
+  const xml = '<Slide><VStack><Text fontSize="24">test</Text></VStack></Slide>';
   const slideSize = { w: 960, h: 540 };
   const result = await buildPptx(xml, slideSize, {
     master: masterBackground ? { background: masterBackground } : undefined,
@@ -50,7 +50,8 @@ describe("buildPptx with masterPptx option", () => {
     const templateBuffer = await generatePptxBuffer({ color: "0000FF" });
 
     // masterPptx として渡して新しい PPTX を生成
-    const xml = '<VStack><Text fontSize="24">hello</Text></VStack>';
+    const xml =
+      '<Slide><VStack><Text fontSize="24">hello</Text></VStack></Slide>';
     const result = await buildPptx(
       xml,
       { w: 960, h: 540 },
@@ -64,7 +65,8 @@ describe("buildPptx with masterPptx option", () => {
   });
 
   it("不正な masterPptx を渡した場合は diagnostics に警告が追加される", async () => {
-    const xml = '<VStack><Text fontSize="24">hello</Text></VStack>';
+    const xml =
+      '<Slide><VStack><Text fontSize="24">hello</Text></VStack></Slide>';
     const result = await buildPptx(
       xml,
       { w: 960, h: 540 },
@@ -82,7 +84,8 @@ describe("buildPptx with masterPptx option", () => {
     const templateBuffer = await generatePptxBuffer({ color: "0000FF" });
 
     // masterPptx と master.background の両方を指定
-    const xml = '<VStack><Text fontSize="24">hello</Text></VStack>';
+    const xml =
+      '<Slide><VStack><Text fontSize="24">hello</Text></VStack></Slide>';
     const result = await buildPptx(
       xml,
       { w: 960, h: 540 },

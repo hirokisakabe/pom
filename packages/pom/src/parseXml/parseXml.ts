@@ -1244,6 +1244,10 @@ function convertPomNode(
 /**
  * XML 文字列を POMNode 配列に変換する。
  *
+ * 最上位は `<Slide>` 要素のみが許容される。各 `<Slide>` が 1 つのスライドに
+ * 対応し、その子要素がスライドのルート POMNode となる。子要素が複数ある場合は
+ * 暗黙的に VStack でラップされる。
+ *
  * XML タグは POM ノードタイプにマッピングされ、属性値は Zod スキーマを参照して
  * 適切な型（number, boolean, array, object）に変換される。
  * 未知のタグ名が指定された場合はエラーがスローされる。
@@ -1253,9 +1257,11 @@ function convertPomNode(
  * import { parseXml, buildPptx } from "@hirokisakabe/pom";
  *
  * const xml = `
- *   <VStack gap="16" padding="32">
- *     <Text fontSize="32" bold="true">売上レポート</Text>
- *   </VStack>
+ *   <Slide>
+ *     <VStack gap="16" padding="32">
+ *       <Text fontSize="32" bold="true">売上レポート</Text>
+ *     </VStack>
+ *   </Slide>
  * `;
  *
  * const nodes = parseXml(xml);
@@ -1283,12 +1289,40 @@ export function parseXml(xmlString: string): POMNode[] {
   const rootChildren = (rootElement["__root__"] ?? []) as XmlNode[];
 
   const errors: string[] = [];
-  const nodes = rootChildren
-    .filter((child): child is XmlElement => !isTextNode(child))
-    .map((child) => convertElement(child, errors))
-    .filter(
-      (child): child is Record<string, unknown> => child !== null,
-    ) as POMNode[];
+  const slideElements = rootChildren.filter(
+    (child): child is XmlElement => !isTextNode(child),
+  );
+
+  const nodes: POMNode[] = [];
+  for (const slideEl of slideElements) {
+    const tagName = getTagName(slideEl);
+    if (tagName !== "Slide") {
+      errors.push(
+        `Top-level element must be <Slide>, but got <${tagName}>. Wrap your slide content in <Slide>...</Slide>.`,
+      );
+      continue;
+    }
+    if (Object.keys(getAttributes(slideEl)).length > 0) {
+      errors.push(`<Slide>: Attributes are not supported`);
+    }
+    const slideChildren = getChildElements(slideEl);
+    if (slideChildren.length === 0) {
+      errors.push(`<Slide> must contain at least one child element`);
+      continue;
+    }
+    const converted = slideChildren
+      .map((child) => convertElement(child, errors))
+      .filter((c): c is Record<string, unknown> => c !== null);
+    if (converted.length === 0) continue;
+    if (converted.length === 1) {
+      nodes.push(converted[0] as POMNode);
+    } else {
+      nodes.push({
+        type: "vstack",
+        children: converted,
+      } as POMNode);
+    }
+  }
 
   if (errors.length > 0) {
     throw new ParseXmlError(errors);

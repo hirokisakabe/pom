@@ -83,7 +83,9 @@ export async function generatePptx(outputPath: string): Promise<void> {
     page36InlineFormattingXml,
     page37TableCellBorderXml,
     page38CustomFontExtendedXml,
-  ].join("\n");
+  ]
+    .map((pageXml) => `<Slide>${pageXml}</Slide>`)
+    .join("\n");
 
   const { pptx } = await buildPptx(
     allPagesXml,

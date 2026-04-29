@@ -2,6 +2,26 @@
 
 This document provides a complete reference for all node types available in pom.
 
+## Top-Level `<Slide>`
+
+The top level of a pom XML document is one or more `<Slide>` elements. Each `<Slide>` represents one slide and wraps that slide's content (any of the nodes below).
+
+```xml
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24">
+    <Text fontSize="32" bold="true">Title</Text>
+    <Text fontSize="14">Body</Text>
+  </VStack>
+</Slide>
+```
+
+- A `<Slide>` must contain at least one child element.
+- Multiple top-level `<Slide>` elements produce multiple slides.
+- Top-level elements other than `<Slide>` are an error.
+- `<Slide>` does not currently take attributes; per-slide properties (background, notes, etc.) are tracked separately.
+
+The remaining sections describe nodes that go inside a `<Slide>`. For brevity, the example snippets below omit the `<Slide>` wrapper.
+
 ## Common Properties
 
 Layout attributes that all nodes can have.

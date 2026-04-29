@@ -1,56 +1,60 @@
-<VStack gap="24" padding="48">
-  <Text fontSize="32" bold="true" color="0F172A">pom XML Feature Showcase</Text>
-  <Text fontSize="16" color="64748B">Declarative PowerPoint generation with <B>pom</B></Text>
-  <HStack gap="32" w="100%">
-    <VStack gap="16" w="50%">
-      <Text fontSize="20" bold="true" color="1D4ED8">Text &amp; Lists</Text>
-      <Text fontSize="14">Inline: <B>bold</B>, <I>italic</I>, <U>underline</U>, <S>strike</S>, <Mark>highlight</Mark></Text>
-      <Ul fontSize="14">
-        <Li>Unordered item 1</Li>
-        <Li>Unordered item 2</Li>
-      </Ul>
-      <Ol fontSize="14" numberType="arabicPeriod">
-        <Li>Ordered item 1</Li>
-        <Li>Ordered item 2</Li>
-      </Ol>
-    </VStack>
-    <VStack gap="16" w="50%">
-      <Text fontSize="20" bold="true" color="1D4ED8">Table</Text>
-      <Table>
-        <Tr>
-          <Td bold="true" backgroundColor="0F172A" color="FFFFFF">Feature</Td>
-          <Td bold="true" backgroundColor="0F172A" color="FFFFFF">Status</Td>
-        </Tr>
-        <Tr>
-          <Td>Live preview</Td>
-          <Td>OK</Td>
-        </Tr>
-        <Tr>
-          <Td>Debounce</Td>
-          <Td>OK</Td>
-        </Tr>
-      </Table>
-    </VStack>
-  </HStack>
-</VStack>
-<VStack gap="24" padding="48">
-  <Text fontSize="28" bold="true" color="0F172A">Shapes &amp; Diagrams</Text>
-  <HStack gap="24" alignItems="center" justifyContent="center" w="100%">
-    <Shape shapeType="roundRect" w="120" h="60" text="roundRect" fill.color="1D4ED8" color="FFFFFF" fontSize="12" />
-    <Shape shapeType="ellipse" w="80" h="60" text="ellipse" fill.color="16A34A" color="FFFFFF" fontSize="12" />
-    <Shape shapeType="diamond" w="80" h="80" text="diamond" fill.color="DC2626" color="FFFFFF" fontSize="12" />
-  </HStack>
-  <ProcessArrow direction="horizontal" w="100%" h="80">
-    <ProcessArrowStep label="Plan" color="1D4ED8" textColor="FFFFFF" />
-    <ProcessArrowStep label="Build" color="2563EB" textColor="FFFFFF" />
-    <ProcessArrowStep label="Test" color="3B82F6" textColor="FFFFFF" />
-    <ProcessArrowStep label="Deploy" color="60A5FA" textColor="FFFFFF" />
-  </ProcessArrow>
-  <HStack gap="32" alignItems="center" justifyContent="center" w="100%">
-    <Icon name="cpu" size="32" color="#1D4ED8" variant="circle-filled" bgColor="#DBEAFE" />
-    <Icon name="database" size="32" color="#16A34A" variant="circle-filled" bgColor="#DCFCE7" />
-    <Icon name="cloud" size="32" color="#9333EA" variant="circle-filled" bgColor="#F3E8FF" />
-    <Icon name="shield" size="32" color="#DC2626" variant="circle-filled" bgColor="#FEE2E2" />
-    <Icon name="settings" size="32" color="#64748B" variant="circle-filled" bgColor="#F1F5F9" />
-  </HStack>
-</VStack>
+<Slide>
+  <VStack gap="24" padding="48">
+    <Text fontSize="32" bold="true" color="0F172A">pom XML Feature Showcase</Text>
+    <Text fontSize="16" color="64748B">Declarative PowerPoint generation with <B>pom</B></Text>
+    <HStack gap="32" w="100%">
+      <VStack gap="16" w="50%">
+        <Text fontSize="20" bold="true" color="1D4ED8">Text &amp; Lists</Text>
+        <Text fontSize="14">Inline: <B>bold</B>, <I>italic</I>, <U>underline</U>, <S>strike</S>, <Mark>highlight</Mark></Text>
+        <Ul fontSize="14">
+          <Li>Unordered item 1</Li>
+          <Li>Unordered item 2</Li>
+        </Ul>
+        <Ol fontSize="14" numberType="arabicPeriod">
+          <Li>Ordered item 1</Li>
+          <Li>Ordered item 2</Li>
+        </Ol>
+      </VStack>
+      <VStack gap="16" w="50%">
+        <Text fontSize="20" bold="true" color="1D4ED8">Table</Text>
+        <Table>
+          <Tr>
+            <Td bold="true" backgroundColor="0F172A" color="FFFFFF">Feature</Td>
+            <Td bold="true" backgroundColor="0F172A" color="FFFFFF">Status</Td>
+          </Tr>
+          <Tr>
+            <Td>Live preview</Td>
+            <Td>OK</Td>
+          </Tr>
+          <Tr>
+            <Td>Debounce</Td>
+            <Td>OK</Td>
+          </Tr>
+        </Table>
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>
+<Slide>
+  <VStack gap="24" padding="48">
+    <Text fontSize="28" bold="true" color="0F172A">Shapes &amp; Diagrams</Text>
+    <HStack gap="24" alignItems="center" justifyContent="center" w="100%">
+      <Shape shapeType="roundRect" w="120" h="60" text="roundRect" fill.color="1D4ED8" color="FFFFFF" fontSize="12" />
+      <Shape shapeType="ellipse" w="80" h="60" text="ellipse" fill.color="16A34A" color="FFFFFF" fontSize="12" />
+      <Shape shapeType="diamond" w="80" h="80" text="diamond" fill.color="DC2626" color="FFFFFF" fontSize="12" />
+    </HStack>
+    <ProcessArrow direction="horizontal" w="100%" h="80">
+      <ProcessArrowStep label="Plan" color="1D4ED8" textColor="FFFFFF" />
+      <ProcessArrowStep label="Build" color="2563EB" textColor="FFFFFF" />
+      <ProcessArrowStep label="Test" color="3B82F6" textColor="FFFFFF" />
+      <ProcessArrowStep label="Deploy" color="60A5FA" textColor="FFFFFF" />
+    </ProcessArrow>
+    <HStack gap="32" alignItems="center" justifyContent="center" w="100%">
+      <Icon name="cpu" size="32" color="#1D4ED8" variant="circle-filled" bgColor="#DBEAFE" />
+      <Icon name="database" size="32" color="#16A34A" variant="circle-filled" bgColor="#DCFCE7" />
+      <Icon name="cloud" size="32" color="#9333EA" variant="circle-filled" bgColor="#F3E8FF" />
+      <Icon name="shield" size="32" color="#DC2626" variant="circle-filled" bgColor="#FEE2E2" />
+      <Icon name="settings" size="32" color="#64748B" variant="circle-filled" bgColor="#F1F5F9" />
+    </HStack>
+  </VStack>
+</Slide>
