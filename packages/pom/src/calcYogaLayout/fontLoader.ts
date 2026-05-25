@@ -3,9 +3,18 @@
  * Node.js とブラウザ両方で動作する
  */
 
-import { Font, parse } from "opentype.js";
+import type { Font } from "opentype.js";
+import * as opentypeModule from "opentype.js";
 import { NOTO_SANS_JP_REGULAR_BASE64 } from "./fonts/notoSansJPRegular.ts";
 import { NOTO_SANS_JP_BOLD_BASE64 } from "./fonts/notoSansJPBold.ts";
+
+// opentype.js 2.0 は ESM ビルドで named export のみを提供する一方、
+// CJS UMD ビルドでは module.exports = factory() の動的構造のため
+// Node ESM から取り込むと named exports が静的解析できない。
+// どちらの形でも動くよう default プロパティを優先して unwrap する。
+const opentype = (
+  opentypeModule as unknown as { default?: typeof opentypeModule }
+).default ?? opentypeModule;
 
 // フォントキャッシュ
 const fontCache = new Map<string, Font>();
@@ -52,7 +61,7 @@ function getFont(weight: "normal" | "bold"): Font {
 
   // ArrayBuffer に変換してパース
   const buffer = base64ToArrayBuffer(base64);
-  const font = parse(buffer);
+  const font = opentype.parse(buffer);
 
   // キャッシュに保存
   fontCache.set(cacheKey, font);
