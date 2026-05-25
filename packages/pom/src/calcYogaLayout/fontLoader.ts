@@ -3,7 +3,7 @@
  * Node.js とブラウザ両方で動作する
  */
 
-import opentype, { Font } from "opentype.js";
+import { Font, parse } from "opentype.js";
 import { NOTO_SANS_JP_REGULAR_BASE64 } from "./fonts/notoSansJPRegular.ts";
 import { NOTO_SANS_JP_BOLD_BASE64 } from "./fonts/notoSansJPBold.ts";
 
@@ -52,7 +52,7 @@ function getFont(weight: "normal" | "bold"): Font {
 
   // ArrayBuffer に変換してパース
   const buffer = base64ToArrayBuffer(base64);
-  const font = opentype.parse(buffer);
+  const font = parse(buffer);
 
   // キャッシュに保存
   fontCache.set(cacheKey, font);

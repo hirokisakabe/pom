@@ -11,6 +11,7 @@ overrides:
   brace-expansion@<1.1.13: 1.1.13
   brace-expansion@>=2.0.0 <2.0.3: 2.0.3
   path-to-regexp@>=8.0.0 <8.4.0: '>=8.4.0'
+  zod@>=4.4.0 <5.0.0: ~4.3.6
 
 importers:
 
@@ -66,7 +67,7 @@ importers:
         version: link:../../packages/pom
       '@hono/zod-validator':
         specifier: ^0.8.0
-        version: 0.8.0(hono@4.12.23)(zod@4.4.3)
+        version: 0.8.0(hono@4.12.23)(zod@4.3.6)
       '@vercel/analytics':
         specifier: ^2.0.1
         version: 2.0.1(next@16.2.6(@babel/core@7.29.7)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)
@@ -125,8 +126,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       zod:
-        specifier: ^4.4.3
-        version: 4.4.3
+        specifier: ~4.3.6
+        version: 4.3.6
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -201,8 +202,8 @@ importers:
         specifier: 3.2.1
         version: 3.2.1
       zod:
-        specifier: ^4.4.3
-        version: 4.4.3
+        specifier: ~4.3.6
+        version: 4.3.6
     devDependencies:
       '@size-limit/file':
         specifier: ^12.1.0
@@ -1039,7 +1040,7 @@ packages:
     resolution: {integrity: sha512-5uS4S1/LKtZQYvD4BtpPUFkOv8d1wNxHHrChm26buMiEYc1FrHWvDUaKVBwkiVtvSExHSpLGDvcnpI2Copyj9w==}
     peerDependencies:
       hono: '>=4.10.0'
-      zod: ^3.25.0 || ^4.0.0
+      zod: ~4.3.6
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -1324,7 +1325,7 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
-      zod: ^3.25 || ^4.0
+      zod: ~4.3.6
     peerDependenciesMeta:
       '@cfworker/json-schema':
         optional: true
@@ -7192,13 +7193,13 @@ packages:
   zod-to-json-schema@3.25.2:
     resolution: {integrity: sha512-O/PgfnpT1xKSDeQYSCfRI5Gy3hPf91mKVDuYLUHZJMiDFptvP41MSnWofm8dnCm0256ZNfZIM7DSzuSMAFnjHA==}
     peerDependencies:
-      zod: ^3.25.28 || ^4
+      zod: ~4.3.6
 
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.4.3:
-    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+  zod@4.3.6:
+    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
   zustand@5.0.12:
     resolution: {integrity: sha512-i77ae3aZq4dhMlRhJVCYgMLKuSiZAaUPAct2AksxQ+gOtimhGMdXljRT21P5BNpeT4kXlLIckvkPM029OljD7g==}
@@ -8030,10 +8031,10 @@ snapshots:
     dependencies:
       hono: 4.12.23
 
-  '@hono/zod-validator@0.8.0(hono@4.12.23)(zod@4.4.3)':
+  '@hono/zod-validator@0.8.0(hono@4.12.23)(zod@4.3.6)':
     dependencies:
       hono: 4.12.23
-      zod: 4.4.3
+      zod: 4.3.6
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -12105,7 +12106,7 @@ snapshots:
       tinyglobby: 0.2.16
       unbash: 3.0.0
       yaml: 2.9.0
-      zod: 4.4.3
+      zod: 4.3.6
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -12963,7 +12964,7 @@ snapshots:
       react-compiler-runtime: 19.1.0-rc.3(react@19.2.6)
       react-dom: 19.2.6(react@19.2.6)
       scroll-into-view-if-needed: 3.1.0
-      zod: 4.4.3
+      zod: 4.3.6
       zustand: 5.0.12(@types/react@19.2.15)(react@19.2.6)(use-sync-external-store@1.6.0(react@19.2.6))
     transitivePeerDependencies:
       - '@types/react'
@@ -13013,7 +13014,7 @@ snapshots:
       unist-util-visit: 5.1.0
       unist-util-visit-children: 3.0.0
       yaml: 2.8.3
-      zod: 4.4.3
+      zod: 4.3.6
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -14853,7 +14854,7 @@ snapshots:
 
   zod@3.25.76: {}
 
-  zod@4.4.3: {}
+  zod@4.3.6: {}
 
   zustand@5.0.12(@types/react@19.2.15)(react@19.2.6)(use-sync-external-store@1.6.0(react@19.2.6)):
     optionalDependencies:
