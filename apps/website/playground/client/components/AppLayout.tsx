@@ -82,7 +82,9 @@ export function AppLayout() {
         { init: { signal: controller.signal } },
       );
 
-      const data = await res.json();
+      const data = (await res.json()) as
+        | { svgs: string[] }
+        | { errors: StructuredError[] };
 
       if ("errors" in data) {
         setErrors(data.errors);
