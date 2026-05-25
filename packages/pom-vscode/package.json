@@ -107,14 +107,14 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^25",
     "@types/vscode": "~1.85.0",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/coverage-v8": "^4.1.7",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.9.1",
     "esbuild": "^0.28.0",
-    "mocha": "^11.7.5",
+    "mocha": "^11.7.6",
     "pptx-glimpse": "^0.10.3",
     "sharp": "^0.34.5",
-    "typescript-eslint": "^8.59.0"
+    "typescript-eslint": "^8.59.4"
   }
 }
