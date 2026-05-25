@@ -12,9 +12,9 @@ import { NOTO_SANS_JP_BOLD_BASE64 } from "./fonts/notoSansJPBold.ts";
 // CJS UMD ビルドでは module.exports = factory() の動的構造のため
 // Node ESM から取り込むと named exports が静的解析できない。
 // どちらの形でも動くよう default プロパティを優先して unwrap する。
-const opentype = (
-  opentypeModule as unknown as { default?: typeof opentypeModule }
-).default ?? opentypeModule;
+const opentype =
+  (opentypeModule as unknown as { default?: typeof opentypeModule }).default ??
+  opentypeModule;
 
 // フォントキャッシュ
 const fontCache = new Map<string, Font>();
