@@ -52,6 +52,7 @@ export const PAGE_NAMES = [
   "36-inline-formatting",
   "37-table-cell-border",
   "38-custom-font-extended",
+  "39-arrow",
 ] as const;
 
 export const THRESHOLD = 0.1;

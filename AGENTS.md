@@ -50,7 +50,7 @@ PPTX generation pipeline: **calcYogaLayout** → **toPositioned** → **renderPp
 
 ### Key Internal Types
 
-- `POMNode` — Input node (Text, Ul, Ol, Image, Table, Shape, Chart, Timeline, Matrix, Tree, Flow, ProcessArrow, Pyramid, Line, Layer, VStack, HStack, Icon, Svg)
+- `POMNode` — Input node (Text, Ul, Ol, Image, Table, Shape, Chart, Timeline, Matrix, Tree, Flow, ProcessArrow, Pyramid, Line, Arrow, Layer, VStack, HStack, Icon, Svg)
 - `PositionedNode` — Node with absolute position (x, y, w, h)
 - `parseXml` — XML strings → POMNode arrays (PascalCase tags, Zod-validated attributes)
 

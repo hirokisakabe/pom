@@ -310,6 +310,7 @@ const backgroundImageSchema = z.object({
 
 // ===== Base Node =====
 const basePOMNodeSchema = z.object({
+  id: z.string().optional(),
   w: lengthSchema.optional(),
   h: lengthSchema.optional(),
   minW: z.number().optional(),
@@ -773,6 +774,20 @@ export const lineNodeSchema = basePOMNodeSchema.extend({
 export type LineArrow = z.infer<typeof lineArrowSchema>;
 export type LineNode = z.infer<typeof lineNodeSchema>;
 
+// ===== Arrow Node =====
+export const arrowNodeSchema = basePOMNodeSchema.extend({
+  type: z.literal("arrow"),
+  from: z.string(),
+  to: z.string(),
+  color: z.string().optional(),
+  lineWidth: z.number().optional(),
+  dashType: borderDashSchema.optional(),
+  beginArrow: lineArrowSchema.optional(),
+  endArrow: lineArrowSchema.optional(),
+});
+
+export type ArrowNode = z.infer<typeof arrowNodeSchema>;
+
 // ===== Layer Node =====
 // LayerChild, LayerNode types are defined below after POMNode
 
@@ -825,6 +840,7 @@ export type POMNode =
   | ProcessArrowNode
   | PyramidNode
   | LineNode
+  | ArrowNode
   | LayerNode
   | IconNode
   | SvgNode;
@@ -880,6 +896,7 @@ const pomNodeSchema: z.ZodType<POMNode> = z.lazy(() =>
     processArrowNodeSchema,
     pyramidNodeSchema,
     lineNodeSchema,
+    arrowNodeSchema,
     layerNodeSchemaBase,
     iconNodeSchema,
     svgNodeSchema,
@@ -919,6 +936,7 @@ export type PositionedNode =
   | (ProcessArrowNode & PositionedBase)
   | (PyramidNode & PositionedBase)
   | (LineNode & PositionedBase)
+  | (ArrowNode & PositionedBase)
   | (LayerNode & PositionedBase & { children: PositionedLayerChild[] })
   | (IconNode &
       PositionedBase & {
@@ -967,6 +985,7 @@ const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
     processArrowNodeSchema.merge(positionedBaseSchema),
     pyramidNodeSchema.merge(positionedBaseSchema),
     lineNodeSchema.merge(positionedBaseSchema),
+    arrowNodeSchema.merge(positionedBaseSchema),
     layerNodeSchemaBase.merge(positionedBaseSchema).extend({
       children: z.array(positionedLayerChildSchema),
     }),

@@ -23,6 +23,7 @@ const ALL_NODE_TYPES: POMNode["type"][] = [
   "processArrow",
   "pyramid",
   "line",
+  "arrow",
   "layer",
   "icon",
 ];
@@ -72,6 +73,7 @@ describe("NodeRegistry", () => {
       "processArrow",
       "pyramid",
       "line",
+      "arrow",
       "icon",
     ];
     for (const type of leafTypes) {

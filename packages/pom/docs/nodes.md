@@ -26,27 +26,28 @@ The remaining sections describe nodes that go inside a `<Slide>`. For brevity, t
 
 Layout attributes that all nodes can have.
 
-| Attribute         | Type                                                                       | Description                         |
-| ----------------- | -------------------------------------------------------------------------- | ----------------------------------- |
-| `w`               | number / `"max"` / `"50%"`                                                 | Width                               |
-| `h`               | number / `"max"` / `"50%"`                                                 | Height                              |
-| `minW` `maxW`     | number                                                                     | Min/Max width                       |
-| `minH` `maxH`     | number                                                                     | Min/Max height                      |
-| `padding`         | number / `padding.top="8" padding.bottom="8"`                              | Padding                             |
-| `backgroundColor` | hex                                                                        | Background color (e.g., `F8F9FA`)   |
-| `backgroundImage` | `backgroundImage.src="url" backgroundImage.sizing="cover"`                 | Background image                    |
-| `border`          | `border.color="333" border.width="1"`                                      | Border                              |
-| `borderRadius`    | number                                                                     | Corner radius (px)                  |
-| `opacity`         | 0-1                                                                        | Background transparency             |
-| `margin`          | number / `margin.top="8" margin.bottom="8"`                                | Outer margin                        |
-| `zIndex`          | number                                                                     | Stacking order (higher = on top)    |
-| `position`        | `relative` / `absolute`                                                    | Positioning mode                    |
-| `top`             | number                                                                     | Top offset (with position)          |
-| `right`           | number                                                                     | Right offset (with position)        |
-| `bottom`          | number                                                                     | Bottom offset (with position)       |
-| `left`            | number                                                                     | Left offset (with position)         |
-| `alignSelf`       | `auto` / `start` / `center` / `end` / `stretch`                            | Override parent alignItems          |
-| `shadow`          | `shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000"` | Drop shadow (not supported on Line) |
+| Attribute         | Type                                                                       | Description                                                     |
+| ----------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `id`              | string                                                                     | Unique identifier within the slide (used by `Arrow` connectors) |
+| `w`               | number / `"max"` / `"50%"`                                                 | Width                                                           |
+| `h`               | number / `"max"` / `"50%"`                                                 | Height                                                          |
+| `minW` `maxW`     | number                                                                     | Min/Max width                                                   |
+| `minH` `maxH`     | number                                                                     | Min/Max height                                                  |
+| `padding`         | number / `padding.top="8" padding.bottom="8"`                              | Padding                                                         |
+| `backgroundColor` | hex                                                                        | Background color (e.g., `F8F9FA`)                               |
+| `backgroundImage` | `backgroundImage.src="url" backgroundImage.sizing="cover"`                 | Background image                                                |
+| `border`          | `border.color="333" border.width="1"`                                      | Border                                                          |
+| `borderRadius`    | number                                                                     | Corner radius (px)                                              |
+| `opacity`         | 0-1                                                                        | Background transparency                                         |
+| `margin`          | number / `margin.top="8" margin.bottom="8"`                                | Outer margin                                                    |
+| `zIndex`          | number                                                                     | Stacking order (higher = on top)                                |
+| `position`        | `relative` / `absolute`                                                    | Positioning mode                                                |
+| `top`             | number                                                                     | Top offset (with position)                                      |
+| `right`           | number                                                                     | Right offset (with position)                                    |
+| `bottom`          | number                                                                     | Bottom offset (with position)                                   |
+| `left`            | number                                                                     | Left offset (with position)                                     |
+| `alignSelf`       | `auto` / `start` / `center` / `end` / `stretch`                            | Override parent alignItems                                      |
+| `shadow`          | `shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000"` | Drop shadow (not supported on Line)                             |
 
 - `backgroundImage`: `src` accepts a URL or local file path. `sizing` controls how the image fits: `"cover"` (default) fills the area, `"contain"` fits within the area.
 - `border`: Can be combined with `color`, `width`, and `dashType` (`"solid"` / `"dash"` / `"dashDot"` / `"lgDash"` / `"lgDashDot"` / `"lgDashDotDot"` / `"sysDash"` / `"sysDot"`).
@@ -866,3 +867,43 @@ A node for rendering inline SVG graphics. SVGs are rasterized to PNG at the spec
 A `<svg>` child element is required.
 
 When `color` is specified, it sets `stroke` and `fill="none"` on the root `<svg>` element. If child elements within the SVG have explicit `stroke` or `fill` attributes, those take precedence over the root-level values.
+
+### 20. Arrow
+
+A node for drawing connectors between elements referenced by their `id` attribute. Unlike `Line` (which requires manual coordinates), `Arrow` automatically connects two nodes by ID.
+
+```xml
+<Layer w="1280" h="720">
+  <Shape id="a" x="100" y="100" w="120" h="40" shapeType="rect">A</Shape>
+  <Shape id="b" x="100" y="200" w="120" h="40" shapeType="rect">B</Shape>
+  <Arrow x="0" y="0" from="a" to="b" endArrow="true" />
+</Layer>
+```
+
+| Attribute                 | Values                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------ |
+| `from`                    | string (id of the source node, required)                                             |
+| `to`                      | string (id of the destination node, required)                                        |
+| `color`                   | hex (default: `000000`)                                                              |
+| `lineWidth`               | number (default: 1)                                                                  |
+| `dashType`                | `solid` / `dash` / `dashDot` / `lgDash` / `sysDash` etc.                             |
+| `beginArrow` / `endArrow` | `true` / `endArrow.type="triangle"` (type: none/arrow/triangle/diamond/oval/stealth) |
+
+The connector draws a straight line between the center points of the `from` and `to` nodes.
+
+If either ID is not found on the slide, a `ARROW_REF_NOT_FOUND` diagnostic is emitted (build succeeds, connector is omitted).
+
+**Usage Example:**
+
+```xml
+<Layer w="1280" h="720">
+  <Shape id="web" x="100" y="120" w="160" h="60" shapeType="roundRect" fill.color="1D4ED8" color="FFFFFF">Web App</Shape>
+  <Shape id="api" x="100" y="260" w="160" h="60" shapeType="roundRect" fill.color="16A34A" color="FFFFFF">API</Shape>
+  <Shape id="db"  x="100" y="400" w="160" h="60" shapeType="roundRect" fill.color="DC2626" color="FFFFFF">DB</Shape>
+  <!-- Connectors -->
+  <Arrow x="0" y="0" from="web" to="api" endArrow="true" />
+  <Arrow x="0" y="0" from="api" to="db"  endArrow="true" />
+  <!-- Bidirectional with style -->
+  <Arrow x="0" y="0" from="api" to="web" beginArrow="true" endArrow="true" color="333333" lineWidth="2" dashType="dash" />
+</Layer>
+```

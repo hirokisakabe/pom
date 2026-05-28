@@ -16,6 +16,7 @@ import {
   processArrowNodeSchema,
   pyramidNodeSchema,
   lineNodeSchema,
+  arrowNodeSchema,
   iconNodeSchema,
 } from "../types.ts";
 import {
@@ -55,6 +56,7 @@ export const TAG_TO_TYPE: Record<string, string> = {
   Ul: "ul",
   Ol: "ol",
   Line: "line",
+  Arrow: "arrow",
   VStack: "vstack",
   HStack: "hstack",
   Layer: "layer",
@@ -138,6 +140,7 @@ const leafNodeValidationSchemas: Record<string, z.ZodTypeAny> = {
   processArrow: processArrowNodeSchema,
   pyramid: pyramidNodeSchema,
   line: lineNodeSchema,
+  arrow: arrowNodeSchema,
   ul: ulNodeSchema,
   ol: olNodeSchema,
   icon: iconNodeSchema,
