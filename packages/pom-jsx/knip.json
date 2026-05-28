@@ -1,0 +1,12 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignoreBinaries": ["eslint", "knip", "prettier", "tsc", "vitest"],
+  "ignoreDependencies": ["typescript-eslint", "vitest"],
+  "vitest": {
+    "config": ["vitest.config.ts"]
+  },
+  "rules": {
+    "exports": "warn"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "name": "@hirokisakabe/pom-jsx",
+  "version": "0.1.0",
+  "description": "JSX/TSX authoring package for pom — write slides in JSX/TSX.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./jsx-runtime": {
+      "types": "./dist/jsx-runtime.d.ts",
+      "import": "./dist/jsx-runtime.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "homepage": "https://github.com/hirokisakabe/pom#readme",
+  "bugs": {
+    "url": "https://github.com/hirokisakabe/pom/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hirokisakabe/pom.git",
+    "directory": "packages/pom-jsx"
+  },
+  "license": "MIT",
+  "keywords": [
+    "powerpoint",
+    "pptx",
+    "presentation",
+    "slides",
+    "jsx",
+    "tsx",
+    "pom"
+  ],
+  "author": "Hiroki Sakabe",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "fmt": "prettier --write .",
+    "fmt:check": "prettier --check .",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "knip": "knip",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@hirokisakabe/pom": "workspace:*",
+    "@vitest/coverage-v8": "^4.1.7",
+    "typescript-eslint": "^8.59.4"
+  }
+}

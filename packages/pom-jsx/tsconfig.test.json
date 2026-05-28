@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "outDir": "",
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "@hirokisakabe/pom-jsx",
+    "paths": {
+      "@hirokisakabe/pom-jsx/jsx-runtime": ["./src/jsx-runtime.ts"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

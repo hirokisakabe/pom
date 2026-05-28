@@ -264,6 +264,18 @@ importers:
         specifier: ^8.59.4
         version: 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3)
 
+  packages/pom-jsx:
+    devDependencies:
+      '@hirokisakabe/pom':
+        specifier: workspace:*
+        version: link:../pom
+      '@vitest/coverage-v8':
+        specifier: ^4.1.7
+        version: 4.1.7(vitest@4.1.7)
+      typescript-eslint:
+        specifier: ^8.59.4
+        version: 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3)
+
   packages/pom-md:
     dependencies:
       markdown-it:
