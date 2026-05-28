@@ -1,64 +1,95 @@
-import { spawn } from "child_process";
 import fs from "fs";
 import http from "http";
 import { fileURLToPath } from "url";
 import path from "path";
+import { buildPptx } from "@hirokisakabe/pom";
+import { parseMd } from "@hirokisakabe/pom-md";
+import { convertPptxToSvg } from "pptx-glimpse";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_PORT = 3000;
+
+const EXTRA_FONT_MAPPING: Record<string, string> = {
+  "游ゴシック Light": "Noto Sans CJK JP",
+  "Yu Gothic Light": "Noto Sans CJK JP",
+};
 
 type SvgResult =
   | { type: "success"; svgs: string[]; slideWidth: number }
   | { type: "error"; message: string }
   | { type: "empty" };
 
-interface WorkerInput {
-  inputFile: string;
-}
-
 async function generateSvgs(inputFile: string): Promise<SvgResult> {
-  const workerPath = path.resolve(__dirname, "svgWorker.js");
+  const content = fs.readFileSync(inputFile, "utf-8");
+  const ext = path.extname(inputFile);
 
-  return new Promise<SvgResult>((resolve) => {
-    const child = spawn(
-      process.execPath,
-      ["--max-old-space-size=8192", workerPath],
-      { stdio: ["pipe", "pipe", "inherit"] },
-    );
+  let xml: string;
+  let slideWidth = 1280;
+  let slideHeight = 720;
+  let masterPptxData: Uint8Array | undefined;
 
-    const input: WorkerInput = { inputFile };
-    child.stdin.write(JSON.stringify(input));
-    child.stdin.end();
+  if (ext === ".md") {
+    const result = parseMd(content);
+    xml = result.xml;
+    slideWidth = result.meta.size.w;
+    slideHeight = result.meta.size.h;
 
-    let output = "";
-    child.stdout.on("data", (chunk: Buffer) => {
-      output += chunk.toString();
-    });
-
-    child.stdout.on("end", () => {
+    if (result.meta.masterPptx) {
+      const masterPath = path.resolve(
+        path.dirname(inputFile),
+        result.meta.masterPptx,
+      );
       try {
-        resolve(JSON.parse(output) as SvgResult);
-      } catch {
-        resolve({
-          type: "error",
-          message: "SVG worker returned invalid output",
-        });
+        masterPptxData = new Uint8Array(fs.readFileSync(masterPath));
+      } catch (e: unknown) {
+        if (e instanceof Error && "code" in e && e.code === "ENOENT") {
+          process.stderr.write(
+            `Warning: masterPptx not found: ${masterPath}\n`,
+          );
+        } else {
+          throw e;
+        }
       }
-    });
+    }
+  } else {
+    xml = content;
+  }
 
-    child.on("error", (err: Error) => {
-      resolve({ type: "error", message: err.message });
-    });
+  if (!xml.trim()) {
+    return { type: "empty" };
+  }
 
-    child.on("close", (code: number | null) => {
-      if (code !== 0 && output === "") {
-        resolve({
-          type: "error",
-          message: `SVG worker exited with code ${String(code)}`,
-        });
-      }
-    });
+  const { pptx } = await buildPptx(
+    xml,
+    { w: slideWidth, h: slideHeight },
+    {
+      textMeasurement: "fallback",
+      ...(masterPptxData ? { masterPptx: masterPptxData } : {}),
+    },
+  );
+
+  const buffer = await pptx.write({ outputType: "uint8array" });
+  if (!(buffer instanceof Uint8Array)) {
+    throw new Error("Unexpected output type from pptx.write");
+  }
+
+  const fontsDir = path.resolve(__dirname, "../fonts");
+  if (!fs.existsSync(fontsDir)) {
+    throw new Error(
+      `Bundled fonts directory not found: ${fontsDir}. The package may be corrupted.`,
+    );
+  }
+  const fontDirs = [fontsDir];
+
+  const slides = await convertPptxToSvg(buffer, {
+    width: slideWidth,
+    fontDirs,
+    fontMapping: EXTRA_FONT_MAPPING,
+    skipSystemFonts: true,
   });
+  const svgs = slides.map((s: { svg: string }) => s.svg);
+
+  return { type: "success", svgs, slideWidth };
 }
 
 function buildPreviewHtml(): string {
@@ -189,7 +220,7 @@ function buildPreviewHtml(): string {
       content.innerHTML = '<div class="empty-message">No slides to preview</div>';
     } else if (data.type === 'building') {
       status.textContent = 'Building...';
-      content.innerHTML = '<div class="loading-message"><span>Building preview...</span><span style="font-size:11px">(Loading fonts on first run may take 20-30s)</span></div>';
+      content.innerHTML = '<div class="loading-message"><span>Building preview...</span></div>';
     }
   });
 
@@ -240,7 +271,6 @@ export function runPreview(inputFile: string): void {
       });
   }
 
-  // 初回レンダリング（サーバー起動後）
   generateSvgs(absInput)
     .then((result) => {
       currentResult = result;
@@ -255,7 +285,6 @@ export function runPreview(inputFile: string): void {
       });
     });
 
-  // ファイル変更を監視
   let debounceTimer: NodeJS.Timeout | null = null;
   fs.watch(absInput, () => {
     if (debounceTimer) clearTimeout(debounceTimer);
@@ -275,12 +304,10 @@ export function runPreview(inputFile: string): void {
       res.write(": connected\n\n");
 
       if (!initialBuildDone) {
-        // 初回ビルド中
         res.write(
           `event: update\ndata: ${JSON.stringify({ type: "building" })}\n\n`,
         );
       } else {
-        // 現在の状態を即座に送信
         res.write(`event: update\ndata: ${JSON.stringify(currentResult)}\n\n`);
       }
 
@@ -309,9 +336,6 @@ export function runPreview(inputFile: string): void {
   server.listen(DEFAULT_PORT, () => {
     console.log(`Preview server: http://localhost:${DEFAULT_PORT}`);
     console.log(`Watching: ${absInput}`);
-    console.log(
-      "Note: First preview build loads system fonts (may take 20-30s)",
-    );
     console.log("Press Ctrl+C to stop");
   });
 }

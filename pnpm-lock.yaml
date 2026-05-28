@@ -254,8 +254,8 @@ importers:
         specifier: workspace:*
         version: link:../pom-md
       pptx-glimpse:
-        specifier: ^0.10.4
-        version: 0.10.4
+        specifier: ^0.11.0
+        version: 0.11.0
     devDependencies:
       '@types/node':
         specifier: ^25.9.1
@@ -6124,6 +6124,10 @@ packages:
 
   pptx-glimpse@0.10.4:
     resolution: {integrity: sha512-wIuZiwi42OW3yaCRr75SSqgRjjclTla6HvATrqJCYu5jn9TVDJqlsdtTYuSNZY8HbDkh73AWymcsU/tyS9/5Gg==}
+    engines: {node: '>=20'}
+
+  pptx-glimpse@0.11.0:
+    resolution: {integrity: sha512-qMDoL2Pn+7Wbw+WGrQxOWgyCeYdxZcPHZk7gSD/Lu+t2AKDD4Jc10mzmhA32majkEr6xMyytg9PATjQkgoYaSw==}
     engines: {node: '>=20'}
 
   pptxgenjs@4.0.1:
@@ -13773,6 +13777,13 @@ snapshots:
   powershell-utils@0.1.0: {}
 
   pptx-glimpse@0.10.4:
+    dependencies:
+      '@resvg/resvg-wasm': 2.6.2
+      fast-xml-parser: 5.8.0
+      fflate: 0.8.3
+      opentype.js: 1.3.4
+
+  pptx-glimpse@0.11.0:
     dependencies:
       '@resvg/resvg-wasm': 2.6.2
       fast-xml-parser: 5.8.0
