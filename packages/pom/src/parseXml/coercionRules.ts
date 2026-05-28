@@ -322,6 +322,7 @@ const IMAGE_SIZING_RULE: CoercionRule = {
 
 // ===== Base node 属性 =====
 const BASE_RULES: Record<string, CoercionRule> = {
+  id: "string",
   w: LENGTH_RULE,
   h: LENGTH_RULE,
   minW: "number",
@@ -481,6 +482,16 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     y1: "number",
     x2: "number",
     y2: "number",
+    color: "string",
+    lineWidth: "number",
+    dashType: "string",
+    beginArrow: LINE_ARROW_RULE,
+    endArrow: LINE_ARROW_RULE,
+  },
+  arrow: {
+    ...BASE_RULES,
+    from: "string",
+    to: "string",
     color: "string",
     lineWidth: "number",
     dashType: "string",

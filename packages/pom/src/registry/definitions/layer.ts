@@ -44,6 +44,17 @@ export const layerNodeDef: NodeDefinition = {
             };
           }
 
+          // arrow ノードは ID 参照で位置を決定するため、座標は 0 で置く
+          if (child.type === "arrow") {
+            return {
+              ...child,
+              x: absoluteX,
+              y: absoluteY,
+              w: 0,
+              h: 0,
+            };
+          }
+
           // その他のノードは通常の処理
           const childLayout = map.get(child);
           if (!childLayout) {

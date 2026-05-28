@@ -25,7 +25,7 @@ import type {
   MasterObject,
 } from "../types.ts";
 import type { BuildContext } from "../buildContext.ts";
-import type { RenderContext } from "./types.ts";
+import type { RenderContext, NodeBounds } from "./types.ts";
 import { pxToIn, pxToPt } from "./units.ts";
 import { convertUnderline, convertStrike } from "./textOptions.ts";
 import { getImageData } from "../shared/measureImage.ts";
@@ -35,6 +35,24 @@ import { getNodeDef } from "../registry/index.ts";
 type SlidePx = { w: number; h: number };
 
 const DEFAULT_MASTER_NAME = "POM_MASTER";
+
+function buildIdPositionMap(node: PositionedNode): Map<string, NodeBounds> {
+  const map = new Map<string, NodeBounds>();
+
+  function traverse(n: PositionedNode) {
+    if (n.id) {
+      map.set(n.id, { x: n.x, y: n.y, w: n.w, h: n.h });
+    }
+    if (n.type === "vstack" || n.type === "hstack" || n.type === "layer") {
+      for (const child of n.children) {
+        traverse(child);
+      }
+    }
+  }
+
+  traverse(node);
+  return map;
+}
 
 /**
  * zIndex でソートして描画順を制御する（安定ソート）
@@ -220,25 +238,25 @@ export async function renderPptx(
   for (const data of pages) {
     // マスターが指定されている場合は masterName を使用
     const slide = masterName ? pptx.addSlide({ masterName }) : pptx.addSlide();
-    const ctx: RenderContext = { slide, pptx, buildContext };
+    const idPositionMap = buildIdPositionMap(data);
+    const ctx: RenderContext = { slide, pptx, buildContext, idPositionMap };
 
     // ルートノードの backgroundColor はスライドの background プロパティとして適用
     // これにより、マスタースライドのオブジェクトを覆い隠さない
-    // line ノードは backgroundColor を持たないためスキップ
+    // line/arrow ノードは backgroundColor を持たないためスキップ
     // ただし opacity が指定されている場合は slide.background では透過を表現できないため、
     // renderBackgroundAndBorder で描画する
-    const rootBackgroundColor =
-      data.type !== "line" ? data.backgroundColor : undefined;
+    const isLinelike = data.type === "line" || data.type === "arrow";
+    const rootBackgroundColor = !isLinelike ? data.backgroundColor : undefined;
     const rootHasOpacity =
-      data.type !== "line" && "opacity" in data && data.opacity !== undefined;
+      !isLinelike && "opacity" in data && data.opacity !== undefined;
     if (rootBackgroundColor && !rootHasOpacity) {
       slide.background = { color: rootBackgroundColor };
     }
 
     // ルートノードの backgroundImage はスライドの background プロパティとして適用
     // backgroundColor と backgroundImage の両方がある場合、backgroundImage が優先
-    const rootBackgroundImage =
-      data.type !== "line" ? data.backgroundImage : undefined;
+    const rootBackgroundImage = !isLinelike ? data.backgroundImage : undefined;
     if (rootBackgroundImage) {
       const cachedData = getImageData(
         rootBackgroundImage.src,
@@ -256,8 +274,8 @@ export async function renderPptx(
      * @param isRoot ルートノードかどうか（ルートノードの background は slide.background で処理済み）
      */
     function renderNode(node: PositionedNode, isRoot = false) {
-      // line ノードは backgroundColor/border を持たないため、background/border の描画をスキップ
-      if (node.type !== "line") {
+      // line/arrow ノードは backgroundColor/border を持たないため、background/border の描画をスキップ
+      if (node.type !== "line" && node.type !== "arrow") {
         // ルートノードの backgroundColor/backgroundImage は既に slide.background に適用済みなのでスキップ
         // ただし opacity がある場合は slide.background では透過を表現できないため通常描画
         if (

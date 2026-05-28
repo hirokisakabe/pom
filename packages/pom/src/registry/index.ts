@@ -7,6 +7,7 @@ import { shapeNodeDef } from "./definitions/shape.ts";
 import { chartNodeDef } from "./definitions/chart.ts";
 import { iconNodeDef } from "./definitions/icon.ts";
 import { lineNodeDef } from "./definitions/line.ts";
+import { arrowNodeDef } from "./definitions/arrow.ts";
 import {
   timelineNodeDef,
   matrixNodeDef,
@@ -29,6 +30,7 @@ registerNode(shapeNodeDef);
 registerNode(chartNodeDef);
 registerNode(iconNodeDef);
 registerNode(lineNodeDef);
+registerNode(arrowNodeDef);
 registerNode(timelineNodeDef);
 registerNode(matrixNodeDef);
 registerNode(treeNodeDef);

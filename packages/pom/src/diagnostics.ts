@@ -3,7 +3,8 @@ export type DiagnosticCode =
   | "IMAGE_NOT_PREFETCHED"
   | "AUTOFIT_OVERFLOW"
   | "SCALE_BELOW_THRESHOLD"
-  | "MASTER_PPTX_PARSE_FAILED";
+  | "MASTER_PPTX_PARSE_FAILED"
+  | "ARROW_REF_NOT_FOUND";
 
 export interface Diagnostic {
   code: DiagnosticCode;

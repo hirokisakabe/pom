@@ -7,7 +7,7 @@ type LinePositionedNode = Extract<PositionedNode, { type: "line" }>;
 /**
  * boolean | LineArrowOptions から pptxgenjs の arrow type を取得
  */
-function resolveArrowType(
+export function resolveArrowType(
   arrow: LineArrow | undefined,
 ): "none" | "arrow" | "diamond" | "oval" | "stealth" | "triangle" | undefined {
   if (arrow === undefined) {
