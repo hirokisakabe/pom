@@ -99,4 +99,19 @@ describe("buildPptx diagnostics", () => {
     expect(result.diagnostics).toEqual([]);
     expect(result.pptx).toBeDefined();
   });
+
+  it("Arrow の参照先 ID が存在しない場合 ARROW_REF_NOT_FOUND が記録される", async () => {
+    const xml = `<Slide><Layer w="1280" h="720"><Arrow x="0" y="0" from="nonexistent" to="also-nonexistent" /></Layer></Slide>`;
+    const result = await buildPptx(xml, slideSize, { autoFit: false });
+    expect(
+      result.diagnostics.some((d) => d.code === "ARROW_REF_NOT_FOUND"),
+    ).toBe(true);
+  });
+
+  it("Arrow が有効な ID を参照する場合は正常にビルドできる", async () => {
+    const xml = `<Slide><Layer w="1280" h="720"><Shape id="a" x="100" y="100" w="120" h="40" shapeType="rect">A</Shape><Shape id="b" x="100" y="200" w="120" h="40" shapeType="rect">B</Shape><Arrow x="0" y="0" from="a" to="b" endArrow="true" /></Layer></Slide>`;
+    const result = await buildPptx(xml, slideSize, { autoFit: false });
+    expect(result.diagnostics).toEqual([]);
+    expect(result.pptx).toBeDefined();
+  });
 });

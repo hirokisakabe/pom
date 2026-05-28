@@ -156,6 +156,29 @@ describe("parseXml", () => {
       ]);
     });
 
+    it("Arrow ノードを変換する", () => {
+      const result = parseXml('<Arrow from="a" to="b" />');
+      expect(result).toEqual([{ type: "arrow", from: "a", to: "b" }]);
+    });
+
+    it("Arrow ノードのスタイル属性を変換する", () => {
+      const result = parseXml(
+        '<Arrow from="a" to="b" color="FF0000" lineWidth="2" endArrow="true" beginArrow="true" dashType="dash" />',
+      );
+      expect(result).toEqual([
+        {
+          type: "arrow",
+          from: "a",
+          to: "b",
+          color: "FF0000",
+          lineWidth: 2,
+          endArrow: true,
+          beginArrow: true,
+          dashType: "dash",
+        },
+      ]);
+    });
+
     it("Icon ノードを変換する", () => {
       const result = parseXml('<Icon name="cpu" size="32" color="#1D4ED8" />');
       expect(result).toEqual([
@@ -2072,6 +2095,16 @@ describe("parseXml", () => {
           expect(
             err.errors.some((e) => e.includes('"x2"') || e.includes('"y2"')),
           ).toBe(true);
+        }
+      });
+
+      it("Arrow の from/to 欠落でエラーをスローする", () => {
+        expect(() => parseXml('<Arrow to="b" />')).toThrow(ParseXmlError);
+        try {
+          parseXml('<Arrow to="b" />');
+        } catch (e) {
+          const err = e as ParseXmlError;
+          expect(err.errors.some((e) => e.includes('"from"'))).toBe(true);
         }
       });
     });
