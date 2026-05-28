@@ -22,7 +22,7 @@ import {
   B,
   I,
 } from "./components.ts";
-import { parseXml } from "@hirokisakabe/pom";
+import { parseXml } from "../../pom/src/parseXml/parseXml.ts";
 
 function assertParsable(xml: string): void {
   if (!xml.trim()) return;
