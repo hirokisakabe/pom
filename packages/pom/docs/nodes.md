@@ -26,28 +26,28 @@ The remaining sections describe nodes that go inside a `<Slide>`. For brevity, t
 
 Layout attributes that all nodes can have.
 
-| Attribute         | Type                                                                       | Description                         |
-| ----------------- | -------------------------------------------------------------------------- | ----------------------------------- |
+| Attribute         | Type                                                                       | Description                                                     |
+| ----------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | `id`              | string                                                                     | Unique identifier within the slide (used by `Arrow` connectors) |
-| `w`               | number / `"max"` / `"50%"`                                                 | Width                               |
-| `h`               | number / `"max"` / `"50%"`                                                 | Height                              |
-| `minW` `maxW`     | number                                                                     | Min/Max width                       |
-| `minH` `maxH`     | number                                                                     | Min/Max height                      |
-| `padding`         | number / `padding.top="8" padding.bottom="8"`                              | Padding                             |
-| `backgroundColor` | hex                                                                        | Background color (e.g., `F8F9FA`)   |
-| `backgroundImage` | `backgroundImage.src="url" backgroundImage.sizing="cover"`                 | Background image                    |
-| `border`          | `border.color="333" border.width="1"`                                      | Border                              |
-| `borderRadius`    | number                                                                     | Corner radius (px)                  |
-| `opacity`         | 0-1                                                                        | Background transparency             |
-| `margin`          | number / `margin.top="8" margin.bottom="8"`                                | Outer margin                        |
-| `zIndex`          | number                                                                     | Stacking order (higher = on top)    |
-| `position`        | `relative` / `absolute`                                                    | Positioning mode                    |
-| `top`             | number                                                                     | Top offset (with position)          |
-| `right`           | number                                                                     | Right offset (with position)        |
-| `bottom`          | number                                                                     | Bottom offset (with position)       |
-| `left`            | number                                                                     | Left offset (with position)         |
-| `alignSelf`       | `auto` / `start` / `center` / `end` / `stretch`                            | Override parent alignItems          |
-| `shadow`          | `shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000"` | Drop shadow (not supported on Line) |
+| `w`               | number / `"max"` / `"50%"`                                                 | Width                                                           |
+| `h`               | number / `"max"` / `"50%"`                                                 | Height                                                          |
+| `minW` `maxW`     | number                                                                     | Min/Max width                                                   |
+| `minH` `maxH`     | number                                                                     | Min/Max height                                                  |
+| `padding`         | number / `padding.top="8" padding.bottom="8"`                              | Padding                                                         |
+| `backgroundColor` | hex                                                                        | Background color (e.g., `F8F9FA`)                               |
+| `backgroundImage` | `backgroundImage.src="url" backgroundImage.sizing="cover"`                 | Background image                                                |
+| `border`          | `border.color="333" border.width="1"`                                      | Border                                                          |
+| `borderRadius`    | number                                                                     | Corner radius (px)                                              |
+| `opacity`         | 0-1                                                                        | Background transparency                                         |
+| `margin`          | number / `margin.top="8" margin.bottom="8"`                                | Outer margin                                                    |
+| `zIndex`          | number                                                                     | Stacking order (higher = on top)                                |
+| `position`        | `relative` / `absolute`                                                    | Positioning mode                                                |
+| `top`             | number                                                                     | Top offset (with position)                                      |
+| `right`           | number                                                                     | Right offset (with position)                                    |
+| `bottom`          | number                                                                     | Bottom offset (with position)                                   |
+| `left`            | number                                                                     | Left offset (with position)                                     |
+| `alignSelf`       | `auto` / `start` / `center` / `end` / `stretch`                            | Override parent alignItems                                      |
+| `shadow`          | `shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000"` | Drop shadow (not supported on Line)                             |
 
 - `backgroundImage`: `src` accepts a URL or local file path. `sizing` controls how the image fits: `"cover"` (default) fills the area, `"contain"` fits within the area.
 - `border`: Can be combined with `color`, `width`, and `dashType` (`"solid"` / `"dash"` / `"dashDot"` / `"lgDash"` / `"lgDashDot"` / `"lgDashDotDot"` / `"sysDash"` / `"sysDot"`).
