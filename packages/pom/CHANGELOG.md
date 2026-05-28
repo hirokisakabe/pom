@@ -1,5 +1,13 @@
 # @hirokisakabe/pom
 
+## 8.1.0
+
+### Minor Changes
+
+- [#712](https://github.com/hirokisakabe/pom/pull/712) [`587f842`](https://github.com/hirokisakabe/pom/commit/587f842b67223762378fe4c415cd91126d4b5e03) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Add Arrow node: ID-based connector between nodes
+
+  `<Arrow from="id" to="id" />` draws a straight-line connector between the center points of two nodes referenced by their `id` attribute. Supports `color`, `lineWidth`, `dashType`, `beginArrow`, and `endArrow` style attributes. Emits an `ARROW_REF_NOT_FOUND` diagnostic when a referenced ID is not found.
+
 ## 8.0.0
 
 ### Major Changes
