@@ -35,6 +35,7 @@ The top level of every pom XML document is one or more `<Slide>` elements. Each 
 
 | Attribute         | Type                                                       | Description                                |
 | ----------------- | ---------------------------------------------------------- | ------------------------------------------ |
+| `id`              | string                                                     | Unique identifier within the slide (used by `Arrow` connectors) |
 | `w`               | number / `"max"` / `"50%"`                                 | Width                                      |
 | `h`               | number / `"max"` / `"50%"`                                 | Height                                     |
 | `minW` `maxW`     | number                                                     | Min / max width                            |

@@ -25,7 +25,6 @@ export const NODE_TYPES = [
   "hstack",
   "icon",
   "svg",
-  "arrow",
 ] as const;
 
 export type NodeType = (typeof NODE_TYPES)[number];

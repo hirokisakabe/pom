@@ -28,6 +28,7 @@ Layout attributes that all nodes can have.
 
 | Attribute         | Type                                                                       | Description                         |
 | ----------------- | -------------------------------------------------------------------------- | ----------------------------------- |
+| `id`              | string                                                                     | Unique identifier within the slide (used by `Arrow` connectors) |
 | `w`               | number / `"max"` / `"50%"`                                                 | Width                               |
 | `h`               | number / `"max"` / `"50%"`                                                 | Height                              |
 | `minW` `maxW`     | number                                                                     | Min/Max width                       |

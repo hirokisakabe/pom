@@ -4,7 +4,8 @@ export type DiagnosticCode =
   | "AUTOFIT_OVERFLOW"
   | "SCALE_BELOW_THRESHOLD"
   | "MASTER_PPTX_PARSE_FAILED"
-  | "ARROW_REF_NOT_FOUND";
+  | "ARROW_REF_NOT_FOUND"
+  | "DUPLICATE_NODE_ID";
 
 export interface Diagnostic {
   code: DiagnosticCode;

@@ -46,7 +46,7 @@ function buildIdPositionMap(
     if (n.id) {
       if (map.has(n.id)) {
         diagnostics.add(
-          "ARROW_REF_NOT_FOUND",
+          "DUPLICATE_NODE_ID",
           `Duplicate node id "${n.id}" — only the first occurrence will be used for Arrow references`,
         );
       } else {
