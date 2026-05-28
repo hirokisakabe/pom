@@ -43,8 +43,14 @@ async function run(inputFile: string): Promise<SvgResult> {
       );
       try {
         masterPptxData = new Uint8Array(fs.readFileSync(masterPath));
-      } catch {
-        // masterPptx が見つからない場合は続行
+      } catch (e: unknown) {
+        if (e instanceof Error && "code" in e && e.code === "ENOENT") {
+          process.stderr.write(
+            `Warning: masterPptx not found: ${masterPath}\n`,
+          );
+        } else {
+          throw e;
+        }
       }
     }
   } else {
@@ -86,7 +92,17 @@ async function run(inputFile: string): Promise<SvgResult> {
 const chunks: Buffer[] = [];
 process.stdin.on("data", (chunk: Buffer) => chunks.push(chunk));
 process.stdin.on("end", () => {
-  const input = JSON.parse(Buffer.concat(chunks).toString()) as WorkerInput;
+  let input: WorkerInput;
+  try {
+    input = JSON.parse(Buffer.concat(chunks).toString()) as WorkerInput;
+  } catch {
+    const result: SvgResult = {
+      type: "error",
+      message: "Invalid worker input",
+    };
+    process.stdout.write(JSON.stringify(result));
+    return;
+  }
   run(input.inputFile)
     .then((result) => {
       process.stdout.write(JSON.stringify(result));

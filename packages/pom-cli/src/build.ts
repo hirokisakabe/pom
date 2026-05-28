@@ -35,8 +35,12 @@ export async function runBuild(
       );
       try {
         masterPptxData = new Uint8Array(fs.readFileSync(masterPath));
-      } catch {
-        // masterPptx が見つからない場合は続行
+      } catch (e: unknown) {
+        if (e instanceof Error && "code" in e && e.code === "ENOENT") {
+          console.warn(`Warning: masterPptx not found: ${masterPath}`);
+        } else {
+          throw e;
+        }
       }
     }
   } else {
