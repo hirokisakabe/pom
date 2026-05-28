@@ -27,6 +27,10 @@ export default defineConfig({
         find: "@hirokisakabe/pom-jsx/jsx-runtime",
         replacement: path.resolve(__dirname, "src/jsx-runtime.ts"),
       },
+      {
+        find: "@hirokisakabe/pom",
+        replacement: path.resolve(__dirname, "../pom/src/index.ts"),
+      },
     ],
   },
 });

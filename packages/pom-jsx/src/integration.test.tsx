@@ -22,7 +22,7 @@ import {
   B,
   I,
 } from "./components.ts";
-import { parseXml } from "../../pom/src/parseXml/parseXml.ts";
+import { parseXml } from "@hirokisakabe/pom";
 
 function assertParsable(xml: string): void {
   if (!xml.trim()) return;
@@ -319,7 +319,7 @@ describe("pom core との統合テスト", () => {
 
 describe("buildPptx との統合テスト", () => {
   it("生成した XML で buildPptx が成功する", async () => {
-    const { buildPptx } = await import("../../pom/src/buildPptx.ts");
+    const { buildPptx } = await import("@hirokisakabe/pom");
 
     const xml = renderToXml(
       <Slide>

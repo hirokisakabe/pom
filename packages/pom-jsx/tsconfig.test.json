@@ -9,7 +9,8 @@
     "jsx": "react-jsx",
     "jsxImportSource": "@hirokisakabe/pom-jsx",
     "paths": {
-      "@hirokisakabe/pom-jsx/jsx-runtime": ["./src/jsx-runtime.ts"]
+      "@hirokisakabe/pom-jsx/jsx-runtime": ["./src/jsx-runtime.ts"],
+      "@hirokisakabe/pom": ["../pom/src/index.ts"]
     }
   },
   "include": ["src/**/*"],
