@@ -90,6 +90,7 @@ Each slide must be wrapped in a `<Slide>` element. To produce multiple slides, l
 | ProcessArrow | Chevron-style process diagrams                                                                          |
 | Pyramid      | Pyramid diagrams for hierarchies                                                                        |
 | Line         | Horizontal / vertical lines                                                                             |
+| Arrow        | Connectors between nodes referenced by ID                                                               |
 | Layer        | Absolute-positioned overlay container                                                                   |
 | VStack       | Vertical stack layout                                                                                   |
 | HStack       | Horizontal stack layout                                                                                 |

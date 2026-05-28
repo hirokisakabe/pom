@@ -36,12 +36,22 @@ type SlidePx = { w: number; h: number };
 
 const DEFAULT_MASTER_NAME = "POM_MASTER";
 
-function buildIdPositionMap(node: PositionedNode): Map<string, NodeBounds> {
+function buildIdPositionMap(
+  node: PositionedNode,
+  diagnostics: import("../buildContext.ts").BuildContext["diagnostics"],
+): Map<string, NodeBounds> {
   const map = new Map<string, NodeBounds>();
 
   function traverse(n: PositionedNode) {
     if (n.id) {
-      map.set(n.id, { x: n.x, y: n.y, w: n.w, h: n.h });
+      if (map.has(n.id)) {
+        diagnostics.add(
+          "ARROW_REF_NOT_FOUND",
+          `Duplicate node id "${n.id}" — only the first occurrence will be used for Arrow references`,
+        );
+      } else {
+        map.set(n.id, { x: n.x, y: n.y, w: n.w, h: n.h });
+      }
     }
     if (n.type === "vstack" || n.type === "hstack" || n.type === "layer") {
       for (const child of n.children) {
@@ -238,7 +248,7 @@ export async function renderPptx(
   for (const data of pages) {
     // マスターが指定されている場合は masterName を使用
     const slide = masterName ? pptx.addSlide({ masterName }) : pptx.addSlide();
-    const idPositionMap = buildIdPositionMap(data);
+    const idPositionMap = buildIdPositionMap(data, buildContext.diagnostics);
     const ctx: RenderContext = { slide, pptx, buildContext, idPositionMap };
 
     // ルートノードの backgroundColor はスライドの background プロパティとして適用

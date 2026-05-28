@@ -431,6 +431,19 @@ const svgSample = `
 </VStack>
 `;
 
+const arrowSample = `
+<Layer w="560" h="400" backgroundColor="FFFFFF">
+  <Shape id="web" x="80" y="60" w="160" h="60" shapeType="roundRect" fill.color="${palette.blue}" color="FFFFFF" bold="true">Web App</Shape>
+  <Shape id="api" x="80" y="180" w="160" h="60" shapeType="roundRect" fill.color="${palette.green}" color="FFFFFF" bold="true">API</Shape>
+  <Shape id="db"  x="80" y="300" w="160" h="60" shapeType="roundRect" fill.color="${palette.red}"   color="FFFFFF" bold="true">DB</Shape>
+  <Arrow x="0" y="0" from="web" to="api" endArrow="true" color="${palette.navy}" lineWidth="2" />
+  <Arrow x="0" y="0" from="api" to="db"  endArrow="true" color="${palette.navy}" lineWidth="2" />
+  <Shape id="svcA" x="320" y="120" w="140" h="60" shapeType="rect" fill.color="${palette.blue}" color="FFFFFF" bold="true">Service A</Shape>
+  <Shape id="svcB" x="320" y="260" w="140" h="60" shapeType="rect" fill.color="${palette.red}"  color="FFFFFF" bold="true">Service B</Shape>
+  <Arrow x="0" y="0" from="svcA" to="svcB" beginArrow="true" endArrow="true" color="333333" lineWidth="2" dashType="dash" />
+</Layer>
+`;
+
 export const sampleNodes: Record<NodeType, string> = {
   text: textSample,
   image: imageSample,
@@ -447,4 +460,5 @@ export const sampleNodes: Record<NodeType, string> = {
   hstack: hstackSample,
   icon: iconSample,
   svg: svgSample,
+  arrow: arrowSample,
 };
