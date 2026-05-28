@@ -1,0 +1,92 @@
+name: CI - pom-jsx
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "packages/pom-jsx/**"
+      - "packages/pom/src/**"
+      - "package.json"
+      - "packages/pom/package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/ci-pom-jsx.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "packages/pom-jsx/**"
+      - "packages/pom/src/**"
+      - "package.json"
+      - "packages/pom/package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/ci-pom-jsx.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: packages/pom-jsx
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: packages/pom-jsx/.node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+      - run: pnpm run fmt:check
+      - run: pnpm run lint
+      - run: pnpm run knip
+      - run: pnpm run typecheck
+      - run: pnpm run test:coverage
+
+      - name: Cache main branch coverage
+        if: github.event_name == 'push'
+        uses: actions/cache/save@v4
+        with:
+          path: packages/pom-jsx/coverage/coverage-summary.json
+          key: coverage-pom-jsx-main-${{ github.sha }}
+
+      - name: Backup PR coverage
+        if: github.event_name == 'pull_request'
+        run: cp coverage/coverage-summary.json /tmp/pr-coverage-summary-pom-jsx.json
+
+      - name: Restore main branch coverage
+        id: restore-main-coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/cache/restore@v4
+        with:
+          path: packages/pom-jsx/coverage/coverage-summary.json
+          key: coverage-pom-jsx-main-
+          restore-keys: coverage-pom-jsx-main-
+
+      - name: Prepare coverage for comparison
+        if: github.event_name == 'pull_request' && steps.restore-main-coverage.outputs.cache-matched-key != ''
+        working-directory: .
+        run: |
+          mkdir -p __main_coverage_pom_jsx
+          mv packages/pom-jsx/coverage/coverage-summary.json __main_coverage_pom_jsx/
+          cp /tmp/pr-coverage-summary-pom-jsx.json packages/pom-jsx/coverage/coverage-summary.json
+
+      - name: Coverage summary comment (with comparison)
+        if: github.event_name == 'pull_request' && steps.restore-main-coverage.outputs.cache-matched-key != ''
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          name: pom-jsx
+          json-summary-path: packages/pom-jsx/coverage/coverage-summary.json
+          json-summary-compare-path: __main_coverage_pom_jsx/coverage-summary.json
+
+      - name: Coverage summary comment (without comparison)
+        if: github.event_name == 'pull_request' && steps.restore-main-coverage.outputs.cache-matched-key == ''
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          name: pom-jsx
+          json-summary-path: packages/pom-jsx/coverage/coverage-summary.json
+
+      - run: pnpm run build
