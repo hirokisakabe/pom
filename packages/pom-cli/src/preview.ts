@@ -295,6 +295,17 @@ export function runPreview(inputFile: string): void {
     }
   });
 
+  server.on("error", (err: NodeJS.ErrnoException) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(
+        `Port ${DEFAULT_PORT} is already in use. Is another pom preview running?`,
+      );
+    } else {
+      console.error(`Server error: ${err.message}`);
+    }
+    process.exit(1);
+  });
+
   server.listen(DEFAULT_PORT, () => {
     console.log(`Preview server: http://localhost:${DEFAULT_PORT}`);
     console.log(`Watching: ${absInput}`);
