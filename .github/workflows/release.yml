@@ -43,6 +43,11 @@ jobs:
       - run: pnpm --filter @hirokisakabe/pom-cli run fmt:check
       - run: pnpm --filter @hirokisakabe/pom-cli run lint
       - run: pnpm --filter @hirokisakabe/pom-cli run typecheck
+      - run: pnpm --filter @hirokisakabe/pom-jsx run build
+      - run: pnpm --filter @hirokisakabe/pom-jsx run fmt:check
+      - run: pnpm --filter @hirokisakabe/pom-jsx run lint
+      - run: pnpm --filter @hirokisakabe/pom-jsx run typecheck
+      - run: pnpm --filter @hirokisakabe/pom-jsx run test:run
 
       - name: Create Release PR or Publish
         id: changesets
