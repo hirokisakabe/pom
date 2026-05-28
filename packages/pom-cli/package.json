@@ -1,0 +1,45 @@
+{
+  "name": "pom-cli",
+  "version": "0.1.0",
+  "description": "CLI tool for pom — preview and build presentations",
+  "type": "module",
+  "bin": {
+    "pom": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "homepage": "https://github.com/hirokisakabe/pom#readme",
+  "bugs": {
+    "url": "https://github.com/hirokisakabe/pom/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hirokisakabe/pom.git",
+    "directory": "packages/pom-cli"
+  },
+  "license": "MIT",
+  "author": "Hiroki Sakabe",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('dist/cli.js', '755')\"",
+    "fmt": "prettier --write .",
+    "fmt:check": "prettier --check .",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "knip": "knip"
+  },
+  "dependencies": {
+    "@hirokisakabe/pom": "workspace:*",
+    "@hirokisakabe/pom-md": "workspace:*",
+    "pptx-glimpse": "^0.10.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "typescript-eslint": "^8.59.4"
+  }
+}
