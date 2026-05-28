@@ -17,6 +17,8 @@ const SEVERITY_MAP: Record<DiagnosticCode, vscode.DiagnosticSeverity> = {
   AUTOFIT_OVERFLOW: vscode.DiagnosticSeverity.Warning,
   SCALE_BELOW_THRESHOLD: vscode.DiagnosticSeverity.Warning,
   MASTER_PPTX_PARSE_FAILED: vscode.DiagnosticSeverity.Warning,
+  ARROW_REF_NOT_FOUND: vscode.DiagnosticSeverity.Warning,
+  DUPLICATE_NODE_ID: vscode.DiagnosticSeverity.Warning,
 };
 
 function toVsDiagnostics(items: Diagnostic[]): vscode.Diagnostic[] {
