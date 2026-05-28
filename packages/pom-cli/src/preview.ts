@@ -74,7 +74,12 @@ async function generateSvgs(inputFile: string): Promise<SvgResult> {
   }
 
   const fontsDir = path.resolve(__dirname, "../fonts");
-  const fontDirs = fs.existsSync(fontsDir) ? [fontsDir] : [];
+  if (!fs.existsSync(fontsDir)) {
+    throw new Error(
+      `Bundled fonts directory not found: ${fontsDir}. The package may be corrupted.`,
+    );
+  }
+  const fontDirs = [fontsDir];
 
   const slides = await convertPptxToSvg(buffer, {
     width: slideWidth,
