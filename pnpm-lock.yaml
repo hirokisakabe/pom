@@ -245,6 +245,25 @@ importers:
         specifier: ^8.59.4
         version: 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3)
 
+  packages/pom-cli:
+    dependencies:
+      '@hirokisakabe/pom':
+        specifier: workspace:*
+        version: link:../pom
+      '@hirokisakabe/pom-md':
+        specifier: workspace:*
+        version: link:../pom-md
+      pptx-glimpse:
+        specifier: ^0.10.4
+        version: 0.10.4
+    devDependencies:
+      '@types/node':
+        specifier: ^25.9.1
+        version: 25.9.1
+      typescript-eslint:
+        specifier: ^8.59.4
+        version: 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3)
+
   packages/pom-md:
     dependencies:
       markdown-it:
