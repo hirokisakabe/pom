@@ -8,9 +8,13 @@
   },
   "files": [
     "dist",
+    "fonts",
     "README.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://github.com/hirokisakabe/pom#readme",
   "bugs": {
     "url": "https://github.com/hirokisakabe/pom/issues"
@@ -27,6 +31,7 @@
   },
   "scripts": {
     "build": "tsc && node -e \"require('fs').chmodSync('dist/cli.js', '755')\"",
+    "prepublishOnly": "pnpm run build",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
     "lint": "eslint",
@@ -36,7 +41,7 @@
   "dependencies": {
     "@hirokisakabe/pom": "workspace:*",
     "@hirokisakabe/pom-md": "workspace:*",
-    "pptx-glimpse": "^0.10.4"
+    "pptx-glimpse": "^0.11.0"
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
