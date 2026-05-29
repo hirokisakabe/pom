@@ -32,6 +32,8 @@ Root: `pnpm --filter @hirokisakabe/pom run <script>`
 ```
 packages/
 ├── pom/              # Core library — src/ (parseXml/ → calcYogaLayout/ → toPositioned/ → renderPptx/), vrt/, preview/, docs/, main.ts
+├── pom-cli/          # CLI tool — preview and build presentations
+├── pom-jsx/          # JSX/TSX authoring package
 ├── pom-md/           # Markdown → pom XML converter
 ├── pom-vscode/       # VS Code extension for live preview
 apps/
