@@ -1,0 +1,51 @@
+{
+  "name": "@hirokisakabe/pom-editor",
+  "version": "0.1.0",
+  "description": "Visual AST editor component for pom — drag-and-drop slide structure editing.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "homepage": "https://github.com/hirokisakabe/pom#readme",
+  "bugs": {
+    "url": "https://github.com/hirokisakabe/pom/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hirokisakabe/pom.git",
+    "directory": "packages/pom-editor"
+  },
+  "license": "MIT",
+  "author": "Hiroki Sakabe",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "fmt": "prettier --write .",
+    "fmt:check": "prettier --check .",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@hirokisakabe/pom": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "typescript-eslint": "^8.59.4"
+  }
+}
