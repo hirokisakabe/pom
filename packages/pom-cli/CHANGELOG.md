@@ -1,5 +1,11 @@
 # @hirokisakabe/pom-cli
 
+## 0.2.2
+
+### Patch Changes
+
+- [#731](https://github.com/hirokisakabe/pom/pull/731) [`f021271`](https://github.com/hirokisakabe/pom/commit/f021271fd3df63b436589eebe29bd7cdca5efc54) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - fix: リリースパイプラインの修正に伴う再リリース (workspace:\* 解決)
+
 ## 0.2.1
 
 ### Patch Changes
