@@ -66,6 +66,26 @@ This repository is a pnpm monorepo containing the following packages:
 | [packages/pom-vscode](./packages/pom-vscode/) | VS Code extension for live preview                           | [Marketplace](https://marketplace.visualstudio.com/items?itemName=hirokisakabe.pom-vscode) |
 | [apps/website](./apps/website/)               | Documentation website ([pom.pptx.app](https://pom.pptx.app)) | —                                                                                          |
 
+## Claude Code Skill
+
+The `pom-slide` skill lets you generate presentation slides from natural language inside [Claude Code](https://claude.ai/code) sessions.
+
+**Install:**
+
+```bash
+gh skill install hirokisakabe/pom pom-slide
+```
+
+**Usage:**
+
+After installation, use `/pom-slide` in Claude Code:
+
+```
+/pom-slide 四半期の売上レポート。3 枚構成で、タイトル・グラフ・まとめを含む
+```
+
+Claude generates a `slides.pom.xml` file in the current directory. If [pom-cli](https://www.npmjs.com/package/@hirokisakabe/pom-cli) is installed (`npm install -g @hirokisakabe/pom-cli`), a live preview server starts automatically at `http://localhost:3000`.
+
 ## Documentation
 
 | Document                                                    | Description                           |
