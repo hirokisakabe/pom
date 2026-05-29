@@ -590,11 +590,11 @@ When the same property is specified via both attributes (JSON string) and child 
 
 ### 4. プレビューの起動（オプション）
 
-`Bash` ツールで pom-cli の有無を確認し、インストール済みであればプレビューサーバーをバックグラウンドで起動する。
+`Bash` ツールで pom-cli の有無を確認し、インストール済みであれば Step 3 で決定したファイル名を使ってプレビューサーバーをバックグラウンドで起動する。`pom preview` は常駐プロセスであるため、`run_in_background: true`（Claude Code）または `&` サフィックスを必ず使う。
 
 ```bash
 if command -v pom >/dev/null 2>&1; then
-  pom preview slides.pom.xml
+  pom preview <Step 3 で決定したファイル名> &
 fi
 ```
 
