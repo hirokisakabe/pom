@@ -19,6 +19,7 @@
     "@codemirror/state": "^6.5.4",
     "@codemirror/view": "^6.43.0",
     "@hirokisakabe/pom": "workspace:*",
+    "@hirokisakabe/pom-editor": "workspace:*",
     "@hono/zod-validator": "^0.8.0",
     "@vercel/analytics": "^2.0.1",
     "class-variance-authority": "^0.7.1",
