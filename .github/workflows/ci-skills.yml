@@ -1,6 +1,11 @@
 name: CI - skills
 
 on:
+  push:
+    branches: ["main"]
+    paths:
+      - "skills/**"
+      - ".github/workflows/ci-skills.yml"
   pull_request:
     branches: ["main"]
     paths:
@@ -14,6 +19,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Upgrade gh CLI
+        run: sudo apt-get update -qq && sudo apt-get install -y gh
       - name: Validate skills
         run: gh skill publish --dry-run
         env:
