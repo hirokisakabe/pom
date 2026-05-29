@@ -5,14 +5,37 @@ const TYPE_TO_TAG: Record<string, string> = Object.fromEntries(
   Object.entries(TAG_TO_TYPE).map(([tag, type]) => [type, tag]),
 );
 
+// runs と svgContent は専用の直列化パスで処理する
 const SKIP_KEYS = new Set(["type", "children", "runs", "svgContent"]);
 
+// runs によるインライン装飾を child element として直列化するノードタイプ
+const INLINE_CONTENT_TYPES = new Set(["text", "shape"]);
+
 const CONTAINER_TYPES = new Set(["vstack", "hstack", "layer"]);
+
+interface TextRun {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strike?: boolean;
+  highlight?: string;
+  color?: string;
+  href?: string;
+  fontFamily?: string;
+}
 
 function escapeAttrValue(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function escapeXmlContent(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 }
@@ -50,6 +73,33 @@ function serializeAttrs(node: Record<string, unknown>): string {
   return parts.length > 0 ? " " + parts.join(" ") : "";
 }
 
+function serializeRun(run: TextRun): string {
+  let content = escapeXmlContent(run.text);
+
+  if (run.href) {
+    content = `<A href="${escapeAttrValue(run.href)}">${content}</A>`;
+  }
+  if (run.highlight) {
+    content = `<Mark color="${escapeAttrValue(run.highlight)}">${content}</Mark>`;
+  }
+  const spanAttrs: string[] = [];
+  if (run.color) spanAttrs.push(`color="${escapeAttrValue(run.color)}"`);
+  if (run.fontFamily)
+    spanAttrs.push(`fontFamily="${escapeAttrValue(run.fontFamily)}"`);
+  if (spanAttrs.length > 0) {
+    content = `<Span ${spanAttrs.join(" ")}>${content}</Span>`;
+  }
+  if (run.strike) content = `<S>${content}</S>`;
+  if (run.underline) content = `<U>${content}</U>`;
+  if (run.italic) content = `<I>${content}</I>`;
+  if (run.bold) content = `<B>${content}</B>`;
+  return content;
+}
+
+function serializeRuns(runs: TextRun[]): string {
+  return runs.map(serializeRun).join("");
+}
+
 function serializeNode(node: POMNode, depth: number): string {
   const indent = "  ".repeat(depth);
   const tag = TYPE_TO_TAG[node.type];
@@ -73,6 +123,20 @@ function serializeNode(node: POMNode, depth: number): string {
     return `${indent}<${tag}${attrStr}>\n${svgContent}\n${indent}</${tag}>`;
   }
 
+  // Text / Shape: runs があればインライン child element として直列化し装飾を保持する
+  if (
+    INLINE_CONTENT_TYPES.has(node.type) &&
+    Array.isArray(nodeRecord.runs) &&
+    (nodeRecord.runs as unknown[]).length > 0
+  ) {
+    const runs = nodeRecord.runs as TextRun[];
+    // runs がある場合、text は runs から復元できるため属性からも除外する
+    const attrsWithoutText = { ...nodeRecord, text: undefined };
+    const attrStr = serializeAttrs(attrsWithoutText);
+    const inlineContent = serializeRuns(runs);
+    return `${indent}<${tag}${attrStr}>${inlineContent}</${tag}>`;
+  }
+
   const attrStr = serializeAttrs(nodeRecord);
   return `${indent}<${tag}${attrStr} />`;
 }
@@ -80,9 +144,8 @@ function serializeNode(node: POMNode, depth: number): string {
 /**
  * POMNode 配列を XML 文字列に変換する。
  *
- * parseXml の逆操作として機能するが、変換は非可逆（インラインフォーマットタグや
- * child element 記法は正規化された属性形式に変換される）。
- * ただし意味論的等価であれば問題なし。
+ * parseXml の逆操作として機能する。runs（インライン装飾）は B/I/A/U/S/Mark/Span
+ * タグとして child element に直列化されるため、テキストの装飾情報も保持される。
  *
  * @example
  * ```typescript
