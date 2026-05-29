@@ -1,5 +1,11 @@
 # @hirokisakabe/pom-cli
 
+## 0.2.3
+
+### Patch Changes
+
+- [#733](https://github.com/hirokisakabe/pom/pull/733) [`3e25e11`](https://github.com/hirokisakabe/pom/commit/3e25e11c3dda30b90cefaaf66fc2b9d918c38ace) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - fix: workspace:\* 依存を正しく解決した状態で再リリースする
+
 ## 0.2.2
 
 ### Patch Changes
