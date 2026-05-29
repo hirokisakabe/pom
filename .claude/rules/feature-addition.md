@@ -28,8 +28,9 @@ When adding new properties or features, update the following files:
     - `packages/pom-jsx/src/types.ts` - Add `{NodeName}Props` interface
     - `packages/pom-jsx/src/components.ts` - Add component function
     - `packages/pom-jsx/src/jsx-runtime.ts` - Add to `JSX.IntrinsicElements`
-    - `packages/pom-jsx/src/index.ts` - Export the new component
+    - `packages/pom-jsx/src/index.ts` - Export the new component and `{NodeName}Props` type
     - `packages/pom-jsx/src/integration.test.tsx` - Add test case
     - `packages/pom-jsx/README.md` - Add to component table
 12. **pom-editor updates** (when adding new node types):
     - `packages/pom-editor/src/ast.ts` - Add new node type to AST mapping if needed
+    - `packages/pom-editor/src/AstTree.tsx` - Add label to `NODE_LABELS` if needed
