@@ -2,7 +2,8 @@ export { buildPptx } from "./buildPptx.ts";
 export type { BuildPptxResult, TextMeasurementMode } from "./buildPptx.ts";
 export { DiagnosticsError } from "./diagnostics.ts";
 export type { Diagnostic, DiagnosticCode } from "./diagnostics.ts";
-export { ParseXmlError } from "./parseXml/parseXml.ts";
+export { parseXml, ParseXmlError } from "./parseXml/parseXml.ts";
+export { serializeXml } from "./parseXml/serializeXml.ts";
 export type {
   SlideMasterOptions,
   SlideMasterBackground,
@@ -13,4 +14,5 @@ export type {
   MasterRectObject,
   MasterLineObject,
   SlideNumberOptions,
+  POMNode,
 } from "./types.ts";

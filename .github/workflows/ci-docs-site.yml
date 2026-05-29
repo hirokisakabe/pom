@@ -9,8 +9,10 @@ on:
       - "packages/pom-md/docs/**"
       - "packages/pom-vscode/docs/**"
       - "packages/pom/src/**"
+      - "packages/pom-editor/src/**"
       - "package.json"
       - "packages/pom/package.json"
+      - "packages/pom-editor/package.json"
       - "apps/website/.node-version"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -23,8 +25,10 @@ on:
       - "packages/pom-md/docs/**"
       - "packages/pom-vscode/docs/**"
       - "packages/pom/src/**"
+      - "packages/pom-editor/src/**"
       - "package.json"
       - "packages/pom/package.json"
+      - "packages/pom-editor/package.json"
       - "apps/website/.node-version"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -45,6 +49,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @hirokisakabe/pom run build
+      - run: pnpm --filter @hirokisakabe/pom-editor run build
       - run: pnpm --filter pom-docs run fmt:check
       - run: pnpm --filter pom-docs run lint
       - run: pnpm --filter pom-docs run knip

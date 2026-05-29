@@ -28,17 +28,29 @@ export default withNextra({
     ],
   },
   webpack: (config, { isServer }) => {
+    // workspace link は dist/ を参照するため resolve alias でソースを直接参照する。
+    config.resolve = config.resolve || {};
+    config.resolve.alias = config.resolve.alias || {};
+    // pom は server-only (WASM 含む) のため serverExternalPackages で除外済みだが
+    // webpack resolve alias も設定して import を解決させる。
     if (isServer) {
-      // workspace link の @hirokisakabe/pom は dist/ を参照するため
-      // webpack がバンドルせず外部モジュール扱いしてしまう。
-      // resolve alias でソースを直接参照し、webpack にバンドルさせる。
-      config.resolve = config.resolve || {};
-      config.resolve.alias = config.resolve.alias || {};
       config.resolve.alias["@hirokisakabe/pom"] = resolve(
         __dirname,
         "../../packages/pom/src/index.ts",
       );
     }
+    // pom/clientApi は fs/WASM を含まない純粋な parseXml/serializeXml のみを公開する。
+    // サーバー/クライアント両方でソース直参照させてツリーシェイクを有効にする。
+    config.resolve.alias["@hirokisakabe/pom/clientApi"] = resolve(
+      __dirname,
+      "../../packages/pom/src/clientApi.ts",
+    );
+    // pom-editor は React コンポーネント（client side）のためサーバー/クライアント両方で
+    // ソース直参照させる。
+    config.resolve.alias["@hirokisakabe/pom-editor"] = resolve(
+      __dirname,
+      "../../packages/pom-editor/src/index.ts",
+    );
     return config;
   },
 });
