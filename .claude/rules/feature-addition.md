@@ -24,3 +24,12 @@ When adding new properties or features, update the following files:
    - Define sample XML in `packages/pom/scripts/docs-images/sampleNodes.ts`
    - Run `pnpm run docs:images:docker:update` (from `packages/pom/`)
 10. **Add changeset**: Run `pnpm exec changeset add` before creating a PR
+11. **pom-jsx updates** (when adding new node types):
+    - `packages/pom-jsx/src/types.ts` - Add `{NodeName}Props` interface
+    - `packages/pom-jsx/src/components.ts` - Add component function
+    - `packages/pom-jsx/src/jsx-runtime.ts` - Add to `JSX.IntrinsicElements`
+    - `packages/pom-jsx/src/index.ts` - Export the new component
+    - `packages/pom-jsx/src/integration.test.tsx` - Add test case
+    - `packages/pom-jsx/README.md` - Add to component table
+12. **pom-editor updates** (when adding new node types):
+    - `packages/pom-editor/src/ast.ts` - Add new node type to AST mapping if needed
