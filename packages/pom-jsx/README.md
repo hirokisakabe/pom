@@ -47,10 +47,14 @@ import { renderToXml, Slide, VStack, Text } from "@hirokisakabe/pom-jsx";
 const xml = renderToXml(
   <Slide>
     <VStack w="max" h="max" padding={48} gap={24} alignItems="start">
-      <Text fontSize={48} bold>Presentation Title</Text>
-      <Text fontSize={24} color="666666">Subtitle</Text>
+      <Text fontSize={48} bold>
+        Presentation Title
+      </Text>
+      <Text fontSize={24} color="666666">
+        Subtitle
+      </Text>
     </VStack>
-  </Slide>
+  </Slide>,
 );
 
 const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
@@ -65,8 +69,12 @@ Render each slide separately and join with `\n`:
 import { renderToXml, Slide, Text } from "@hirokisakabe/pom-jsx";
 
 const slides = [
-  <Slide key="1"><Text>Slide 1</Text></Slide>,
-  <Slide key="2"><Text>Slide 2</Text></Slide>,
+  <Slide key="1">
+    <Text>Slide 1</Text>
+  </Slide>,
+  <Slide key="2">
+    <Text>Slide 2</Text>
+  </Slide>,
 ];
 
 const xml = slides.map((s) => renderToXml(s)).join("\n");
@@ -84,7 +92,7 @@ const xml = renderToXml(
         <Text fontSize={32}>{item}</Text>
       </Slide>
     ))}
-  </>
+  </>,
 );
 ```
 
@@ -93,7 +101,13 @@ const xml = renderToXml(
 Extract reusable slide layouts into function components:
 
 ```tsx
-import { renderToXml, Slide, HStack, VStack, Text } from "@hirokisakabe/pom-jsx";
+import {
+  renderToXml,
+  Slide,
+  HStack,
+  VStack,
+  Text,
+} from "@hirokisakabe/pom-jsx";
 import type { ReactNode } from "@hirokisakabe/pom-jsx";
 
 function TwoColumnSlide({
@@ -108,7 +122,9 @@ function TwoColumnSlide({
   return (
     <Slide>
       <VStack w="max" h="max" padding={48} gap={24}>
-        <Text fontSize={32} bold>{title}</Text>
+        <Text fontSize={32} bold>
+          {title}
+        </Text>
         <HStack gap={24} w="max">
           <VStack w="50%">{left}</VStack>
           <VStack w="50%">{right}</VStack>
@@ -123,7 +139,7 @@ const xml = renderToXml(
     title="Comparison"
     left={<Text>Left content</Text>}
     right={<Text>Right content</Text>}
-  />
+  />,
 );
 ```
 
@@ -172,15 +188,15 @@ All pom node types are available as PascalCase components:
 
 Use inside `Text` (or `Li`) for rich inline formatting:
 
-| Component | Effect         |
-| --------- | -------------- |
-| `B`       | Bold           |
-| `I`       | Italic         |
-| `U`       | Underline      |
-| `S`       | Strikethrough  |
-| `A`       | Hyperlink      |
-| `Span`    | Styled span    |
-| `Mark`    | Highlight      |
+| Component | Effect        |
+| --------- | ------------- |
+| `B`       | Bold          |
+| `I`       | Italic        |
+| `U`       | Underline     |
+| `S`       | Strikethrough |
+| `A`       | Hyperlink     |
+| `Span`    | Styled span   |
+| `Mark`    | Highlight     |
 
 ```tsx
 <Text>
@@ -198,9 +214,13 @@ import { Fragment } from "@hirokisakabe/pom-jsx";
 
 const xml = renderToXml(
   <>
-    <Slide><Text>Slide 1</Text></Slide>
-    <Slide><Text>Slide 2</Text></Slide>
-  </>
+    <Slide>
+      <Text>Slide 1</Text>
+    </Slide>
+    <Slide>
+      <Text>Slide 2</Text>
+    </Slide>
+  </>,
 );
 ```
 
