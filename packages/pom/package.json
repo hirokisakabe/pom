@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./clientApi": {
+      "types": "./dist/clientApi.d.ts",
+      "import": "./dist/clientApi.js"
     }
   },
   "files": [

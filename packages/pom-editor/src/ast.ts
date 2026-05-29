@@ -1,4 +1,4 @@
-import type { POMNode } from "@hirokisakabe/pom";
+import type { POMNode } from "@hirokisakabe/pom/clientApi";
 import { arrayMove } from "@dnd-kit/sortable";
 
 export interface AstNode {

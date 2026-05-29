@@ -39,6 +39,12 @@ export default withNextra({
         "../../packages/pom/src/index.ts",
       );
     }
+    // pom/clientApi は fs/WASM を含まない純粋な parseXml/serializeXml のみを公開する。
+    // サーバー/クライアント両方でソース直参照させてツリーシェイクを有効にする。
+    config.resolve.alias["@hirokisakabe/pom/clientApi"] = resolve(
+      __dirname,
+      "../../packages/pom/src/clientApi.ts",
+    );
     // pom-editor は React コンポーネント（client side）のためサーバー/クライアント両方で
     // ソース直参照させる。
     config.resolve.alias["@hirokisakabe/pom-editor"] = resolve(

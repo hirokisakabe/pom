@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { parseXml, serializeXml } from "@hirokisakabe/pom";
-import type { POMNode } from "@hirokisakabe/pom";
+import { parseXml, serializeXml } from "@hirokisakabe/pom/clientApi";
+import type { POMNode } from "@hirokisakabe/pom/clientApi";
 import { AstTree } from "./AstTree.tsx";
 import { buildAst } from "./ast.ts";
 import type { AstNode } from "./ast.ts";

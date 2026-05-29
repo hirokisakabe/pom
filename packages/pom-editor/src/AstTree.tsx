@@ -14,7 +14,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { AstNode } from "./ast.ts";
-import type { POMNode } from "@hirokisakabe/pom";
+import type { POMNode } from "@hirokisakabe/pom/clientApi";
 import { applyReorder, rebuildNodes } from "./ast.ts";
 
 const NODE_LABELS: Record<string, string> = {
