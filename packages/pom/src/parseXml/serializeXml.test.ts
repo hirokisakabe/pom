@@ -11,20 +11,28 @@ function roundTrip(xml: string): unknown[] {
 describe("serializeXml", () => {
   describe("基本的なノードの直列化", () => {
     it("Text ノードを往復変換する", () => {
-      const original = parseXml(`<Slide><Text fontSize="32" bold="true">Hello</Text></Slide>`);
+      const original = parseXml(
+        `<Slide><Text fontSize="32" bold="true">Hello</Text></Slide>`,
+      );
       const result = roundTrip(`<Text fontSize="32" bold="true">Hello</Text>`);
       expect(result).toEqual(original);
     });
 
     it("Image ノードを往復変換する", () => {
-      const original = parseXml(`<Slide><Image src="image.png" w="400" h="300" /></Slide>`);
+      const original = parseXml(
+        `<Slide><Image src="image.png" w="400" h="300" /></Slide>`,
+      );
       const result = roundTrip(`<Image src="image.png" w="400" h="300" />`);
       expect(result).toEqual(original);
     });
 
     it("Icon ノードを往復変換する", () => {
-      const original = parseXml(`<Slide><Icon name="star" size="32" color="#FF0000" /></Slide>`);
-      const result = roundTrip(`<Icon name="star" size="32" color="#FF0000" />`);
+      const original = parseXml(
+        `<Slide><Icon name="star" size="32" color="#FF0000" /></Slide>`,
+      );
+      const result = roundTrip(
+        `<Icon name="star" size="32" color="#FF0000" />`,
+      );
       expect(result).toEqual(original);
     });
   });
@@ -71,7 +79,9 @@ describe("serializeXml", () => {
     });
 
     it("複合装飾を往復変換する", () => {
-      const original = parseXml(`<Slide><Text><B>Bold</B> and <I>italic</I></Text></Slide>`);
+      const original = parseXml(
+        `<Slide><Text><B>Bold</B> and <I>italic</I></Text></Slide>`,
+      );
       const serialized = serializeXml(original);
       const result = parseXml(serialized);
       expect(result).toEqual(original);
