@@ -43,9 +43,9 @@ function App() {
 
 ### `<PomAstEditor xml onChange />`
 
-| Prop | Type | Description |
-|---|---|---|
-| `xml` | `string` | pom XML string (one or more `<Slide>` elements) |
+| Prop       | Type                    | Description                                              |
+| ---------- | ----------------------- | -------------------------------------------------------- |
+| `xml`      | `string`                | pom XML string (one or more `<Slide>` elements)          |
 | `onChange` | `(xml: string) => void` | Called with updated XML after each drag-and-drop reorder |
 
 Renders a tree of nodes from the parsed XML. Nodes within the same parent container (`VStack`, `HStack`, `Layer`) can be reordered by dragging. Top-level slides can also be reordered.
