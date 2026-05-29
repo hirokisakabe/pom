@@ -1,5 +1,11 @@
 # @hirokisakabe/pom-cli
 
+## 0.2.1
+
+### Patch Changes
+
+- [#728](https://github.com/hirokisakabe/pom/pull/728) [`a06f811`](https://github.com/hirokisakabe/pom/commit/a06f811a37e1ec1e9c6e3a91e4b8e9701855dac8) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - fix: workspace:\* 依存が npm publish 時に解決されない問題を修正する
+
 ## 0.2.0
 
 ### Minor Changes
