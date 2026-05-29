@@ -265,10 +265,10 @@ importers:
 
   packages/pom-jsx:
     devDependencies:
-      '@hirokisakabe/pom':
+      "@hirokisakabe/pom":
         specifier: workspace:*
         version: link:../pom
-      '@vitest/coverage-v8':
+      "@vitest/coverage-v8":
         specifier: ^4.1.7
         version: 4.1.7(vitest@4.1.7)
       typescript-eslint:
