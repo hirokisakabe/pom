@@ -1,5 +1,11 @@
 # @hirokisakabe/pom-cli
 
+## 0.2.4
+
+### Patch Changes
+
+- [#745](https://github.com/hirokisakabe/pom/pull/745) [`39d5739`](https://github.com/hirokisakabe/pom/commit/39d5739c9bc064350b279c5cc5d74371e7f25dcd) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - プレビューサーバーの UI を全面リニューアルする: ダークツールバー・接続ステータスインジケーター・スピナーアニメーション・スライド番号オーバーレイ・+/- キーズームを追加
+
 ## 0.2.3
 
 ### Patch Changes

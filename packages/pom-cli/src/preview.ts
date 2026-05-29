@@ -92,78 +92,189 @@ async function generateSvgs(inputFile: string): Promise<SvgResult> {
   return { type: "success", svgs, slideWidth };
 }
 
-function buildPreviewHtml(): string {
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function buildPreviewHtml(filename: string): string {
+  const safeFilename = escapeHtml(filename);
   return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>pom preview</title>
+<title>pom — ${safeFilename}</title>
 <style>
-  * { box-sizing: border-box; }
-  body { margin: 0; padding: 0; background: #f5f5f5; font-family: sans-serif; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0f0f13;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #e2e2e8;
+    min-height: 100vh;
+  }
   .toolbar {
     position: sticky; top: 0; z-index: 100;
-    display: flex; align-items: center; gap: 4px;
-    padding: 6px 16px; background: #fff;
-    border-bottom: 1px solid #ddd;
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 20px; height: 48px;
+    background: #1a1a2e;
+    border-bottom: 1px solid #2d2d4e;
   }
+  .app-name {
+    font-size: 13px; font-weight: 700;
+    color: #a78bfa; letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+  .filename {
+    font-size: 12px; color: #94a3b8;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    background: #0f172a; border: 1px solid #2d2d4e;
+    padding: 2px 8px; border-radius: 4px;
+    flex-shrink: 1; min-width: 0; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+  }
+  .zoom-controls { display: flex; gap: 4px; flex-shrink: 0; }
   .zoom-btn {
-    padding: 3px 10px; font-size: 12px;
-    border: 1px solid #ccc; border-radius: 3px;
-    background: #fff; color: #333; cursor: pointer;
+    padding: 4px 10px; font-size: 11px;
+    border: 1px solid #3d3d5e; border-radius: 4px;
+    background: #2d2d4e; color: #c4c4d4; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
   }
-  .zoom-btn:hover { background: #e8e8e8; }
-  .zoom-btn.active { background: #007acc; color: #fff; border-color: #007acc; }
-  .status { margin-left: auto; font-size: 12px; color: #888; }
-  .slides-container { padding: 16px; }
-  .slide-wrapper { margin-bottom: 24px; }
-  .slide-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+  .zoom-btn:hover { background: #3d3d6e; color: #e2e2f2; }
+  .zoom-btn.active { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+  .zoom-hint { font-size: 11px; color: #3d3d5e; flex-shrink: 0; }
+  .status-group {
+    margin-left: auto; display: flex; align-items: center;
+    gap: 6px; flex-shrink: 0;
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #f59e0b;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .status-dot.connected { background: #22c55e; box-shadow: 0 0 6px #22c55e88; }
+  .status-dot.warning   { background: #f59e0b; box-shadow: 0 0 6px #f59e0b88; }
+  .status-dot.error     { background: #ef4444; box-shadow: 0 0 6px #ef444488; }
+  .status-text { font-size: 12px; color: #94a3b8; }
+  .slides-container {
+    padding: 32px 20px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 32px;
+  }
+  .slide-wrapper { width: 100%; display: flex; justify-content: center; }
   .slide-frame {
-    border: 1px solid #ddd; border-radius: 4px;
-    overflow: hidden; background: #fff; display: inline-block;
+    position: relative;
+    border-radius: 8px; overflow: hidden; background: #fff;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4);
   }
   .slide-frame svg { display: block; }
-  .error-banner {
-    background: #fee; border: 1px solid #fcc;
-    border-radius: 4px; padding: 12px; margin: 16px; color: #c00;
+  .slide-number {
+    position: absolute; bottom: 10px; right: 12px;
+    font-size: 11px; font-weight: 500;
+    color: rgba(255,255,255,0.8);
+    background: rgba(0,0,0,0.5);
+    padding: 2px 8px; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    pointer-events: none; user-select: none;
   }
-  .loading-message, .empty-message {
+  .loading-screen {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: calc(100vh - 48px); gap: 16px;
+  }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid #2d2d4e;
+    border-top-color: #7c3aed;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: #555578; }
+  .empty-screen {
     display: flex; align-items: center; justify-content: center;
-    height: calc(100vh - 40px); color: #888; flex-direction: column; gap: 8px;
+    height: calc(100vh - 48px);
+    font-size: 13px; color: #555578;
+  }
+  .error-screen { padding: 32px; display: flex; justify-content: center; }
+  .error-block {
+    max-width: 720px; width: 100%;
+    background: #1a0a0a; border: 1px solid #5c1a1a;
+    border-radius: 8px; overflow: hidden;
+  }
+  .error-header {
+    padding: 10px 16px; background: #2a0a0a;
+    border-bottom: 1px solid #5c1a1a;
+    font-size: 12px; font-weight: 600; color: #f87171;
+  }
+  .error-body {
+    padding: 14px 16px;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    font-size: 12px; color: #fca5a5; line-height: 1.6;
+    white-space: pre-wrap; word-break: break-all;
   }
 </style>
 </head>
 <body>
 <div class="toolbar">
-  <button class="zoom-btn" data-zoom="fit">Fit to Width</button>
-  <button class="zoom-btn" data-zoom="50">50%</button>
-  <button class="zoom-btn" data-zoom="75">75%</button>
-  <button class="zoom-btn" data-zoom="100">100%</button>
-  <button class="zoom-btn" data-zoom="150">150%</button>
-  <span class="status" id="status">Connecting...</span>
+  <span class="app-name">pom</span>
+  <span class="filename">${safeFilename}</span>
+  <div class="zoom-controls">
+    <button class="zoom-btn" data-zoom="fit">Fit</button>
+    <button class="zoom-btn" data-zoom="50">50%</button>
+    <button class="zoom-btn" data-zoom="75">75%</button>
+    <button class="zoom-btn" data-zoom="100">100%</button>
+    <button class="zoom-btn" data-zoom="150">150%</button>
+  </div>
+  <span class="zoom-hint">+ / −</span>
+  <div class="status-group">
+    <span class="status-dot warning" id="statusDot"></span>
+    <span class="status-text" id="statusText">Connecting...</span>
+  </div>
 </div>
-<div id="content"><div class="loading-message"><span>Building preview...</span></div></div>
+<div id="content">
+  <div class="loading-screen">
+    <div class="spinner"></div>
+    <span class="loading-text">Building preview...</span>
+  </div>
+</div>
 
 <script>
 (function() {
-  var VALID_ZOOMS = ['fit', '50', '75', '100', '150'];
+  var ZOOM_STEPS = ['fit', '50', '75', '100', '150'];
   var currentZoom = localStorage.getItem('pom-zoom') || 'fit';
   var currentSlideWidth = 1280;
 
+  if (ZOOM_STEPS.indexOf(currentZoom) === -1) currentZoom = 'fit';
   applyZoom(currentZoom);
 
   document.querySelectorAll('.zoom-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      var zoom = this.getAttribute('data-zoom');
-      applyZoom(zoom);
-      localStorage.setItem('pom-zoom', zoom);
+      setZoom(this.getAttribute('data-zoom'));
     });
   });
 
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === '+' || e.key === '=') {
+      var idx = ZOOM_STEPS.indexOf(currentZoom);
+      if (idx < ZOOM_STEPS.length - 1) setZoom(ZOOM_STEPS[idx + 1]);
+    } else if (e.key === '-') {
+      var idx = ZOOM_STEPS.indexOf(currentZoom);
+      if (idx > 0) setZoom(ZOOM_STEPS[idx - 1]);
+    }
+  });
+
+  function setZoom(zoom) {
+    localStorage.setItem('pom-zoom', zoom);
+    applyZoom(zoom);
+  }
+
   function applyZoom(zoom) {
-    if (VALID_ZOOMS.indexOf(zoom) === -1) zoom = 'fit';
+    if (ZOOM_STEPS.indexOf(zoom) === -1) zoom = 'fit';
     currentZoom = zoom;
-    document.body.setAttribute('data-zoom', zoom);
     document.querySelectorAll('.zoom-btn').forEach(function(b) {
       b.classList.toggle('active', b.getAttribute('data-zoom') === zoom);
     });
@@ -175,35 +286,45 @@ function buildPreviewHtml(): string {
   function applySvgZoom(svg, zoom, slideWidth) {
     var frame = svg.closest('.slide-frame');
     if (zoom === 'fit') {
+      frame.style.width = '100%';
+      frame.style.maxWidth = slideWidth + 'px';
       svg.style.width = '100%';
       svg.style.height = 'auto';
-      frame.style.display = 'block';
     } else {
       var scale = parseInt(zoom) / 100;
+      frame.style.width = (slideWidth * scale) + 'px';
+      frame.style.maxWidth = '';
       svg.style.width = (slideWidth * scale) + 'px';
       svg.style.height = 'auto';
-      frame.style.display = 'inline-block';
     }
   }
 
-  var status = document.getElementById('status');
+  var statusDot = document.getElementById('statusDot');
+  var statusText = document.getElementById('statusText');
   var content = document.getElementById('content');
+
+  function setStatus(state, text) {
+    statusDot.className = 'status-dot ' + state;
+    statusText.textContent = text;
+  }
 
   var es = new EventSource('/_sse');
 
   es.addEventListener('open', function() {
-    status.textContent = 'Connected';
+    setStatus('connected', 'Connected');
   });
 
   es.addEventListener('update', function(e) {
     var data = JSON.parse(e.data);
     if (data.type === 'success') {
       currentSlideWidth = data.slideWidth;
-      status.textContent = 'Updated ' + new Date().toLocaleTimeString();
+      setStatus('connected', 'Updated ' + new Date().toLocaleTimeString());
+      var total = data.svgs.length;
       var slideHtml = data.svgs.map(function(svg, i) {
         return '<div class="slide-wrapper">' +
-          '<div class="slide-label">Slide ' + (i + 1) + '</div>' +
-          '<div class="slide-frame">' + svg + '</div>' +
+          '<div class="slide-frame">' + svg +
+            '<span class="slide-number">' + (i + 1) + ' / ' + total + '</span>' +
+          '</div>' +
         '</div>';
       }).join('');
       content.innerHTML = '<div class="slides-container">' + slideHtml + '</div>';
@@ -211,21 +332,31 @@ function buildPreviewHtml(): string {
         applySvgZoom(svgEl, currentZoom, currentSlideWidth);
       });
     } else if (data.type === 'error') {
-      status.textContent = 'Error';
+      setStatus('error', 'Error');
       var escaped = data.message
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      content.innerHTML = '<div class="error-banner"><strong>Error:</strong> ' + escaped + '</div>';
+      content.innerHTML =
+        '<div class="error-screen">' +
+          '<div class="error-block">' +
+            '<div class="error-header">&#9888; Build Error</div>' +
+            '<pre class="error-body">' + escaped + '</pre>' +
+          '</div>' +
+        '</div>';
     } else if (data.type === 'empty') {
-      status.textContent = 'No slides';
-      content.innerHTML = '<div class="empty-message">No slides to preview</div>';
+      setStatus('connected', 'No slides');
+      content.innerHTML = '<div class="empty-screen">No slides to preview</div>';
     } else if (data.type === 'building') {
-      status.textContent = 'Building...';
-      content.innerHTML = '<div class="loading-message"><span>Building preview...</span></div>';
+      setStatus('warning', 'Building...');
+      content.innerHTML =
+        '<div class="loading-screen">' +
+          '<div class="spinner"></div>' +
+          '<span class="loading-text">Building preview...</span>' +
+        '</div>';
     }
   });
 
   es.addEventListener('error', function() {
-    status.textContent = 'Disconnected — retrying...';
+    setStatus('error', 'Disconnected — retrying...');
   });
 })();
 </script>
@@ -291,7 +422,7 @@ export function runPreview(inputFile: string): void {
     debounceTimer = setTimeout(refresh, 100);
   });
 
-  const html = buildPreviewHtml();
+  const html = buildPreviewHtml(path.basename(absInput));
 
   const server = http.createServer((req, res) => {
     if (req.url === "/_sse") {
