@@ -33,6 +33,7 @@ Root: `pnpm --filter @hirokisakabe/pom run <script>`
 packages/
 ├── pom/              # Core library — src/ (parseXml/ → calcYogaLayout/ → toPositioned/ → renderPptx/), vrt/, preview/, docs/, main.ts
 ├── pom-cli/          # CLI tool — preview and build presentations
+├── pom-editor/       # React component for visual DnD AST editing — PomAstEditor
 ├── pom-jsx/          # JSX/TSX authoring package
 ├── pom-md/           # Markdown → pom XML converter
 ├── pom-vscode/       # VS Code extension for live preview
@@ -44,17 +45,24 @@ apps/
 
 PPTX generation pipeline: **calcYogaLayout** → **toPositioned** → **renderPptx**. Additionally, **autoFit** adjusts slides when content overflows.
 
-### Public API
+### Public API (`@hirokisakabe/pom`)
 
 - `buildPptx(xml, slideSize, options?)` — XML string → PPTX
 - `BuildPptxResult`, `ParseXmlError`, `DiagnosticsError`, `Diagnostic`, `DiagnosticCode`
 - `TextMeasurementMode` (`"opentype"` | `"fallback"` | `"auto"`), `SlideMasterOptions`
+- `parseXml(xml)` — XML string → `POMNode[]` (PascalCase tags, Zod-validated attributes)
+- `serializeXml(nodes)` — `POMNode[]` → XML string (inverse of parseXml)
+- `POMNode` — Input node union type (Text, Ul, Ol, Image, Table, Shape, Chart, Timeline, Matrix, Tree, Flow, ProcessArrow, Pyramid, Line, Arrow, Layer, VStack, HStack, Icon, Svg)
+
+`@hirokisakabe/pom/clientApi` — `parseXml` / `serializeXml` / `POMNode` のみを再エクスポートするクライアント安全なサブパス。`fs` / WASM を含まないため client bundle に含められる。
+
+### Public API (`@hirokisakabe/pom-editor`)
+
+- `PomAstEditor` — React コンポーネント。`xml` と `onChange` props を受け取り、AST ツリーを表示して DnD でノードを並び替えると更新後の XML を返す。
 
 ### Key Internal Types
 
-- `POMNode` — Input node (Text, Ul, Ol, Image, Table, Shape, Chart, Timeline, Matrix, Tree, Flow, ProcessArrow, Pyramid, Line, Arrow, Layer, VStack, HStack, Icon, Svg)
 - `PositionedNode` — Node with absolute position (x, y, w, h)
-- `parseXml` — XML strings → POMNode arrays (PascalCase tags, Zod-validated attributes)
 
 ## Packages
 
