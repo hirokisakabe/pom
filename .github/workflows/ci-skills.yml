@@ -1,0 +1,20 @@
+name: CI - skills
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "skills/**"
+      - ".github/workflows/ci-skills.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate skills
+        run: gh skill publish --dry-run
+        env:
+          GH_TOKEN: ${{ github.token }}
