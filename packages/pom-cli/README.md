@@ -21,6 +21,8 @@ pom preview slides.pom.md
 
 Open http://localhost:3000 in your browser. The page updates automatically when the file is saved.
 
+Use the zoom buttons in the toolbar or press `+` / `-` to zoom in and out. The current zoom level is saved across sessions.
+
 ### Build
 
 Converts a pom file to a PPTX file.
