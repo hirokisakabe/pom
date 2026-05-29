@@ -12,7 +12,9 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "homepage": "https://github.com/hirokisakabe/pom#readme",
   "bugs": {
