@@ -53,7 +53,7 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: node .github/scripts/resolve-workspace-deps.js && pnpm exec changeset publish
+          publish: bash .github/scripts/publish.sh
           version: pnpm exec changeset version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
