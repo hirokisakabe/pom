@@ -1,6 +1,6 @@
 {
   "name": "@hirokisakabe/pom-editor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Visual AST editor component for pom — drag-and-drop slide structure editing.",
   "type": "module",
   "main": "./dist/index.js",
