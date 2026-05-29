@@ -1,0 +1,51 @@
+name: CI - pom-editor
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "packages/pom-editor/**"
+      - "packages/pom/src/**"
+      - "package.json"
+      - "packages/pom/package.json"
+      - "packages/pom-editor/package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/ci-pom-editor.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "packages/pom-editor/**"
+      - "packages/pom/src/**"
+      - "package.json"
+      - "packages/pom/package.json"
+      - "packages/pom-editor/package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/ci-pom-editor.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: packages/pom-editor
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: packages/pom-editor/.node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+      - run: pnpm --filter @hirokisakabe/pom run build
+        working-directory: .
+      - run: pnpm run fmt:check
+      - run: pnpm run lint
+      - run: pnpm run knip
+      - run: pnpm run typecheck
+      - run: pnpm run build

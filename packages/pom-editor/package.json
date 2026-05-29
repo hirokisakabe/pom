@@ -34,6 +34,7 @@
     "build": "tsc",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
+    "knip": "knip",
     "lint": "eslint",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
