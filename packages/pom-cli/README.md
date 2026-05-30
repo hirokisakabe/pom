@@ -21,6 +21,12 @@ pom preview slides.pom.md
 
 Open http://localhost:3000 in your browser. The page updates automatically when the file is saved.
 
+To use a different port (e.g. when 3000 is already in use):
+
+```bash
+pom preview slides.pom.xml --port 3001
+```
+
 Use the zoom buttons in the toolbar or press `+` / `-` to zoom in and out. The current zoom level is saved across sessions.
 
 ### Build
