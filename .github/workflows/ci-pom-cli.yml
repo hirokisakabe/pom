@@ -1,0 +1,54 @@
+name: CI - pom-cli
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "packages/pom-cli/**"
+      - "packages/pom/src/**"
+      - "packages/pom-md/**"
+      - "package.json"
+      - "packages/pom/package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".node-version"
+      - ".github/workflows/ci-pom-cli.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "packages/pom-cli/**"
+      - "packages/pom/src/**"
+      - "packages/pom-md/**"
+      - "package.json"
+      - "packages/pom/package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".node-version"
+      - ".github/workflows/ci-pom-cli.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: packages/pom-cli
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+      - run: pnpm --filter @hirokisakabe/pom run build
+        working-directory: .
+      - run: pnpm --filter @hirokisakabe/pom-md run build
+        working-directory: .
+      - run: pnpm run fmt:check
+      - run: pnpm run lint
+      - run: pnpm run knip
+      - run: pnpm run typecheck
+      - run: pnpm run build
