@@ -364,7 +364,10 @@ function buildPreviewHtml(filename: string): string {
 </html>`;
 }
 
-export function runPreview(inputFile: string): void {
+export function runPreview(
+  inputFile: string,
+  port: number = DEFAULT_PORT,
+): void {
   const absInput = path.resolve(inputFile);
 
   if (!fs.existsSync(absInput)) {
@@ -456,7 +459,7 @@ export function runPreview(inputFile: string): void {
   server.on("error", (err: NodeJS.ErrnoException) => {
     if (err.code === "EADDRINUSE") {
       console.error(
-        `Port ${DEFAULT_PORT} is already in use. Is another pom preview running?`,
+        `Port ${port} is already in use. Is another pom preview running?`,
       );
     } else {
       console.error(`Server error: ${err.message}`);
@@ -464,8 +467,8 @@ export function runPreview(inputFile: string): void {
     process.exit(1);
   });
 
-  server.listen(DEFAULT_PORT, () => {
-    console.log(`Preview server: http://localhost:${DEFAULT_PORT}`);
+  server.listen(port, () => {
+    console.log(`Preview server: http://localhost:${port}`);
     console.log(`Watching: ${absInput}`);
     console.log("Press Ctrl+C to stop");
   });
