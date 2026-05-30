@@ -41,6 +41,7 @@
   "dependencies": {
     "@hirokisakabe/pom": "workspace:*",
     "@hirokisakabe/pom-md": "workspace:*",
+    "commander": "^15.0.0",
     "pptx-glimpse": "^0.11.0"
   },
   "devDependencies": {
