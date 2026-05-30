@@ -9,6 +9,11 @@ import { convertPptxToSvg } from "pptx-glimpse";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_PORT = 3000;
 
+function makeLog(verbose: boolean) {
+  if (!verbose) return (_msg: string) => {};
+  return (msg: string) => process.stderr.write(`[pom] ${msg}\n`);
+}
+
 const EXTRA_FONT_MAPPING: Record<string, string> = {
   "游ゴシック Light": "Noto Sans CJK JP",
   "Yu Gothic Light": "Noto Sans CJK JP",
@@ -19,7 +24,11 @@ type SvgResult =
   | { type: "error"; message: string }
   | { type: "empty" };
 
-async function generateSvgs(inputFile: string): Promise<SvgResult> {
+async function generateSvgs(
+  inputFile: string,
+  verbose = false,
+): Promise<SvgResult> {
+  const log = makeLog(verbose);
   const content = fs.readFileSync(inputFile, "utf-8");
   const ext = path.extname(inputFile);
 
@@ -29,10 +38,12 @@ async function generateSvgs(inputFile: string): Promise<SvgResult> {
   let masterPptxData: Uint8Array | undefined;
 
   if (ext === ".md") {
+    const t = Date.now();
     const result = parseMd(content);
     xml = result.xml;
     slideWidth = result.meta.size.w;
     slideHeight = result.meta.size.h;
+    log(`Parsing Markdown... done (${Date.now() - t}ms)`);
 
     if (result.meta.masterPptx) {
       const masterPath = path.resolve(
@@ -59,6 +70,7 @@ async function generateSvgs(inputFile: string): Promise<SvgResult> {
     return { type: "empty" };
   }
 
+  const t1 = Date.now();
   const { pptx } = await buildPptx(
     xml,
     { w: slideWidth, h: slideHeight },
@@ -67,6 +79,7 @@ async function generateSvgs(inputFile: string): Promise<SvgResult> {
       ...(masterPptxData ? { masterPptx: masterPptxData } : {}),
     },
   );
+  log(`Building PPTX... done (${Date.now() - t1}ms)`);
 
   const buffer = await pptx.write({ outputType: "uint8array" });
   if (!(buffer instanceof Uint8Array)) {
@@ -81,12 +94,15 @@ async function generateSvgs(inputFile: string): Promise<SvgResult> {
   }
   const fontDirs = [fontsDir];
 
+  const t2 = Date.now();
   const slides = await convertPptxToSvg(buffer, {
     width: slideWidth,
     fontDirs,
     fontMapping: EXTRA_FONT_MAPPING,
     skipSystemFonts: true,
   });
+  log(`Converting to SVG... done (${Date.now() - t2}ms)`);
+
   const svgs = slides.map((s: { svg: string }) => s.svg);
 
   return { type: "success", svgs, slideWidth };
@@ -367,7 +383,10 @@ function buildPreviewHtml(filename: string): string {
 export function runPreview(
   inputFile: string,
   port: number = DEFAULT_PORT,
+  options: { verbose?: boolean } = {},
 ): void {
+  const verbose = options.verbose ?? false;
+  const log = makeLog(verbose);
   const absInput = path.resolve(inputFile);
 
   if (!fs.existsSync(absInput)) {
@@ -394,9 +413,14 @@ export function runPreview(
   }
 
   function refresh(): void {
+    const totalStart = Date.now();
+    log("File changed, rebuilding...");
     broadcastBuilding();
-    generateSvgs(absInput)
-      .then(broadcast)
+    generateSvgs(absInput, verbose)
+      .then((result) => {
+        log(`Done (total: ${Date.now() - totalStart}ms)`);
+        broadcast(result);
+      })
       .catch((err: unknown) => {
         broadcast({
           type: "error",
@@ -405,10 +429,12 @@ export function runPreview(
       });
   }
 
-  generateSvgs(absInput)
+  const initialStart = Date.now();
+  generateSvgs(absInput, verbose)
     .then((result) => {
       currentResult = result;
       initialBuildDone = true;
+      log(`Initial build done (total: ${Date.now() - initialStart}ms)`);
       broadcast(result);
     })
     .catch((err: unknown) => {
