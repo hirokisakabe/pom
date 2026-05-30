@@ -6,20 +6,24 @@ on:
     paths:
       - "packages/pom-cli/**"
       - "packages/pom/src/**"
+      - "packages/pom-md/**"
       - "package.json"
       - "packages/pom/package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
+      - ".node-version"
       - ".github/workflows/ci-pom-cli.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "packages/pom-cli/**"
       - "packages/pom/src/**"
+      - "packages/pom-md/**"
       - "package.json"
       - "packages/pom/package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
+      - ".node-version"
       - ".github/workflows/ci-pom-cli.yml"
 
 jobs:
@@ -38,6 +42,10 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+        working-directory: .
+      - run: pnpm --filter @hirokisakabe/pom run build
+        working-directory: .
+      - run: pnpm --filter @hirokisakabe/pom-md run build
         working-directory: .
       - run: pnpm run fmt:check
       - run: pnpm run lint
