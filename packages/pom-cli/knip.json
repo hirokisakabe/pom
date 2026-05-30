@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "project": ["src/**/*.ts"],
+  "ignoreBinaries": ["eslint", "knip", "prettier", "tsc"],
+  "ignoreDependencies": ["typescript-eslint"],
+  "rules": {
+    "exports": "warn"
+  }
+}
