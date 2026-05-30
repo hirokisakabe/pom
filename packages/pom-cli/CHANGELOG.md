@@ -1,5 +1,11 @@
 # @hirokisakabe/pom-cli
 
+## 0.3.1
+
+### Patch Changes
+
+- [#778](https://github.com/hirokisakabe/pom/pull/778) [`ae7815f`](https://github.com/hirokisakabe/pom/commit/ae7815f747e8f476715cac5d8a53a5dc76e28bff) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - deps: pptx-glimpse を 0.11.0 → 0.11.2 に更新
+
 ## 0.3.0
 
 ### Minor Changes
