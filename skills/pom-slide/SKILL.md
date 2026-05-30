@@ -3,6 +3,8 @@ name: pom-slide
 description: Generate pom presentation slides from natural language. Creates a pom XML file and optionally launches a live preview with pom-cli.
 license: MIT
 allowed-tools: Write,Bash
+metadata:
+  version: "1.0.0"
 ---
 
 自然言語の指示から pom XML スライドを生成し、ファイルに保存する。pom-cli がインストール済みの場合はプレビューサーバーを起動する。
