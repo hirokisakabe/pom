@@ -29,6 +29,12 @@ pom preview slides.pom.xml --port 3001
 
 Use the zoom buttons in the toolbar or press `+` / `-` to zoom in and out. The current zoom level is saved across sessions.
 
+To print per-step timing on stderr when each rebuild completes:
+
+```bash
+pom preview slides.pom.xml --verbose
+```
+
 ### Build
 
 Converts a pom file to a PPTX file.
@@ -36,6 +42,12 @@ Converts a pom file to a PPTX file.
 ```bash
 pom build slides.pom.xml -o output.pptx
 pom build slides.pom.md -o output.pptx
+```
+
+To print per-step timing on stderr:
+
+```bash
+pom build slides.pom.xml -o output.pptx --verbose
 ```
 
 ## Fonts

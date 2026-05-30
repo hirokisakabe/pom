@@ -80,9 +80,6 @@ export async function runBuild(
   log(`Writing output... done (${Date.now() - t2}ms)`);
 
   const total = Date.now() - totalStart;
-  console.log(
-    verbose
-      ? `PPTX saved: ${absOutput} (total: ${total}ms)`
-      : `PPTX saved: ${absOutput}`,
-  );
+  log(`Total: ${total}ms`);
+  console.log(`PPTX saved: ${absOutput}`);
 }
