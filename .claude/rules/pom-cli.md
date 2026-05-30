@@ -23,3 +23,7 @@ pom-cli uses Changesets for versioning. The release is handled by the unified `r
 1. Add a changeset: `pnpm exec changeset add`
 2. Release PR merges → `changeset version` bumps `package.json` version
 3. `release.yml` runs `changeset publish` → publishes to npm as `@hirokisakabe/pom-cli`
+
+### PR 作成前チェック
+
+- [ ] changeset を追加する: `pnpm exec changeset add`

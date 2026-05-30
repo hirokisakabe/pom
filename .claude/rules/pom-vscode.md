@@ -43,3 +43,7 @@ pom-vscode uses Changesets for versioning (`privatePackages` config). The releas
 3. `release.yml` detects pom-vscode version change → builds, tests, and publishes to VS Code Marketplace + creates Git tag (`pom-vscode-v{version}`) + GitHub Release
 
 Each publish/tag/release step is idempotent: if the workflow fails midway, re-running will skip already-completed steps and resume from the point of failure.
+
+### PR 作成前チェック
+
+- [ ] changeset を追加する: `pnpm exec changeset add`
