@@ -82,17 +82,20 @@ export function renderMatrixNode(
     valign: "top",
   });
 
-  // Y軸ラベル（左部中央）
+  // Y軸ラベル（左部中央）270° 回転で下から上読み。w が視覚的な高さになるため CJK 5 文字以上も収まる幅を確保
+  const yLabelW = 100 * scaleFactor;
+  const yLabelH = 20 * scaleFactor;
   ctx.slide.addText(axes.y, {
-    x: pxToIn(content.x + 4 * scaleFactor),
-    y: pxToIn(centerY - 12 * scaleFactor),
-    w: pxToIn(48 * scaleFactor),
-    h: pxToIn(axisLabelH),
+    x: pxToIn(content.x + axisMargin / 2 - yLabelW / 2),
+    y: pxToIn(centerY - yLabelH / 2),
+    w: pxToIn(yLabelW),
+    h: pxToIn(yLabelH),
     fontSize: pxToPt(12 * scaleFactor),
     fontFace: "Noto Sans JP",
     color: "64748B",
     align: "center",
     valign: "middle",
+    rotate: 270,
   });
 
   // === 3. 象限ラベルを描画 ===
