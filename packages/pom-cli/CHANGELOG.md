@@ -1,5 +1,19 @@
 # @hirokisakabe/pom-cli
 
+## 0.3.0
+
+### Minor Changes
+
+- [#777](https://github.com/hirokisakabe/pom/pull/777) [`c13343d`](https://github.com/hirokisakabe/pom/commit/c13343df1c325062213b2907ed92d279dde000b2) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - `pom build` に `--watch` フラグを追加。入力ファイルの変更を監視して自動再ビルドする。ビルドエラー時もプロセスを終了せず次の変更を待ち続ける。
+
+- [#764](https://github.com/hirokisakabe/pom/pull/764) [`19feed7`](https://github.com/hirokisakabe/pom/commit/19feed7eaa1b9d870be615faf2889aee0566a9c4) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - `pom preview` に `--port <number>` オプションを追加。ポート番号を指定してサーバーを起動できるようになった。未指定時は従来通り 3000 番を使用。
+
+- [#774](https://github.com/hirokisakabe/pom/pull/774) [`93189a8`](https://github.com/hirokisakabe/pom/commit/93189a8bf8b02e5c8aa14872f65c51f2e5d02b8f) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - `pom build` と `pom preview` に `--verbose` フラグを追加した。指定するとビルド処理の各ステップ（ファイル読み込み・Markdown パース・PPTX ビルド・書き出し）の処理時間が `[pom] ...` 形式で stderr に出力される。
+
+### Patch Changes
+
+- [#771](https://github.com/hirokisakabe/pom/pull/771) [`378ccfe`](https://github.com/hirokisakabe/pom/commit/378ccfe49a3f32645ad6e86ee70f0fd85e36f0a5) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - `pom build` でバリデーションエラーが発生した際、診断コードとメッセージを1件ずつ整形して stderr に出力するようになった。複数エラーがある場合はすべて列挙される。
+
 ## 0.2.5
 
 ### Patch Changes
