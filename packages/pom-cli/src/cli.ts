@@ -2,7 +2,7 @@
 import { createRequire } from "node:module";
 import { Command } from "commander";
 import { DiagnosticsError } from "@hirokisakabe/pom";
-import { runBuild } from "./build.ts";
+import { runBuild, runBuildWatch } from "./build.ts";
 import { runPreview } from "./preview.ts";
 
 const require = createRequire(import.meta.url);
@@ -44,23 +44,38 @@ program
   .argument("<input>", "Input file (.pom.xml or .pom.md)")
   .requiredOption("-o <output>", "Output PPTX file")
   .option("--verbose", "Show build step timing on stderr")
-  .action((input: string, options: { o: string; verbose?: boolean }) => {
-    runBuild(input, options.o, { verbose: options.verbose }).catch(
-      (err: unknown) => {
-        if (err instanceof DiagnosticsError) {
-          const count = err.diagnostics.length;
-          console.error(
-            `✗ Build failed (${count} ${count === 1 ? "error" : "errors"})\n`,
-          );
-          for (const d of err.diagnostics) {
-            console.error(`  [${d.code}] ${d.message}`);
-          }
-        } else {
-          console.error(err instanceof Error ? err.message : String(err));
-        }
-        process.exit(1);
-      },
-    );
-  });
+  .option("--watch", "Watch for file changes and rebuild automatically")
+  .action(
+    (
+      input: string,
+      options: { o: string; verbose?: boolean; watch?: boolean },
+    ) => {
+      if (options.watch) {
+        runBuildWatch(input, options.o, { verbose: options.verbose }).catch(
+          (err: unknown) => {
+            console.error(err instanceof Error ? err.message : String(err));
+            process.exit(1);
+          },
+        );
+      } else {
+        runBuild(input, options.o, { verbose: options.verbose }).catch(
+          (err: unknown) => {
+            if (err instanceof DiagnosticsError) {
+              const count = err.diagnostics.length;
+              console.error(
+                `✗ Build failed (${count} ${count === 1 ? "error" : "errors"})\n`,
+              );
+              for (const d of err.diagnostics) {
+                console.error(`  [${d.code}] ${d.message}`);
+              }
+            } else {
+              console.error(err instanceof Error ? err.message : String(err));
+            }
+            process.exit(1);
+          },
+        );
+      }
+    },
+  );
 
 program.parse();

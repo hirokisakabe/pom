@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { buildPptx } from "@hirokisakabe/pom";
+import { buildPptx, DiagnosticsError } from "@hirokisakabe/pom";
 import { parseMd } from "@hirokisakabe/pom-md";
 
 function makeLog(verbose: boolean) {
@@ -11,7 +11,7 @@ function makeLog(verbose: boolean) {
 export async function runBuild(
   inputFile: string,
   outputFile: string,
-  options: { verbose?: boolean } = {},
+  options: { verbose?: boolean; silent?: boolean } = {},
 ): Promise<void> {
   const verbose = options.verbose ?? false;
   const log = makeLog(verbose);
@@ -81,5 +81,72 @@ export async function runBuild(
 
   const total = Date.now() - totalStart;
   log(`Total: ${total}ms`);
-  console.log(`PPTX saved: ${absOutput}`);
+  if (!options.silent) {
+    console.log(`PPTX saved: ${absOutput}`);
+  }
+}
+
+export async function runBuildWatch(
+  inputFile: string,
+  outputFile: string,
+  options: { verbose?: boolean } = {},
+): Promise<void> {
+  const absInput = path.resolve(inputFile);
+  const absOutput = path.resolve(outputFile);
+
+  if (!fs.existsSync(absInput)) {
+    throw new Error(`Input file not found: ${absInput}`);
+  }
+
+  const watchLog = (msg: string) => process.stderr.write(`[pom] ${msg}\n`);
+
+  watchLog(`Watching: ${path.basename(absInput)}`);
+
+  let isBuilding = false;
+  let pendingRebuild = false;
+
+  async function doBuild(): Promise<void> {
+    if (isBuilding) {
+      pendingRebuild = true;
+      return;
+    }
+    isBuilding = true;
+    pendingRebuild = false;
+    const start = Date.now();
+    try {
+      await runBuild(inputFile, outputFile, { ...options, silent: true });
+      watchLog(`Built: ${path.basename(absOutput)} (${Date.now() - start}ms)`);
+    } catch (err: unknown) {
+      if (err instanceof DiagnosticsError) {
+        const count = err.diagnostics.length;
+        process.stderr.write(
+          `[pom] Build failed (${count} ${count === 1 ? "error" : "errors"})\n`,
+        );
+        for (const d of err.diagnostics) {
+          process.stderr.write(`[pom]   [${d.code}] ${d.message}\n`);
+        }
+      } else {
+        process.stderr.write(
+          `[pom] Error: ${err instanceof Error ? err.message : String(err)}\n`,
+        );
+      }
+    } finally {
+      isBuilding = false;
+      if (pendingRebuild) {
+        watchLog("File changed, rebuilding...");
+        void doBuild();
+      }
+    }
+  }
+
+  await doBuild();
+
+  let debounceTimer: NodeJS.Timeout | null = null;
+  fs.watch(absInput, () => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      watchLog("File changed, rebuilding...");
+      void doBuild();
+    }, 100);
+  });
 }
