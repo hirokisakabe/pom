@@ -1,5 +1,11 @@
 # @hirokisakabe/pom
 
+## 8.2.1
+
+### Patch Changes
+
+- [#781](https://github.com/hirokisakabe/pom/pull/781) [`0fa2f65`](https://github.com/hirokisakabe/pom/commit/0fa2f658eb78c7d73c0bdb5aa56c5e635bcfea24) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - fix: Matrix の Y 軸ラベルが CJK テキストで折り返される問題を修正
+
 ## 8.2.0
 
 ### Minor Changes
