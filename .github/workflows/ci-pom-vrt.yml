@@ -26,7 +26,7 @@ jobs:
   vrt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run VRT in Docker
         working-directory: packages/pom
         run: docker compose run --rm vrt
