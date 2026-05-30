@@ -44,6 +44,23 @@ pom build slides.pom.xml -o output.pptx
 pom build slides.pom.md -o output.pptx
 ```
 
+To watch for file changes and rebuild automatically:
+
+```bash
+pom build slides.pom.xml -o output.pptx --watch
+```
+
+The process stays running and rebuilds every time the input file is saved. Build progress is printed to stderr:
+
+```
+[pom] Watching: slides.pom.xml
+[pom] Built: output.pptx (367ms)
+[pom] File changed, rebuilding...
+[pom] Built: output.pptx (342ms)
+```
+
+If a build fails, the error is printed but the process continues watching for the next change. Press `Ctrl+C` to stop.
+
 To print per-step timing on stderr:
 
 ```bash

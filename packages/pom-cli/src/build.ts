@@ -102,7 +102,16 @@ export async function runBuildWatch(
 
   watchLog(`Watching: ${path.basename(absInput)}`);
 
+  let isBuilding = false;
+  let pendingRebuild = false;
+
   async function doBuild(): Promise<void> {
+    if (isBuilding) {
+      pendingRebuild = true;
+      return;
+    }
+    isBuilding = true;
+    pendingRebuild = false;
     const start = Date.now();
     try {
       await runBuild(inputFile, outputFile, { ...options, silent: true });
@@ -120,6 +129,12 @@ export async function runBuildWatch(
         process.stderr.write(
           `[pom] Error: ${err instanceof Error ? err.message : String(err)}\n`,
         );
+      }
+    } finally {
+      isBuilding = false;
+      if (pendingRebuild) {
+        watchLog("File changed, rebuilding...");
+        void doBuild();
       }
     }
   }
