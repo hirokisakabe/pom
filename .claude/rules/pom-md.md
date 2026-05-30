@@ -28,3 +28,7 @@ Pipeline: `Markdown → parseMd() → pom XML string → buildPptx() (core)`
 cd apps/website/content/pom-md
 ln -s ../../../../packages/pom-md/docs/<new-file>.md <new-file>.md
 ```
+
+### PR 作成前チェック
+
+- [ ] changeset を追加する: `pnpm exec changeset add`
