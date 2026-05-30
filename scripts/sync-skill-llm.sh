@@ -24,12 +24,17 @@ with open('apps/website/public/llm.txt') as f:
 with open('skills/pom-slide/SKILL.md') as f:
     skill = f.read()
 
-new = re.sub(
+content = llm if llm.endswith('\n') else llm + '\n'
+new, count = re.subn(
     r'(?<=<!-- BEGIN llm\.txt -->\n).*?(?=<!-- END llm\.txt -->)',
-    llm + '\n',
+    content,
     skill,
     flags=re.DOTALL,
 )
+
+if count != 1:
+    print(f'ERROR: マーカーが見つかりません (置換回数={count})。<!-- BEGIN llm.txt --> / <!-- END llm.txt --> の存在を確認してください。', file=sys.stderr)
+    sys.exit(1)
 
 if new == skill:
     print('already up to date')

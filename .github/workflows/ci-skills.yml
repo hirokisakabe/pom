@@ -6,12 +6,14 @@ on:
     paths:
       - "skills/**"
       - "apps/website/public/llm.txt"
+      - "scripts/**"
       - ".github/workflows/ci-skills.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "skills/**"
       - "apps/website/public/llm.txt"
+      - "scripts/**"
       - ".github/workflows/ci-skills.yml"
 
 jobs:
