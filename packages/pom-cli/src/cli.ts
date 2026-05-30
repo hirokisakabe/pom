@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { createRequire } from "node:module";
 import { Command } from "commander";
+import { DiagnosticsError } from "@hirokisakabe/pom";
 import { runBuild } from "./build.ts";
 import { runPreview } from "./preview.ts";
 
@@ -43,7 +44,17 @@ program
   .requiredOption("-o <output>", "Output PPTX file")
   .action((input: string, options: { o: string }) => {
     runBuild(input, options.o).catch((err: unknown) => {
-      console.error(err instanceof Error ? err.message : String(err));
+      if (err instanceof DiagnosticsError) {
+        const count = err.diagnostics.length;
+        console.error(
+          `✗ Build failed (${count} ${count === 1 ? "error" : "errors"})\n`,
+        );
+        for (const d of err.diagnostics) {
+          console.error(`  [${d.code}] ${d.message}`);
+        }
+      } else {
+        console.error(err instanceof Error ? err.message : String(err));
+      }
       process.exit(1);
     });
   });

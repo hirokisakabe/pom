@@ -50,7 +50,10 @@ export async function runBuild(
   const { pptx } = await buildPptx(
     xml,
     { w: slideWidth, h: slideHeight },
-    masterPptxData ? { masterPptx: masterPptxData } : undefined,
+    {
+      ...(masterPptxData ? { masterPptx: masterPptxData } : {}),
+      strict: true,
+    },
   );
 
   const buffer = await pptx.write({ outputType: "uint8array" });
