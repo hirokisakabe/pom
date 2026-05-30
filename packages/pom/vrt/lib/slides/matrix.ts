@@ -11,7 +11,7 @@ export const page11MatrixXml = `
     <VStack w="50%" padding="16" backgroundColor="FFFFFF" border='{"color":"${palette.border}","width":1}' gap="12">
       <Text fontSize="14" bold="true">Cost-Effectiveness Matrix (with quadrants):</Text>
       <Matrix w="500" h="400">
-        <MatrixAxes x="コスト" y="効果" />
+        <MatrixAxes x="コスト" y="インパクト" />
         <MatrixQuadrants topLeft="低コスト高効果\n（優先実施）" topRight="高コスト高効果\n（検討）" bottomLeft="低コスト低効果\n（様子見）" bottomRight="高コスト低効果\n（見送り）" />
         <MatrixItem label="施策A" x="0.2" y="0.8" color="4CAF50" />
         <MatrixItem label="施策B" x="0.7" y="0.6" color="2196F3" />
