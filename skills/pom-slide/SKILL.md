@@ -23,6 +23,7 @@ allowed-tools: Write,Bash
 
 ---
 
+<!-- BEGIN llm.txt -->
 # pom XML Reference
 
 A compact reference for the pom XML format, designed to be pasted into LLM prompts.
@@ -531,10 +532,10 @@ Connector between two nodes referenced by `id`. Draws a straight line between th
 | Parent Node      | Child Tags                                          | Mapped Property              |
 | ---------------- | --------------------------------------------------- | ---------------------------- |
 | `<Chart>`        | `<ChartSeries>` > `<ChartDataPoint>`                | `data`                       |
-| `<Table>`        | `<Col>`, `<Tr>` > `<Td>`                           | `columns`, `rows`            |
+| `<Table>`        | `<Col>`, `<Tr>` > `<Td>`       | `columns`, `rows`            |
 | `<Text>`         | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
 | `<Li>`           | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
-| `<Td>`           | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
+| `<Td>`    | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
 | `<Timeline>`     | `<TimelineItem>`                                    | `items`                      |
 | `<Matrix>`       | `<MatrixAxes>`, `<MatrixQuadrants>`, `<MatrixItem>` | `axes`, `quadrants`, `items` |
 | `<Tree>`         | `<TreeItem>` (recursive)                            | `data`                       |
@@ -578,6 +579,7 @@ When the same property is specified via both attributes (JSON string) and child 
 - Property names are `w` / `h` (not `width` / `height`)
 - Children of `Layer` require `x` and `y`
 - `Tree` must have exactly one root `<TreeItem>`
+<!-- END llm.txt -->
 
 ---
 

@@ -5,11 +5,15 @@ on:
     branches: ["main"]
     paths:
       - "skills/**"
+      - "apps/website/public/llm.txt"
+      - "scripts/**"
       - ".github/workflows/ci-skills.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "skills/**"
+      - "apps/website/public/llm.txt"
+      - "scripts/**"
       - ".github/workflows/ci-skills.yml"
 
 jobs:
@@ -25,3 +29,12 @@ jobs:
         run: gh skill publish --dry-run
         env:
           GH_TOKEN: ${{ github.token }}
+
+  check-skill-llm-sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check SKILL.md llm.txt sync
+        run: bash scripts/check-skill-llm-sync.sh
