@@ -61,5 +61,8 @@
     "@hirokisakabe/pom": "workspace:*",
     "@vitest/coverage-v8": "^4.1.7",
     "typescript-eslint": "^8.59.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

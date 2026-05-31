@@ -50,5 +50,8 @@
   "devDependencies": {
     "@types/react": "^19",
     "typescript-eslint": "^8.59.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
