@@ -59,8 +59,8 @@
   },
   "devDependencies": {
     "@hirokisakabe/pom": "workspace:*",
-    "@vitest/coverage-v8": "^4.1.7",
-    "typescript-eslint": "^8.59.4"
+    "@vitest/coverage-v8": "^4.1.8",
+    "typescript-eslint": "^8.60.1"
   },
   "publishConfig": {
     "access": "public"
