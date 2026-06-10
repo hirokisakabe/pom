@@ -41,7 +41,7 @@
 - **Shorthand + Dot Notation** — Layout/style attributes (e.g. `padding`, `margin`, `border`, `fill`, `shadow`) can mix shorthand and dot notation on the same node. Shorthand sets defaults and dot notation overrides specific keys.
 - **Rich Nodes** — 18 built-in node types: charts, flowcharts, tables, timelines, org trees, and more.
 - **Schema-validated** — XML input is validated with Zod schemas at runtime with clear error messages.
-- **PowerPoint Native** — Generates real editable PowerPoint shapes — not images. Recipients can modify everything.
+- **PowerPoint Native** — Generates real editable PowerPoint shapes — not images. Recipients can modify everything. Linear gradient backgrounds (`backgroundGradient="linear-gradient(135deg, #667EEA 0%, #764BA2 100%)"`) are exported as native gradient fills.
 - **Pixel Units** — Intuitive pixel-based sizing (internally converted to inches at 96 DPI).
 - **Master Slide** — Define headers, footers, and page numbers once — applied to all slides automatically.
 - **Accurate Text Measurement** — Text width measured with opentype.js and bundled Noto Sans JP fonts for consistent layout.

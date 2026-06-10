@@ -8,6 +8,7 @@ import type { Diagnostic } from "./diagnostics.ts";
 import { DiagnosticsError } from "./diagnostics.ts";
 import { parseMasterPptx } from "./parseMasterPptx.ts";
 import { parseXml } from "./parseXml/parseXml.ts";
+import { patchPptxWriteForGradientFills } from "./renderPptx/gradientFills.ts";
 import { renderPptx } from "./renderPptx/renderPptx.ts";
 import { freeYogaTree } from "./shared/freeYogaTree.ts";
 import { toPositioned } from "./toPositioned/toPositioned.ts";
@@ -32,6 +33,13 @@ export async function buildPptx(
   },
 ): Promise<BuildPptxResult> {
   const ctx = createBuildContext(options?.textMeasurement ?? "auto");
+
+  // グラデーション後処理のマーカー色がユーザー指定色と衝突しないよう、
+  // 入力 XML / master オプション中に現れる色を予約しておく
+  ctx.gradientFills.reserveColors(xml);
+  if (options?.master) {
+    ctx.gradientFills.reserveColors(JSON.stringify(options.master));
+  }
 
   const nodes = parseXml(xml);
   const positionedPages: PositionedNode[] = [];
@@ -75,6 +83,10 @@ export async function buildPptx(
   }
 
   const pptx = await renderPptx(positionedPages, slideSize, ctx, master);
+
+  // backgroundGradient 使用時は write/writeFile に gradFill 置換の後処理を仕込む
+  patchPptxWriteForGradientFills(pptx, ctx.gradientFills);
+
   const diagnostics = ctx.diagnostics.items;
 
   if (options?.strict && diagnostics.length > 0) {

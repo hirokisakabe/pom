@@ -42,6 +42,7 @@ The top level of every pom XML document is one or more `<Slide>` elements. Each 
 | `minH` `maxH`     | number                                                     | Min / max height                           |
 | `padding`         | number / `padding.top="8" padding.bottom="8"`              | Padding (shorthand + dot notation can be mixed) |
 | `backgroundColor` | hex                                                        | Background color                           |
+| `backgroundGradient` | `linear-gradient(135deg, #667EEA 0%, #764BA2 100%)`     | Linear gradient background. Angle (`<n>deg` or `to right` etc., default `180deg`) + 2 or more hex color stops with optional `%` positions. Takes precedence over `backgroundColor`. On the slide root node it becomes the slide background |
 | `backgroundImage` | `backgroundImage.src="url" backgroundImage.sizing="cover"` | Background image                           |
 | `border`          | `border.color="333" border.width="1"`                      | Border (shorthand + dot notation can be mixed) |
 | `borderRadius`    | number                                                     | Border radius (px)                         |

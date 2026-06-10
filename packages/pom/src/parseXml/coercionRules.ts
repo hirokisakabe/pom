@@ -332,6 +332,7 @@ const BASE_RULES: Record<string, CoercionRule> = {
   padding: PADDING_RULE,
   margin: PADDING_RULE,
   backgroundColor: "string",
+  backgroundGradient: "string",
   backgroundImage: BACKGROUND_IMAGE_RULE,
   border: BORDER_STYLE_RULE,
   borderRadius: "number",
