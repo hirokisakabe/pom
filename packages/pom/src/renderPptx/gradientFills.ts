@@ -67,10 +67,7 @@ export class GradientFillRegistry {
 
     let marker: string;
     do {
-      marker = this.nextCandidate
-        .toString(16)
-        .toUpperCase()
-        .padStart(6, "0");
+      marker = this.nextCandidate.toString(16).toUpperCase().padStart(6, "0");
       this.nextCandidate = (this.nextCandidate + 1) % 0x1000000;
     } while (this.reserved.has(marker));
     this.reserved.add(marker);
@@ -197,7 +194,7 @@ export function patchPptxWriteForGradientFills(
       compression: props?.compression ? "DEFLATE" : "STORE",
     });
   };
-  pptx.write = patchedWrite as PptxGenJSInstance["write"];
+  pptx.write = patchedWrite;
 
   const patchedWriteFile = async (props?: WriteFileProps) => {
     const isNode =
@@ -217,5 +214,5 @@ export function patchPptxWriteForGradientFills(
     await fs.promises.writeFile(fileName, buffer);
     return fileName;
   };
-  pptx.writeFile = patchedWriteFile as PptxGenJSInstance["writeFile"];
+  pptx.writeFile = patchedWriteFile;
 }

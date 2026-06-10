@@ -92,9 +92,7 @@ describe("parseLinearGradient", () => {
     expect(parseLinearGradient("radial-gradient(#FF0000, #0000FF)")).toBeNull();
     expect(parseLinearGradient("linear-gradient(#FF0000)")).toBeNull();
     expect(parseLinearGradient("linear-gradient(45deg)")).toBeNull();
-    expect(
-      parseLinearGradient("linear-gradient(45deg, red, blue)"),
-    ).toBeNull();
+    expect(parseLinearGradient("linear-gradient(45deg, red, blue)")).toBeNull();
     expect(
       parseLinearGradient("linear-gradient(45deg, #FF0000 0px, #0000FF)"),
     ).toBeNull();
