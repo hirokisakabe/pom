@@ -58,6 +58,15 @@ describe("serializeXml", () => {
       const result = roundTrip(xml);
       expect(result).toEqual(original);
     });
+
+    it("grow 属性を往復変換する", () => {
+      const xml = `<HStack gap="8"><VStack grow="2"><Text>Left</Text></VStack><VStack grow="1"><Text>Right</Text></VStack></HStack>`;
+      const original = parseXml(`<Slide>${xml}</Slide>`);
+      const result = roundTrip(xml);
+      expect(result).toEqual(original);
+      const [left] = (result[0] as { children: unknown[] }).children;
+      expect((left as Record<string, unknown>).grow).toBe(2);
+    });
   });
 
   describe("複数スライドの直列化", () => {

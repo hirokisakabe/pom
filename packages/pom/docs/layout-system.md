@@ -62,6 +62,25 @@ Setting `"max"` applies `flexGrow=1`, which makes the element expand along the *
 </HStack>
 ```
 
+### Ratio-based Distribution with `grow`
+
+`grow` (a positive number) distributes the remaining space along the parent's main axis among siblings in proportion to their `grow` values — the same semantics as CSS `flex-grow`. Since `"max"` is `flexGrow=1`, `w="max"` / `h="max"` behave as `grow="1"` along the main axis. When `grow` is specified together with `w="max"` / `h="max"`, `grow` takes precedence.
+
+```xml
+<!-- 2:1 two-column layout -->
+<HStack w="max" h="max" gap="16">
+  <VStack grow="2"><Text>Main (2/3)</Text></VStack>
+  <VStack grow="1"><Text>Side (1/3)</Text></VStack>
+</HStack>
+
+<!-- Vertical: header fixed, body takes 3x the space of the footer -->
+<VStack w="max" h="max">
+  <Text h="60">Header</Text>
+  <VStack grow="3"><Text>Body</Text></VStack>
+  <VStack grow="1"><Text>Footer</Text></VStack>
+</VStack>
+```
+
 ### Percentage Size
 
 Use percentage strings to size relative to the parent:

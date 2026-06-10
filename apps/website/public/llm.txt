@@ -38,7 +38,7 @@ The top level of every pom XML document is one or more `<Slide>` elements. Each 
 | `id`              | string                                                     | Unique identifier within the slide (used by `Arrow` connectors) |
 | `w`               | number / `"max"` / `"50%"`                                 | Width                                      |
 | `h`               | number / `"max"` / `"50%"`                                 | Height                                     |
-| `grow`            | positive number                                            | Flex grow ratio among siblings (CSS `flex-grow`). `grow="2"` and `grow="1"` produce a 2:1 split. `w="max"` / `h="max"` behave as `grow="1"`; when both are specified, `grow` takes precedence |
+| `grow`            | positive number                                            | Flex grow ratio among siblings (CSS `flex-grow`). `grow="2"` and `grow="1"` produce a 2:1 split. Along the parent's main axis `w="max"` / `h="max"` behave as `grow="1"`; when both are specified, `grow` takes precedence |
 | `minW` `maxW`     | number                                                     | Min / max width                            |
 | `minH` `maxH`     | number                                                     | Min / max height                           |
 | `padding`         | number / `padding.top="8" padding.bottom="8"`              | Padding (shorthand + dot notation can be mixed) |

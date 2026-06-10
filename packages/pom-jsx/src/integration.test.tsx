@@ -85,6 +85,28 @@ describe("pom core との統合テスト", () => {
     assertParsable(xml);
   });
 
+  it("grow 属性が XML に出力され parseXml で数値としてパースできる", () => {
+    const xml = renderToXml(
+      <Slide>
+        <HStack gap={16} w="max">
+          <VStack grow={2}>
+            <Text>左カラム</Text>
+          </VStack>
+          <VStack grow={1}>
+            <Text>右カラム</Text>
+          </VStack>
+        </HStack>
+      </Slide>,
+    );
+    expect(xml).toContain('grow="2"');
+    const nodes = parseXml(xml);
+    const hstack = nodes[0] as unknown as {
+      children: Record<string, unknown>[];
+    };
+    expect(hstack.children[0].grow).toBe(2);
+    expect(hstack.children[1].grow).toBe(1);
+  });
+
   it("Ul リストが parseXml でパースできる", () => {
     const xml = renderToXml(
       <Slide>

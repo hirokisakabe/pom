@@ -186,7 +186,8 @@ async function buildPomWithYogaTree(
     yn.setFlexShrink(node.type === "icon" ? 0 : 1);
   }
 
-  // HStack の子要素で幅が指定されていない場合、デフォルトで均等分割
+  // HStack の子要素で幅が指定されていない場合、grow の比率で余白を配分
+  // (grow 未指定は 1 として扱い均等分割)
   // テーブルは setMeasureFunc でカラム幅合計を返すため除外
   // アイコンは固定サイズのコンテンツなので除外
   if (
