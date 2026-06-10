@@ -42,4 +42,9 @@ registerNode(hstackNodeDef);
 registerNode(layerNodeDef);
 registerNode(svgNodeDef);
 
-export { getNodeDef } from "./nodeRegistry.ts";
+export {
+  getAllNodeDefs,
+  getNodeDef,
+  getNodeDefByTag,
+  getTagName,
+} from "./nodeRegistry.ts";

@@ -1,6 +1,7 @@
-import type { POMNode, VStackNode, HStackNode } from "../../types.ts";
+import { type HStackNode, type POMNode, type VStackNode } from "../../types.ts";
 import type { NodeDefinition, Yoga } from "../types.ts";
 import type { Node as YogaNode } from "yoga-layout";
+import { getNodeMetadata } from "../nodeMetadata.ts";
 
 /**
  * vstack/hstack 共通の Flex プロパティを適用する
@@ -71,8 +72,7 @@ function applyFlexProperties(
 }
 
 export const vstackNodeDef: NodeDefinition = {
-  type: "vstack",
-  category: "multi-child",
+  ...getNodeMetadata("vstack"),
   applyYogaStyle(node: POMNode, yn: YogaNode, yoga: Yoga) {
     yn.setFlexDirection(yoga.FLEX_DIRECTION_COLUMN);
     applyFlexProperties(node as VStackNode, yn, yoga);
@@ -81,8 +81,7 @@ export const vstackNodeDef: NodeDefinition = {
 };
 
 export const hstackNodeDef: NodeDefinition = {
-  type: "hstack",
-  category: "multi-child",
+  ...getNodeMetadata("hstack"),
   applyYogaStyle(node: POMNode, yn: YogaNode, yoga: Yoga) {
     yn.setFlexDirection(yoga.FLEX_DIRECTION_ROW);
     applyFlexProperties(node as HStackNode, yn, yoga);

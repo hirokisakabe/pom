@@ -5,6 +5,7 @@ import { measureText } from "../../calcYogaLayout/measureText.ts";
 import { measureFontLineHeightRatio } from "../../calcYogaLayout/fontLoader.ts";
 import type { BuildContext } from "../../buildContext.ts";
 import { renderUlNode, renderOlNode } from "../../renderPptx/nodes/list.ts";
+import { getNodeMetadata } from "../nodeMetadata.ts";
 
 function applyListYogaStyle(
   node: POMNode,
@@ -60,8 +61,7 @@ function applyListYogaStyle(
 }
 
 export const ulNodeDef: NodeDefinition = {
-  type: "ul",
-  category: "leaf",
+  ...getNodeMetadata("ul"),
   applyYogaStyle: applyListYogaStyle,
   render(node, ctx) {
     renderUlNode(node as Extract<typeof node, { type: "ul" }>, ctx);
@@ -69,8 +69,7 @@ export const ulNodeDef: NodeDefinition = {
 };
 
 export const olNodeDef: NodeDefinition = {
-  type: "ol",
-  category: "leaf",
+  ...getNodeMetadata("ol"),
   applyYogaStyle: applyListYogaStyle,
   render(node, ctx) {
     renderOlNode(node as Extract<typeof node, { type: "ol" }>, ctx);

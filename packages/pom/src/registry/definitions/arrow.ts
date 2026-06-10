@@ -1,10 +1,10 @@
 import type { POMNode } from "../../types.ts";
 import type { NodeDefinition } from "../types.ts";
 import { renderArrowNode } from "../../renderPptx/nodes/arrow.ts";
+import { getNodeMetadata } from "../nodeMetadata.ts";
 
 export const arrowNodeDef: NodeDefinition = {
-  type: "arrow",
-  category: "leaf",
+  ...getNodeMetadata("arrow"),
   applyYogaStyle(_node, yn) {
     // arrow ノードは ID 参照で位置を決定するため、Yoga レイアウトではサイズ 0 として扱う
     yn.setWidth(0);
