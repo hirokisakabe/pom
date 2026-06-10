@@ -1,3 +1,4 @@
+import { spawn } from "child_process";
 import fs from "fs";
 import http from "http";
 import { fileURLToPath } from "url";
@@ -13,6 +14,27 @@ const DEFAULT_PORT = 3000;
 function makeLog(verbose: boolean) {
   if (!verbose) return (_msg: string) => {};
   return (msg: string) => process.stderr.write(`[pom] ${msg}\n`);
+}
+
+function openBrowser(url: string): void {
+  let cmd: string;
+  let args: string[];
+  if (process.platform === "darwin") {
+    cmd = "open";
+    args = [url];
+  } else if (process.platform === "win32") {
+    // 空文字はウィンドウタイトル。省略すると URL がタイトル扱いされる
+    cmd = "cmd";
+    args = ["/c", "start", "", url];
+  } else {
+    cmd = "xdg-open";
+    args = [url];
+  }
+  const child = spawn(cmd, args, { stdio: "ignore", detached: true });
+  child.on("error", () => {
+    console.log(`Could not open browser automatically. Open ${url} manually.`);
+  });
+  child.unref();
 }
 
 const EXTRA_FONT_MAPPING: Record<string, string> = {
@@ -384,7 +406,7 @@ function buildPreviewHtml(filename: string): string {
 export function runPreview(
   inputFile: string,
   port: number = DEFAULT_PORT,
-  options: { verbose?: boolean } = {},
+  options: { verbose?: boolean; open?: boolean } = {},
 ): void {
   const verbose = options.verbose ?? false;
   const log = makeLog(verbose);
@@ -508,8 +530,12 @@ export function runPreview(
   });
 
   server.listen(port, () => {
-    console.log(`Preview server: http://localhost:${port}`);
+    const url = `http://localhost:${port}`;
+    console.log(`Preview server: ${url}`);
     console.log(`Watching: ${absInput}`);
     console.log("Press Ctrl+C to stop");
+    if (options.open ?? true) {
+      openBrowser(url);
+    }
   });
 }
