@@ -8,6 +8,16 @@ CLI tool for [pom](https://github.com/hirokisakabe/pom) — preview and build pr
 npm install -g @hirokisakabe/pom-cli
 ```
 
+## Quick Start
+
+One command is all it takes — no global install required:
+
+```bash
+npx @hirokisakabe/pom-cli preview slides.pom.xml
+```
+
+This starts a local preview server, opens your browser automatically, and live-reloads the preview every time the file is saved. This also works well when invoked from agent skills or scripts.
+
 ## Usage
 
 ### Preview
@@ -19,7 +29,13 @@ pom preview slides.pom.xml
 pom preview slides.pom.md
 ```
 
-Open http://localhost:3000 in your browser. The page updates automatically when the file is saved.
+The browser opens http://localhost:3000 automatically. The page updates whenever the file is saved — including atomic saves performed by editors like Vim.
+
+To suppress the automatic browser open (e.g. in CI or headless environments):
+
+```bash
+pom preview slides.pom.xml --no-open
+```
 
 To use a different port (e.g. when 3000 is already in use):
 
