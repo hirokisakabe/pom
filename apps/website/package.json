@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "next --turbopack",
-    "build": "pnpm --filter @hirokisakabe/pom run build && next build",
+    "build": "pnpm --filter @hirokisakabe/pom run build && pnpm --filter @hirokisakabe/pom-editor run build && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -48,16 +48,16 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
-    "@types/node": "25.9.1",
+    "@types/node": "25.9.2",
     "@types/react": "^19",
     "@vitejs/plugin-react": "^6.0.2",
-    "@vitest/coverage-v8": "^4.1.7",
-    "eslint": "^10.4.0",
+    "@vitest/coverage-v8": "^4.1.8",
+    "eslint": "^10.4.1",
     "globals": "^17.6.0",
-    "happy-dom": "^20.9.0",
+    "happy-dom": "^20.10.2",
     "prettier": "^3.8.3",
     "tailwindcss": "^4",
-    "typescript-eslint": "^8.59.4",
-    "vitest": "^4.1.7"
+    "typescript-eslint": "^8.60.1",
+    "vitest": "^4.1.8"
   }
 }

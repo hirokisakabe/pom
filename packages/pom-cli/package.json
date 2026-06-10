@@ -45,7 +45,7 @@
     "pptx-glimpse": "^0.11.2"
   },
   "devDependencies": {
-    "@types/node": "^25.9.1",
-    "typescript-eslint": "^8.59.4"
+    "@types/node": "^25.9.2",
+    "typescript-eslint": "^8.60.1"
   }
 }
