@@ -21,6 +21,7 @@ import {
   Pyramid,
   B,
   I,
+  Span,
 } from "./components.ts";
 import { parseXml } from "../../pom/src/parseXml/parseXml.ts";
 
@@ -40,6 +41,22 @@ describe("pom core との統合テスト", () => {
     );
     assertParsable(xml);
     expect(xml).toContain('<Text fontSize="28" bold="true">タイトル</Text>');
+  });
+
+  it("letterSpacing 付きの Text / Span が parseXml でパースできる", () => {
+    const xml = renderToXml(
+      <Slide>
+        <Text fontSize={32} bold letterSpacing={8}>
+          SECTION TITLE
+        </Text>
+        <Text fontSize={16}>
+          通常 <Span letterSpacing={6}>字間広め</Span> 通常
+        </Text>
+      </Slide>,
+    );
+    assertParsable(xml);
+    expect(xml).toContain('letterSpacing="8"');
+    expect(xml).toContain('<Span letterSpacing="6">字間広め</Span>');
   });
 
   it("VStack コンテナが parseXml でパースできる", () => {

@@ -77,6 +77,7 @@ A node for displaying text.
 | `highlight`              | hex (highlight color)                                      |
 | `fontFamily`             | string (default: `Noto Sans JP`)                           |
 | `lineHeight`             | number (default: 1.3)                                      |
+| `letterSpacing`          | number in px (letter spacing, converted to pt on output)   |
 
 **Inline Formatting:**
 
@@ -92,9 +93,18 @@ Use `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` child elements for
 <Text fontSize="16">Normal <Span color="FF0000">red text</Span> normal</Text>
 <Text fontSize="16"><B><Span color="1D4ED8">bold blue</Span></B></Text>
 <Text fontSize="16" fontFamily="Noto Sans JP">Default <Span fontFamily="Arial">Arial section</Span> default</Text>
+<Text fontSize="16">Normal <Span letterSpacing="6">spaced out</Span> normal</Text>
 ```
 
-`<Span>` supports `color` and `fontFamily` attributes. When `fontFamily` is specified, that run uses the given font face (overrides the parent Text's `fontFamily`).
+`<Span>` supports `color`, `fontFamily`, and `letterSpacing` attributes. When `fontFamily` is specified, that run uses the given font face (overrides the parent Text's `fontFamily`). `letterSpacing` adjusts the spacing between characters for that run only.
+
+**Letter Spacing:**
+
+`letterSpacing` is specified in px (consistent with other user-facing units such as `fontSize`) and converted to pt internally for the PPTX output. Layout measurement accounts for the extra width (`letterSpacing × character count`), so spaced text does not overflow its container.
+
+```xml
+<Text fontSize="32" bold="true" letterSpacing="8">SECTION TITLE</Text>
+```
 
 See [Styling Guide](./styling-guide.md#font-size-guide) for recommended font sizes.
 
