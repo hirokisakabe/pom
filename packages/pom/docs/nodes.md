@@ -35,6 +35,7 @@ Layout attributes that all nodes can have.
 | `minH` `maxH`     | number                                                                     | Min/Max height                                                  |
 | `padding`         | number / `padding.top="8" padding.bottom="8"`                              | Padding                                                         |
 | `backgroundColor` | hex                                                                        | Background color (e.g., `F8F9FA`)                               |
+| `backgroundGradient` | `linear-gradient(135deg, #667EEA 0%, #764BA2 100%)`                     | Linear gradient background                                      |
 | `backgroundImage` | `backgroundImage.src="url" backgroundImage.sizing="cover"`                 | Background image                                                |
 | `border`          | `border.color="333" border.width="1"`                                      | Border                                                          |
 | `borderRadius`    | number                                                                     | Corner radius (px)                                              |
@@ -49,6 +50,7 @@ Layout attributes that all nodes can have.
 | `alignSelf`       | `auto` / `start` / `center` / `end` / `stretch`                            | Override parent alignItems                                      |
 | `shadow`          | `shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000"` | Drop shadow (not supported on Line)                             |
 
+- `backgroundGradient`: CSS-like `linear-gradient()` syntax. The angle accepts `<n>deg` (0 = bottom-to-top, clockwise) or `to <direction>` keywords (`to right`, `to bottom left`, ...) and defaults to `180deg` (top-to-bottom). Two or more hex color stops are required; stop positions (`%`) are optional and distributed evenly when omitted. Exported as a native PowerPoint gradient fill (editable, not rasterized). Takes precedence over `backgroundColor`.
 - `backgroundImage`: `src` accepts a URL or local file path. `sizing` controls how the image fits: `"cover"` (default) fills the area, `"contain"` fits within the area.
 - `border`: Can be combined with `color`, `width`, and `dashType` (`"solid"` / `"dash"` / `"dashDot"` / `"lgDash"` / `"lgDashDot"` / `"lgDashDotDot"` / `"sysDash"` / `"sysDot"`).
 - `opacity`: 0 = fully transparent, 1 = fully opaque. Useful for semi-transparent overlays with Layer nodes.
