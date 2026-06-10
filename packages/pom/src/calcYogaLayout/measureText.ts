@@ -74,7 +74,8 @@ function withLetterSpacing(
   letterSpacingPx: number | undefined,
 ): MeasureTextWidthFn {
   if (!letterSpacingPx) return measureWidth;
-  return (text) => measureWidth(text) + Array.from(text).length * letterSpacingPx;
+  return (text) =>
+    measureWidth(text) + Array.from(text).length * letterSpacingPx;
 }
 
 /**

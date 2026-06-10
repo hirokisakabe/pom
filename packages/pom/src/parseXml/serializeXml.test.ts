@@ -98,6 +98,25 @@ describe("serializeXml", () => {
       const serialized = serializeXml(nodes);
       expect(serialized).toContain("<B>Bold</B>");
     });
+
+    it("letterSpacing 付きの Text を往復変換する", () => {
+      const original = parseXml(
+        `<Slide><Text letterSpacing="4">字間広め</Text></Slide>`,
+      );
+      const serialized = serializeXml(original);
+      const result = parseXml(serialized);
+      expect(result).toEqual(original);
+    });
+
+    it("Span の letterSpacing を runs として往復変換する", () => {
+      const original = parseXml(
+        `<Slide><Text>通常 <Span letterSpacing="6">字間広め</Span></Text></Slide>`,
+      );
+      const serialized = serializeXml(original);
+      expect(serialized).toContain('letterSpacing="6"');
+      const result = parseXml(serialized);
+      expect(result).toEqual(original);
+    });
   });
 
   describe("オブジェクト属性の直列化", () => {
