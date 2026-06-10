@@ -46,3 +46,4 @@ export {
   page38CustomFontExtendedXml,
 } from "./customFont.js";
 export { page39ArrowXml } from "./arrow.js";
+export { page40GradientXml } from "./gradient.js";

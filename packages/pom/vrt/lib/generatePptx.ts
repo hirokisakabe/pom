@@ -41,6 +41,7 @@ import {
   page37TableCellBorderXml,
   page38CustomFontExtendedXml,
   page39ArrowXml,
+  page40GradientXml,
 } from "./slides/index.js";
 
 export async function generatePptx(outputPath: string): Promise<void> {
@@ -85,6 +86,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
     page37TableCellBorderXml,
     page38CustomFontExtendedXml,
     page39ArrowXml,
+    page40GradientXml,
   ]
     .map((pageXml) => `<Slide>${pageXml}</Slide>`)
     .join("\n");
