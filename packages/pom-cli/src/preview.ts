@@ -1,3 +1,4 @@
+import { spawn } from "child_process";
 import fs from "fs";
 import http from "http";
 import { fileURLToPath } from "url";
@@ -5,6 +6,7 @@ import path from "path";
 import { buildPptx } from "@hirokisakabe/pom";
 import { parseMd } from "@hirokisakabe/pom-md";
 import { convertPptxToSvg } from "pptx-glimpse";
+import { watchInputFile } from "./watch.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_PORT = 3000;
@@ -12,6 +14,27 @@ const DEFAULT_PORT = 3000;
 function makeLog(verbose: boolean) {
   if (!verbose) return (_msg: string) => {};
   return (msg: string) => process.stderr.write(`[pom] ${msg}\n`);
+}
+
+function openBrowser(url: string): void {
+  let cmd: string;
+  let args: string[];
+  if (process.platform === "darwin") {
+    cmd = "open";
+    args = [url];
+  } else if (process.platform === "win32") {
+    // 空文字はウィンドウタイトル。省略すると URL がタイトル扱いされる
+    cmd = "cmd";
+    args = ["/c", "start", "", url];
+  } else {
+    cmd = "xdg-open";
+    args = [url];
+  }
+  const child = spawn(cmd, args, { stdio: "ignore", detached: true });
+  child.on("error", () => {
+    console.log(`Could not open browser automatically. Open ${url} manually.`);
+  });
+  child.unref();
 }
 
 const EXTRA_FONT_MAPPING: Record<string, string> = {
@@ -383,7 +406,7 @@ function buildPreviewHtml(filename: string): string {
 export function runPreview(
   inputFile: string,
   port: number = DEFAULT_PORT,
-  options: { verbose?: boolean } = {},
+  options: { verbose?: boolean; open?: boolean } = {},
 ): void {
   const verbose = options.verbose ?? false;
   const log = makeLog(verbose);
@@ -412,7 +435,16 @@ export function runPreview(
     }
   }
 
+  let isBuilding = false;
+  let pendingRefresh = false;
+
   function refresh(): void {
+    if (isBuilding) {
+      pendingRefresh = true;
+      return;
+    }
+    isBuilding = true;
+    pendingRefresh = false;
     const totalStart = Date.now();
     log("File changed, rebuilding...");
     broadcastBuilding();
@@ -426,30 +458,34 @@ export function runPreview(
           type: "error",
           message: err instanceof Error ? err.message : String(err),
         });
+      })
+      .finally(() => {
+        isBuilding = false;
+        if (pendingRefresh) refresh();
       });
   }
 
+  isBuilding = true;
   const initialStart = Date.now();
   generateSvgs(absInput, verbose)
     .then((result) => {
       currentResult = result;
-      initialBuildDone = true;
       log(`Initial build done (total: ${Date.now() - initialStart}ms)`);
       broadcast(result);
     })
     .catch((err: unknown) => {
-      initialBuildDone = true;
       broadcast({
         type: "error",
         message: err instanceof Error ? err.message : String(err),
       });
+    })
+    .finally(() => {
+      initialBuildDone = true;
+      isBuilding = false;
+      if (pendingRefresh) refresh();
     });
 
-  let debounceTimer: NodeJS.Timeout | null = null;
-  fs.watch(absInput, () => {
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(refresh, 100);
-  });
+  watchInputFile(absInput, refresh);
 
   const html = buildPreviewHtml(path.basename(absInput));
 
@@ -494,8 +530,12 @@ export function runPreview(
   });
 
   server.listen(port, () => {
-    console.log(`Preview server: http://localhost:${port}`);
+    const url = `http://localhost:${port}`;
+    console.log(`Preview server: ${url}`);
     console.log(`Watching: ${absInput}`);
     console.log("Press Ctrl+C to stop");
+    if (options.open ?? true) {
+      openBrowser(url);
+    }
   });
 }

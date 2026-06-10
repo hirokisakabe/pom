@@ -39,4 +39,31 @@ describe("createTextOptions", () => {
     expect(options.align).toBe("left");
     expect(options.color).toBeUndefined();
   });
+
+  it("letterSpacing (px) を charSpacing (pt) に変換する", () => {
+    const options = createTextOptions({
+      type: "text",
+      text: "hello",
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 20,
+      letterSpacing: 4,
+    });
+
+    expect(options.charSpacing).toBe(pxToPt(4));
+  });
+
+  it("letterSpacing が未指定なら charSpacing は undefined になる", () => {
+    const options = createTextOptions({
+      type: "text",
+      text: "hello",
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 20,
+    });
+
+    expect(options.charSpacing).toBeUndefined();
+  });
 });

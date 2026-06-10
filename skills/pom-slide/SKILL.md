@@ -1,13 +1,13 @@
 ---
 name: pom-slide
-description: Generate pom presentation slides from natural language. Applies design principles (color palette, typography scale, spacing), creates a pom XML file, performs a rendered self-review loop, and optionally launches a live preview with pom-cli.
+description: Generate pom presentation slides from natural language. Applies design principles (color palette, typography scale, spacing), honors a pom-theme.json brand theme when present, creates a pom XML file, performs a rendered self-review loop, and optionally launches a live preview with pom-cli.
 license: MIT
 allowed-tools: Write,Edit,Read,Bash
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
-自然言語の指示から pom XML スライドを生成し、ファイルに保存する。デザイン原則（配色・タイポグラフィ・余白・アーキタイプ）に基づいて初版の質を高め、レンダリング結果を自分で見て修正するセルフレビューを行ったうえで、pom-cli がインストール済みの場合はプレビューサーバーを起動する。
+自然言語の指示から pom XML スライドを生成し、ファイルに保存する。デザイン原則（配色・タイポグラフィ・余白・アーキタイプ）に基づいて初版の質を高め、`/pom-theme` skill が生成したテーマファイル（`pom-theme.json`）があればブランド配色・フォントを適用する。レンダリング結果を自分で見て修正するセルフレビューを行ったうえで、pom-cli がインストール済みの場合はプレビューサーバーを起動する。
 
 ## 手順
 
@@ -22,6 +22,17 @@ metadata:
 ### 2. デザイン方針の決定
 
 XML を書き始める前に、デッキ全体のデザイントークン（配色・タイポグラフィ・余白）を決める。場当たり的に色やサイズを選ばず、ここで決めた値だけを使ってデッキ全体を組む。
+
+#### テーマファイルの確認
+
+最初にカレントディレクトリ（またはユーザーが指定したディレクトリ）に `pom-theme.json` があるか確認する。あれば `Read` ツールで読み込み、以下のとおりデザイントークンとして採用する。`pom-theme.json` は `/pom-theme` skill が生成するテーマファイルで、ブランドに合わせた配色・フォントが定義されている。
+
+- **トーン**: `tone` フィールドの値を採用する（下記「トーン」の選択をスキップ）
+- **配色パレット**: `colors` の `base` / `surface` / `ink` / `muted` / `accent` を 5 ロールにそのまま使う（下記プリセットからの選択をスキップ）。`Chart` の `chartColors` には `colors.charts` を使う
+- **フォント**: `typography.fontFamily` を本文の `fontFamily` に、`typography.headingFontFamily`（あれば）を見出しに使う
+- **背景**: `slideMaster.background.color` があればスライド背景色として使う（通常は `colors.base` と同じ）
+
+テーマで決まるのは配色・フォント・トーンのみ。タイポグラフィスケール・余白システム・アーキタイプは下記のとおり通常どおり適用する。ユーザーが指示で明示的に色やトーンを指定した場合は、その指定をテーマより優先する。`pom-theme.json` が無い場合は、以下のとおり自分でトーンと配色を決める。
 
 #### トーン
 
@@ -258,6 +269,7 @@ Positions children using absolute coordinates. Children require `x` and `y`. Sou
 | `highlight`              | hex (highlight color)                                      |
 | `fontFamily`             | string (default: `Noto Sans JP`)                           |
 | `lineHeight`             | number (default: 1.3)                                      |
+| `letterSpacing`          | number in px (letter spacing, converted to pt on output)   |
 
 Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
 
@@ -270,9 +282,10 @@ Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
 <Text fontSize="16"><Mark color="FFFF00">highlighted</Mark> text</Text>
 <Text fontSize="16">Normal <Span color="FF0000">red text</Span> normal</Text>
 <Text fontSize="16" fontFamily="Noto Sans JP">Default <Span fontFamily="Arial">Arial part</Span> default</Text>
+<Text fontSize="16">Normal <Span letterSpacing="6">spaced out</Span> normal</Text>
 ```
 
-`<Span>` supports `color` and `fontFamily` (overrides the parent's `fontFamily` for that run).
+`<Span>` supports `color`, `fontFamily` (overrides the parent's `fontFamily` for that run), and `letterSpacing` (adjusts letter spacing for that run; effective inside `<Text>` only).
 
 `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` also work inside `<Li>` and `<Td>`.
 

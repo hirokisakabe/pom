@@ -110,6 +110,7 @@ export interface TextProps extends BaseProps, TextStyleProps {
   children?: ReactNode;
   textAlign?: TextAlign;
   lineHeight?: number;
+  letterSpacing?: number;
 }
 
 // ===== Inline text components =====
@@ -131,6 +132,7 @@ export interface SpanProps {
   color?: string;
   highlight?: string;
   fontFamily?: string;
+  letterSpacing?: number;
 }
 
 export interface MarkProps {

@@ -66,14 +66,15 @@ This repository is a pnpm monorepo containing the following packages:
 | [packages/pom-vscode](./packages/pom-vscode/) | VS Code extension for live preview                           | [Marketplace](https://marketplace.visualstudio.com/items?itemName=hirokisakabe.pom-vscode) |
 | [apps/website](./apps/website/)               | Documentation website ([pom.pptx.app](https://pom.pptx.app)) | —                                                                                          |
 
-## Claude Code Skill
+## Claude Code Skills
 
-The `pom-slide` skill lets you generate presentation slides from natural language inside [Claude Code](https://claude.ai/code) sessions.
+The `pom-slide` skill lets you generate presentation slides from natural language inside [Claude Code](https://claude.ai/code) sessions. The `pom-theme` skill onboards your brand assets (brand colors, an existing PPTX master, or a website/image) into a reusable theme.
 
 **Install:**
 
 ```bash
 gh skill install hirokisakabe/pom pom-slide
+gh skill install hirokisakabe/pom pom-theme
 ```
 
 **Usage:**
@@ -85,6 +86,14 @@ After installation, use `/pom-slide` in Claude Code:
 ```
 
 Claude generates a `slides.pom.xml` file in the current directory. If [pom-cli](https://www.npmjs.com/package/@hirokisakabe/pom-cli) is installed (`npm install -g @hirokisakabe/pom-cli`), a live preview server starts automatically at `http://localhost:3000`.
+
+To make generated slides follow your brand, run `/pom-theme` first:
+
+```
+/pom-theme ブランドカラーは #0052CC。コーポレート向けのライトテーマで
+```
+
+This saves a `pom-theme.json` (color palette + typography + SlideMaster settings) in the current directory, and subsequent `/pom-slide` runs automatically apply its colors, fonts, and background. The SlideMaster settings can also be passed directly to `buildPptx()` as the `master` option.
 
 ## Documentation
 

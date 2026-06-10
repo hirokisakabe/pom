@@ -357,6 +357,7 @@ const textRunSchema = z.object({
   color: z.string().optional(),
   href: z.string().optional(),
   fontFamily: z.string().optional(),
+  letterSpacing: z.number().optional(),
 });
 
 // ===== Non-recursive Node Types =====
@@ -374,6 +375,7 @@ export const textNodeSchema = basePOMNodeSchema.extend({
   highlight: z.string().optional(),
   fontFamily: z.string().optional(),
   lineHeight: z.number().optional(),
+  letterSpacing: z.number().optional(),
 });
 
 export const liNodeSchema = z.object({

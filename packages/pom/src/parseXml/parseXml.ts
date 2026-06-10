@@ -399,6 +399,7 @@ type TextRunResult = {
   color?: string;
   href?: string;
   fontFamily?: string;
+  letterSpacing?: number;
 };
 
 function extractTextRuns(
@@ -411,6 +412,7 @@ function extractTextRuns(
   inheritHighlight?: string,
   inheritColor?: string,
   inheritFontFamily?: string,
+  inheritLetterSpacing?: number,
 ): TextRunResult[] {
   const runs: TextRunResult[] = [];
   for (const child of children) {
@@ -424,6 +426,8 @@ function extractTextRuns(
       if (inheritColor) run.color = inheritColor;
       if (inheritHref) run.href = inheritHref;
       if (inheritFontFamily) run.fontFamily = inheritFontFamily;
+      if (inheritLetterSpacing !== undefined)
+        run.letterSpacing = inheritLetterSpacing;
       runs.push(run);
     } else {
       const tag = getTagName(child);
@@ -440,6 +444,7 @@ function extractTextRuns(
             inheritHighlight,
             inheritColor,
             inheritFontFamily,
+            inheritLetterSpacing,
           ),
         );
       } else if (tag === "I") {
@@ -454,6 +459,7 @@ function extractTextRuns(
             inheritHighlight,
             inheritColor,
             inheritFontFamily,
+            inheritLetterSpacing,
           ),
         );
       } else if (tag === "A") {
@@ -469,6 +475,7 @@ function extractTextRuns(
             inheritHighlight,
             inheritColor,
             inheritFontFamily,
+            inheritLetterSpacing,
           ),
         );
       } else if (tag === "U") {
@@ -483,6 +490,7 @@ function extractTextRuns(
             inheritHighlight,
             inheritColor,
             inheritFontFamily,
+            inheritLetterSpacing,
           ),
         );
       } else if (tag === "S") {
@@ -497,6 +505,7 @@ function extractTextRuns(
             inheritHighlight,
             inheritColor,
             inheritFontFamily,
+            inheritLetterSpacing,
           ),
         );
       } else if (tag === "Mark") {
@@ -513,6 +522,7 @@ function extractTextRuns(
             color,
             inheritColor,
             inheritFontFamily,
+            inheritLetterSpacing,
           ),
         );
       } else if (tag === "Span") {
@@ -525,6 +535,11 @@ function extractTextRuns(
           rawSpanFontFamily && rawSpanFontFamily.trim()
             ? rawSpanFontFamily
             : inheritFontFamily;
+        const rawSpanLetterSpacing = spanAttrs.letterSpacing;
+        const spanLetterSpacing =
+          rawSpanLetterSpacing && rawSpanLetterSpacing.trim()
+            ? Number(rawSpanLetterSpacing)
+            : inheritLetterSpacing;
         runs.push(
           ...extractTextRuns(
             innerChildren,
@@ -536,6 +551,7 @@ function extractTextRuns(
             inheritHighlight,
             spanColor,
             spanFontFamily,
+            spanLetterSpacing,
           ),
         );
       }

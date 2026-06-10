@@ -8,6 +8,7 @@ type MeasureOptions = {
   fontSizePx: number;
   fontWeight?: "normal" | "bold" | number;
   lineHeight?: number;
+  letterSpacingPx?: number;
 };
 
 export type TextMeasurementMode = "opentype" | "fallback" | "auto";
@@ -64,6 +65,18 @@ function estimateTextWidth(text: string, fontSizePx: number): number {
  * テキスト幅計測関数の型
  */
 type MeasureTextWidthFn = (text: string) => number;
+
+/**
+ * 計測関数に letterSpacing（文字数 × 字間 px）の加算を合成する
+ */
+function withLetterSpacing(
+  measureWidth: MeasureTextWidthFn,
+  letterSpacingPx: number | undefined,
+): MeasureTextWidthFn {
+  if (!letterSpacingPx) return measureWidth;
+  return (text) =>
+    measureWidth(text) + Array.from(text).length * letterSpacingPx;
+}
 
 /**
  * テキストを折り返して行ごとの幅を計算する
@@ -177,8 +190,13 @@ function measureTextWithOpentype(
   opts: MeasureOptions,
 ): { widthPx: number; heightPx: number } {
   const fontWeight = normalizeFontWeight(opts.fontWeight);
-  const lines = wrapText(text, maxWidthPx, (t) =>
-    measureTextWidthOpentype(t, opts.fontSizePx, fontWeight),
+  const lines = wrapText(
+    text,
+    maxWidthPx,
+    withLetterSpacing(
+      (t) => measureTextWidthOpentype(t, opts.fontSizePx, fontWeight),
+      opts.letterSpacingPx,
+    ),
   );
   return calculateResult(lines, opts);
 }
@@ -192,8 +210,13 @@ function measureTextFallback(
   opts: MeasureOptions,
 ): { widthPx: number; heightPx: number } {
   const { fontSizePx } = opts;
-  const lines = wrapText(text, maxWidthPx, (t) =>
-    estimateTextWidth(t, fontSizePx),
+  const lines = wrapText(
+    text,
+    maxWidthPx,
+    withLetterSpacing(
+      (t) => estimateTextWidth(t, fontSizePx),
+      opts.letterSpacingPx,
+    ),
   );
   return calculateResult(lines, opts);
 }
