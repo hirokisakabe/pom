@@ -1,8 +1,8 @@
 ---
 name: pom-slide
-description: Generate pom presentation slides from natural language. Creates a pom XML file and optionally launches a live preview with pom-cli.
+description: Generate pom presentation slides from natural language. Applies design principles (color palette, typography scale, spacing), creates a pom XML file, performs a rendered self-review loop, and optionally launches a live preview with pom-cli.
 license: MIT
-allowed-tools: Write,Bash
+allowed-tools: Write,Edit,Read,Bash
 metadata:
   version: "1.1.0"
 ---
