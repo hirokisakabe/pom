@@ -186,7 +186,8 @@ async function buildPomWithYogaTree(
     yn.setFlexShrink(node.type === "icon" ? 0 : 1);
   }
 
-  // HStack の子要素で幅が指定されていない場合、デフォルトで均等分割
+  // HStack の子要素で幅が指定されていない場合、grow の比率で余白を配分
+  // (grow 未指定は 1 として扱い均等分割)
   // テーブルは setMeasureFunc でカラム幅合計を返すため除外
   // アイコンは固定サイズのコンテンツなので除外
   if (
@@ -195,7 +196,7 @@ async function buildPomWithYogaTree(
     node.type !== "table" &&
     node.type !== "icon"
   ) {
-    yn.setFlexGrow(1);
+    yn.setFlexGrow(node.grow ?? 1);
     // HStack が確定幅を持つ場合のみ flexBasis=0 で均等分割
     // HStack が auto-sized（親の alignItems が center/start/end 等）の場合、
     // flexBasis=0 だと子要素の自然な幅が失われてレイアウトが崩れるため、
@@ -262,6 +263,11 @@ async function applyStyleToYogaNode(
       const percent = parseFloat(node.h);
       yn.setHeightPercent(percent);
     }
+  }
+
+  // flex-grow（w="max" / h="max" の setFlexGrow(1) より優先）
+  if (node.grow !== undefined) {
+    yn.setFlexGrow(node.grow);
   }
 
   // min/max constraints

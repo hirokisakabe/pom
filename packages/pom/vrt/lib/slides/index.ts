@@ -48,3 +48,4 @@ export {
 } from "./customFont.js";
 export { page39ArrowXml } from "./arrow.js";
 export { page41GradientXml } from "./gradient.js";
+export { page42FlexGrowXml } from "./flexGrow.js";

@@ -495,6 +495,23 @@ describe("parseXml", () => {
       const result = parseXml('<Text opacity="0.5">test</Text>');
       expect((result[0] as Record<string, unknown>).opacity).toBe(0.5);
     });
+
+    it("grow を number に変換する", () => {
+      const result = parseXml('<Text grow="2">test</Text>');
+      expect((result[0] as Record<string, unknown>).grow).toBe(2);
+    });
+
+    it("grow に 0 を指定するとエラーになる", () => {
+      expect(() => parseXml('<Text grow="0">test</Text>')).toThrow(
+        ParseXmlError,
+      );
+    });
+
+    it("grow に負数を指定するとエラーになる", () => {
+      expect(() => parseXml('<Text grow="-1">test</Text>')).toThrow(
+        ParseXmlError,
+      );
+    });
   });
 
   // ===== テキストコンテンツの扱い =====

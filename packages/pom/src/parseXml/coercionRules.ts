@@ -325,6 +325,7 @@ const BASE_RULES: Record<string, CoercionRule> = {
   id: "string",
   w: LENGTH_RULE,
   h: LENGTH_RULE,
+  grow: "number",
   minW: "number",
   maxW: "number",
   minH: "number",
