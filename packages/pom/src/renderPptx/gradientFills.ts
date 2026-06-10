@@ -173,7 +173,13 @@ export function patchPptxWriteForGradientFills(
   const originalWrite = pptx.write.bind(pptx);
   const originalWriteFile = pptx.writeFile.bind(pptx);
 
-  const patchedWrite = async (props?: WriteProps) => {
+  const patchedWrite = async (rawProps?: WriteProps | string) => {
+    // DEPRECATED: pptxgenjs は write(outputType) の文字列 overload を
+    // ランタイムでは今も受け付けるため、同様に正規化する
+    const props: WriteProps | undefined =
+      typeof rawProps === "string"
+        ? ({ outputType: rawProps } as WriteProps)
+        : rawProps;
     const data = (await originalWrite({
       outputType: "uint8array",
     })) as Uint8Array;
@@ -196,7 +202,11 @@ export function patchPptxWriteForGradientFills(
   };
   pptx.write = patchedWrite;
 
-  const patchedWriteFile = async (props?: WriteFileProps) => {
+  const patchedWriteFile = async (rawProps?: WriteFileProps | string) => {
+    // DEPRECATED: pptxgenjs は writeFile(fileName) の文字列 overload を
+    // ランタイムでは今も受け付けるため、同様に正規化する
+    const props: WriteFileProps | undefined =
+      typeof rawProps === "string" ? { fileName: rawProps } : rawProps;
     const isNode =
       typeof process !== "undefined" && Boolean(process.versions?.node);
     if (!isNode) {

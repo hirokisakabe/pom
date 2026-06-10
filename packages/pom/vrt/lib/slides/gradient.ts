@@ -3,10 +3,11 @@ import { palette } from "./palette.js";
 // ============================================================
 // Page 40: Background Gradient Test
 // テスト対象: backgroundGradient - 角度、方向キーワード、3色以上、
-//             位置省略、borderRadius/border 併用、opacity 併用
+//             位置省略、borderRadius/border 併用、opacity 併用、
+//             ルートノード指定 (スライド背景経路)
 // ============================================================
 export const page40GradientXml = `
-<VStack w="100%" h="max" padding="48" gap="20" alignItems="stretch" backgroundColor="${palette.background}">
+<VStack w="100%" h="max" padding="48" gap="20" alignItems="stretch" backgroundGradient="linear-gradient(180deg, #F8FAFC 0%, #DBEAFE 100%)">
   <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 40: Background Gradient Test</Text>
   <VStack padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="12">
     <Text fontSize="14" bold="true">angle variations:</Text>

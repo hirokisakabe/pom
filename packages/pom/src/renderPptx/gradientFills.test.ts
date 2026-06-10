@@ -4,6 +4,7 @@ import os from "os";
 import path from "path";
 import { describe, expect, it } from "vitest";
 import { buildPptx } from "../buildPptx.ts";
+import { ParseXmlError } from "../parseXml/parseXml.ts";
 import { GradientFillRegistry } from "./gradientFills.ts";
 
 async function readSlideXml(buffer: Uint8Array): Promise<string> {
@@ -103,6 +104,36 @@ describe("buildPptx with backgroundGradient", () => {
     expect(slideXml).not.toContain("ABCDEF");
   });
 
+  it("複数スライド・複数グラデーション混在時にそれぞれ正しく置換される", async () => {
+    const xml = `
+    <Slide><VStack w="100%" h="max">
+      <Text w="200" h="100" backgroundGradient="linear-gradient(90deg, #FF0000, #00FF00)" text=""></Text>
+      <Text w="200" h="100" backgroundGradient="linear-gradient(90deg, #112233, #445566)" text=""></Text>
+      <Text w="200" h="100" backgroundColor="ABCDEF" text=""></Text>
+    </VStack></Slide>
+    <Slide><VStack w="100%" h="max">
+      <Text w="200" h="100" backgroundGradient="linear-gradient(90deg, #AA0000, #BB0000)" text=""></Text>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.write({
+      outputType: "uint8array",
+    })) as Uint8Array;
+    const zip = await JSZip.loadAsync(buffer);
+    const slide1Xml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+    const slide2Xml = await zip.file("ppt/slides/slide2.xml")!.async("text");
+
+    // slide1: 2 種類のグラデーションがそれぞれのカラーストップで置換される
+    expect(slide1Xml.match(/<a:gradFill/g)).toHaveLength(2);
+    expect(slide1Xml).toContain('<a:gs pos="0"><a:srgbClr val="FF0000"/>');
+    expect(slide1Xml).toContain('<a:gs pos="0"><a:srgbClr val="112233"/>');
+    // 単色背景はそのまま残る
+    expect(slide1Xml).toContain('<a:srgbClr val="ABCDEF"/>');
+
+    // slide2: 別スライドのグラデーションも置換される
+    expect(slide2Xml.match(/<a:gradFill/g)).toHaveLength(1);
+    expect(slide2Xml).toContain('<a:gs pos="0"><a:srgbClr val="AA0000"/>');
+  });
+
   it("writeFile でもグラデーション後処理が適用される", async () => {
     const xml = `<Slide><VStack w="100%" h="max">
       <Text w="200" h="100" backgroundGradient="linear-gradient(#FF0000, #0000FF)" text=""></Text>
@@ -138,6 +169,8 @@ describe("buildPptx with backgroundGradient", () => {
     const xml = `<Slide><VStack w="100%" h="max">
       <Text w="200" h="100" backgroundGradient="linear-gradient(invalid)" text=""></Text>
     </VStack></Slide>`;
-    await expect(buildPptx(xml, { w: 1280, h: 720 })).rejects.toThrow();
+    await expect(buildPptx(xml, { w: 1280, h: 720 })).rejects.toThrow(
+      ParseXmlError,
+    );
   });
 });
