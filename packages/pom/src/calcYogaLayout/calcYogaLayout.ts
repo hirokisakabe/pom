@@ -195,7 +195,7 @@ async function buildPomWithYogaTree(
     node.type !== "table" &&
     node.type !== "icon"
   ) {
-    yn.setFlexGrow(1);
+    yn.setFlexGrow(node.grow ?? 1);
     // HStack が確定幅を持つ場合のみ flexBasis=0 で均等分割
     // HStack が auto-sized（親の alignItems が center/start/end 等）の場合、
     // flexBasis=0 だと子要素の自然な幅が失われてレイアウトが崩れるため、
@@ -262,6 +262,11 @@ async function applyStyleToYogaNode(
       const percent = parseFloat(node.h);
       yn.setHeightPercent(percent);
     }
+  }
+
+  // flex-grow（w="max" / h="max" の setFlexGrow(1) より優先）
+  if (node.grow !== undefined) {
+    yn.setFlexGrow(node.grow);
   }
 
   // min/max constraints

@@ -313,6 +313,7 @@ const basePOMNodeSchema = z.object({
   id: z.string().optional(),
   w: lengthSchema.optional(),
   h: lengthSchema.optional(),
+  grow: z.number().positive().optional(),
   minW: z.number().optional(),
   maxW: z.number().optional(),
   minH: z.number().optional(),
