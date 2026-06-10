@@ -1,5 +1,16 @@
 # @hirokisakabe/pom-cli
 
+## 0.4.0
+
+### Minor Changes
+
+- [#802](https://github.com/hirokisakabe/pom/pull/802) [`36ff2d2`](https://github.com/hirokisakabe/pom/commit/36ff2d26ec07029f8fa7f05bb8d2d0afda11a20d) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - `pom preview` 起動時にブラウザを自動オープンするようにした（`--no-open` で抑止可能）。ファイル監視をディレクトリ監視方式に変更し、エディタの atomic save 後も live reload が継続するようにした。
+
+### Patch Changes
+
+- Updated dependencies [[`cc7a6c4`](https://github.com/hirokisakabe/pom/commit/cc7a6c40c05ebe789b9782032206db7afbb3e13e), [`106bb60`](https://github.com/hirokisakabe/pom/commit/106bb60742d602ff2d784688587043f0c5aedf85), [`74edfb6`](https://github.com/hirokisakabe/pom/commit/74edfb662685a59fe20f89ab6de0d6412e6ccdf3)]:
+  - @hirokisakabe/pom@8.3.0
+
 ## 0.3.2
 
 ### Patch Changes
