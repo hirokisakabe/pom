@@ -67,6 +67,7 @@ type BackgroundImage = { src: string; sizing?: "cover" | "contain" };
 export interface BaseProps {
   w?: Length;
   h?: Length;
+  grow?: number;
   minW?: number;
   maxW?: number;
   minH?: number;

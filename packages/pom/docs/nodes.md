@@ -31,6 +31,7 @@ Layout attributes that all nodes can have.
 | `id`              | string                                                                     | Unique identifier within the slide (used by `Arrow` connectors) |
 | `w`               | number / `"max"` / `"50%"`                                                 | Width                                                           |
 | `h`               | number / `"max"` / `"50%"`                                                 | Height                                                          |
+| `grow`            | positive number                                                            | Flex grow ratio among siblings (CSS `flex-grow`)                |
 | `minW` `maxW`     | number                                                                     | Min/Max width                                                   |
 | `minH` `maxH`     | number                                                                     | Min/Max height                                                  |
 | `padding`         | number / `padding.top="8" padding.bottom="8"`                              | Padding                                                         |
@@ -49,6 +50,7 @@ Layout attributes that all nodes can have.
 | `alignSelf`       | `auto` / `start` / `center` / `end` / `stretch`                            | Override parent alignItems                                      |
 | `shadow`          | `shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000"` | Drop shadow (not supported on Line)                             |
 
+- `grow`: Distributes the remaining space of a `VStack` / `HStack` among siblings in proportion to their `grow` values (e.g., `grow="2"` and `grow="1"` produce a 2:1 split). `w="max"` / `h="max"` behave as `grow="1"`. When `grow` is specified together with `w="max"` / `h="max"`, `grow` takes precedence.
 - `backgroundImage`: `src` accepts a URL or local file path. `sizing` controls how the image fits: `"cover"` (default) fills the area, `"contain"` fits within the area.
 - `border`: Can be combined with `color`, `width`, and `dashType` (`"solid"` / `"dash"` / `"dashDot"` / `"lgDash"` / `"lgDashDot"` / `"lgDashDotDot"` / `"sysDash"` / `"sysDot"`).
 - `opacity`: 0 = fully transparent, 1 = fully opaque. Useful for semi-transparent overlays with Layer nodes.
