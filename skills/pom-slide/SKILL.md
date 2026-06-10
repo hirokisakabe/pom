@@ -1,13 +1,13 @@
 ---
 name: pom-slide
-description: Generate pom presentation slides from natural language. Creates a pom XML file and optionally launches a live preview with pom-cli.
+description: Generate pom presentation slides from natural language. Applies design principles (color palette, typography scale, spacing), creates a pom XML file, performs a rendered self-review loop, and optionally launches a live preview with pom-cli.
 license: MIT
-allowed-tools: Write,Bash
+allowed-tools: Write,Edit,Read,Bash
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
-自然言語の指示から pom XML スライドを生成し、ファイルに保存する。pom-cli がインストール済みの場合はプレビューサーバーを起動する。
+自然言語の指示から pom XML スライドを生成し、ファイルに保存する。デザイン原則（配色・タイポグラフィ・余白・アーキタイプ）に基づいて初版の質を高め、レンダリング結果を自分で見て修正するセルフレビューを行ったうえで、pom-cli がインストール済みの場合はプレビューサーバーを起動する。
 
 ## 手順
 
@@ -19,9 +19,132 @@ metadata:
 - 枚数: 指示の内容量に適した枚数（3〜8 枚程度）
 - ファイル名: `slides.pom.xml`
 
-### 2. pom XML の生成
+### 2. デザイン方針の決定
 
-以下のリファレンスに従い、有効な pom XML を生成する。
+XML を書き始める前に、デッキ全体のデザイントークン（配色・タイポグラフィ・余白）を決める。場当たり的に色やサイズを選ばず、ここで決めた値だけを使ってデッキ全体を組む。
+
+#### トーン
+
+内容と聞き手に合わせてトーンを 1 つ選び、配色とレイアウトの選択に一貫して反映する（例: 堅実なコーポレート / モダンなテック / ミニマル / ウォームなエディトリアル / エネルギッシュ）。生成のたびに同じ見た目へ収束させないこと。「白背景 + 既定の青 + 純黒テキスト」という、いかにも自動生成な見た目をそのまま使わない。
+
+#### 配色パレット
+
+デッキごとに以下の 5 ロールの色を決める。アクセントは 1 色に絞り、使用面積はスライドの 1 割以下に抑える（見出し脇のバー、強調数字、アイコンなど）。
+
+| ロール | 役割 |
+| --- | --- |
+| base | スライド背景。真っ白 `FFFFFF` 固定にしない（オフホワイトやダークも検討する） |
+| surface | カード・パネルの背景 |
+| ink | 本文テキスト。純黒 `000000` は避ける |
+| muted | 補助テキスト・キャプション |
+| accent | 強調 1 色。多用しない |
+
+プリセット例（そのまま使ってよいが、テーマに合わせて調整する）:
+
+| トーン | base | surface | ink | muted | accent |
+| --- | --- | --- | --- | --- | --- |
+| コーポレート | `F8F9FB` | `FFFFFF` | `1F2937` | `6B7280` | `1E3A8A` |
+| ウォーム・エディトリアル | `FAF6F0` | `FFFFFF` | `292524` | `78716C` | `C2410C` |
+| ダーク・テック | `0F172A` | `1E293B` | `F1F5F9` | `94A3B8` | `38BDF8` |
+| フレッシュ | `F6FBF9` | `FFFFFF` | `1A2E2A` | `5F7470` | `0D9488` |
+
+#### タイポグラフィスケール
+
+デッキ全体で以下の 5 段階だけを使う。中間サイズを場当たりで増やさず、1 枚のスライドに使うのは最大 3 段階まで。
+
+| 段階 | fontSize | 用途 |
+| --- | --- | --- |
+| display | 44〜60, bold | 表紙タイトル、KPI の数字 |
+| title | 28〜32, bold | スライドタイトル |
+| heading | 18〜20, bold | カード見出し・小見出し |
+| body | 14〜16 | 本文・箇条書き |
+| caption | 11〜12, muted 色 | 補足・出典・ページ番号 |
+
+- タイトルと本文のジャンプ率（サイズ差）をはっきりつける。中途半端な差（例: 24 と 20 の併用）は階層を曖昧にする
+- bold は display / title / heading と強調語のみ。本文全体を bold にしない
+- 本文の `lineHeight` は 1.4〜1.5
+
+#### 余白システム
+
+スペーシングは 8 の倍数だけを使う: `8 / 16 / 24 / 32 / 48 / 64`。
+
+- スライド外周の padding は 48〜64 とし、全スライドで統一する
+- 関係が近い要素ほど小さい gap、遠いほど大きい gap（例: 見出しと本文は 8〜16、セクション間は 32〜48）
+- 余白は「余り」ではなく設計対象。埋めるために要素を足さない
+- 1 スライド 1 メッセージ。箇条書きは 5 項目以内・1 項目 2 行以内とし、超えるなら 2 枚に分割する
+
+#### スライドアーキタイプ
+
+デッキは以下のアーキタイプの組み合わせで構成する。全スライドを同じレイアウトにせず、アーキタイプを切り替えてリズムを作る。
+
+| アーキタイプ | 構成 |
+| --- | --- |
+| 表紙 | display タイトル + サブタイトル + アクセントの細いバー。要素を絞り、余白を大胆に取る |
+| アジェンダ | accent 色の番号 + 項目名の縦リスト |
+| セクション扉 | 章番号と章タイトルのみ。表紙と同系の構成にして本編スライドと区別する |
+| キーメッセージ | title + 本文 or 箇条書き。最も基本の 1 カラム |
+| 比較 | 見出し付きカード 2〜3 枚を HStack で均等幅に並べる |
+| タイムライン / プロセス | `Timeline` / `ProcessArrow` ノードを使う |
+| データ | `Chart` / `Table` + そこから言えるインサイト 1 行（heading） |
+| KPI | display サイズの数字 2〜4 個 + caption のラベル |
+| まとめ / CTA | キーメッセージの再掲 + 次のアクション |
+
+代表例（パレット: コーポレート）:
+
+```xml
+<!-- 表紙 -->
+<Slide>
+  <VStack w="100%" h="max" padding="64" backgroundColor="F8F9FB" justifyContent="center" gap="24">
+    <Shape shapeType="rect" w="56" h="6" fill.color="1E3A8A" />
+    <Text fontSize="52" bold="true" color="1F2937">プレゼンタイトル</Text>
+    <Text fontSize="16" color="6B7280">サブタイトル — 2026-06-10 / 発表者名</Text>
+  </VStack>
+</Slide>
+
+<!-- アジェンダ -->
+<Slide>
+  <VStack w="100%" h="max" padding="64" backgroundColor="F8F9FB" gap="32">
+    <Text fontSize="32" bold="true" color="1F2937">アジェンダ</Text>
+    <VStack gap="16">
+      <HStack gap="16" alignItems="center">
+        <Text fontSize="20" bold="true" color="1E3A8A">01</Text>
+        <Text fontSize="16" color="1F2937">背景と課題</Text>
+      </HStack>
+      <HStack gap="16" alignItems="center">
+        <Text fontSize="20" bold="true" color="1E3A8A">02</Text>
+        <Text fontSize="16" color="1F2937">提案内容</Text>
+      </HStack>
+    </VStack>
+  </VStack>
+</Slide>
+
+<!-- 比較 -->
+<Slide>
+  <VStack w="100%" h="max" padding="48" backgroundColor="F8F9FB" gap="24" alignItems="stretch">
+    <Text fontSize="28" bold="true" color="1F2937">プラン比較</Text>
+    <HStack gap="24" alignItems="stretch">
+      <VStack w="50%" padding="24" backgroundColor="FFFFFF" borderRadius="8" gap="16">
+        <Text fontSize="18" bold="true" color="1E3A8A">プラン A</Text>
+        <Ul fontSize="14" color="1F2937">
+          <Li>特徴 1</Li>
+          <Li>特徴 2</Li>
+        </Ul>
+      </VStack>
+      <VStack w="50%" padding="24" backgroundColor="FFFFFF" borderRadius="8" gap="16">
+        <Text fontSize="18" bold="true" color="1E3A8A">プラン B</Text>
+        <Ul fontSize="14" color="1F2937">
+          <Li>特徴 1</Li>
+          <Li>特徴 2</Li>
+        </Ul>
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>
+```
+
+### 3. pom XML の生成
+
+Step 2 で決めたデザイントークンとアーキタイプを全スライドに適用しつつ、以下のリファレンスに従って有効な pom XML を生成する。
 
 ---
 
@@ -585,29 +708,66 @@ When the same property is specified via both attributes (JSON string) and child 
 
 ---
 
-### 3. ファイルへの保存
+### 4. ファイルへの保存
 
 `Write` ツールを使い、生成した XML をファイルに書き出す。
 
 - デフォルトのファイル名: `slides.pom.xml`
 - ユーザーが別のファイル名を指定した場合はそれに従う
 
-### 4. プレビューの起動（オプション）
+### 5. セルフレビュー（レンダリング → 自己批評 → 修正）
 
-`Bash` ツールで pom-cli の有無を確認し、インストール済みであれば Step 3 で決定したファイル名を使ってプレビューサーバーをバックグラウンドで起動する。`pom preview` は常駐プロセスであるため、`run_in_background: true`（Claude Code）または `&` サフィックスを必ず使う。
+保存した XML をレンダリングして画像として確認し、デザイン上の問題を修正するループ。レイアウト崩れやはみ出しは XML を眺めるだけでは検出できないため、必ず画像で確認する。
+
+#### レンダリング手段の確認
+
+`pom`（pom-cli）に加えて LibreOffice（`soffice`）が必要。PNG 化には `pdftoppm`（poppler）か ImageMagick があれば高速だが、どちらも無くても `soffice` 単体で可能。`pom` または `soffice` が無い場合はこのステップをスキップし、完了報告で「レンダリング確認は未実施」と伝える。
+
+#### ループ手順
+
+1. **ビルド**: `pom build <保存したファイル名> -o /tmp/pom-review/slides.pptx`
+2. **PNG 化**（使える経路を上から選ぶ）:
+   - `pdftoppm` がある場合: `soffice --headless --convert-to pdf --outdir /tmp/pom-review /tmp/pom-review/slides.pptx && pdftoppm -png -r 96 /tmp/pom-review/slides.pdf /tmp/pom-review/slide`
+   - ImageMagick がある場合: 上記の `pdftoppm` の代わりに `magick -density 96 /tmp/pom-review/slides.pdf /tmp/pom-review/slide-%02d.png`
+   - どちらも無い場合: `soffice` の PNG 直接変換は先頭スライドしか出力しないため、`<Slide>` ごとに一時 XML へ分割して個別に `pom build` し、それぞれを `soffice --headless --convert-to 'png:impress_png_Export:{"PixelWidth":{"type":"long","value":1280},"PixelHeight":{"type":"long","value":720}}' --outdir /tmp/pom-review <pptx>` で変換する
+3. **批評**: 各 PNG を `Read` ツールで読み、下のチェックリストで全スライドを評価する
+4. **修正**: 問題があれば XML を修正して 1 に戻る
+
+#### 批評チェックリスト
+
+- **はみ出し・重なり**: テキストの見切れ、要素同士の重なり、スライド外へのはみ出し（最優先で修正する）
+- **余白**: 外周 padding が確保されているか。要素が窮屈になっていないか、一部だけ不自然に空いていないか
+- **整列**: 揃うべき左端・上端が揃っているか。並べたカードの幅が均等か
+- **階層**: タイトルが一目で本文と区別できるか。視線の流れ（左上 → 右下）が自然か
+- **配色**: Step 2 で決めたパレットから逸脱した色が混入していないか。テキストと背景のコントラストが十分か
+- **密度**: 詰め込みすぎのスライドがないか（あれば 2 枚に分割する）
+- **一貫性**: スライド間で外周 padding・タイトル位置・配色が統一されているか
+
+#### 終了条件
+
+以下のいずれかを満たしたらループを終了する:
+
+- チェックリスト上の重大な問題（はみ出し・重なり・可読性不足）が全スライドで無くなった
+- 修正ループを 3 周した（3 周しても残る問題は、完了報告で残課題として明記する）
+- 同じ問題への修正を 2 回試みても改善しなかった（その項目は残課題として報告し、他の問題の修正は続ける）
+
+### 6. プレビューの起動（オプション）
+
+`Bash` ツールで pom-cli の有無を確認し、インストール済みであれば Step 4 で決定したファイル名を使ってプレビューサーバーをバックグラウンドで起動する。`pom preview` は常駐プロセスであるため、`run_in_background: true`（Claude Code）または `&` サフィックスを必ず使う。
 
 ```bash
 if command -v pom >/dev/null 2>&1; then
-  pom preview <Step 3 で決定したファイル名> &
+  pom preview <Step 4 で決定したファイル名> &
 fi
 ```
 
 pom-cli がない場合はスキップしてその旨を伝える。
 
-### 5. 完了報告
+### 7. 完了報告
 
 以下を報告する:
 - 保存したファイル名
 - 生成したスライドの枚数と各スライドのタイトル
+- セルフレビューの結果: 実施した修正の概要と残課題（スキップした場合はその理由）
 - pom-cli が見つかった場合: プレビューサーバーが http://localhost:3000 で起動中であること
 - pom-cli がない場合: `npm install -g @hirokisakabe/pom-cli` でインストールできることを案内する
