@@ -32,6 +32,7 @@ export type NodeMetadata = Pick<
   | "defaults"
   | "childPolicy"
   | "textContentProperty"
+  | "supportsInlineRuns"
 >;
 
 const none: ChildPolicy = { kind: "none" };
@@ -42,7 +43,10 @@ function leaf(
   tagName: string,
   schema: NodeDefinition["schema"],
   options: Partial<
-    Pick<NodeMetadata, "defaults" | "childPolicy" | "textContentProperty">
+    Pick<
+      NodeMetadata,
+      "defaults" | "childPolicy" | "textContentProperty" | "supportsInlineRuns"
+    >
   > = {},
 ): NodeMetadata {
   return {
@@ -79,6 +83,7 @@ export const NODE_METADATA = [
     },
     childPolicy: { kind: "custom" },
     textContentProperty: "text",
+    supportsInlineRuns: true,
   }),
   leaf("ul", "Ul", ulNodeSchema, {
     defaults: {
@@ -112,6 +117,7 @@ export const NODE_METADATA = [
       lineHeight: 1.3,
     },
     textContentProperty: "text",
+    supportsInlineRuns: true,
   }),
   leaf("chart", "Chart", chartNodeSchema, {
     childPolicy: { kind: "custom", optionalProperties: ["data"] },

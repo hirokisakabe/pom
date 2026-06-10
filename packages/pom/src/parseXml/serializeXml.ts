@@ -4,9 +4,6 @@ import { getNodeMetadata } from "../registry/nodeMetadata.ts";
 // runs と svgContent は専用の直列化パスで処理する
 const SKIP_KEYS = new Set(["type", "children", "runs", "svgContent"]);
 
-// runs によるインライン装飾を child element として直列化するノードタイプ
-const INLINE_CONTENT_TYPES = new Set(["text", "shape"]);
-
 interface TextRun {
   text: string;
   bold?: boolean;
@@ -123,7 +120,7 @@ function serializeNode(node: POMNode, depth: number): string {
 
   // Text / Shape: runs があればインライン child element として直列化し装飾を保持する
   if (
-    INLINE_CONTENT_TYPES.has(node.type) &&
+    def.supportsInlineRuns &&
     Array.isArray(nodeRecord.runs) &&
     (nodeRecord.runs as unknown[]).length > 0
   ) {

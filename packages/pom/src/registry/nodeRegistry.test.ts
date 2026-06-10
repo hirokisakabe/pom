@@ -89,8 +89,8 @@ describe("NodeRegistry", () => {
       const def = getNodeDef(type);
       expect(def.tagName).toMatch(/^[A-Z]/);
       expect(def.schema).toBeDefined();
-      expect(def.childPolicy.kind).toMatch(
-        /^(none|multi-child|pom-children|custom)$/,
+      expect(["none", "pom-children", "custom"]).toContain(
+        def.childPolicy.kind,
       );
     }
   });
@@ -106,6 +106,7 @@ describe("NodeRegistry", () => {
         defaults: def.defaults,
         childPolicy: def.childPolicy,
         textContentProperty: def.textContentProperty,
+        supportsInlineRuns: def.supportsInlineRuns,
       }).toEqual(metadata);
     }
   });

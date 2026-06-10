@@ -41,6 +41,9 @@ export interface NodeDefinition {
   /** テキスト content を流し込む属性名 */
   textContentProperty?: string;
 
+  /** runs をインライン child element として直列化できる */
+  supportsInlineRuns?: boolean;
+
   /** YogaNode にノード固有のスタイル/measureFunc を適用する */
   applyYogaStyle?: (
     node: POMNode,
