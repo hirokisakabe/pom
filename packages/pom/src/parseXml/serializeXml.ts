@@ -23,6 +23,7 @@ interface TextRun {
   color?: string;
   href?: string;
   fontFamily?: string;
+  letterSpacing?: number;
 }
 
 function escapeAttrValue(value: string): string {
@@ -86,6 +87,8 @@ function serializeRun(run: TextRun): string {
   if (run.color) spanAttrs.push(`color="${escapeAttrValue(run.color)}"`);
   if (run.fontFamily)
     spanAttrs.push(`fontFamily="${escapeAttrValue(run.fontFamily)}"`);
+  if (run.letterSpacing !== undefined)
+    spanAttrs.push(`letterSpacing="${run.letterSpacing}"`);
   if (spanAttrs.length > 0) {
     content = `<Span ${spanAttrs.join(" ")}>${content}</Span>`;
   }

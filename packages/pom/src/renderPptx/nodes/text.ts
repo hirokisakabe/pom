@@ -18,20 +18,25 @@ export function renderTextNode(
   if (node.runs && node.runs.length > 0) {
     const fontSizePx = node.fontSize ?? 24;
     const fontFamily = node.fontFamily ?? "Noto Sans JP";
-    const textItems = node.runs.map((run) => ({
-      text: run.text,
-      options: {
-        fontSize: pxToPt(fontSizePx),
-        fontFace: run.fontFamily ?? fontFamily,
-        color: run.color ?? node.color,
-        bold: run.bold ?? node.bold,
-        italic: run.italic ?? node.italic,
-        underline: convertUnderline(run.underline ?? node.underline),
-        strike: convertStrike(run.strike ?? node.strike),
-        highlight: run.highlight ?? node.highlight,
-        ...(run.href ? { hyperlink: { url: run.href } } : {}),
-      },
-    }));
+    const textItems = node.runs.map((run) => {
+      const letterSpacingPx = run.letterSpacing ?? node.letterSpacing;
+      return {
+        text: run.text,
+        options: {
+          fontSize: pxToPt(fontSizePx),
+          fontFace: run.fontFamily ?? fontFamily,
+          color: run.color ?? node.color,
+          bold: run.bold ?? node.bold,
+          italic: run.italic ?? node.italic,
+          underline: convertUnderline(run.underline ?? node.underline),
+          strike: convertStrike(run.strike ?? node.strike),
+          highlight: run.highlight ?? node.highlight,
+          charSpacing:
+            letterSpacingPx !== undefined ? pxToPt(letterSpacingPx) : undefined,
+          ...(run.href ? { hyperlink: { url: run.href } } : {}),
+        },
+      };
+    });
     ctx.slide.addText(textItems, {
       x: textOptions.x,
       y: textOptions.y,
