@@ -171,6 +171,44 @@ export const page36InlineFormattingXml = `
 `;
 
 // ============================================================
+// Page 40: Letter Spacing Test
+// テスト対象: Text の letterSpacing 属性、Span の letterSpacing、レイアウト計測
+// ============================================================
+export const page40LetterSpacingXml = `
+<VStack w="100%" h="max" padding="48" gap="20" alignItems="stretch" backgroundColor="${palette.background}">
+  <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 40: Letter Spacing Test</Text>
+  <!-- letterSpacing variations -->
+  <VStack padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="8">
+    <Text fontSize="14" bold="true">letterSpacing:</Text>
+    <Text fontSize="18">letterSpacing なし (default)</Text>
+    <Text fontSize="18" letterSpacing="2">letterSpacing 2px</Text>
+    <Text fontSize="18" letterSpacing="6">letterSpacing 6px</Text>
+    <Text fontSize="18" letterSpacing="12">letterSpacing 12px</Text>
+  </VStack>
+  <!-- heading style -->
+  <VStack padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="8">
+    <Text fontSize="14" bold="true">見出しスタイル (bold + letterSpacing):</Text>
+    <Text fontSize="32" bold="true" letterSpacing="8" color="${palette.navy}">SECTION TITLE</Text>
+    <Text fontSize="24" bold="true" letterSpacing="6" color="${palette.charcoal}">セクション見出し</Text>
+  </VStack>
+  <!-- Span letterSpacing -->
+  <VStack padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="8">
+    <Text fontSize="14" bold="true">Span letterSpacing (partial):</Text>
+    <Text fontSize="18">通常 <Span letterSpacing="8">字間広め</Span> 通常</Text>
+    <Text fontSize="18"><B><Span letterSpacing="6" color="${palette.blue}">太字で字間広め</Span></B> と通常</Text>
+  </VStack>
+  <!-- layout: width grows with letterSpacing -->
+  <VStack padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="8">
+    <Text fontSize="14" bold="true">レイアウト計測 (背景色で幅を可視化):</Text>
+    <HStack gap="8" alignItems="start">
+      <Text fontSize="16" backgroundColor="${palette.lightBlue}" padding="4">ABCDE</Text>
+      <Text fontSize="16" backgroundColor="${palette.lightBlue}" padding="4" letterSpacing="10">ABCDE</Text>
+    </HStack>
+  </VStack>
+</VStack>
+`;
+
+// ============================================================
 // Page 2: List Test (Ul / Ol)
 // テスト対象: Ul, Ol, Li, numberType, numberStartAt, Li style override
 // ============================================================

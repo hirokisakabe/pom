@@ -3,6 +3,7 @@ export {
   page1TextXml,
   page2ListXml,
   page36InlineFormattingXml,
+  page40LetterSpacingXml,
 } from "./text.js";
 export { page3ImageXml, page3bImageSizingXml } from "./image.js";
 export { page4TableXml } from "./table.js";

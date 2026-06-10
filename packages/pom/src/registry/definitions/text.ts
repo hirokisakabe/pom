@@ -15,6 +15,7 @@ export const textNodeDef: NodeDefinition = {
     const fontFamily = n.fontFamily ?? "Noto Sans JP";
     const fontWeight = n.bold ? "bold" : "normal";
     const lineHeight = 1.3;
+    const letterSpacingPx = n.letterSpacing;
 
     yn.setMeasureFunc((width, widthMode) => {
       const maxWidthPx = (() => {
@@ -37,6 +38,7 @@ export const textNodeDef: NodeDefinition = {
           fontSizePx,
           lineHeight,
           fontWeight,
+          letterSpacingPx,
         },
         ctx.textMeasurementMode,
       );

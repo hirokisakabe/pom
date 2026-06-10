@@ -366,6 +366,7 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     ...BASE_RULES,
     text: "string",
     ...TEXT_STYLE_RULES,
+    letterSpacing: "number",
   },
   ul: {
     ...BASE_RULES,
@@ -601,5 +602,5 @@ export const CHILD_ELEMENT_COERCION_MAP: Record<
   },
   B: {},
   I: {},
-  Span: { color: "string", fontFamily: "string" },
+  Span: { color: "string", fontFamily: "string", letterSpacing: "number" },
 };

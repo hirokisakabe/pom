@@ -97,4 +97,57 @@ describe("measureText", () => {
       expect(opentypeForced.widthPx).not.toBe(fallbackResult.widthPx);
     });
   });
+
+  describe("letterSpacing による幅の加算", () => {
+    it("フォールバック計測で letterSpacing × 文字数 が幅に加算される", () => {
+      const base = measureText(
+        "Hello",
+        Number.POSITIVE_INFINITY,
+        { fontFamily: "Arial", fontSizePx: 24 },
+        "fallback",
+      );
+      const spaced = measureText(
+        "Hello",
+        Number.POSITIVE_INFINITY,
+        { fontFamily: "Arial", fontSizePx: 24, letterSpacingPx: 5 },
+        "fallback",
+      );
+
+      expect(spaced.widthPx).toBe(base.widthPx + 5 * 5);
+    });
+
+    it("opentype 計測でも letterSpacing で幅が広がる", () => {
+      const base = measureText("Hello", Number.POSITIVE_INFINITY, {
+        fontFamily: "Noto Sans JP",
+        fontSizePx: 24,
+      });
+      const spaced = measureText("Hello", Number.POSITIVE_INFINITY, {
+        fontFamily: "Noto Sans JP",
+        fontSizePx: 24,
+        letterSpacingPx: 5,
+      });
+
+      expect(spaced.widthPx).toBe(base.widthPx + 5 * 5);
+    });
+
+    it("letterSpacing 込みの幅で折り返しが行われる", () => {
+      // letterSpacing なしでは 1 行に収まり、ありでは折り返して高さが増える幅を選ぶ
+      const base = measureText(
+        "Hello World",
+        Number.POSITIVE_INFINITY,
+        { fontFamily: "Arial", fontSizePx: 24 },
+        "fallback",
+      );
+      const maxWidth = base.widthPx;
+
+      const spaced = measureText(
+        "Hello World",
+        maxWidth,
+        { fontFamily: "Arial", fontSizePx: 24, letterSpacingPx: 10 },
+        "fallback",
+      );
+
+      expect(spaced.heightPx).toBeGreaterThan(base.heightPx);
+    });
+  });
 });

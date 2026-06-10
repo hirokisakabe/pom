@@ -52,5 +52,8 @@ export function createTextOptions(node: TextNode) {
     underline: convertUnderline(node.underline),
     strike: convertStrike(node.strike),
     highlight: node.highlight,
+    // letterSpacing はユーザー入力 px、pptxgenjs の charSpacing は pt
+    charSpacing:
+      node.letterSpacing !== undefined ? pxToPt(node.letterSpacing) : undefined,
   };
 }

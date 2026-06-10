@@ -815,6 +815,45 @@ describe("parseXml", () => {
       });
     });
 
+    it("Text の letterSpacing 属性を number に変換する", () => {
+      const result = parseXml('<Text letterSpacing="4">字間広め</Text>');
+      expect(result[0]).toMatchObject({
+        type: "text",
+        text: "字間広め",
+        letterSpacing: 4,
+      });
+    });
+
+    it("Span タグの letterSpacing を run に変換する", () => {
+      const result = parseXml(
+        '<Text>通常 <Span letterSpacing="6">字間広め</Span> テキスト</Text>',
+      );
+      expect(result[0]).toMatchObject({
+        type: "text",
+        text: "通常 字間広め テキスト",
+        runs: [
+          { text: "通常 " },
+          { text: "字間広め", letterSpacing: 6 },
+          { text: " テキスト" },
+        ],
+      });
+    });
+
+    it("Span ネスト時に内側が letterSpacing 未指定なら親の値を継承する", () => {
+      const result = parseXml(
+        '<Text><Span letterSpacing="6">A<Span>B</Span>C</Span></Text>',
+      );
+      expect(result[0]).toMatchObject({
+        type: "text",
+        text: "ABC",
+        runs: [
+          { text: "A", letterSpacing: 6 },
+          { text: "B", letterSpacing: 6 },
+          { text: "C", letterSpacing: 6 },
+        ],
+      });
+    });
+
     it("Span ネスト時に内側が color 指定なら上書きする", () => {
       const result = parseXml(
         '<Text><Span color="FF0000">A<Span color="1D4ED8">B</Span>C</Span></Text>',
