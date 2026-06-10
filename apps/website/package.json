@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "next --turbopack",
-    "build": "pnpm --filter @hirokisakabe/pom run build && next build",
+    "build": "pnpm --filter @hirokisakabe/pom run build && pnpm --filter @hirokisakabe/pom-editor run build && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
