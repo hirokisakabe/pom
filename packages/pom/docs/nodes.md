@@ -96,7 +96,7 @@ Use `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` child elements for
 <Text fontSize="16">Normal <Span letterSpacing="6">spaced out</Span> normal</Text>
 ```
 
-`<Span>` supports `color`, `fontFamily`, and `letterSpacing` attributes. When `fontFamily` is specified, that run uses the given font face (overrides the parent Text's `fontFamily`). `letterSpacing` adjusts the spacing between characters for that run only.
+`<Span>` supports `color`, `fontFamily`, and `letterSpacing` attributes. When `fontFamily` is specified, that run uses the given font face (overrides the parent Text's `fontFamily`). `letterSpacing` adjusts the spacing between characters for that run only. Note: `<Span letterSpacing>` is effective inside `<Text>` only (ignored inside `<Li>` / `<Td>`), and layout measurement uses the Text-level `letterSpacing` (run-level spacing affects rendering only).
 
 **Letter Spacing:**
 
