@@ -258,6 +258,7 @@ Positions children using absolute coordinates. Children require `x` and `y`. Sou
 | `highlight`              | hex (highlight color)                                      |
 | `fontFamily`             | string (default: `Noto Sans JP`)                           |
 | `lineHeight`             | number (default: 1.3)                                      |
+| `letterSpacing`          | number in px (letter spacing, converted to pt on output)   |
 
 Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
 
@@ -270,9 +271,10 @@ Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
 <Text fontSize="16"><Mark color="FFFF00">highlighted</Mark> text</Text>
 <Text fontSize="16">Normal <Span color="FF0000">red text</Span> normal</Text>
 <Text fontSize="16" fontFamily="Noto Sans JP">Default <Span fontFamily="Arial">Arial part</Span> default</Text>
+<Text fontSize="16">Normal <Span letterSpacing="6">spaced out</Span> normal</Text>
 ```
 
-`<Span>` supports `color` and `fontFamily` (overrides the parent's `fontFamily` for that run).
+`<Span>` supports `color`, `fontFamily` (overrides the parent's `fontFamily` for that run), and `letterSpacing` (adjusts letter spacing for that run; effective inside `<Text>` only).
 
 `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` also work inside `<Li>` and `<Td>`.
 
