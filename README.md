@@ -93,7 +93,7 @@ To make generated slides follow your brand, run `/pom-theme` first:
 /pom-theme ブランドカラーは #0052CC。コーポレート向けのライトテーマで
 ```
 
-This saves a `pom-theme.json` (color palette + typography + SlideMaster settings) in the current directory, and subsequent `/pom-slide` runs automatically apply it.
+This saves a `pom-theme.json` (color palette + typography + SlideMaster settings) in the current directory, and subsequent `/pom-slide` runs automatically apply its colors, fonts, and background. The SlideMaster settings can also be passed directly to `buildPptx()` as the `master` option.
 
 ## Documentation
 

@@ -11,7 +11,7 @@ metadata:
 
 ## テーマファイル形式（`pom-theme.json`）
 
-本 skill の出力。pom-slide skill は生成時にカレントディレクトリの `pom-theme.json` を自動で読み、デザイントークンとして使用する。
+本 skill の出力。pom-slide skill は生成時にカレントディレクトリの `pom-theme.json` を自動で読み、デザイントークンとして使用する。pom-slide が自動適用するのは **トーン・配色・フォント・背景色**（`tone` / `colors` / `typography` / `slideMaster.background.color`）。`slideMaster` のその他の設定（`margin` / `objects` / `slideNumber` / `title`）は pom-slide では消費されず、`buildPptx(xml, size, { master })` を直接使う API 利用者向けの記録となる。
 
 ```json
 {
@@ -188,4 +188,4 @@ print(round((max(a,b)+0.05)/(min(a,b)+0.05),2))
 - 保存したテーマファイルのパス
 - 確定した 5 ロールの色とフォント（コントラスト検証の結果を含む）
 - 次のステップ: 同じディレクトリで `/pom-slide` を実行すると `pom-theme.json` が自動で適用されること
-- PPTX マスター由来の場合: `source.masterPptx` に元ファイルのパスを記録したこと。pom-md（`.pom.md`）の front-matter `masterPptx:` や `buildPptx` の `masterPptx` オプションで元マスターをそのまま重ねられること
+- PPTX マスター由来の場合: `source.masterPptx` に元ファイルのパスを記録したこと。pom-md（`.pom.md`）の front-matter `masterPptx:` や `buildPptx` の `masterPptx` オプションで元 PPTX の**背景を再利用できる**こと（`masterPptx` が取り込むのは背景のみで、`objects` / `margin` / `slideNumber` / フォントは反映されない）
