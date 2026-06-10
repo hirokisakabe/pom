@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ICON_DATA } from "./icons/iconData.ts";
+import { parseLinearGradient } from "./shared/gradient.ts";
 
 // ===== Basic Types =====
 const lengthSchema = z.union([
@@ -308,6 +309,14 @@ const backgroundImageSchema = z.object({
   sizing: backgroundImageSizingSchema.optional(),
 });
 
+// ===== Background Gradient =====
+const backgroundGradientSchema = z
+  .string()
+  .refine((value) => parseLinearGradient(value) !== null, {
+    message:
+      'Invalid gradient syntax. Expected: linear-gradient(<angle>deg, <color> <position>%, ...) e.g. "linear-gradient(135deg, #FF0000 0%, #0000FF 100%)"',
+  });
+
 // ===== Base Node =====
 const basePOMNodeSchema = z.object({
   id: z.string().optional(),
@@ -320,6 +329,7 @@ const basePOMNodeSchema = z.object({
   padding: paddingSchema.optional(),
   margin: paddingSchema.optional(),
   backgroundColor: z.string().optional(),
+  backgroundGradient: backgroundGradientSchema.optional(),
   backgroundImage: backgroundImageSchema.optional(),
   border: borderStyleSchema.optional(),
   borderRadius: z.number().optional(),

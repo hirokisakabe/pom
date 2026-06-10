@@ -1,5 +1,6 @@
 import type { PositionedNode, ShadowStyle } from "../../types.ts";
 import { getImageData } from "../../shared/measureImage.ts";
+import { registerBackgroundGradient } from "../gradientFills.ts";
 import type { RenderContext } from "../types.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 
@@ -24,9 +25,27 @@ export function renderBackgroundAndBorder(
   node: PositionedNode,
   ctx: RenderContext,
 ): void {
-  const { backgroundColor, backgroundImage, border, borderRadius, shadow } =
-    node;
-  const hasBackground = Boolean(backgroundColor);
+  const {
+    backgroundColor,
+    backgroundGradient,
+    backgroundImage,
+    border,
+    borderRadius,
+    shadow,
+  } = node;
+
+  // backgroundGradient はマーカー色の solidFill として描画し、
+  // 出力時の後処理で gradFill に置換される (gradientFills.ts 参照)。
+  // opacity はマーカー側ではなく gradFill のカラーストップの alpha で表現する
+  const gradientMarker = backgroundGradient
+    ? registerBackgroundGradient(
+        backgroundGradient,
+        node.opacity,
+        ctx.buildContext.gradientFills,
+      )
+    : undefined;
+
+  const hasBackground = Boolean(backgroundColor) || Boolean(gradientMarker);
   const hasBackgroundImage = Boolean(backgroundImage);
   const hasBorder = Boolean(
     border &&
@@ -53,11 +72,13 @@ export function renderBackgroundAndBorder(
   // backgroundImage がない場合は従来通り1回の addShape で処理
   if (!hasBackgroundImage) {
     const fill = hasBackground
-      ? {
-          color: backgroundColor,
-          transparency:
-            node.opacity !== undefined ? (1 - node.opacity) * 100 : undefined,
-        }
+      ? gradientMarker
+        ? { color: gradientMarker }
+        : {
+            color: backgroundColor,
+            transparency:
+              node.opacity !== undefined ? (1 - node.opacity) * 100 : undefined,
+          }
       : { type: "none" as const };
 
     const line = hasBorder
@@ -90,11 +111,13 @@ export function renderBackgroundAndBorder(
       y: pxToIn(node.y),
       w: pxToIn(node.w),
       h: pxToIn(node.h),
-      fill: {
-        color: backgroundColor,
-        transparency:
-          node.opacity !== undefined ? (1 - node.opacity) * 100 : undefined,
-      },
+      fill: gradientMarker
+        ? { color: gradientMarker }
+        : {
+            color: backgroundColor,
+            transparency:
+              node.opacity !== undefined ? (1 - node.opacity) * 100 : undefined,
+          },
       line: { type: "none" as const },
       rectRadius,
     });
