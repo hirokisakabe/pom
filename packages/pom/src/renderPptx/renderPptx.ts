@@ -30,6 +30,7 @@ import { pxToIn, pxToPt } from "./units.ts";
 import { convertUnderline, convertStrike } from "./textOptions.ts";
 import { getImageData } from "../shared/measureImage.ts";
 import { renderBackgroundAndBorder } from "./utils/backgroundBorder.ts";
+import { registerBackgroundGradient } from "./gradientFills.ts";
 import { getNodeDef } from "../registry/index.ts";
 
 type SlidePx = { w: number; h: number };
@@ -258,9 +259,24 @@ export async function renderPptx(
     // renderBackgroundAndBorder で描画する
     const isLinelike = data.type === "line" || data.type === "arrow";
     const rootBackgroundColor = !isLinelike ? data.backgroundColor : undefined;
+    const rootBackgroundGradient = !isLinelike
+      ? data.backgroundGradient
+      : undefined;
     const rootHasOpacity =
       !isLinelike && "opacity" in data && data.opacity !== undefined;
-    if (rootBackgroundColor && !rootHasOpacity) {
+    // backgroundGradient はマーカー色で slide.background に適用し、
+    // 出力時の後処理で gradFill に置換される (gradientFills.ts 参照)
+    const rootGradientMarker =
+      rootBackgroundGradient && !rootHasOpacity
+        ? registerBackgroundGradient(
+            rootBackgroundGradient,
+            undefined,
+            buildContext.gradientFills,
+          )
+        : undefined;
+    if (rootGradientMarker) {
+      slide.background = { color: rootGradientMarker };
+    } else if (rootBackgroundColor && !rootHasOpacity) {
       slide.background = { color: rootBackgroundColor };
     }
 
@@ -290,7 +306,9 @@ export async function renderPptx(
         // ただし opacity がある場合は slide.background では透過を表現できないため通常描画
         if (
           isRoot &&
-          (rootBackgroundImage || (rootBackgroundColor && !rootHasOpacity))
+          (rootBackgroundImage ||
+            ((rootBackgroundColor || rootBackgroundGradient) &&
+              !rootHasOpacity))
         ) {
           // border のみ描画（backgroundColor/backgroundImage はスキップ）
           const { border, borderRadius } = node;

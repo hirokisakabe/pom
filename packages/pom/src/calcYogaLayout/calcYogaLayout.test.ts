@@ -56,7 +56,7 @@ describe("calcYogaLayout grow 属性", () => {
     expect(bottom.h).toBeCloseTo(75);
   });
 
-  it("grow と w=\"max\" が同時指定された場合は grow が優先される", async () => {
+  it('grow と w="max" が同時指定された場合は grow が優先される', async () => {
     const positioned = await layoutSlide(
       `<Slide>
         <HStack w="600" h="100">
@@ -70,7 +70,7 @@ describe("calcYogaLayout grow 属性", () => {
     expect(right.w).toBeCloseTo(200);
   });
 
-  it("w=\"max\" のみの指定は grow=\"1\" 相当として動作する（後方互換）", async () => {
+  it('w="max" のみの指定は grow="1" 相当として動作する（後方互換）', async () => {
     const positioned = await layoutSlide(
       `<Slide>
         <HStack w="600" h="100">
@@ -84,7 +84,7 @@ describe("calcYogaLayout grow 属性", () => {
     expect(right.w).toBeCloseTo(300);
   });
 
-  it("h=\"max\" のみの指定は grow=\"1\" 相当として動作する（後方互換）", async () => {
+  it('h="max" のみの指定は grow="1" 相当として動作する（後方互換）', async () => {
     const positioned = await layoutSlide(
       `<Slide>
         <VStack w="200" h="300">

@@ -75,6 +75,7 @@ export interface BaseProps {
   padding?: PaddingValue;
   margin?: PaddingValue;
   backgroundColor?: string;
+  backgroundGradient?: string;
   backgroundImage?: BackgroundImage;
   border?: BorderStyle;
   borderRadius?: number;

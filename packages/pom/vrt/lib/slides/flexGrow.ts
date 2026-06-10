@@ -1,11 +1,11 @@
 import { palette } from "./palette.js";
 
 // ============================================================
-// Page 41: flex-grow (grow 属性) - 比率レイアウト
+// Page 42: flex-grow (grow 属性) - 比率レイアウト
 // ============================================================
-export const page41FlexGrowXml = `
+export const page42FlexGrowXml = `
 <VStack w="100%" h="max" padding="48" gap="20" alignItems="stretch" backgroundColor="${palette.background}">
-  <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 41: flex-grow (grow attribute)</Text>
+  <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 42: flex-grow (grow attribute)</Text>
 
   <!-- HStack で grow 2:1 -->
   <VStack padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="12">

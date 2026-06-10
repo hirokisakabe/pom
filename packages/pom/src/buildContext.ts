@@ -1,5 +1,6 @@
 import type { TextMeasurementMode } from "./calcYogaLayout/measureText.ts";
 import { DiagnosticCollector } from "./diagnostics.ts";
+import { GradientFillRegistry } from "./renderPptx/gradientFills.ts";
 
 export interface BuildContext {
   textMeasurementMode: TextMeasurementMode;
@@ -7,6 +8,7 @@ export interface BuildContext {
   imageDataCache: Map<string, string>;
   iconRasterCache: Map<string, string>;
   diagnostics: DiagnosticCollector;
+  gradientFills: GradientFillRegistry;
 }
 
 export function createBuildContext(
@@ -18,5 +20,6 @@ export function createBuildContext(
     imageDataCache: new Map(),
     iconRasterCache: new Map(),
     diagnostics: new DiagnosticCollector(),
+    gradientFills: new GradientFillRegistry(),
   };
 }
