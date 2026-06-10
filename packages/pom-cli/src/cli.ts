@@ -21,22 +21,31 @@ program
   .argument("<input>", "Input file (.pom.xml or .pom.md)")
   .option("--port <number>", "Port to listen on")
   .option("--verbose", "Show build step timing on stderr")
-  .action((input: string, options: { port?: string; verbose?: boolean }) => {
-    let port: number | undefined;
-    if (options.port !== undefined) {
-      port = Number(options.port);
-      if (!Number.isInteger(port) || port <= 0 || port > 65535) {
-        console.error(`Invalid port: ${options.port}`);
+  .option("--no-open", "Do not open the browser automatically")
+  .action(
+    (
+      input: string,
+      options: { port?: string; verbose?: boolean; open: boolean },
+    ) => {
+      let port: number | undefined;
+      if (options.port !== undefined) {
+        port = Number(options.port);
+        if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+          console.error(`Invalid port: ${options.port}`);
+          process.exit(1);
+        }
+      }
+      try {
+        runPreview(input, port, {
+          verbose: options.verbose,
+          open: options.open,
+        });
+      } catch (err: unknown) {
+        console.error(err instanceof Error ? err.message : String(err));
         process.exit(1);
       }
-    }
-    try {
-      runPreview(input, port, { verbose: options.verbose });
-    } catch (err: unknown) {
-      console.error(err instanceof Error ? err.message : String(err));
-      process.exit(1);
-    }
-  });
+    },
+  );
 
 program
   .command("build")
