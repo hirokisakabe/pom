@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { buildPptx, DiagnosticsError } from "@hirokisakabe/pom";
 import { parseMd } from "@hirokisakabe/pom-md";
+import { watchInputFile } from "./watch.ts";
 
 function makeLog(verbose: boolean) {
   if (!verbose) return (_msg: string) => {};
@@ -141,12 +142,8 @@ export async function runBuildWatch(
 
   await doBuild();
 
-  let debounceTimer: NodeJS.Timeout | null = null;
-  fs.watch(absInput, () => {
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      watchLog("File changed, rebuilding...");
-      void doBuild();
-    }, 100);
+  watchInputFile(absInput, () => {
+    watchLog("File changed, rebuilding...");
+    void doBuild();
   });
 }

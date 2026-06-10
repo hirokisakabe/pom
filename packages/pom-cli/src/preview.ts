@@ -5,6 +5,7 @@ import path from "path";
 import { buildPptx } from "@hirokisakabe/pom";
 import { parseMd } from "@hirokisakabe/pom-md";
 import { convertPptxToSvg } from "pptx-glimpse";
+import { watchInputFile } from "./watch.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_PORT = 3000;
@@ -412,7 +413,16 @@ export function runPreview(
     }
   }
 
+  let isBuilding = false;
+  let pendingRefresh = false;
+
   function refresh(): void {
+    if (isBuilding) {
+      pendingRefresh = true;
+      return;
+    }
+    isBuilding = true;
+    pendingRefresh = false;
     const totalStart = Date.now();
     log("File changed, rebuilding...");
     broadcastBuilding();
@@ -426,30 +436,34 @@ export function runPreview(
           type: "error",
           message: err instanceof Error ? err.message : String(err),
         });
+      })
+      .finally(() => {
+        isBuilding = false;
+        if (pendingRefresh) refresh();
       });
   }
 
+  isBuilding = true;
   const initialStart = Date.now();
   generateSvgs(absInput, verbose)
     .then((result) => {
       currentResult = result;
-      initialBuildDone = true;
       log(`Initial build done (total: ${Date.now() - initialStart}ms)`);
       broadcast(result);
     })
     .catch((err: unknown) => {
-      initialBuildDone = true;
       broadcast({
         type: "error",
         message: err instanceof Error ? err.message : String(err),
       });
+    })
+    .finally(() => {
+      initialBuildDone = true;
+      isBuilding = false;
+      if (pendingRefresh) refresh();
     });
 
-  let debounceTimer: NodeJS.Timeout | null = null;
-  fs.watch(absInput, () => {
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(refresh, 100);
-  });
+  watchInputFile(absInput, refresh);
 
   const html = buildPreviewHtml(path.basename(absInput));
 
