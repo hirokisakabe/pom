@@ -4,7 +4,7 @@ description: Generate pom presentation slides from natural language. Creates a p
 license: MIT
 allowed-tools: Write,Bash
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 自然言語の指示から pom XML スライドを生成し、ファイルに保存する。デザイン原則（配色・タイポグラフィ・余白・アーキタイプ）に基づいて初版の質を高め、レンダリング結果を自分で見て修正するセルフレビューを行ったうえで、pom-cli がインストール済みの場合はプレビューサーバーを起動する。
