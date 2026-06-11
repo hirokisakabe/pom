@@ -36,7 +36,9 @@
     "fmt:check": "prettier --check .",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "knip": "knip"
+    "knip": "knip",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@hirokisakabe/pom": "workspace:*",
