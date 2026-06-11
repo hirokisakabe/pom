@@ -27,6 +27,14 @@ function makePptxResult() {
   return { pptx: { write: async () => new Uint8Array([80, 75]) } };
 }
 
+// 経過時間ではなくイベントループの消化を待つことで、CI の負荷に依存せず
+// 「保留中の doBuild が始まらないこと」を検証できるようにする
+async function flushEventLoop(rounds = 5) {
+  for (let i = 0; i < rounds; i++) {
+    await new Promise((resolve) => setImmediate(resolve));
+  }
+}
+
 describe("build", () => {
   let tmpDir: string;
   let inputFile: string;
@@ -135,25 +143,27 @@ describe("build", () => {
       // 進行中にさらに 2 回発火しても新しいビルドは始まらない
       onChange();
       onChange();
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await flushEventLoop();
       expect(buildPptxMock).toHaveBeenCalledTimes(2);
 
       // 進行中のビルドが完了すると、まとめられた 1 回だけ再ビルドされる
       releaseSecondBuild();
       await vi.waitFor(() => expect(buildPptxMock).toHaveBeenCalledTimes(3));
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushEventLoop();
       expect(buildPptxMock).toHaveBeenCalledTimes(3);
     });
 
-    it("DiagnosticsError は診断内容を stderr に出して継続する", async () => {
+    it("DiagnosticsError は診断内容を stderr に出し、監視を継続して再ビルドできる", async () => {
       buildPptxMock.mockImplementationOnce(async () => {
         throw new DiagnosticsError([
           { code: "POM001", message: "invalid node" },
         ] as never);
       });
-      watchInputFileMock.mockImplementation(
-        () => ({ close: vi.fn() }) as unknown as fs.FSWatcher,
-      );
+      let onChange!: () => void;
+      watchInputFileMock.mockImplementation((_absPath, cb) => {
+        onChange = cb;
+        return { close: vi.fn() } as unknown as fs.FSWatcher;
+      });
 
       await runBuildWatch(inputFile, outputFile);
 
@@ -164,6 +174,13 @@ describe("build", () => {
       expect(stderrOutput).toContainEqual(
         expect.stringContaining("[POM001] invalid node"),
       );
+
+      // ビルド失敗後も watch は継続し、次の変更イベントで再ビルドされる
+      onChange();
+      await vi.waitFor(() =>
+        expect(Array.from(fs.readFileSync(outputFile))).toEqual([80, 75]),
+      );
+      expect(buildPptxMock).toHaveBeenCalledTimes(2);
     });
   });
 });
