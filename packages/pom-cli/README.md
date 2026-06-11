@@ -1,6 +1,6 @@
 # @hirokisakabe/pom-cli
 
-CLI tool for [pom](https://github.com/hirokisakabe/pom) — preview and build presentations from pom XML / Markdown.
+CLI tool for [pom](https://github.com/hirokisakabe/pom) — preview, build, and render presentations from pom XML / Markdown.
 
 ## Installation
 
@@ -83,9 +83,38 @@ To print per-step timing on stderr:
 pom build slides.pom.xml -o output.pptx --verbose
 ```
 
+### Render
+
+Renders each slide to a PNG (default) or SVG image — no LibreOffice or other external tools required.
+
+```bash
+pom render slides.pom.xml -o ./images
+pom render slides.pom.md -o ./images
+```
+
+The images are written to the output directory as `slide-01.png`, `slide-02.png`, ... The directory is created if it does not exist. The rendering pipeline is the same as the preview server, so the images match what you see in `pom preview`.
+
+To output SVG instead of PNG:
+
+```bash
+pom render slides.pom.xml -o ./images --format svg
+```
+
+To render only specific slides (1-based, comma-separated) — useful when re-checking just the slides you edited:
+
+```bash
+pom render slides.pom.xml -o ./images --slides 2,5
+```
+
+To print per-step timing on stderr:
+
+```bash
+pom render slides.pom.xml -o ./images --verbose
+```
+
 ## Fonts
 
-This package bundles Carlito and Noto Sans CJK JP fonts for SVG rendering. These fonts are used when converting slides to SVG in the preview server. System fonts are not scanned.
+This package bundles Carlito and Noto Sans CJK JP fonts for image rendering. These fonts are used when converting slides to SVG in the preview server and to PNG / SVG in `pom render`. System fonts are not scanned.
 
 ## License
 

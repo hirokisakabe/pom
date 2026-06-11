@@ -4,7 +4,7 @@ description: Generate pom presentation slides from natural language. Applies des
 license: MIT
 allowed-tools: Write,Edit,Read,Bash
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
 ---
 
 自然言語の指示から pom XML スライドを生成し、ファイルに保存する。デザイン原則（配色・タイポグラフィ・余白・アーキタイプ）に基づいて初版の質を高め、`/pom-theme` skill が生成したテーマファイル（`pom-theme.json`）があればブランド配色・フォントを適用する。レンダリング結果を自分で見て修正するセルフレビューを行ったうえで、pom-cli がインストール済みの場合はプレビューサーバーを起動する。
@@ -736,17 +736,21 @@ When the same property is specified via both attributes (JSON string) and child 
 
 #### レンダリング手段の確認
 
-`pom`（pom-cli）に加えて LibreOffice（`soffice`）が必要。PNG 化には `pdftoppm`（poppler）か ImageMagick があれば高速だが、どちらも無くても `soffice` 単体で可能。`pom` または `soffice` が無い場合はこのステップをスキップし、完了報告で「レンダリング確認は未実施」と伝える。
+`pom`（pom-cli）があれば `pom render` で各スライドを直接 PNG 化できる（LibreOffice 等の外部ツールは不要）。`pom` が無い場合はこのステップをスキップし、完了報告で「レンダリング確認は未実施」と伝える。
 
 #### ループ手順
 
+1. **レンダリング**: `pom render <保存したファイル名> -o /tmp/pom-review` で全スライドの PNG（`slide-01.png` 形式）を出力する。2 周目以降は `--slides 2,5` のように修正したスライドだけを再レンダリングしてよい
+2. **批評**: 各 PNG を `Read` ツールで読み、下のチェックリストで全スライドを評価する
+3. **修正**: 問題があれば XML を修正して 1 に戻る
+
+#### fallback: soffice チェーン（render 未対応の古い pom-cli 用）
+
+`pom render` がエラーになる場合（render サブコマンド導入前の pom-cli）のみ、以下で代替する。LibreOffice（`soffice`）と、`pdftoppm`（poppler）または ImageMagick が必要。どちらも無い場合はセルフレビューをスキップし、完了報告でその旨を伝える。
+
 1. **ビルド**: `pom build <保存したファイル名> -o /tmp/pom-review/slides.pptx`
-2. **PNG 化**（使える経路を上から選ぶ）:
-   - `pdftoppm` がある場合: `soffice --headless --convert-to pdf --outdir /tmp/pom-review /tmp/pom-review/slides.pptx && pdftoppm -png -r 96 /tmp/pom-review/slides.pdf /tmp/pom-review/slide`
-   - ImageMagick がある場合: 上記の `pdftoppm` の代わりに `magick -density 96 /tmp/pom-review/slides.pdf /tmp/pom-review/slide-%02d.png`
-   - どちらも無い場合: `soffice` の PNG 直接変換は先頭スライドしか出力しないため、`<Slide>` ごとに一時 XML へ分割して個別に `pom build` し、それぞれを `soffice --headless --convert-to 'png:impress_png_Export:{"PixelWidth":{"type":"long","value":1280},"PixelHeight":{"type":"long","value":720}}' --outdir /tmp/pom-review <pptx>` で変換する
-3. **批評**: 各 PNG を `Read` ツールで読み、下のチェックリストで全スライドを評価する
-4. **修正**: 問題があれば XML を修正して 1 に戻る
+2. **PDF 化**: `soffice --headless --convert-to pdf --outdir /tmp/pom-review /tmp/pom-review/slides.pptx`
+3. **PNG 化**: `pdftoppm -png -r 96 /tmp/pom-review/slides.pdf /tmp/pom-review/slide`（ImageMagick の場合は `magick -density 96 /tmp/pom-review/slides.pdf /tmp/pom-review/slide-%02d.png`）
 
 #### 批評チェックリスト
 
