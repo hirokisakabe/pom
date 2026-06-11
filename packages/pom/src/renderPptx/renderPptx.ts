@@ -30,6 +30,11 @@ import { pxToIn, pxToPt } from "./units.ts";
 import { convertUnderline, convertStrike } from "./textOptions.ts";
 import { getImageData } from "../shared/measureImage.ts";
 import { renderBackgroundAndBorder } from "./utils/backgroundBorder.ts";
+import {
+  convertBorderLine,
+  hasVisibleBorder,
+  resolveRectRadius,
+} from "./utils/visualStyle.ts";
 import { registerBackgroundGradient } from "./gradientFills.ts";
 import { getNodeDef } from "../registry/index.ts";
 
@@ -312,25 +317,12 @@ export async function renderPptx(
         ) {
           // border のみ描画（backgroundColor/backgroundImage はスキップ）
           const { border, borderRadius } = node;
-          const hasBorder = Boolean(
-            border &&
-            (border.color !== undefined ||
-              border.width !== undefined ||
-              border.dashType !== undefined),
-          );
-          if (hasBorder) {
-            const line = {
-              color: border?.color ?? "000000",
-              width:
-                border?.width !== undefined ? pxToPt(border.width) : undefined,
-              dashType: border?.dashType,
-            };
+          if (hasVisibleBorder(border)) {
+            const line = convertBorderLine(border, "000000");
             const shapeType = borderRadius
               ? ctx.pptx.ShapeType.roundRect
               : ctx.pptx.ShapeType.rect;
-            const rectRadius = borderRadius
-              ? Math.min((borderRadius / Math.min(node.w, node.h)) * 2, 1)
-              : undefined;
+            const rectRadius = resolveRectRadius(borderRadius, node.w, node.h);
             ctx.slide.addShape(shapeType, {
               x: pxToIn(node.x),
               y: pxToIn(node.y),
