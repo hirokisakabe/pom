@@ -1,4 +1,4 @@
-import type { POMNode } from "../../types.ts";
+import { type POMNode } from "../../types.ts";
 import type { NodeDefinition, Yoga } from "../types.ts";
 import type { Node as YogaNode } from "yoga-layout";
 import {
@@ -15,6 +15,7 @@ import { renderTreeNode } from "../../renderPptx/nodes/tree.ts";
 import { renderFlowNode } from "../../renderPptx/nodes/flow.ts";
 import { renderProcessArrowNode } from "../../renderPptx/nodes/processArrow.ts";
 import { renderPyramidNode } from "../../renderPptx/nodes/pyramid.ts";
+import { getNodeMetadata } from "../nodeMetadata.ts";
 
 /**
  * コンポジットノードの最小スケール閾値。
@@ -53,8 +54,7 @@ function applyCompositeMeasure(
 }
 
 export const timelineNodeDef: NodeDefinition = {
-  type: "timeline",
-  category: "leaf",
+  ...getNodeMetadata("timeline"),
   applyYogaStyle: applyCompositeMeasure(
     measureTimeline as (node: POMNode) => { width: number; height: number },
   ),
@@ -64,8 +64,7 @@ export const timelineNodeDef: NodeDefinition = {
 };
 
 export const matrixNodeDef: NodeDefinition = {
-  type: "matrix",
-  category: "leaf",
+  ...getNodeMetadata("matrix"),
   applyYogaStyle: applyCompositeMeasure(
     measureMatrix as (node: POMNode) => { width: number; height: number },
   ),
@@ -75,8 +74,7 @@ export const matrixNodeDef: NodeDefinition = {
 };
 
 export const treeNodeDef: NodeDefinition = {
-  type: "tree",
-  category: "leaf",
+  ...getNodeMetadata("tree"),
   applyYogaStyle: applyCompositeMeasure(
     measureTree as (node: POMNode) => { width: number; height: number },
   ),
@@ -86,8 +84,7 @@ export const treeNodeDef: NodeDefinition = {
 };
 
 export const flowNodeDef: NodeDefinition = {
-  type: "flow",
-  category: "leaf",
+  ...getNodeMetadata("flow"),
   applyYogaStyle: applyCompositeMeasure(
     measureFlow as (node: POMNode) => { width: number; height: number },
   ),
@@ -97,8 +94,7 @@ export const flowNodeDef: NodeDefinition = {
 };
 
 export const processArrowNodeDef: NodeDefinition = {
-  type: "processArrow",
-  category: "leaf",
+  ...getNodeMetadata("processArrow"),
   applyYogaStyle: applyCompositeMeasure(
     measureProcessArrow as (node: POMNode) => { width: number; height: number },
   ),
@@ -111,8 +107,7 @@ export const processArrowNodeDef: NodeDefinition = {
 };
 
 export const pyramidNodeDef: NodeDefinition = {
-  type: "pyramid",
-  category: "leaf",
+  ...getNodeMetadata("pyramid"),
   applyYogaStyle: applyCompositeMeasure(
     measurePyramid as (node: POMNode) => { width: number; height: number },
   ),

@@ -1,10 +1,10 @@
 import type { POMNode } from "../../types.ts";
 import type { NodeDefinition } from "../types.ts";
 import { renderLineNode } from "../../renderPptx/nodes/line.ts";
+import { getNodeMetadata } from "../nodeMetadata.ts";
 
 export const lineNodeDef: NodeDefinition = {
-  type: "line",
-  category: "leaf",
+  ...getNodeMetadata("line"),
   applyYogaStyle(_node, yn) {
     // line ノードは絶対座標を使用するため、Yoga レイアウトではサイズ 0 として扱う
     yn.setWidth(0);

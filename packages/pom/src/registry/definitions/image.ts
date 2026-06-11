@@ -4,10 +4,10 @@ import type { Node as YogaNode } from "yoga-layout";
 import { measureImage, getImageData } from "../../shared/measureImage.ts";
 import type { BuildContext } from "../../buildContext.ts";
 import { renderImageNode } from "../../renderPptx/nodes/image.ts";
+import { getNodeMetadata } from "../nodeMetadata.ts";
 
 export const imageNodeDef: NodeDefinition = {
-  type: "image",
-  category: "leaf",
+  ...getNodeMetadata("image"),
   applyYogaStyle(node: POMNode, yn: YogaNode, _yoga: Yoga, ctx: BuildContext) {
     const n = node as Extract<POMNode, { type: "image" }>;
     const src = n.src;

@@ -1,17 +1,8 @@
 import type { POMNode } from "../types.ts";
-import { TAG_TO_TYPE } from "./parseXml.ts";
-
-const TYPE_TO_TAG: Record<string, string> = Object.fromEntries(
-  Object.entries(TAG_TO_TYPE).map(([tag, type]) => [type, tag]),
-);
+import { getNodeMetadata } from "../registry/nodeMetadata.ts";
 
 // runs と svgContent は専用の直列化パスで処理する
 const SKIP_KEYS = new Set(["type", "children", "runs", "svgContent"]);
-
-// runs によるインライン装飾を child element として直列化するノードタイプ
-const INLINE_CONTENT_TYPES = new Set(["text", "shape"]);
-
-const CONTAINER_TYPES = new Set(["vstack", "hstack", "layer"]);
 
 interface TextRun {
   text: string;
@@ -105,10 +96,11 @@ function serializeRuns(runs: TextRun[]): string {
 
 function serializeNode(node: POMNode, depth: number): string {
   const indent = "  ".repeat(depth);
-  const tag = TYPE_TO_TAG[node.type];
+  const def = getNodeMetadata(node.type);
+  const tag = def.tagName;
   const nodeRecord = node as Record<string, unknown>;
 
-  if (CONTAINER_TYPES.has(node.type)) {
+  if (def.childPolicy.kind === "pom-children") {
     const children = (nodeRecord.children as POMNode[]) ?? [];
     const attrStr = serializeAttrs(nodeRecord);
     if (children.length === 0) {
@@ -128,7 +120,7 @@ function serializeNode(node: POMNode, depth: number): string {
 
   // Text / Shape: runs があればインライン child element として直列化し装飾を保持する
   if (
-    INLINE_CONTENT_TYPES.has(node.type) &&
+    def.supportsInlineRuns &&
     Array.isArray(nodeRecord.runs) &&
     (nodeRecord.runs as unknown[]).length > 0
   ) {

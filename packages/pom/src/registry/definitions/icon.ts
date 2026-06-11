@@ -1,12 +1,12 @@
-import type { POMNode, PositionedNode } from "../../types.ts";
+import { type POMNode, type PositionedNode } from "../../types.ts";
 import type { NodeDefinition } from "../types.ts";
 import { rasterizeIcon } from "../../icons/index.ts";
 import { renderIconNode } from "../../renderPptx/nodes/icon.ts";
 import { getContentArea } from "../../renderPptx/utils/contentArea.ts";
+import { getNodeMetadata } from "../nodeMetadata.ts";
 
 export const iconNodeDef: NodeDefinition = {
-  type: "icon",
-  category: "leaf",
+  ...getNodeMetadata("icon"),
   applyYogaStyle(node, yn) {
     const n = node as Extract<POMNode, { type: "icon" }>;
     const iconSize = n.size ?? 24;

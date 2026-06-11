@@ -1,24 +1,11 @@
 import { XMLBuilder, XMLParser } from "fast-xml-parser";
-import { z } from "zod";
+import type { z } from "zod";
+import type { POMNode } from "../types.ts";
 import {
-  type POMNode,
-  textNodeSchema,
-  ulNodeSchema,
-  olNodeSchema,
-  imageNodeSchema,
-  tableNodeSchema,
-  shapeNodeSchema,
-  chartNodeSchema,
-  timelineNodeSchema,
-  matrixNodeSchema,
-  treeNodeSchema,
-  flowNodeSchema,
-  processArrowNodeSchema,
-  pyramidNodeSchema,
-  lineNodeSchema,
-  arrowNodeSchema,
-  iconNodeSchema,
-} from "../types.ts";
+  getNodeMetadata,
+  getNodeMetadataByTag,
+  NODE_METADATA,
+} from "../registry/nodeMetadata.ts";
 import {
   type CoercionRule,
   NODE_COERCION_MAP,
@@ -41,36 +28,9 @@ export class ParseXmlError extends Error {
 }
 
 // ===== Tag name → POM node type mapping =====
-export const TAG_TO_TYPE: Record<string, string> = {
-  Text: "text",
-  Image: "image",
-  Table: "table",
-  Shape: "shape",
-  Chart: "chart",
-  Timeline: "timeline",
-  Matrix: "matrix",
-  Tree: "tree",
-  Flow: "flow",
-  ProcessArrow: "processArrow",
-  Pyramid: "pyramid",
-  Ul: "ul",
-  Ol: "ol",
-  Line: "line",
-  Arrow: "arrow",
-  VStack: "vstack",
-  HStack: "hstack",
-  Layer: "layer",
-  Icon: "icon",
-  Svg: "svg",
-};
-
-// Reverse mapping: node type → tag name
-const TYPE_TO_TAG: Record<string, string> = Object.fromEntries(
-  Object.entries(TAG_TO_TYPE).map(([tag, type]) => [type, tag]),
+export const TAG_TO_TYPE: Record<string, string> = Object.fromEntries(
+  NODE_METADATA.map((def) => [def.tagName, def.type]),
 );
-
-const CONTAINER_TYPES = new Set(["vstack", "hstack", "layer"]);
-const TEXT_CONTENT_NODES = new Set(["text", "shape"]);
 // Attributes allowed on any node (e.g., x/y for Layer children positioning)
 const UNIVERSAL_ATTRS = new Set(["x", "y"]);
 
@@ -125,26 +85,6 @@ function getKnownChildAttributes(tagName: string): string[] {
   if (!rules) return [];
   return Object.keys(rules);
 }
-
-// ===== Leaf node Zod validation schemas =====
-const leafNodeValidationSchemas: Record<string, z.ZodTypeAny> = {
-  text: textNodeSchema,
-  image: imageNodeSchema,
-  table: tableNodeSchema,
-  shape: shapeNodeSchema,
-  chart: chartNodeSchema,
-  timeline: timelineNodeSchema,
-  matrix: matrixNodeSchema,
-  tree: treeNodeSchema,
-  flow: flowNodeSchema,
-  processArrow: processArrowNodeSchema,
-  pyramid: pyramidNodeSchema,
-  line: lineNodeSchema,
-  arrow: arrowNodeSchema,
-  ul: ulNodeSchema,
-  ol: olNodeSchema,
-  icon: iconNodeSchema,
-};
 
 function formatZodIssue(
   issue: z.core.$ZodIssue,
@@ -202,30 +142,20 @@ function formatZodIssue(
 
 // Properties that may be legitimately absent when using child element notation
 // or when the property is optional in practice (even if required in schema).
-const CHILD_ELEMENT_PROPS: Record<string, Set<string>> = {
-  flow: new Set(["nodes", "connections"]),
-  table: new Set(["columns", "rows"]),
-  chart: new Set(["data"]),
-  timeline: new Set(["items"]),
-  matrix: new Set(["axes", "items", "quadrants"]),
-  processArrow: new Set(["steps"]),
-  pyramid: new Set(["levels"]),
-  tree: new Set(["data"]),
-  ul: new Set(["items"]),
-  ol: new Set(["items"]),
-  icon: new Set(["name"]),
-  svg: new Set(["svgContent"]),
-};
-
 function validateLeafNode(
   nodeType: string,
   result: Record<string, unknown>,
   errors: string[],
 ): void {
-  const schema = leafNodeValidationSchemas[nodeType];
-  if (!schema) return;
-  const tagName = TYPE_TO_TAG[nodeType] ?? nodeType;
-  const childProps = CHILD_ELEMENT_PROPS[nodeType];
+  const def = getNodeMetadata(nodeType as POMNode["type"]);
+  if (def.childPolicy.kind === "pom-children") return;
+  const schema = def.schema;
+  const tagName = def.tagName;
+  const optionalChildProps = new Set(
+    def.childPolicy.kind === "custom"
+      ? (def.childPolicy.optionalProperties ?? [])
+      : [],
+  );
   const parseResult = schema.safeParse(result);
   if (!parseResult.success) {
     const seen = new Set<string>();
@@ -233,9 +163,9 @@ function validateLeafNode(
       // Skip only top-level missing child-element properties (path.length === 1)
       // Nested issues (e.g., data.children[0].label) must still be reported
       if (
-        childProps &&
+        optionalChildProps.size > 0 &&
         issue.path.length === 1 &&
-        childProps.has(String(issue.path[0])) &&
+        optionalChildProps.has(String(issue.path[0])) &&
         issue.code === "invalid_type" &&
         issue.input === undefined
       ) {
@@ -1101,14 +1031,14 @@ function convertElement(
   errors: string[],
 ): Record<string, unknown> | null {
   const tagName = getTagName(node);
-  const nodeType = TAG_TO_TYPE[tagName];
+  const def = getNodeMetadataByTag(tagName);
   const attrs = getAttributes(node);
   const childElements = getChildElements(node);
   const textContent = getTextContent(node);
 
-  if (nodeType) {
+  if (def) {
     return convertPomNode(
-      nodeType,
+      def.type,
       tagName,
       attrs,
       childElements,
@@ -1132,6 +1062,7 @@ function convertPomNode(
   xmlNode?: XmlElement,
 ): Record<string, unknown> {
   const result: Record<string, unknown> = { type: nodeType };
+  const def = getNodeMetadata(nodeType as POMNode["type"]);
 
   // Expand dot-notation attributes (e.g., fill.color="hex" → { fill: { color: "hex" } })
   const { regular: regularAttrs, dotGroups } = expandDotNotation(attrs);
@@ -1203,9 +1134,9 @@ function convertPomNode(
   }
 
   // Text content → text property for nodes that support it
-  if (textContent !== undefined && TEXT_CONTENT_NODES.has(nodeType)) {
-    if (!("text" in result)) {
-      result.text = textContent;
+  if (textContent !== undefined && def.textContentProperty) {
+    if (!(def.textContentProperty in result)) {
+      result[def.textContentProperty] = textContent;
     }
   }
 
@@ -1215,7 +1146,10 @@ function convertPomNode(
     childConverter(childElements, result, errors, xmlNode);
   }
   // Children for container nodes
-  else if (CONTAINER_TYPES.has(nodeType) && childElements.length > 0) {
+  else if (
+    def.childPolicy.kind === "pom-children" &&
+    childElements.length > 0
+  ) {
     const convertedChildren = childElements
       .map((child) => convertElement(child, errors))
       .filter((child): child is Record<string, unknown> => child !== null);
@@ -1223,7 +1157,7 @@ function convertPomNode(
   }
   // Leaf nodes that shouldn't have child elements
   else if (
-    !CONTAINER_TYPES.has(nodeType) &&
+    def.childPolicy.kind !== "pom-children" &&
     !childConverter &&
     childElements.length > 0
   ) {
@@ -1233,7 +1167,7 @@ function convertPomNode(
   }
 
   // Zod validation for leaf nodes
-  if (!CONTAINER_TYPES.has(nodeType)) {
+  if (def.childPolicy.kind !== "pom-children") {
     validateLeafNode(nodeType, result, errors);
   }
 

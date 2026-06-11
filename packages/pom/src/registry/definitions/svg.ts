@@ -2,10 +2,10 @@ import type { POMNode } from "../../types.ts";
 import type { NodeDefinition } from "../types.ts";
 import { rasterizeSvgContent } from "../../icons/index.ts";
 import { renderSvgNode } from "../../renderPptx/nodes/svg.ts";
+import { getNodeMetadata } from "../nodeMetadata.ts";
 
 export const svgNodeDef: NodeDefinition = {
-  type: "svg",
-  category: "leaf",
+  ...getNodeMetadata("svg"),
   applyYogaStyle(node, yn) {
     const n = node as Extract<POMNode, { type: "svg" }>;
     const width = n.w ?? 24;

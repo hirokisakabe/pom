@@ -1,10 +1,10 @@
-import type { POMNode, PositionedLayerChild } from "../../types.ts";
+import { type POMNode, type PositionedLayerChild } from "../../types.ts";
 import type { NodeDefinition } from "../types.ts";
 import { toPositioned } from "../../toPositioned/toPositioned.ts";
+import { getNodeMetadata } from "../nodeMetadata.ts";
 
 export const layerNodeDef: NodeDefinition = {
-  type: "layer",
-  category: "absolute-child",
+  ...getNodeMetadata("layer"),
   // applyYogaStyle: layer は子を絶対配置するコンテナ。サイズは明示的に指定されることを期待
   async toPositioned(pom, absoluteX, absoluteY, layout, ctx, map) {
     const n = pom as Extract<POMNode, { type: "layer" }>;

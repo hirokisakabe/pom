@@ -4,10 +4,10 @@ import type { Node as YogaNode } from "yoga-layout";
 import { measureText } from "../../calcYogaLayout/measureText.ts";
 import type { BuildContext } from "../../buildContext.ts";
 import { renderShapeNode } from "../../renderPptx/nodes/shape.ts";
+import { getNodeMetadata } from "../nodeMetadata.ts";
 
 export const shapeNodeDef: NodeDefinition = {
-  type: "shape",
-  category: "leaf",
+  ...getNodeMetadata("shape"),
   applyYogaStyle(node: POMNode, yn: YogaNode, yoga: Yoga, ctx: BuildContext) {
     const n = node as Extract<POMNode, { type: "shape" }>;
     if (n.text) {

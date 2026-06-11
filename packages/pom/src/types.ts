@@ -859,7 +859,7 @@ export type POMNode =
   | SvgNode;
 
 // Define schemas using passthrough to maintain type safety
-const vStackNodeSchemaBase = basePOMNodeSchema.extend({
+export const vStackNodeSchema = basePOMNodeSchema.extend({
   type: z.literal("vstack"),
   children: z.array(z.lazy(() => pomNodeSchema)),
   gap: z.number().optional(),
@@ -868,7 +868,7 @@ const vStackNodeSchemaBase = basePOMNodeSchema.extend({
   flexWrap: flexWrapSchema.optional(),
 });
 
-const hStackNodeSchemaBase = basePOMNodeSchema.extend({
+export const hStackNodeSchema = basePOMNodeSchema.extend({
   type: z.literal("hstack"),
   children: z.array(z.lazy(() => pomNodeSchema)),
   gap: z.number().optional(),
@@ -886,7 +886,7 @@ const layerChildSchemaBase = z.lazy(() =>
   ),
 );
 
-const layerNodeSchemaBase = basePOMNodeSchema.extend({
+export const layerNodeSchema = basePOMNodeSchema.extend({
   type: z.literal("layer"),
   children: z.array(layerChildSchemaBase),
 });
@@ -898,8 +898,8 @@ const pomNodeSchema: z.ZodType<POMNode> = z.lazy(() =>
     olNodeSchema,
     imageNodeSchema,
     tableNodeSchema,
-    vStackNodeSchemaBase,
-    hStackNodeSchemaBase,
+    vStackNodeSchema,
+    hStackNodeSchema,
     shapeNodeSchema,
     chartNodeSchema,
     timelineNodeSchema,
@@ -910,7 +910,7 @@ const pomNodeSchema: z.ZodType<POMNode> = z.lazy(() =>
     pyramidNodeSchema,
     lineNodeSchema,
     arrowNodeSchema,
-    layerNodeSchemaBase,
+    layerNodeSchema,
     iconNodeSchema,
     svgNodeSchema,
   ]),
@@ -983,10 +983,10 @@ const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
       imageData: z.string().optional(),
     }),
     tableNodeSchema.merge(positionedBaseSchema),
-    vStackNodeSchemaBase.merge(positionedBaseSchema).extend({
+    vStackNodeSchema.merge(positionedBaseSchema).extend({
       children: z.array(z.lazy(() => positionedNodeSchema)),
     }),
-    hStackNodeSchemaBase.merge(positionedBaseSchema).extend({
+    hStackNodeSchema.merge(positionedBaseSchema).extend({
       children: z.array(z.lazy(() => positionedNodeSchema)),
     }),
     shapeNodeSchema.merge(positionedBaseSchema),
@@ -999,7 +999,7 @@ const positionedNodeSchema: z.ZodType<PositionedNode> = z.lazy(() =>
     pyramidNodeSchema.merge(positionedBaseSchema),
     lineNodeSchema.merge(positionedBaseSchema),
     arrowNodeSchema.merge(positionedBaseSchema),
-    layerNodeSchemaBase.merge(positionedBaseSchema).extend({
+    layerNodeSchema.merge(positionedBaseSchema).extend({
       children: z.array(positionedLayerChildSchema),
     }),
     iconNodeSchema.merge(positionedBaseSchema).extend({
