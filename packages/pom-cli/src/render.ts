@@ -90,10 +90,14 @@ export async function runRender(
   }
 
   fs.mkdirSync(absOutputDir, { recursive: true });
+  const padWidth = Math.max(
+    2,
+    ...outputs.map((o) => String(o.slideNumber).length),
+  );
   for (const { slideNumber, data } of outputs) {
     const file = path.join(
       absOutputDir,
-      `slide-${String(slideNumber).padStart(2, "0")}.${format}`,
+      `slide-${String(slideNumber).padStart(padWidth, "0")}.${format}`,
     );
     fs.writeFileSync(file, data);
     console.log(`Saved: ${file}`);

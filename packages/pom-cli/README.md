@@ -114,7 +114,7 @@ pom render slides.pom.xml -o ./images --verbose
 
 ## Fonts
 
-This package bundles Carlito and Noto Sans CJK JP fonts for SVG rendering. These fonts are used when converting slides to SVG in the preview server. System fonts are not scanned.
+This package bundles Carlito and Noto Sans CJK JP fonts for image rendering. These fonts are used when converting slides to SVG in the preview server and to PNG / SVG in `pom render`. System fonts are not scanned.
 
 ## License
 
