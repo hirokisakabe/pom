@@ -9,15 +9,13 @@ export function walkPOMTree(
 ): void {
   visitor(node);
 
-  switch (node.type) {
-    case "vstack":
-    case "hstack":
-    case "layer":
-      for (const child of node.children) {
-        walkPOMTree(child, visitor);
-      }
-      break;
-    default:
-      break;
+  if (
+    node.type === "vstack" ||
+    node.type === "hstack" ||
+    node.type === "layer"
+  ) {
+    for (const child of node.children) {
+      walkPOMTree(child, visitor);
+    }
   }
 }
