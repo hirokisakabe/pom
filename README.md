@@ -66,34 +66,38 @@ This repository is a pnpm monorepo containing the following packages:
 | [packages/pom-vscode](./packages/pom-vscode/) | VS Code extension for live preview                           | [Marketplace](https://marketplace.visualstudio.com/items?itemName=hirokisakabe.pom-vscode) |
 | [apps/website](./apps/website/)               | Documentation website ([pom.pptx.app](https://pom.pptx.app)) | —                                                                                          |
 
-## Claude Code Skills
+## pom kit — Agent Skills
 
-The `pom-slide` skill lets you generate presentation slides from natural language inside [Claude Code](https://claude.ai/code) sessions. The `pom-theme` skill onboards your brand assets (brand colors, an existing PPTX master, or a website/image) into a reusable theme.
+The **pom kit** bundles two agent skills (`pom-theme`, `pom-slide`) and the `pom-cli` preview server. Installed into a coding agent such as [Claude Code](https://claude.ai/code), it gives you a prompt-to-PPTX workflow: onboard your brand, generate slides from natural language, and iterate in a live preview.
 
-**Install:**
+**Install (2 commands):**
 
 ```bash
-gh skill install hirokisakabe/pom pom-slide
-gh skill install hirokisakabe/pom pom-theme
+npx skills add hirokisakabe/pom --all   # install all skills (pom-slide, pom-theme)
+npm install -g @hirokisakabe/pom-cli    # live preview / build CLI
 ```
 
-**Usage:**
+[`skills`](https://github.com/vercel-labs/skills) auto-detects your installed agents (Claude Code, Codex, Cursor, and more) and places the skills for each. To update them later, run `npx skills update`.
 
-After installation, use `/pom-slide` in Claude Code:
+**Usage — theme → design → preview:**
 
-```
-/pom-slide 四半期の売上レポート。3 枚構成で、タイトル・グラフ・まとめを含む
-```
+1. **Theme** (optional): onboard your brand assets with `/pom-theme`:
 
-Claude generates a `slides.pom.xml` file in the current directory. If [pom-cli](https://www.npmjs.com/package/@hirokisakabe/pom-cli) is installed (`npm install -g @hirokisakabe/pom-cli`), a live preview server starts automatically at `http://localhost:3000`.
+   ```
+   /pom-theme ブランドカラーは #0052CC。コーポレート向けのライトテーマで
+   ```
 
-To make generated slides follow your brand, run `/pom-theme` first:
+   This saves a `pom-theme.json` (color palette + typography + SlideMaster settings) in the current directory. Subsequent `/pom-slide` runs automatically apply its colors, fonts, and background. The SlideMaster settings can also be passed directly to `buildPptx()` as the `master` option.
 
-```
-/pom-theme ブランドカラーは #0052CC。コーポレート向けのライトテーマで
-```
+2. **Design**: generate slides with `/pom-slide`:
 
-This saves a `pom-theme.json` (color palette + typography + SlideMaster settings) in the current directory, and subsequent `/pom-slide` runs automatically apply its colors, fonts, and background. The SlideMaster settings can also be passed directly to `buildPptx()` as the `master` option.
+   ```
+   /pom-slide 四半期の売上レポート。3 枚構成で、タイトル・グラフ・まとめを含む
+   ```
+
+   The agent generates a `slides.pom.xml` file in the current directory, applying the theme if present, and self-reviews the rendered result.
+
+3. **Preview**: if `pom-cli` is installed, a live preview server starts automatically at `http://localhost:3000`. Edit the XML (yourself or via follow-up prompts) and the preview updates live. When you're happy, export the deck with `pom build slides.pom.xml -o slides.pptx`.
 
 ## Documentation
 
