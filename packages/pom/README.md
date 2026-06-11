@@ -40,6 +40,7 @@
 - **Flexible Layout** — Flexbox-style layout with VStack / HStack, powered by yoga-layout. Ratio-based layouts (e.g., 2:1 columns) via the `grow` attribute (CSS `flex-grow`).
 - **Shorthand + Dot Notation** — Layout/style attributes (e.g. `padding`, `margin`, `border`, `fill`, `shadow`) can mix shorthand and dot notation on the same node. Shorthand sets defaults and dot notation overrides specific keys.
 - **Rich Nodes** — 18 built-in node types: charts, flowcharts, tables, timelines, org trees, and more.
+- **Design Tokens** — Declare a color palette once with a top-level `<Theme>` element and reference tokens as `$name` from any color attribute. See [Nodes — Top-Level `<Theme>`](./docs/nodes.md#top-level-theme-design-tokens).
 - **Schema-validated** — XML input is validated with Zod schemas at runtime with clear error messages.
 - **PowerPoint Native** — Generates real editable PowerPoint shapes — not images. Recipients can modify everything. Linear gradient backgrounds (`backgroundGradient="linear-gradient(135deg, #667EEA 0%, #764BA2 100%)"`) are exported as native gradient fills.
 - **Pixel Units** — Intuitive pixel-based sizing (internally converted to inches at 96 DPI).
@@ -70,7 +71,16 @@ const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
 await pptx.writeFile({ fileName: "presentation.pptx" });
 ```
 
-Each slide must be wrapped in a `<Slide>` element. To produce multiple slides, list multiple `<Slide>` elements at the top level.
+Each slide must be wrapped in a `<Slide>` element. To produce multiple slides, list multiple `<Slide>` elements at the top level. A single top-level `<Theme>` element may precede the slides to declare color tokens (referenced as `$name` from color attributes):
+
+```xml
+<Theme surface="0F172A" accent="38BDF8" textMain="F8FAFC" />
+<Slide>
+  <VStack w="100%" h="max" padding="48" backgroundColor="$surface">
+    <Text fontSize="48" bold="true" color="$textMain">Dark Theme</Text>
+  </VStack>
+</Slide>
+```
 
 ## Available Nodes
 

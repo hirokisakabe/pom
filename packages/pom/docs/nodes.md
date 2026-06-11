@@ -17,10 +17,32 @@ The top level of a pom XML document is one or more `<Slide>` elements. Each `<Sl
 
 - A `<Slide>` must contain at least one child element.
 - Multiple top-level `<Slide>` elements produce multiple slides.
-- Top-level elements other than `<Slide>` are an error.
+- Top-level elements other than `<Slide>` and `<Theme>` are an error.
 - `<Slide>` does not currently take attributes; per-slide properties (background, notes, etc.) are tracked separately.
 
 The remaining sections describe nodes that go inside a `<Slide>`. For brevity, the example snippets below omit the `<Slide>` wrapper.
+
+## Top-Level `<Theme>` (Design Tokens)
+
+A pom XML document may declare a single `<Theme>` element at the top level. Each attribute declares a named color token, and any color attribute in the document can reference a token as `$tokenName`. This keeps the palette in one place instead of repeating hex values on every node.
+
+```xml
+<Theme surface="0F172A" accent="38BDF8" textMain="F8FAFC" textMuted="94A3B8" />
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="16" backgroundColor="$surface">
+    <Text fontSize="28" color="$textMain" bold="true">Title</Text>
+    <Timeline dateColor="$textMuted" titleColor="$textMain" w="1000" h="120">
+      <TimelineItem date="Q1" title="Phase 1" color="$accent" />
+    </Timeline>
+  </VStack>
+</Slide>
+```
+
+- Token names must start with a letter and may contain letters, digits, `_`, and `-`. Values are 6-digit hex colors (`#` prefix optional).
+- At most one `<Theme>` per document; it applies to all slides regardless of position. Child elements are not allowed.
+- `$tokenName` references are resolved in color attributes (attributes ending in `Color`/`Colors`, `color` keys inside object/JSON attributes, `highlight`) and inside `backgroundGradient` strings. Other attributes and text content are never substituted.
+- References are resolved by `parseXml`, so the returned `POMNode` tree contains plain hex values and the `<Theme>` element itself does not become a node (it is not preserved by `serializeXml`).
+- Referencing an unknown token (or using `$token` without a `<Theme>`) throws a `ParseXmlError` with a "did you mean" suggestion.
 
 ## Common Properties
 
@@ -415,9 +437,12 @@ A node for creating timeline/roadmap visualizations. Supports horizontal and ver
 </Timeline>
 ```
 
-| Attribute   | Values                    |
-| ----------- | ------------------------- |
-| `direction` | `horizontal` / `vertical` |
+| Attribute          | Values                                          |
+| ------------------ | ----------------------------------------------- |
+| `direction`        | `horizontal` / `vertical`                       |
+| `dateColor`        | hex (date text color, default: `64748B`)        |
+| `titleColor`       | hex (title text color, default: `1E293B`)       |
+| `descriptionColor` | hex (description text color, default: `64748B`) |
 
 `<TimelineItem>`: `date` (required) `title` (required) `description` `color`
 
@@ -456,9 +481,10 @@ A node for creating 2x2 matrix/positioning maps. Commonly used for cost-effectiv
 ```
 
 - Coordinates: (0,0)=bottom-left, (1,1)=top-right (mathematical coordinate system)
+- `<Matrix>`: `axisLabelColor` (default `64748B`) `quadrantLabelColor` (default `94A3B8`) `itemLabelColor` (default `1E293B`) — text colors
 - `<MatrixAxes>`: `x` `y` (axis labels, required)
 - `<MatrixQuadrants>`: `topLeft` `topRight` `bottomLeft` `bottomRight`
-- `<MatrixItem>`: `label` `x` `y` (required) `color`
+- `<MatrixItem>`: `label` `x` `y` (required) `color` `textColor` (overrides `itemLabelColor`)
 
 **Usage Examples:**
 
@@ -508,13 +534,14 @@ A node for creating tree structures such as organization charts, decision trees,
 | ---------------- | ----------------------------------------------------- |
 | `layout`         | `vertical` / `horizontal`                             |
 | `nodeShape`      | `rect` / `roundRect` / `ellipse`                      |
+| `textColor`      | hex (node label text color, default: `FFFFFF`)        |
 | `nodeWidth`      | number (default: 120)                                 |
 | `nodeHeight`     | number (default: 40)                                  |
 | `levelGap`       | number (default: 60)                                  |
 | `siblingGap`     | number (default: 20)                                  |
 | `connectorStyle` | `connectorStyle.color="333" connectorStyle.width="2"` |
 
-`<TreeItem>` can be nested recursively. The root must have exactly one `<TreeItem>`.
+`<TreeItem>` can be nested recursively. The root must have exactly one `<TreeItem>`. Attributes: `label` (required) `color` `textColor` (overrides the Tree-level `textColor`).
 
 **Usage Examples:**
 
@@ -565,13 +592,13 @@ A node for creating flowcharts. Supports various node shapes and automatic layou
 </Flow>
 ```
 
-| Attribute        | Values                                                                                 |
-| ---------------- | -------------------------------------------------------------------------------------- |
-| `direction`      | `horizontal` / `vertical`                                                              |
-| `nodeWidth`      | number (default: 120)                                                                  |
-| `nodeHeight`     | number (default: 60)                                                                   |
-| `nodeGap`        | number (default: 80)                                                                   |
-| `connectorStyle` | `connectorStyle.color="hex" connectorStyle.width="2" connectorStyle.arrowType="arrow"` |
+| Attribute        | Values                                                                                                                 |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `direction`      | `horizontal` / `vertical`                                                                                              |
+| `nodeWidth`      | number (default: 120)                                                                                                  |
+| `nodeHeight`     | number (default: 60)                                                                                                   |
+| `nodeGap`        | number (default: 80)                                                                                                   |
+| `connectorStyle` | `connectorStyle.color="hex" connectorStyle.width="2" connectorStyle.arrowType="arrow" connectorStyle.labelColor="hex"` |
 
 `<FlowNode>` attributes:
 
@@ -585,7 +612,7 @@ A node for creating flowcharts. Supports various node shapes and automatic layou
 | `width`     | number — individual node width (overrides `nodeWidth`)                                                                                                                                                                                                                                            |
 | `height`    | number — individual node height (overrides `nodeHeight`)                                                                                                                                                                                                                                          |
 
-`<FlowConnection>`: `from` `to` (required) `label` `color`
+`<FlowConnection>`: `from` `to` (required) `label` `color` `labelColor` (label text color; overrides `connectorStyle.labelColor`, default: `64748B`)
 
 **Usage Examples:**
 
