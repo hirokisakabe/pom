@@ -114,7 +114,6 @@
     "esbuild": "^0.28.0",
     "mocha": "^11.7.6",
     "pptx-glimpse": "^1.0.1",
-    "sharp": "^0.34.5",
-    "typescript-eslint": "^8.60.1"
+    "sharp": "^0.34.5"
   }
 }

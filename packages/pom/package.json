@@ -85,8 +85,7 @@
     "pngjs": "7.0.0",
     "size-limit": "^12.1.0",
     "tsdown": "^0.22.2",
-    "tsx": "4.22.4",
-    "typescript-eslint": "^8.60.1"
+    "tsx": "4.22.4"
   },
   "dependencies": {
     "@resvg/resvg-wasm": "^2.6.2",

@@ -13,7 +13,7 @@
     "scripts/**/*.ts"
   ],
   "ignoreBinaries": ["eslint", "knip", "prettier", "tsc", "vitest"],
-  "ignoreDependencies": ["typescript-eslint", "vitest"],
+  "ignoreDependencies": ["vitest"],
   "vitest": {
     "config": ["vitest.config.ts"]
   },
