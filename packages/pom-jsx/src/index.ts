@@ -4,6 +4,7 @@ export type { PomJsxElement } from "./jsx-runtime.ts";
 export { Fragment } from "./jsx-runtime.ts";
 export {
   Slide,
+  Theme,
   Text,
   VStack,
   HStack,
@@ -38,6 +39,7 @@ export {
 export type {
   BaseProps,
   SlideProps,
+  ThemeProps,
   TextProps,
   InlineProps,
   AnchorProps,

@@ -4,7 +4,7 @@ This document provides a complete reference for all node types available in pom.
 
 ## Top-Level `<Slide>`
 
-The top level of a pom XML document is one or more `<Slide>` elements. Each `<Slide>` represents one slide and wraps that slide's content (any of the nodes below).
+The top level of a pom XML document is one or more `<Slide>` elements, optionally preceded by a single `<Theme>` element (see the next section). Each `<Slide>` represents one slide and wraps that slide's content (any of the nodes below).
 
 ```xml
 <Slide>

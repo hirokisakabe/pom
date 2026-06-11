@@ -1,6 +1,7 @@
 import type { PomJsxElement } from "./jsx-runtime.ts";
 import type {
   SlideProps,
+  ThemeProps,
   TextProps,
   VStackProps,
   HStackProps,
@@ -35,6 +36,7 @@ function el(type: string, props: object): PomJsxElement {
 }
 
 export const Slide = (props: SlideProps): PomJsxElement => el("Slide", props);
+export const Theme = (props: ThemeProps): PomJsxElement => el("Theme", props);
 export const Text = (props: TextProps): PomJsxElement => el("Text", props);
 export const VStack = (props: VStackProps): PomJsxElement =>
   el("VStack", props);

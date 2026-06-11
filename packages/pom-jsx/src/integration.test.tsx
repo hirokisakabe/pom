@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { renderToXml } from "./renderToXml.ts";
 import {
   Slide,
+  Theme,
   Text,
   VStack,
   HStack,
@@ -57,6 +58,28 @@ describe("pom core との統合テスト", () => {
     assertParsable(xml);
     expect(xml).toContain('letterSpacing="8"');
     expect(xml).toContain('<Span letterSpacing="6">字間広め</Span>');
+  });
+
+  it("Theme トークン宣言と $name 参照が parseXml で解決できる", () => {
+    const xml = renderToXml(
+      <>
+        <Theme surface="0F172A" accent="38BDF8" />
+        <Slide>
+          <VStack backgroundColor="$surface">
+            <Text color="$accent">Hello</Text>
+          </VStack>
+        </Slide>
+      </>,
+    );
+    expect(xml).toContain('<Theme surface="0F172A" accent="38BDF8" />');
+    const nodes = parseXml(xml);
+    expect(nodes).toEqual([
+      {
+        type: "vstack",
+        backgroundColor: "0F172A",
+        children: [{ type: "text", text: "Hello", color: "38BDF8" }],
+      },
+    ]);
   });
 
   it("VStack コンテナが parseXml でパースできる", () => {

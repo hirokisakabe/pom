@@ -106,6 +106,10 @@ export interface SlideProps {
   children?: ReactNode;
 }
 
+// ===== Theme =====
+// 属性名がトークン名、値が 6 桁 hex の色値。子要素は取らない。
+export type ThemeProps = Record<string, string>;
+
 // ===== Text =====
 export interface TextProps extends BaseProps, TextStyleProps {
   children?: ReactNode;
