@@ -30,6 +30,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+  check-skills-installable:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Smoke test npx skills add
+        run: |
+          WORKDIR="$(mktemp -d)"
+          cd "$WORKDIR"
+          npx -y skills@latest add "$GITHUB_WORKSPACE" --all
+          test -f .agents/skills/pom-slide/SKILL.md
+          test -f .agents/skills/pom-theme/SKILL.md
+
   check-skill-llm-sync:
     runs-on: ubuntu-latest
     permissions:

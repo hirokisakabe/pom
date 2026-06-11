@@ -77,7 +77,7 @@ npx skills add hirokisakabe/pom --all   # install all skills (pom-slide, pom-the
 npm install -g @hirokisakabe/pom-cli    # live preview / build CLI
 ```
 
-[`skills`](https://github.com/vercel-labs/skills) auto-detects your installed agents (Claude Code, Codex, Cursor, and more) and places the skills for each. To update them later, run `npx skills update`.
+[`skills`](https://github.com/vercel-labs/skills) auto-detects your installed agents (Claude Code, Codex, Cursor, and more) and places the skills for each. Note that `--all` installs every skill for every detected agent, scoped to the current project; pass `-g` for a user-level (global) install, or `--agent` / `--skill` to narrow the targets. To update the skills later, run `npx skills update`.
 
 **Usage — theme → design → preview:**
 
