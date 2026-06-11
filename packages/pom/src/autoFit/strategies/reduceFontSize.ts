@@ -31,6 +31,8 @@ export function reduceFontSize(node: POMNode, targetRatio: number): boolean {
         }
         break;
       }
+      default:
+        break;
     }
 
     // ul/ol の li 要素の fontSize も縮小

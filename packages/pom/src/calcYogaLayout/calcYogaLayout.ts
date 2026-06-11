@@ -100,6 +100,8 @@ function collectImageSources(node: POMNode): string[] {
         }
         break;
       }
+      default:
+        break;
     }
   }
 

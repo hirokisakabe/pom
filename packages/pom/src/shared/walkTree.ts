@@ -17,5 +17,7 @@ export function walkPOMTree(
         walkPOMTree(child, visitor);
       }
       break;
+    default:
+      break;
   }
 }
