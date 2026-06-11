@@ -956,6 +956,144 @@ describe("parseXml", () => {
   });
 
   // ===== 複数 Slide =====
+  // ===== Theme トークン =====
+  describe("Theme トークン", () => {
+    it("色属性の $name 参照をトークン値に解決する", () => {
+      const result = parseXmlRaw(`
+        <Theme accent="1D4ED8" surface="1E293B" />
+        <Slide>
+          <VStack backgroundColor="$surface">
+            <Text color="$accent">Hello</Text>
+          </VStack>
+        </Slide>
+      `);
+      expect(result).toEqual([
+        {
+          type: "vstack",
+          backgroundColor: "1E293B",
+          children: [{ type: "text", text: "Hello", color: "1D4ED8" }],
+        },
+      ]);
+    });
+
+    it("宣言値と参照の # プレフィックスを許容する", () => {
+      const result = parseXmlRaw(`
+        <Theme accent="#1D4ED8" />
+        <Slide>
+          <Text color="#$accent">Hello</Text>
+        </Slide>
+      `);
+      expect((result[0] as Record<string, unknown>).color).toBe("#1D4ED8");
+    });
+
+    it("子要素・ドット記法・JSON 配列内の色属性も解決する", () => {
+      const result = parseXmlRaw(`
+        <Theme accent="1D4ED8" muted="94A3B8" />
+        <Slide>
+          <VStack border.color="$muted">
+            <Timeline dateColor="$muted">
+              <TimelineItem date="Q1" title="A" color="$accent" />
+            </Timeline>
+            <Chart chartType="bar" chartColors='["$accent","$muted"]'>
+              <ChartSeries name="S"><ChartDataPoint label="a" value="1" /></ChartSeries>
+            </Chart>
+          </VStack>
+        </Slide>
+      `);
+      const vstack = result[0] as Record<string, unknown>;
+      expect(vstack.border).toEqual({ color: "94A3B8" });
+      const children = vstack.children as Record<string, unknown>[];
+      expect(children[0].dateColor).toBe("94A3B8");
+      expect(children[0].items).toEqual([
+        { date: "Q1", title: "A", color: "1D4ED8" },
+      ]);
+      expect(children[1].chartColors).toEqual(["1D4ED8", "94A3B8"]);
+    });
+
+    it("backgroundGradient 内の $name 参照を解決する", () => {
+      const result = parseXmlRaw(`
+        <Theme g1="667EEA" g2="764BA2" />
+        <Slide>
+          <VStack backgroundGradient="linear-gradient(135deg, $g1 0%, $g2 100%)">
+            <Text>Hello</Text>
+          </VStack>
+        </Slide>
+      `);
+      expect((result[0] as Record<string, unknown>).backgroundGradient).toBe(
+        "linear-gradient(135deg, #667EEA 0%, #764BA2 100%)",
+      );
+    });
+
+    it("Icon の color 参照は # 正規化と両立する", () => {
+      const result = parseXmlRaw(`
+        <Theme accent="1D4ED8" />
+        <Slide>
+          <Icon name="cpu" color="$accent" />
+        </Slide>
+      `);
+      expect((result[0] as Record<string, unknown>).color).toBe("#1D4ED8");
+    });
+
+    it("color 系以外の属性値は置換しない", () => {
+      const result = parseXmlRaw(`
+        <Theme accent="1D4ED8" />
+        <Slide>
+          <Text color="$accent">$accent costs $100</Text>
+        </Slide>
+      `);
+      expect((result[0] as Record<string, unknown>).text).toBe(
+        "$accent costs $100",
+      );
+    });
+
+    it("未知のトークン参照でエラーをスローする（候補つき）", () => {
+      expect(() =>
+        parseXmlRaw(`
+          <Theme accent="1D4ED8" />
+          <Slide><Text color="$accnet">Hello</Text></Slide>
+        `),
+      ).toThrow('Unknown theme token "$accnet". Did you mean "$accent"?');
+    });
+
+    it("Theme 未宣言でトークン参照するとエラーをスローする", () => {
+      expect(() =>
+        parseXmlRaw(`<Slide><Text color="$accent">Hello</Text></Slide>`),
+      ).toThrow(
+        'Theme token "$accent" is referenced, but no <Theme> is declared',
+      );
+    });
+
+    it("複数の Theme 要素でエラーをスローする", () => {
+      expect(() =>
+        parseXmlRaw(`
+          <Theme accent="1D4ED8" />
+          <Theme muted="94A3B8" />
+          <Slide><Text>Hello</Text></Slide>
+        `),
+      ).toThrow("Only one <Theme> element is allowed");
+    });
+
+    it("不正なトークン値でエラーをスローする", () => {
+      expect(() =>
+        parseXmlRaw(`
+          <Theme accent="blue" />
+          <Slide><Text>Hello</Text></Slide>
+        `),
+      ).toThrow(
+        '<Theme>: Invalid color value "blue" for token "accent". Expected 6-digit hex',
+      );
+    });
+
+    it("Theme の子要素はエラーをスローする", () => {
+      expect(() =>
+        parseXmlRaw(`
+          <Theme><Token name="accent" value="1D4ED8" /></Theme>
+          <Slide><Text>Hello</Text></Slide>
+        `),
+      ).toThrow("<Theme>: Child elements are not supported");
+    });
+  });
+
   describe("複数 Slide", () => {
     it("複数の <Slide> を別々のスライドとして配列で返す", () => {
       const xml =
