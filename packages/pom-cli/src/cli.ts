@@ -4,11 +4,26 @@ import { Command } from "commander";
 import { DiagnosticsError } from "@hirokisakabe/pom";
 import { runBuild, runBuildWatch } from "./build.ts";
 import { runPreview } from "./preview.ts";
+import { runRender, type RenderFormat } from "./render.ts";
 
 const require = createRequire(import.meta.url);
 const { version } = require("../package.json") as { version: string };
 
 const program = new Command();
+
+function printBuildError(err: unknown): void {
+  if (err instanceof DiagnosticsError) {
+    const count = err.diagnostics.length;
+    console.error(
+      `✗ Build failed (${count} ${count === 1 ? "error" : "errors"})\n`,
+    );
+    for (const d of err.diagnostics) {
+      console.error(`  [${d.code}] ${d.message}`);
+    }
+  } else {
+    console.error(err instanceof Error ? err.message : String(err));
+  }
+}
 
 program
   .name("pom")
@@ -69,21 +84,63 @@ program
       } else {
         runBuild(input, options.o, { verbose: options.verbose }).catch(
           (err: unknown) => {
-            if (err instanceof DiagnosticsError) {
-              const count = err.diagnostics.length;
-              console.error(
-                `✗ Build failed (${count} ${count === 1 ? "error" : "errors"})\n`,
-              );
-              for (const d of err.diagnostics) {
-                console.error(`  [${d.code}] ${d.message}`);
-              }
-            } else {
-              console.error(err instanceof Error ? err.message : String(err));
-            }
+            printBuildError(err);
             process.exit(1);
           },
         );
       }
+    },
+  );
+
+program
+  .command("render")
+  .description("Render each slide to a PNG or SVG image")
+  .argument("<input>", "Input file (.pom.xml or .pom.md)")
+  .requiredOption("-o <dir>", "Output directory for rendered images")
+  .option("--format <format>", "Output format: png or svg", "png")
+  .option(
+    "--slides <numbers>",
+    "Comma-separated slide numbers to render (e.g. 2,5)",
+  )
+  .option("--verbose", "Show build step timing on stderr")
+  .action(
+    (
+      input: string,
+      options: {
+        o: string;
+        format: string;
+        slides?: string;
+        verbose?: boolean;
+      },
+    ) => {
+      if (options.format !== "png" && options.format !== "svg") {
+        console.error(
+          `Invalid format: ${options.format} (expected "png" or "svg")`,
+        );
+        process.exit(1);
+      }
+      const format: RenderFormat = options.format;
+      let slides: number[] | undefined;
+      if (options.slides !== undefined) {
+        slides = options.slides.split(",").map((s) => Number(s.trim()));
+        if (
+          slides.length === 0 ||
+          slides.some((n) => !Number.isInteger(n) || n <= 0)
+        ) {
+          console.error(
+            `Invalid slides: ${options.slides} (expected comma-separated slide numbers, e.g. 2,5)`,
+          );
+          process.exit(1);
+        }
+      }
+      runRender(input, options.o, {
+        format,
+        slides,
+        verbose: options.verbose,
+      }).catch((err: unknown) => {
+        printBuildError(err);
+        process.exit(1);
+      });
     },
   );
 
