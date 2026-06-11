@@ -1,14 +1,13 @@
 import { spawn } from "child_process";
 import fs from "fs";
 import http from "http";
-import { fileURLToPath } from "url";
 import path from "path";
 import { buildPptx } from "@hirokisakabe/pom";
-import { parseMd } from "@hirokisakabe/pom-md";
 import { convertPptxToSvg } from "pptx-glimpse";
+import { EXTRA_FONT_MAPPING, resolveBundledFontsDir } from "./glimpse.ts";
+import { loadInput } from "./input.ts";
 import { watchInputFile } from "./watch.ts";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_PORT = 3000;
 
 function makeLog(verbose: boolean) {
@@ -37,11 +36,6 @@ function openBrowser(url: string): void {
   child.unref();
 }
 
-const EXTRA_FONT_MAPPING: Record<string, string> = {
-  "游ゴシック Light": "Noto Sans CJK JP",
-  "Yu Gothic Light": "Noto Sans CJK JP",
-};
-
 type SvgResult =
   | { type: "success"; svgs: string[]; slideWidth: number }
   | { type: "error"; message: string }
@@ -52,42 +46,10 @@ async function generateSvgs(
   verbose = false,
 ): Promise<SvgResult> {
   const log = makeLog(verbose);
-  const content = fs.readFileSync(inputFile, "utf-8");
-  const ext = path.extname(inputFile);
-
-  let xml: string;
-  let slideWidth = 1280;
-  let slideHeight = 720;
-  let masterPptxData: Uint8Array | undefined;
-
-  if (ext === ".md") {
-    const t = Date.now();
-    const result = parseMd(content);
-    xml = result.xml;
-    slideWidth = result.meta.size.w;
-    slideHeight = result.meta.size.h;
-    log(`Parsing Markdown... done (${Date.now() - t}ms)`);
-
-    if (result.meta.masterPptx) {
-      const masterPath = path.resolve(
-        path.dirname(inputFile),
-        result.meta.masterPptx,
-      );
-      try {
-        masterPptxData = new Uint8Array(fs.readFileSync(masterPath));
-      } catch (e: unknown) {
-        if (e instanceof Error && "code" in e && e.code === "ENOENT") {
-          process.stderr.write(
-            `Warning: masterPptx not found: ${masterPath}\n`,
-          );
-        } else {
-          throw e;
-        }
-      }
-    }
-  } else {
-    xml = content;
-  }
+  const { xml, slideWidth, slideHeight, masterPptxData } = loadInput(
+    inputFile,
+    log,
+  );
 
   if (!xml.trim()) {
     return { type: "empty" };
@@ -109,13 +71,7 @@ async function generateSvgs(
     throw new Error("Unexpected output type from pptx.write");
   }
 
-  const fontsDir = path.resolve(__dirname, "../fonts");
-  if (!fs.existsSync(fontsDir)) {
-    throw new Error(
-      `Bundled fonts directory not found: ${fontsDir}. The package may be corrupted.`,
-    );
-  }
-  const fontDirs = [fontsDir];
+  const fontDirs = [resolveBundledFontsDir()];
 
   const t2 = Date.now();
   const slides = await convertPptxToSvg(buffer, {
