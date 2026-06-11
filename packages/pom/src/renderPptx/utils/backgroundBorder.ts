@@ -1,19 +1,15 @@
-import type { PositionedNode, ShadowStyle } from "../../types.ts";
+import type { PositionedNode } from "../../types.ts";
 import { getImageData } from "../../shared/measureImage.ts";
 import { registerBackgroundGradient } from "../gradientFills.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToIn, pxToPt } from "../units.ts";
-
-function convertShadow(shadow: ShadowStyle) {
-  return {
-    type: shadow.type ?? ("outer" as const),
-    opacity: shadow.opacity,
-    blur: shadow.blur,
-    angle: shadow.angle,
-    offset: shadow.offset,
-    color: shadow.color,
-  };
-}
+import { pxToIn } from "../units.ts";
+import {
+  convertShadow,
+  convertBorderLine,
+  hasVisibleBorder,
+  resolveBackgroundFill,
+  resolveRectRadius,
+} from "./visualStyle.ts";
 
 /**
  * ノードの背景色・背景画像・ボーダー・影を描画する
@@ -47,12 +43,7 @@ export function renderBackgroundAndBorder(
 
   const hasBackground = Boolean(backgroundColor) || Boolean(gradientMarker);
   const hasBackgroundImage = Boolean(backgroundImage);
-  const hasBorder = Boolean(
-    border &&
-    (border.color !== undefined ||
-      border.width !== undefined ||
-      border.dashType !== undefined),
-  );
+  const hasBorder = hasVisibleBorder(border);
   const hasShadow = Boolean(shadow);
 
   if (!hasBackground && !hasBackgroundImage && !hasBorder && !hasShadow) {
@@ -64,29 +55,16 @@ export function renderBackgroundAndBorder(
     ? ctx.pptx.ShapeType.roundRect
     : ctx.pptx.ShapeType.rect;
 
-  // px を 0-1 の正規化値に変換
-  const rectRadius = borderRadius
-    ? Math.min((borderRadius / Math.min(node.w, node.h)) * 2, 1)
-    : undefined;
+  const rectRadius = resolveRectRadius(borderRadius, node.w, node.h);
 
   // backgroundImage がない場合は従来通り1回の addShape で処理
   if (!hasBackgroundImage) {
     const fill = hasBackground
-      ? gradientMarker
-        ? { color: gradientMarker }
-        : {
-            color: backgroundColor,
-            transparency:
-              node.opacity !== undefined ? (1 - node.opacity) * 100 : undefined,
-          }
+      ? resolveBackgroundFill(backgroundColor, node.opacity, gradientMarker)
       : { type: "none" as const };
 
     const line = hasBorder
-      ? {
-          color: border?.color ?? "000000",
-          width: border?.width !== undefined ? pxToPt(border.width) : undefined,
-          dashType: border?.dashType,
-        }
+      ? convertBorderLine(border, "000000")
       : { type: "none" as const };
 
     ctx.slide.addShape(shapeType, {
@@ -97,7 +75,7 @@ export function renderBackgroundAndBorder(
       fill,
       line,
       rectRadius,
-      shadow: shadow ? convertShadow(shadow) : undefined,
+      shadow: convertShadow(shadow),
     });
     return;
   }
@@ -111,13 +89,11 @@ export function renderBackgroundAndBorder(
       y: pxToIn(node.y),
       w: pxToIn(node.w),
       h: pxToIn(node.h),
-      fill: gradientMarker
-        ? { color: gradientMarker }
-        : {
-            color: backgroundColor,
-            transparency:
-              node.opacity !== undefined ? (1 - node.opacity) * 100 : undefined,
-          },
+      fill: resolveBackgroundFill(
+        backgroundColor,
+        node.opacity,
+        gradientMarker,
+      ),
       line: { type: "none" as const },
       rectRadius,
     });
@@ -158,15 +134,10 @@ export function renderBackgroundAndBorder(
       h: pxToIn(node.h),
       fill: { type: "none" as const },
       line: hasBorder
-        ? {
-            color: border?.color ?? "000000",
-            width:
-              border?.width !== undefined ? pxToPt(border.width) : undefined,
-            dashType: border?.dashType,
-          }
+        ? convertBorderLine(border, "000000")
         : { type: "none" as const },
       rectRadius,
-      shadow: shadow ? convertShadow(shadow) : undefined,
+      shadow: convertShadow(shadow),
     });
   }
 }

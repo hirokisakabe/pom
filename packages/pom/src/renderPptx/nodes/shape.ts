@@ -3,6 +3,7 @@ import type { RenderContext } from "../types.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 import { convertUnderline, convertStrike } from "../textOptions.ts";
 import { getContentArea } from "../utils/contentArea.ts";
+import { convertBorderLine, convertShadow } from "../utils/visualStyle.ts";
 
 type ShapePositionedNode = Extract<PositionedNode, { type: "shape" }>;
 
@@ -22,24 +23,8 @@ export function renderShapeNode(
           transparency: node.fill.transparency,
         }
       : undefined,
-    line: node.line
-      ? {
-          color: node.line.color,
-          width:
-            node.line.width !== undefined ? pxToPt(node.line.width) : undefined,
-          dashType: node.line.dashType,
-        }
-      : undefined,
-    shadow: node.shadow
-      ? {
-          type: node.shadow.type ?? ("outer" as const),
-          opacity: node.shadow.opacity,
-          blur: node.shadow.blur,
-          angle: node.shadow.angle,
-          offset: node.shadow.offset,
-          color: node.shadow.color,
-        }
-      : undefined,
+    line: node.line ? convertBorderLine(node.line) : undefined,
+    shadow: convertShadow(node.shadow),
   };
 
   if (node.text) {

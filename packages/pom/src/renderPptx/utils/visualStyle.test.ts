@@ -60,8 +60,9 @@ describe("hasVisibleBorder", () => {
 
 describe("convertBorderLine", () => {
   it("width を px から pt に変換する", () => {
-    expect(convertBorderLine({ color: "FF0000", width: 4, dashType: "dash" }))
-      .toEqual({ color: "FF0000", width: 3, dashType: "dash" });
+    expect(
+      convertBorderLine({ color: "FF0000", width: 4, dashType: "dash" }),
+    ).toEqual({ color: "FF0000", width: 3, dashType: "dash" });
   });
 
   it("color 未指定時は fallbackColor を使う", () => {
