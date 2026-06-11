@@ -5,7 +5,13 @@ import { defineConfig } from "eslint/config";
 
 export default defineConfig([
   {
-    ignores: ["dist/**", "node_modules/**", "eslint.config.mts"],
+    ignores: [
+      "dist/**",
+      "**/*.test.ts",
+      "node_modules/**",
+      "eslint.config.mts",
+      "vitest.config.ts",
+    ],
   },
   {
     files: ["**/*.{ts,mts,cts}"],
