@@ -32,6 +32,7 @@ export function renderTreeNode(
   const siblingGap = node.siblingGap ?? 20;
   const connectorStyle = node.connectorStyle ?? {};
   const defaultColor = "1D4ED8";
+  const defaultTextColor = node.textColor?.replace("#", "") ?? "FFFFFF";
 
   // サブツリーの幅/高さを計算
   function calculateSubtreeSize(item: TreeDataItem): {
@@ -263,7 +264,7 @@ export function renderTreeNode(
       h: pxToIn(drawH),
       fontSize: pxToPt(12 * sf),
       fontFace: "Noto Sans JP",
-      color: "FFFFFF",
+      color: layoutNode.item.textColor?.replace("#", "") ?? defaultTextColor,
       align: "center",
       valign: "middle",
     });

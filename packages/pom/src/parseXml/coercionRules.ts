@@ -306,7 +306,12 @@ const TREE_CONNECTOR_STYLE_RULE: CoercionRule = {
 
 const FLOW_CONNECTOR_STYLE_RULE: CoercionRule = {
   type: "object",
-  shape: { color: "string", width: "number", arrowType: "string" },
+  shape: {
+    color: "string",
+    width: "number",
+    arrowType: "string",
+    labelColor: "string",
+  },
 };
 
 const IMAGE_SIZING_RULE: CoercionRule = {
@@ -428,18 +433,25 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     ...BASE_RULES,
     direction: "string",
     items: "json",
+    dateColor: "string",
+    titleColor: "string",
+    descriptionColor: "string",
   },
   matrix: {
     ...BASE_RULES,
     axes: "json",
     quadrants: "json",
     items: "json",
+    axisLabelColor: "string",
+    quadrantLabelColor: "string",
+    itemLabelColor: "string",
   },
   tree: {
     ...BASE_RULES,
     layout: "string",
     nodeShape: "string",
     data: "json",
+    textColor: "string",
     connectorStyle: TREE_CONNECTOR_STYLE_RULE,
     nodeWidth: "number",
     nodeHeight: "number",
@@ -557,6 +569,7 @@ export const CHILD_ELEMENT_COERCION_MAP: Record<
     x: "number",
     y: "number",
     color: "string",
+    textColor: "string",
   },
   FlowNode: {
     id: "string",
@@ -572,6 +585,7 @@ export const CHILD_ELEMENT_COERCION_MAP: Record<
     to: "string",
     label: "string",
     color: "string",
+    labelColor: "string",
   },
   Col: {
     width: "number",

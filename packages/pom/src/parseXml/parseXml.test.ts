@@ -1457,6 +1457,19 @@ describe("parseXml", () => {
         ]);
       });
 
+      it("dateColor / titleColor / descriptionColor 属性を変換する", () => {
+        const xml = `
+          <Timeline dateColor="94A3B8" titleColor="F8FAFC" descriptionColor="CBD5E1">
+            <TimelineItem date="2024-01" title="Launch" />
+          </Timeline>
+        `;
+        const result = parseXml(xml);
+        const node = result[0] as Record<string, unknown>;
+        expect(node.dateColor).toBe("94A3B8");
+        expect(node.titleColor).toBe("F8FAFC");
+        expect(node.descriptionColor).toBe("CBD5E1");
+      });
+
       it("JSON 属性のみでも引き続き動作する（後方互換性）", () => {
         const items = JSON.stringify([{ date: "2024-01", title: "Start" }]);
         const result = parseXml(`<Timeline items='${items}' />`);
@@ -1516,6 +1529,23 @@ describe("parseXml", () => {
         expect(node.axes).toEqual({ x: "X", y: "Y" });
         expect(node.quadrants).toBeUndefined();
         expect(node.items).toEqual([{ label: "A", x: 0.5, y: 0.5 }]);
+      });
+
+      it("ラベル色属性と MatrixItem の textColor を変換する", () => {
+        const xml = `
+          <Matrix axisLabelColor="94A3B8" quadrantLabelColor="64748B" itemLabelColor="F8FAFC">
+            <MatrixAxes x="X" y="Y" />
+            <MatrixItem label="A" x="0.5" y="0.5" textColor="FACC15" />
+          </Matrix>
+        `;
+        const result = parseXml(xml);
+        const node = result[0] as Record<string, unknown>;
+        expect(node.axisLabelColor).toBe("94A3B8");
+        expect(node.quadrantLabelColor).toBe("64748B");
+        expect(node.itemLabelColor).toBe("F8FAFC");
+        expect(node.items).toEqual([
+          { label: "A", x: 0.5, y: 0.5, textColor: "FACC15" },
+        ]);
       });
 
       it("JSON 属性のみでも引き続き動作する（後方互換性）", () => {
@@ -1579,6 +1609,22 @@ describe("parseXml", () => {
         const node = result[0] as Record<string, unknown>;
         expect(node.nodes).toHaveLength(2);
         expect(node.connections).toHaveLength(1);
+      });
+
+      it("FlowConnection の labelColor と connectorStyle.labelColor を変換する", () => {
+        const xml = `
+          <Flow connectorStyle.labelColor="94A3B8">
+            <FlowNode id="a" shape="flowChartProcess" text="A" />
+            <FlowNode id="b" shape="flowChartProcess" text="B" />
+            <FlowConnection from="a" to="b" label="next" labelColor="FACC15" />
+          </Flow>
+        `;
+        const result = parseXml(xml);
+        const node = result[0] as Record<string, unknown>;
+        expect(node.connectorStyle).toEqual({ labelColor: "94A3B8" });
+        expect(node.connections).toEqual([
+          { from: "a", to: "b", label: "next", labelColor: "FACC15" },
+        ]);
       });
 
       it("FlowNode の数値属性を正しく変換する", () => {
@@ -1895,6 +1941,24 @@ describe("parseXml", () => {
 
     // ----- Tree -----
     describe("Tree", () => {
+      it("Tree の textColor と TreeItem の textColor を変換する", () => {
+        const xml = `
+          <Tree textColor="0F172A">
+            <TreeItem label="Root" textColor="FACC15">
+              <TreeItem label="Child" />
+            </TreeItem>
+          </Tree>
+        `;
+        const result = parseXml(xml);
+        const node = result[0] as Record<string, unknown>;
+        expect(node.textColor).toBe("0F172A");
+        expect(node.data).toEqual({
+          label: "Root",
+          textColor: "FACC15",
+          children: [{ label: "Child" }],
+        });
+      });
+
       it("TreeItem の再帰的なネストを処理する", () => {
         const xml = `
           <Tree layout="vertical">

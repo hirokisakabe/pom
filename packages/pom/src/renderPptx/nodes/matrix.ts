@@ -19,6 +19,8 @@ export function renderMatrixNode(
   const baseItemSize = 24; // px
   const baseLineWidth = 2; // px
   const axisColor = "E2E8F0";
+  const axisLabelColor = node.axisLabelColor?.replace("#", "") ?? "64748B";
+  const itemLabelColor = node.itemLabelColor?.replace("#", "") ?? "1E293B";
 
   // スケール係数を計算（コンテンツ領域基準）
   const content = getContentArea(node);
@@ -77,7 +79,7 @@ export function renderMatrixNode(
     h: pxToIn(axisLabelH),
     fontSize: pxToPt(12 * scaleFactor),
     fontFace: "Noto Sans JP",
-    color: "64748B",
+    color: axisLabelColor,
     align: "center",
     valign: "top",
   });
@@ -92,7 +94,7 @@ export function renderMatrixNode(
     h: pxToIn(yLabelH),
     fontSize: pxToPt(12 * scaleFactor),
     fontFace: "Noto Sans JP",
-    color: "64748B",
+    color: axisLabelColor,
     align: "center",
     valign: "middle",
     rotate: 270,
@@ -110,6 +112,7 @@ export function renderMatrixNode(
       centerX,
       centerY,
       scaleFactor,
+      node.quadrantLabelColor?.replace("#", "") ?? "94A3B8",
     );
   }
 
@@ -143,7 +146,7 @@ export function renderMatrixNode(
       h: pxToIn(itemLabelH),
       fontSize: pxToPt(11 * scaleFactor),
       fontFace: "Noto Sans JP",
-      color: "1E293B",
+      color: item.textColor?.replace("#", "") ?? itemLabelColor,
       bold: true,
       align: "center",
       valign: "bottom",
@@ -161,9 +164,9 @@ function renderQuadrantLabels(
   centerX: number,
   centerY: number,
   scaleFactor: number,
+  quadrantColor: string,
 ): void {
   const quadrantFontSize = 11 * scaleFactor;
-  const quadrantColor = "94A3B8"; // slate-400
   const quadrantInset = 10 * scaleFactor;
   const quadrantW = areaW / 2 - 20 * scaleFactor;
   const quadrantH = 48 * scaleFactor;

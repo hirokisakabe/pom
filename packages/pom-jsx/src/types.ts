@@ -247,6 +247,9 @@ export interface TimelineItem {
 export interface TimelineProps extends BaseProps {
   direction?: "horizontal" | "vertical";
   items: TimelineItem[];
+  dateColor?: string;
+  titleColor?: string;
+  descriptionColor?: string;
 }
 
 // ===== Matrix =====
@@ -255,6 +258,7 @@ export interface MatrixItem {
   x: number;
   y: number;
   color?: string;
+  textColor?: string;
 }
 
 export interface MatrixProps extends BaseProps {
@@ -266,12 +270,16 @@ export interface MatrixProps extends BaseProps {
     bottomRight: string;
   };
   items: MatrixItem[];
+  axisLabelColor?: string;
+  quadrantLabelColor?: string;
+  itemLabelColor?: string;
 }
 
 // ===== Tree =====
 export interface TreeDataItem {
   label: string;
   color?: string;
+  textColor?: string;
   children?: TreeDataItem[];
 }
 
@@ -279,6 +287,7 @@ export interface TreeProps extends BaseProps {
   layout?: "vertical" | "horizontal";
   nodeShape?: "rect" | "roundRect" | "ellipse";
   data: TreeDataItem;
+  textColor?: string;
   connectorStyle?: { color?: string; width?: number };
   nodeWidth?: number;
   nodeHeight?: number;
@@ -302,6 +311,7 @@ export interface FlowConnection {
   to: string;
   label?: string;
   color?: string;
+  labelColor?: string;
 }
 
 export interface FlowProps extends BaseProps {
@@ -312,6 +322,7 @@ export interface FlowProps extends BaseProps {
     color?: string;
     width?: number;
     arrowType?: "none" | "arrow" | "diamond" | "oval" | "stealth" | "triangle";
+    labelColor?: string;
   };
   nodeWidth?: number;
   nodeHeight?: number;

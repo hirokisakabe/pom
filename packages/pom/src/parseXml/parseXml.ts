@@ -875,6 +875,9 @@ function convertTreeItem(
   if (attrs.color !== undefined) {
     item.color = attrs.color;
   }
+  if (attrs.textColor !== undefined) {
+    item.textColor = attrs.textColor;
+  }
   const children = getChildElements(element);
   if (children.length > 0) {
     item.children = children
