@@ -114,4 +114,22 @@ describe("buildPptx diagnostics", () => {
     expect(result.diagnostics).toEqual([]);
     expect(result.pptx).toBeDefined();
   });
+
+  it("Theme トークン参照を含む XML をビルドできる", async () => {
+    const xml = `
+      <Theme surface="1E293B" accent="38BDF8" textMain="F8FAFC" />
+      <Slide>
+        <VStack backgroundColor="$surface" padding="48" gap="16">
+          <Text fontSize="28" color="$textMain">Theme test</Text>
+          <Timeline dateColor="$accent" titleColor="$textMain" w="800" h="160">
+            <TimelineItem date="Q1" title="Phase 1" color="$accent" />
+            <TimelineItem date="Q2" title="Phase 2" />
+          </Timeline>
+        </VStack>
+      </Slide>
+    `;
+    const result = await buildPptx(xml, slideSize, { autoFit: false });
+    expect(result.diagnostics).toEqual([]);
+    expect(result.pptx).toBeDefined();
+  });
 });

@@ -875,6 +875,9 @@ function convertTreeItem(
   if (attrs.color !== undefined) {
     item.color = attrs.color;
   }
+  if (attrs.textColor !== undefined) {
+    item.textColor = attrs.textColor;
+  }
   const children = getChildElements(element);
   if (children.length > 0) {
     item.children = children
@@ -1025,10 +1028,143 @@ const CHILD_ELEMENT_CONVERTERS: Record<string, ChildElementConverter> = {
   svg: convertSvgChildren,
 };
 
+// ===== Theme tokens =====
+const THEME_TOKEN_NAME_PATTERN = /^[A-Za-z][A-Za-z0-9_-]*$/;
+const THEME_TOKEN_VALUE_PATTERN = /^[0-9A-Fa-f]{6}$/;
+// 値全体が "$name"（"#" プレフィックスは任意）のときトークン参照とみなす
+const TOKEN_REF_PATTERN = /^(#?)\$([A-Za-z][A-Za-z0-9_-]*)$/;
+// backgroundGradient 文字列中に現れる "$name" 参照
+const TOKEN_REF_IN_GRADIENT_PATTERN = /#?\$([A-Za-z][A-Za-z0-9_-]*)/g;
+
+function parseThemeElement(
+  element: XmlElement,
+  tokens: Record<string, string>,
+  errors: string[],
+): void {
+  if (getChildElements(element).length > 0) {
+    errors.push(
+      `<Theme>: Child elements are not supported. Declare tokens as attributes (e.g. <Theme accent="1D4ED8" />)`,
+    );
+  }
+  for (const [name, rawValue] of Object.entries(getAttributes(element))) {
+    if (!THEME_TOKEN_NAME_PATTERN.test(name)) {
+      errors.push(
+        `<Theme>: Invalid token name "${name}". Token names must start with a letter and contain only letters, digits, "_", and "-"`,
+      );
+      continue;
+    }
+    const value = rawValue.replace(/^#/, "");
+    if (!THEME_TOKEN_VALUE_PATTERN.test(value)) {
+      errors.push(
+        `<Theme>: Invalid color value "${rawValue}" for token "${name}". Expected 6-digit hex (e.g. "1D4ED8")`,
+      );
+      continue;
+    }
+    tokens[name] = value;
+  }
+}
+
+// トークン参照を解決する対象のキー判定。
+// pom の色属性は "...Color" / "...Colors" / "highlight" に統一されているため、
+// キー名ベースで判定することでテキスト内容（text 等）の "$..." を誤置換しない。
+function isColorKey(key: string): boolean {
+  return /colors?$/i.test(key) || key === "highlight";
+}
+
+function resolveThemeToken(
+  name: string,
+  hashPrefix: string,
+  tokens: Record<string, string>,
+  themeDeclared: boolean,
+  errors: string[],
+): string | undefined {
+  const value = tokens[name];
+  if (value !== undefined) {
+    return `${hashPrefix}${value}`;
+  }
+  if (!themeDeclared) {
+    errors.push(
+      `Theme token "$${name}" is referenced, but no <Theme> is declared. Add a top-level <Theme ${name}="RRGGBB" /> element`,
+    );
+  } else {
+    const suggestion = findClosestMatch(name, Object.keys(tokens));
+    errors.push(
+      `Unknown theme token "$${name}"${suggestion ? `. Did you mean "$${suggestion}"?` : ""}`,
+    );
+  }
+  return undefined;
+}
+
+interface ThemeContext {
+  tokens: Record<string, string>;
+  declared: boolean;
+}
+
+function resolveThemeTokensDeep(
+  value: unknown,
+  key: string | null,
+  tokens: Record<string, string>,
+  themeDeclared: boolean,
+  errors: string[],
+): unknown {
+  if (typeof value === "string") {
+    if (key === "backgroundGradient") {
+      return value.replace(
+        TOKEN_REF_IN_GRADIENT_PATTERN,
+        (matched, name: string) => {
+          const resolved = resolveThemeToken(
+            name,
+            "#",
+            tokens,
+            themeDeclared,
+            errors,
+          );
+          return resolved ?? matched;
+        },
+      );
+    }
+    if (key !== null && isColorKey(key)) {
+      const match = TOKEN_REF_PATTERN.exec(value.trim());
+      if (match) {
+        const resolved = resolveThemeToken(
+          match[2],
+          match[1],
+          tokens,
+          themeDeclared,
+          errors,
+        );
+        return resolved ?? value;
+      }
+    }
+    return value;
+  }
+  if (Array.isArray(value)) {
+    // 配列はキー文脈を維持して要素ごとに解決する（chartColors 等の文字列配列に対応）
+    return value.map((item) =>
+      resolveThemeTokensDeep(item, key, tokens, themeDeclared, errors),
+    );
+  }
+  if (typeof value === "object" && value !== null) {
+    const result: Record<string, unknown> = {};
+    for (const [childKey, childValue] of Object.entries(value)) {
+      result[childKey] = resolveThemeTokensDeep(
+        childValue,
+        childKey,
+        tokens,
+        themeDeclared,
+        errors,
+      );
+    }
+    return result;
+  }
+  return value;
+}
+
 // ===== Node conversion =====
 function convertElement(
   node: XmlElement,
   errors: string[],
+  theme: ThemeContext,
 ): Record<string, unknown> | null {
   const tagName = getTagName(node);
   const def = getNodeMetadataByTag(tagName);
@@ -1044,6 +1180,7 @@ function convertElement(
       childElements,
       textContent,
       errors,
+      theme,
       node,
     );
   } else {
@@ -1059,6 +1196,7 @@ function convertPomNode(
   childElements: XmlElement[],
   textContent: string | undefined,
   errors: string[],
+  theme: ThemeContext,
   xmlNode?: XmlElement,
 ): Record<string, unknown> {
   const result: Record<string, unknown> = { type: nodeType };
@@ -1151,7 +1289,7 @@ function convertPomNode(
     childElements.length > 0
   ) {
     const convertedChildren = childElements
-      .map((child) => convertElement(child, errors))
+      .map((child) => convertElement(child, errors, theme))
       .filter((child): child is Record<string, unknown> => child !== null);
     result.children = convertedChildren;
   }
@@ -1163,6 +1301,19 @@ function convertPomNode(
   ) {
     errors.push(
       `<${tagName}>: Unexpected child elements. <${tagName}> does not accept child elements`,
+    );
+  }
+
+  // テーマトークン参照（色属性中の "$name"）を Zod 検証より前に解決する。
+  // children は各子ノードの convertPomNode で解決済みのためスキップする。
+  for (const [key, value] of Object.entries(result)) {
+    if (key === "type" || key === "children") continue;
+    result[key] = resolveThemeTokensDeep(
+      value,
+      key,
+      theme.tokens,
+      theme.declared,
+      errors,
     );
   }
 
@@ -1197,9 +1348,14 @@ function convertPomNode(
 /**
  * XML 文字列を POMNode 配列に変換する。
  *
- * 最上位は `<Slide>` 要素のみが許容される。各 `<Slide>` が 1 つのスライドに
- * 対応し、その子要素がスライドのルート POMNode となる。子要素が複数ある場合は
- * 暗黙的に VStack でラップされる。
+ * 最上位は `<Slide>` 要素と `<Theme>` 要素のみが許容される。各 `<Slide>` が
+ * 1 つのスライドに対応し、その子要素がスライドのルート POMNode となる。
+ * 子要素が複数ある場合は暗黙的に VStack でラップされる。
+ *
+ * `<Theme>` は文書全体に適用されるデザイントークン（配色）の宣言で、最大 1 つ
+ * 置ける。属性名がトークン名、属性値が 6 桁 hex の色値となり、各ノードの色属性
+ * から `$トークン名` で参照できる。参照は parse 時に解決されるため、返される
+ * POMNode には解決済みの hex 値が入る（`<Theme>` 自体はノードにならない）。
  *
  * XML タグは POM ノードタイプにマッピングされ、属性値は Zod スキーマを参照して
  * 適切な型（number, boolean, array, object）に変換される。
@@ -1242,8 +1398,26 @@ export function parseXml(xmlString: string): POMNode[] {
   const rootChildren = (rootElement["__root__"] ?? []) as XmlNode[];
 
   const errors: string[] = [];
-  const slideElements = rootChildren.filter(
+  const topLevelElements = rootChildren.filter(
     (child): child is XmlElement => !isTextNode(child),
+  );
+
+  // <Theme> はスライドより先に収集する（出現位置によらず文書全体に適用）
+  const theme: ThemeContext = { tokens: {}, declared: false };
+  for (const element of topLevelElements) {
+    if (getTagName(element) !== "Theme") continue;
+    if (theme.declared) {
+      errors.push(
+        `Only one <Theme> element is allowed, but multiple were found`,
+      );
+      continue;
+    }
+    theme.declared = true;
+    parseThemeElement(element, theme.tokens, errors);
+  }
+
+  const slideElements = topLevelElements.filter(
+    (element) => getTagName(element) !== "Theme",
   );
 
   const nodes: POMNode[] = [];
@@ -1251,7 +1425,7 @@ export function parseXml(xmlString: string): POMNode[] {
     const tagName = getTagName(slideEl);
     if (tagName !== "Slide") {
       errors.push(
-        `Top-level element must be <Slide>, but got <${tagName}>. Wrap your slide content in <Slide>...</Slide>.`,
+        `Top-level element must be <Slide> or <Theme>, but got <${tagName}>. Wrap your slide content in <Slide>...</Slide>.`,
       );
       continue;
     }
@@ -1264,7 +1438,7 @@ export function parseXml(xmlString: string): POMNode[] {
       continue;
     }
     const converted = slideChildren
-      .map((child) => convertElement(child, errors))
+      .map((child) => convertElement(child, errors, theme))
       .filter((c): c is Record<string, unknown> => c !== null);
     if (converted.length === 0) continue;
     if (converted.length === 1) {

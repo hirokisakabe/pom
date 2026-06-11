@@ -1,5 +1,6 @@
 import type {
   SlideProps,
+  ThemeProps,
   TextProps,
   VStackProps,
   HStackProps,
@@ -62,6 +63,7 @@ export namespace JSX {
   export type Element = PomJsxElement;
   export interface IntrinsicElements {
     Slide: SlideProps;
+    Theme: ThemeProps;
     Text: TextProps;
     VStack: VStackProps;
     HStack: HStackProps;

@@ -7,6 +7,12 @@ import { getContentArea } from "../utils/contentArea.ts";
 
 type TimelinePositionedNode = Extract<PositionedNode, { type: "timeline" }>;
 
+type TimelineTextColors = {
+  date: string;
+  title: string;
+  description: string;
+};
+
 export function renderTimelineNode(
   node: TimelinePositionedNode,
   ctx: RenderContext,
@@ -20,6 +26,12 @@ export function renderTimelineNode(
   const defaultColor = "1D4ED8"; // blue
   const baseNodeRadius = 12; // px
   const baseLineWidth = 4; // px
+
+  const textColors: TimelineTextColors = {
+    date: node.dateColor?.replace("#", "") ?? "64748B",
+    title: node.titleColor?.replace("#", "") ?? "1E293B",
+    description: node.descriptionColor?.replace("#", "") ?? "64748B",
+  };
 
   // スケール係数を計算（コンテンツ領域基準）
   const content = getContentArea(node);
@@ -54,6 +66,7 @@ export function renderTimelineNode(
       nodeRadius,
       lineWidth,
       scaleFactor,
+      textColors,
     );
   } else {
     renderVerticalTimeline(
@@ -64,6 +77,7 @@ export function renderTimelineNode(
       nodeRadius,
       lineWidth,
       scaleFactor,
+      textColors,
     );
   }
 }
@@ -76,6 +90,7 @@ function renderHorizontalTimeline(
   nodeRadius: number,
   lineWidth: number,
   scaleFactor: number,
+  textColors: TimelineTextColors,
 ): void {
   const itemCount = items.length;
   const lineY = node.y + node.h / 2;
@@ -126,7 +141,7 @@ function renderHorizontalTimeline(
       h: pxToIn(dateLabelH),
       fontSize: pxToPt(12 * scaleFactor),
       fontFace: "Noto Sans JP",
-      color: "64748B",
+      color: textColors.date,
       align: "center",
       valign: "bottom",
     });
@@ -139,7 +154,7 @@ function renderHorizontalTimeline(
       h: pxToIn(titleLabelH),
       fontSize: pxToPt(14 * scaleFactor),
       fontFace: "Noto Sans JP",
-      color: "1E293B",
+      color: textColors.title,
       bold: true,
       align: "center",
       valign: "top",
@@ -154,7 +169,7 @@ function renderHorizontalTimeline(
         h: pxToIn(descLabelH),
         fontSize: pxToPt(11 * scaleFactor),
         fontFace: "Noto Sans JP",
-        color: "64748B",
+        color: textColors.description,
         align: "center",
         valign: "top",
       });
@@ -170,6 +185,7 @@ function renderVerticalTimeline(
   nodeRadius: number,
   lineWidth: number,
   scaleFactor: number,
+  textColors: TimelineTextColors,
 ): void {
   const itemCount = items.length;
   const lineX = node.x + 40 * scaleFactor;
@@ -219,7 +235,7 @@ function renderVerticalTimeline(
       h: pxToIn(dateLabelH),
       fontSize: pxToPt(12 * scaleFactor),
       fontFace: "Noto Sans JP",
-      color: "64748B",
+      color: textColors.date,
       align: "left",
       valign: "bottom",
     });
@@ -232,7 +248,7 @@ function renderVerticalTimeline(
       h: pxToIn(titleLabelH),
       fontSize: pxToPt(14 * scaleFactor),
       fontFace: "Noto Sans JP",
-      color: "1E293B",
+      color: textColors.title,
       bold: true,
       align: "left",
       valign: "top",
@@ -247,7 +263,7 @@ function renderVerticalTimeline(
         h: pxToIn(descLabelH),
         fontSize: pxToPt(11 * scaleFactor),
         fontFace: "Noto Sans JP",
-        color: "64748B",
+        color: textColors.description,
         align: "left",
         valign: "top",
       });

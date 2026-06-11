@@ -174,7 +174,7 @@ A compact reference for the pom XML format, designed to be pasted into LLM promp
 
 ## Top-Level Structure
 
-The top level of every pom XML document is one or more `<Slide>` elements. Each `<Slide>` wraps the content of a single slide.
+The top level of every pom XML document is one or more `<Slide>` elements, optionally preceded by a single `<Theme>` element (see "Theme (Design Tokens)"). Each `<Slide>` wraps the content of a single slide.
 
 ```xml
 <Slide>
@@ -189,9 +189,30 @@ The top level of every pom XML document is one or more `<Slide>` elements. Each 
 </Slide>
 ```
 
-- Top-level elements other than `<Slide>` are an error.
+- Top-level elements other than `<Slide>` and `<Theme>` are an error.
 - A `<Slide>` must contain at least one child element.
 - `<Slide>` does not currently take attributes; per-slide properties (background, notes, etc.) are tracked separately.
+
+## Theme (Design Tokens)
+
+Declare a color palette once at the top level and reference each token from any color attribute as `$tokenName`. This keeps the palette in one place instead of repeating hex values on every node.
+
+```xml
+<Theme surface="0F172A" accent="38BDF8" textMain="F8FAFC" textMuted="94A3B8" />
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="16" backgroundColor="$surface">
+    <Text fontSize="28" color="$textMain" bold="true">Title</Text>
+    <Timeline dateColor="$textMuted" titleColor="$textMain" w="1000" h="120">
+      <TimelineItem date="Q1" title="Phase 1" color="$accent" />
+    </Timeline>
+  </VStack>
+</Slide>
+```
+
+- Each `<Theme>` attribute declares a token: the attribute name is the token name (letters, digits, `_`, `-`; must start with a letter), the value is a 6-digit hex color (`#` prefix optional).
+- At most one `<Theme>` per document; it applies to all slides regardless of position. Child elements are not allowed.
+- `$tokenName` references are resolved in color attributes (attributes ending in `Color`/`Colors`, `color` keys in object/JSON attributes, `highlight`) and inside `backgroundGradient` strings. Other attributes and text content are never substituted.
+- Referencing an unknown token (or using `$token` without a `<Theme>`) is a validation error with a "did you mean" suggestion.
 
 ## Common Attributes (All Nodes)
 
@@ -537,9 +558,12 @@ Connector between two nodes referenced by `id`. Draws a straight line between th
 </Timeline>
 ```
 
-| Attribute   | Values                    |
-| ----------- | ------------------------- |
-| `direction` | `horizontal` / `vertical` |
+| Attribute          | Values                                          |
+| ------------------ | ----------------------------------------------- |
+| `direction`        | `horizontal` / `vertical`                       |
+| `dateColor`        | hex (date text color, default: `64748B`)        |
+| `titleColor`       | hex (title text color, default: `1E293B`)       |
+| `descriptionColor` | hex (description text color, default: `64748B`) |
 
 `<TimelineItem>`: `date` (required) `title` (required) `description` `color`
 
@@ -555,9 +579,10 @@ Connector between two nodes referenced by `id`. Draws a straight line between th
 ```
 
 - Coordinates: (0,0) = bottom-left, (1,1) = top-right (mathematical coordinate system)
+- `<Matrix>`: `axisLabelColor` (default `64748B`) `quadrantLabelColor` (default `94A3B8`) `itemLabelColor` (default `1E293B`) — text colors
 - `<MatrixAxes>`: `x` `y` (axis labels, required)
 - `<MatrixQuadrants>`: `topLeft` `topRight` `bottomLeft` `bottomRight`
-- `<MatrixItem>`: `label` `x` `y` (required) `color`
+- `<MatrixItem>`: `label` `x` `y` (required) `color` `textColor` (overrides `itemLabelColor`)
 
 ### Tree
 
@@ -576,13 +601,14 @@ Connector between two nodes referenced by `id`. Draws a straight line between th
 | ---------------- | ----------------------------------------------------- |
 | `layout`         | `vertical` / `horizontal`                             |
 | `nodeShape`      | `rect` / `roundRect` / `ellipse`                      |
+| `textColor`      | hex (node label text color, default: `FFFFFF`)       |
 | `nodeWidth`      | number (default: 120)                                 |
 | `nodeHeight`     | number (default: 40)                                  |
 | `levelGap`       | number (default: 60)                                  |
 | `siblingGap`     | number (default: 20)                                  |
 | `connectorStyle` | `connectorStyle.color="333" connectorStyle.width="2"` |
 
-`<TreeItem>` can be recursively nested. Only one root allowed.
+`<TreeItem>` can be recursively nested. Only one root allowed. Attributes: `label` (required) `color` `textColor` (overrides the Tree-level `textColor`)
 
 ### Flow
 
@@ -604,7 +630,7 @@ Connector between two nodes referenced by `id`. Draws a straight line between th
 | `nodeWidth`      | number (default: 120)                                                                  |
 | `nodeHeight`     | number (default: 60)                                                                   |
 | `nodeGap`        | number (default: 80)                                                                   |
-| `connectorStyle` | `connectorStyle.color="hex" connectorStyle.width="2" connectorStyle.arrowType="arrow"` |
+| `connectorStyle` | `connectorStyle.color="hex" connectorStyle.width="2" connectorStyle.arrowType="arrow" connectorStyle.labelColor="hex"` |
 
 `<FlowNode>` attributes:
 
@@ -618,7 +644,7 @@ Connector between two nodes referenced by `id`. Draws a straight line between th
 | `width`     | number — Individual node width (overrides `nodeWidth`)                                                                                                                                                                                                                                            |
 | `height`    | number — Individual node height (overrides `nodeHeight`)                                                                                                                                                                                                                                          |
 
-`<FlowConnection>`: `from` `to` (required) `label` `color`
+`<FlowConnection>`: `from` `to` (required) `label` `color` `labelColor` (label text color; overrides `connectorStyle.labelColor`, default: `64748B`)
 
 ### ProcessArrow
 

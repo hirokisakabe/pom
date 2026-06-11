@@ -71,8 +71,10 @@ describe("docs/nodes.md xml samples", () => {
 // トップレベルに `<Slide>` を含まない。複数のトップレベル要素を 1 つの `<Slide>`
 // でまとめると暗黙の VStack でレイアウトされてオーバーフローするので、各
 // トップレベル要素を独立した `<Slide>` でラップしてから検証する。
+// `<Slide>` または `<Theme>` で始まるサンプルは完全なドキュメントとみなす。
 function wrapSampleInSlides(rawXml: string): string {
-  if (rawXml.trimStart().startsWith("<Slide")) {
+  const trimmed = rawXml.trimStart();
+  if (trimmed.startsWith("<Slide") || trimmed.startsWith("<Theme")) {
     return rawXml;
   }
   const parser = new XMLParser({

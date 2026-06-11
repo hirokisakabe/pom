@@ -124,7 +124,10 @@ export function renderFlowNode(
         h: pxToIn(labelH),
         fontSize: pxToPt(10 * scaleFactor),
         fontFace: "Noto Sans JP",
-        color: "64748B",
+        color:
+          conn.labelColor?.replace("#", "") ??
+          connectorStyle.labelColor?.replace("#", "") ??
+          "64748B",
         align: "center",
         valign: "middle",
       });

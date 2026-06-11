@@ -580,6 +580,9 @@ export const timelineNodeSchema = basePOMNodeSchema.extend({
   type: z.literal("timeline"),
   direction: timelineDirectionSchema.optional(),
   items: z.array(timelineItemSchema),
+  dateColor: z.string().optional(),
+  titleColor: z.string().optional(),
+  descriptionColor: z.string().optional(),
 });
 
 export type TimelineNode = z.infer<typeof timelineNodeSchema>;
@@ -602,6 +605,7 @@ const matrixItemSchema = z.object({
   x: z.number().min(0).max(1),
   y: z.number().min(0).max(1),
   color: z.string().optional(),
+  textColor: z.string().optional(),
 });
 
 export const matrixNodeSchema = basePOMNodeSchema.extend({
@@ -609,6 +613,9 @@ export const matrixNodeSchema = basePOMNodeSchema.extend({
   axes: matrixAxisSchema,
   quadrants: matrixQuadrantsSchema.optional(),
   items: z.array(matrixItemSchema),
+  axisLabelColor: z.string().optional(),
+  quadrantLabelColor: z.string().optional(),
+  itemLabelColor: z.string().optional(),
 });
 
 export type MatrixNode = z.infer<typeof matrixNodeSchema>;
@@ -626,6 +633,7 @@ export const treeConnectorStyleSchema = z.object({
 export type TreeDataItem = {
   label: string;
   color?: string;
+  textColor?: string;
   children?: TreeDataItem[];
 };
 
@@ -633,6 +641,7 @@ const treeDataItemSchema: z.ZodType<TreeDataItem> = z.lazy(() =>
   z.object({
     label: z.string(),
     color: z.string().optional(),
+    textColor: z.string().optional(),
     children: z.array(treeDataItemSchema).optional(),
   }),
 );
@@ -642,6 +651,7 @@ export const treeNodeSchema = basePOMNodeSchema.extend({
   layout: treeLayoutSchema.optional(),
   nodeShape: treeNodeShapeSchema.optional(),
   data: treeDataItemSchema,
+  textColor: z.string().optional(),
   connectorStyle: treeConnectorStyleSchema.optional(),
   nodeWidth: z.number().optional(),
   nodeHeight: z.number().optional(),
@@ -733,11 +743,13 @@ const flowConnectionSchema = z.object({
   to: z.string(),
   label: z.string().optional(),
   color: z.string().optional(),
+  labelColor: z.string().optional(),
 });
 
 const flowConnectorStyleSchema = z.object({
   color: z.string().optional(),
   width: z.number().optional(),
+  labelColor: z.string().optional(),
   arrowType: z
     .enum(["none", "arrow", "diamond", "oval", "stealth", "triangle"])
     .optional(),

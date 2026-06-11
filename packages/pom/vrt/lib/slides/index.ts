@@ -49,3 +49,4 @@ export {
 export { page39ArrowXml } from "./arrow.js";
 export { page41GradientXml } from "./gradient.js";
 export { page42FlexGrowXml } from "./flexGrow.js";
+export { page43DarkThemeXml, vrtThemeXml } from "./darkTheme.js";

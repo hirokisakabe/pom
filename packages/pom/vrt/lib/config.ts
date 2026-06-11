@@ -56,6 +56,7 @@ export const PAGE_NAMES = [
   "40-letter-spacing",
   "41-gradient",
   "42-flex-grow",
+  "43-dark-theme",
 ] as const;
 
 export const THRESHOLD = 0.1;

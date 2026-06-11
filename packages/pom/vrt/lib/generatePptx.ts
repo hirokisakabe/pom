@@ -44,6 +44,8 @@ import {
   page40LetterSpacingXml,
   page41GradientXml,
   page42FlexGrowXml,
+  page43DarkThemeXml,
+  vrtThemeXml,
 } from "./slides/index.js";
 
 export async function generatePptx(outputPath: string): Promise<void> {
@@ -91,12 +93,16 @@ export async function generatePptx(outputPath: string): Promise<void> {
     page40LetterSpacingXml,
     page41GradientXml,
     page42FlexGrowXml,
+    page43DarkThemeXml,
   ]
     .map((pageXml) => `<Slide>${pageXml}</Slide>`)
     .join("\n");
 
+  // Theme トークン宣言（トップレベル要素）を文書先頭に挿入する
+  const documentXml = `${vrtThemeXml}\n${allPagesXml}`;
+
   const { pptx } = await buildPptx(
-    allPagesXml,
+    documentXml,
     {
       w: 1280,
       h: 720,

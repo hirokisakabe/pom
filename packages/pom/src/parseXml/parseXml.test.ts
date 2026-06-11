@@ -956,6 +956,144 @@ describe("parseXml", () => {
   });
 
   // ===== 複数 Slide =====
+  // ===== Theme トークン =====
+  describe("Theme トークン", () => {
+    it("色属性の $name 参照をトークン値に解決する", () => {
+      const result = parseXmlRaw(`
+        <Theme accent="1D4ED8" surface="1E293B" />
+        <Slide>
+          <VStack backgroundColor="$surface">
+            <Text color="$accent">Hello</Text>
+          </VStack>
+        </Slide>
+      `);
+      expect(result).toEqual([
+        {
+          type: "vstack",
+          backgroundColor: "1E293B",
+          children: [{ type: "text", text: "Hello", color: "1D4ED8" }],
+        },
+      ]);
+    });
+
+    it("宣言値と参照の # プレフィックスを許容する", () => {
+      const result = parseXmlRaw(`
+        <Theme accent="#1D4ED8" />
+        <Slide>
+          <Text color="#$accent">Hello</Text>
+        </Slide>
+      `);
+      expect((result[0] as Record<string, unknown>).color).toBe("#1D4ED8");
+    });
+
+    it("子要素・ドット記法・JSON 配列内の色属性も解決する", () => {
+      const result = parseXmlRaw(`
+        <Theme accent="1D4ED8" muted="94A3B8" />
+        <Slide>
+          <VStack border.color="$muted">
+            <Timeline dateColor="$muted">
+              <TimelineItem date="Q1" title="A" color="$accent" />
+            </Timeline>
+            <Chart chartType="bar" chartColors='["$accent","$muted"]'>
+              <ChartSeries name="S"><ChartDataPoint label="a" value="1" /></ChartSeries>
+            </Chart>
+          </VStack>
+        </Slide>
+      `);
+      const vstack = result[0] as Record<string, unknown>;
+      expect(vstack.border).toEqual({ color: "94A3B8" });
+      const children = vstack.children as Record<string, unknown>[];
+      expect(children[0].dateColor).toBe("94A3B8");
+      expect(children[0].items).toEqual([
+        { date: "Q1", title: "A", color: "1D4ED8" },
+      ]);
+      expect(children[1].chartColors).toEqual(["1D4ED8", "94A3B8"]);
+    });
+
+    it("backgroundGradient 内の $name 参照を解決する", () => {
+      const result = parseXmlRaw(`
+        <Theme g1="667EEA" g2="764BA2" />
+        <Slide>
+          <VStack backgroundGradient="linear-gradient(135deg, $g1 0%, $g2 100%)">
+            <Text>Hello</Text>
+          </VStack>
+        </Slide>
+      `);
+      expect((result[0] as Record<string, unknown>).backgroundGradient).toBe(
+        "linear-gradient(135deg, #667EEA 0%, #764BA2 100%)",
+      );
+    });
+
+    it("Icon の color 参照は # 正規化と両立する", () => {
+      const result = parseXmlRaw(`
+        <Theme accent="1D4ED8" />
+        <Slide>
+          <Icon name="cpu" color="$accent" />
+        </Slide>
+      `);
+      expect((result[0] as Record<string, unknown>).color).toBe("#1D4ED8");
+    });
+
+    it("color 系以外の属性値は置換しない", () => {
+      const result = parseXmlRaw(`
+        <Theme accent="1D4ED8" />
+        <Slide>
+          <Text color="$accent">$accent costs $100</Text>
+        </Slide>
+      `);
+      expect((result[0] as Record<string, unknown>).text).toBe(
+        "$accent costs $100",
+      );
+    });
+
+    it("未知のトークン参照でエラーをスローする（候補つき）", () => {
+      expect(() =>
+        parseXmlRaw(`
+          <Theme accent="1D4ED8" />
+          <Slide><Text color="$accnet">Hello</Text></Slide>
+        `),
+      ).toThrow('Unknown theme token "$accnet". Did you mean "$accent"?');
+    });
+
+    it("Theme 未宣言でトークン参照するとエラーをスローする", () => {
+      expect(() =>
+        parseXmlRaw(`<Slide><Text color="$accent">Hello</Text></Slide>`),
+      ).toThrow(
+        'Theme token "$accent" is referenced, but no <Theme> is declared',
+      );
+    });
+
+    it("複数の Theme 要素でエラーをスローする", () => {
+      expect(() =>
+        parseXmlRaw(`
+          <Theme accent="1D4ED8" />
+          <Theme muted="94A3B8" />
+          <Slide><Text>Hello</Text></Slide>
+        `),
+      ).toThrow("Only one <Theme> element is allowed");
+    });
+
+    it("不正なトークン値でエラーをスローする", () => {
+      expect(() =>
+        parseXmlRaw(`
+          <Theme accent="blue" />
+          <Slide><Text>Hello</Text></Slide>
+        `),
+      ).toThrow(
+        '<Theme>: Invalid color value "blue" for token "accent". Expected 6-digit hex',
+      );
+    });
+
+    it("Theme の子要素はエラーをスローする", () => {
+      expect(() =>
+        parseXmlRaw(`
+          <Theme><Token name="accent" value="1D4ED8" /></Theme>
+          <Slide><Text>Hello</Text></Slide>
+        `),
+      ).toThrow("<Theme>: Child elements are not supported");
+    });
+  });
+
   describe("複数 Slide", () => {
     it("複数の <Slide> を別々のスライドとして配列で返す", () => {
       const xml =
@@ -1457,6 +1595,19 @@ describe("parseXml", () => {
         ]);
       });
 
+      it("dateColor / titleColor / descriptionColor 属性を変換する", () => {
+        const xml = `
+          <Timeline dateColor="94A3B8" titleColor="F8FAFC" descriptionColor="CBD5E1">
+            <TimelineItem date="2024-01" title="Launch" />
+          </Timeline>
+        `;
+        const result = parseXml(xml);
+        const node = result[0] as Record<string, unknown>;
+        expect(node.dateColor).toBe("94A3B8");
+        expect(node.titleColor).toBe("F8FAFC");
+        expect(node.descriptionColor).toBe("CBD5E1");
+      });
+
       it("JSON 属性のみでも引き続き動作する（後方互換性）", () => {
         const items = JSON.stringify([{ date: "2024-01", title: "Start" }]);
         const result = parseXml(`<Timeline items='${items}' />`);
@@ -1516,6 +1667,23 @@ describe("parseXml", () => {
         expect(node.axes).toEqual({ x: "X", y: "Y" });
         expect(node.quadrants).toBeUndefined();
         expect(node.items).toEqual([{ label: "A", x: 0.5, y: 0.5 }]);
+      });
+
+      it("ラベル色属性と MatrixItem の textColor を変換する", () => {
+        const xml = `
+          <Matrix axisLabelColor="94A3B8" quadrantLabelColor="64748B" itemLabelColor="F8FAFC">
+            <MatrixAxes x="X" y="Y" />
+            <MatrixItem label="A" x="0.5" y="0.5" textColor="FACC15" />
+          </Matrix>
+        `;
+        const result = parseXml(xml);
+        const node = result[0] as Record<string, unknown>;
+        expect(node.axisLabelColor).toBe("94A3B8");
+        expect(node.quadrantLabelColor).toBe("64748B");
+        expect(node.itemLabelColor).toBe("F8FAFC");
+        expect(node.items).toEqual([
+          { label: "A", x: 0.5, y: 0.5, textColor: "FACC15" },
+        ]);
       });
 
       it("JSON 属性のみでも引き続き動作する（後方互換性）", () => {
@@ -1579,6 +1747,22 @@ describe("parseXml", () => {
         const node = result[0] as Record<string, unknown>;
         expect(node.nodes).toHaveLength(2);
         expect(node.connections).toHaveLength(1);
+      });
+
+      it("FlowConnection の labelColor と connectorStyle.labelColor を変換する", () => {
+        const xml = `
+          <Flow connectorStyle.labelColor="94A3B8">
+            <FlowNode id="a" shape="flowChartProcess" text="A" />
+            <FlowNode id="b" shape="flowChartProcess" text="B" />
+            <FlowConnection from="a" to="b" label="next" labelColor="FACC15" />
+          </Flow>
+        `;
+        const result = parseXml(xml);
+        const node = result[0] as Record<string, unknown>;
+        expect(node.connectorStyle).toEqual({ labelColor: "94A3B8" });
+        expect(node.connections).toEqual([
+          { from: "a", to: "b", label: "next", labelColor: "FACC15" },
+        ]);
       });
 
       it("FlowNode の数値属性を正しく変換する", () => {
@@ -1895,6 +2079,24 @@ describe("parseXml", () => {
 
     // ----- Tree -----
     describe("Tree", () => {
+      it("Tree の textColor と TreeItem の textColor を変換する", () => {
+        const xml = `
+          <Tree textColor="0F172A">
+            <TreeItem label="Root" textColor="FACC15">
+              <TreeItem label="Child" />
+            </TreeItem>
+          </Tree>
+        `;
+        const result = parseXml(xml);
+        const node = result[0] as Record<string, unknown>;
+        expect(node.textColor).toBe("0F172A");
+        expect(node.data).toEqual({
+          label: "Root",
+          textColor: "FACC15",
+          children: [{ label: "Child" }],
+        });
+      });
+
       it("TreeItem の再帰的なネストを処理する", () => {
         const xml = `
           <Tree layout="vertical">
