@@ -88,17 +88,13 @@ function collectImageSources(node: POMNode): string[] {
     }
 
     // 子要素の再帰
-    switch (def.category) {
-      case "multi-child":
-      case "absolute-child": {
-        const containerNode = n as Extract<
-          POMNode,
-          { type: "vstack" | "hstack" | "layer" }
-        >;
-        for (const child of containerNode.children) {
-          traverse(child);
-        }
-        break;
+    if (def.category === "multi-child" || def.category === "absolute-child") {
+      const containerNode = n as Extract<
+        POMNode,
+        { type: "vstack" | "hstack" | "layer" }
+      >;
+      for (const child of containerNode.children) {
+        traverse(child);
       }
     }
   }

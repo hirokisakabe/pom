@@ -14,22 +14,18 @@ export function reduceFontSize(node: POMNode, targetRatio: number): boolean {
   let changed = false;
 
   walkPOMTree(node, (n) => {
-    switch (n.type) {
-      case "text":
-      case "shape":
-      case "ul":
-      case "ol": {
-        if (n.fontSize !== undefined) {
-          const newSize = Math.max(
-            MIN_FONT_SIZE,
-            Math.round(n.fontSize * ratio),
-          );
-          if (newSize !== n.fontSize) {
-            n.fontSize = newSize;
-            changed = true;
-          }
+    if (
+      n.type === "text" ||
+      n.type === "shape" ||
+      n.type === "ul" ||
+      n.type === "ol"
+    ) {
+      if (n.fontSize !== undefined) {
+        const newSize = Math.max(MIN_FONT_SIZE, Math.round(n.fontSize * ratio));
+        if (newSize !== n.fontSize) {
+          n.fontSize = newSize;
+          changed = true;
         }
-        break;
       }
     }
 
