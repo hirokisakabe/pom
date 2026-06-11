@@ -27,7 +27,7 @@ function printBuildError(err: unknown): void {
 
 program
   .name("pom")
-  .description("CLI tool for pom — preview and build presentations")
+  .description("CLI tool for pom — preview, build, and render presentations")
   .version(version);
 
 program

@@ -1,7 +1,7 @@
 {
   "name": "@hirokisakabe/pom-cli",
   "version": "0.4.0",
-  "description": "CLI tool for pom — preview and build presentations",
+  "description": "CLI tool for pom — preview, build, and render presentations",
   "type": "module",
   "bin": {
     "pom": "./dist/cli.js"
