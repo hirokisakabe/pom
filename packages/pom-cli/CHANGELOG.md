@@ -1,5 +1,11 @@
 # @hirokisakabe/pom-cli
 
+## 0.5.0
+
+### Minor Changes
+
+- [#819](https://github.com/hirokisakabe/pom/pull/819) [`360c1ca`](https://github.com/hirokisakabe/pom/commit/360c1caeec8ebddc8b1c5d2722283db91cdee1ad) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - feat: `pom render <file> -o <dir>` サブコマンドを追加しました。pptx-glimpse を使って各スライドを LibreOffice なしで直接 PNG / SVG 画像として出力できます。`--format svg` で SVG 出力、`--slides 2,5` で対象スライドの指定が可能です。
+
 ## 0.4.0
 
 ### Minor Changes
