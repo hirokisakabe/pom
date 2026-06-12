@@ -1,6 +1,8 @@
 import type { POMNode } from "../../types.ts";
 import { walkPOMTree } from "../../shared/walkTree.ts";
 import { mapBoxSpacing } from "../../shared/boxSpacing.ts";
+import type { AutoFitStrategyResult } from "../strategyResult.ts";
+import { toStrategyResult } from "../strategyResult.ts";
 
 const MIN_SCALE = 0.5;
 
@@ -10,15 +12,19 @@ function scaleNumber(value: number, ratio: number, min: number): number {
 
 /**
  * 全サイズ関連プロパティを一律スケーリングする（フォールバック）。
- * @returns 変更があった場合 true
  */
-export function uniformScale(node: POMNode, targetRatio: number): boolean {
+export function uniformScale(
+  node: POMNode,
+  targetRatio: number,
+): AutoFitStrategyResult {
   const ratio = Math.max(targetRatio, MIN_SCALE);
   let changed = false;
+  let sawTarget = false;
 
   walkPOMTree(node, (n) => {
     // fontSize
     if ("fontSize" in n && typeof n.fontSize === "number") {
+      sawTarget = true;
       const newVal = scaleNumber(n.fontSize, ratio, 8);
       if (newVal !== n.fontSize) {
         (n as { fontSize: number }).fontSize = newVal;
@@ -28,6 +34,7 @@ export function uniformScale(node: POMNode, targetRatio: number): boolean {
 
     // gap (vstack/hstack)
     if ((n.type === "vstack" || n.type === "hstack") && n.gap !== undefined) {
+      sawTarget = true;
       const newVal = scaleNumber(n.gap, ratio, 1);
       if (newVal !== n.gap) {
         n.gap = newVal;
@@ -37,6 +44,7 @@ export function uniformScale(node: POMNode, targetRatio: number): boolean {
 
     // padding
     if (n.padding !== undefined) {
+      sawTarget = true;
       const result = mapBoxSpacing(n.padding, (v) => scaleNumber(v, ratio, 1));
       if (result.changed) {
         n.padding = result.value;
@@ -47,6 +55,7 @@ export function uniformScale(node: POMNode, targetRatio: number): boolean {
     // table: defaultRowHeight, row.height
     if (n.type === "table") {
       if (n.defaultRowHeight !== undefined) {
+        sawTarget = true;
         const newVal = scaleNumber(n.defaultRowHeight, ratio, 16);
         if (newVal !== n.defaultRowHeight) {
           n.defaultRowHeight = newVal;
@@ -55,6 +64,7 @@ export function uniformScale(node: POMNode, targetRatio: number): boolean {
       }
       for (const row of n.rows) {
         if (row.height !== undefined) {
+          sawTarget = true;
           const newVal = scaleNumber(row.height, ratio, 16);
           if (newVal !== row.height) {
             row.height = newVal;
@@ -68,6 +78,7 @@ export function uniformScale(node: POMNode, targetRatio: number): boolean {
     if (n.type === "ul" || n.type === "ol") {
       for (const item of n.items) {
         if (item.fontSize !== undefined) {
+          sawTarget = true;
           const newVal = scaleNumber(item.fontSize, ratio, 8);
           if (newVal !== item.fontSize) {
             item.fontSize = newVal;
@@ -79,6 +90,7 @@ export function uniformScale(node: POMNode, targetRatio: number): boolean {
 
     // icon size
     if (n.type === "icon" && n.size !== undefined) {
+      sawTarget = true;
       const newVal = scaleNumber(n.size, ratio, 8);
       if (newVal !== n.size) {
         n.size = newVal;
@@ -91,6 +103,7 @@ export function uniformScale(node: POMNode, targetRatio: number): boolean {
       for (const row of n.rows) {
         for (const cell of row.cells) {
           if (cell.fontSize !== undefined) {
+            sawTarget = true;
             const newVal = scaleNumber(cell.fontSize, ratio, 8);
             if (newVal !== cell.fontSize) {
               cell.fontSize = newVal;
@@ -102,5 +115,5 @@ export function uniformScale(node: POMNode, targetRatio: number): boolean {
     }
   });
 
-  return changed;
+  return toStrategyResult({ changed, sawTarget });
 }
