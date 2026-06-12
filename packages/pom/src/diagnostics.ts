@@ -6,7 +6,9 @@ export type DiagnosticCode =
   | "MASTER_PPTX_PARSE_FAILED"
   | "ARROW_REF_NOT_FOUND"
   | "DUPLICATE_NODE_ID"
-  | "PER_SIDE_BORDER_WITH_RADIUS";
+  | "PER_SIDE_BORDER_WITH_RADIUS"
+  | "NODE_OUT_OF_BOUNDS"
+  | "NODE_OVERLAP";
 
 export interface Diagnostic {
   code: DiagnosticCode;
