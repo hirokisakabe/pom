@@ -386,6 +386,7 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
   text: {
     ...BASE_RULES,
     text: "string",
+    rotate: "number",
     ...TEXT_STYLE_RULES,
     letterSpacing: "number",
     glow: TEXT_GLOW_RULE,
@@ -407,6 +408,7 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     ...BASE_RULES,
     src: "string",
     sizing: IMAGE_SIZING_RULE,
+    rotate: "number",
   },
   icon: {
     ...BASE_RULES,
@@ -415,6 +417,7 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     color: "string",
     variant: "string",
     bgColor: "string",
+    rotate: "number",
   },
   svg: {
     ...BASE_RULES,
@@ -431,6 +434,7 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     ...BASE_RULES,
     shapeType: "string",
     text: "string",
+    rotate: "number",
     fill: FILL_STYLE_RULE,
     line: BORDER_STYLE_RULE,
     ...TEXT_STYLE_RULES,

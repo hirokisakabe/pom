@@ -384,6 +384,7 @@ export const textNodeSchema = basePOMNodeSchema.extend({
   type: z.literal("text"),
   text: z.string(),
   runs: z.array(textRunSchema).optional(),
+  rotate: z.number().optional(),
   fontSize: z.number().optional(),
   color: z.string().optional(),
   textAlign: z.enum(["left", "center", "right"]).optional(),
@@ -456,6 +457,7 @@ export const imageNodeSchema = basePOMNodeSchema.extend({
   type: z.literal("image"),
   src: z.string(),
   sizing: imageSizingSchema.optional(),
+  rotate: z.number().optional(),
 });
 
 const iconNameSchema = z.enum(Object.keys(ICON_DATA) as [string, ...string[]]);
@@ -481,6 +483,7 @@ export const iconNodeSchema = basePOMNodeSchema.extend({
   color: iconColorSchema,
   variant: iconVariantSchema,
   bgColor: iconColorSchema,
+  rotate: z.number().optional(),
 });
 
 export type IconNode = z.infer<typeof iconNodeSchema>;
@@ -533,6 +536,7 @@ export const shapeNodeSchema = basePOMNodeSchema.extend({
   type: z.literal("shape"),
   shapeType: shapeTypeSchema,
   text: z.string().optional(),
+  rotate: z.number().optional(),
   fill: fillStyleSchema.optional(),
   line: borderStyleSchema.optional(),
   fontSize: z.number().optional(),

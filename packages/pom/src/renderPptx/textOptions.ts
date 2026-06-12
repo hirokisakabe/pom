@@ -79,6 +79,7 @@ export function createTextOptions(node: TextNode) {
     valign: "top" as const,
     margin: 0,
     lineSpacingMultiple: lineHeight,
+    rotate: node.rotate,
     color: node.color,
     bold: node.bold,
     italic: node.italic,

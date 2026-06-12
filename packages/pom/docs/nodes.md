@@ -83,6 +83,19 @@ Layout attributes that all nodes can have.
 - Shorthand (`padding="16"` / `border='{"color":"333","width":1}'`) and dot notation (`padding.top="8"` / `border.color="FF0000"`) can be mixed on the same node. Shorthand is used as the default value, then dot notation overrides each top-level key.
 - Mixed shorthand + dot notation is supported for: `padding` `margin` `border` `cellBorder` `line` `fill` `shadow` `underline` `beginArrow` `endArrow` `backgroundImage` `connectorStyle` `sizing` `glow` `outline`.
 
+## Leaf Rotation
+
+`Text`, `Shape`, `Image`, and `Icon` support `rotate` as a number of degrees clockwise.
+
+```xml
+<Text rotate="12">Rotated label</Text>
+<Shape shapeType="rect" w="120" h="60" rotate="-15" />
+<Image src="sample_images/sample_0.png" w="160" h="100" rotate="8" />
+<Icon name="cpu" rotate="45" />
+```
+
+Rotation is applied only when rendering to PowerPoint. Yoga layout uses the unrotated bounding box, so rotation does not change sibling placement or parent size.
+
 ## Node List
 
 ### 1. Text
@@ -108,6 +121,7 @@ A node for displaying text.
 | `letterSpacing`          | number in px (letter spacing, converted to pt on output)   |
 | `glow`                   | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"`     |
 | `outline`                | `outline.size="2" outline.color="0088CC"`                  |
+| `rotate`                 | number (degrees clockwise, render-only)                    |
 
 **Inline Formatting:**
 
@@ -226,6 +240,7 @@ A node for displaying images.
 | --------- | ----------------------------------------------------------------------------------------------- |
 | `src`     | string (URL / path / base64)                                                                    |
 | `sizing`  | `'{"type":"contain"}'` / `'{"type":"cover"}'` / `'{"type":"crop","x":0,"y":0,"w":100,"h":100}'` |
+| `rotate`  | number (degrees clockwise, render-only)                                                         |
 
 - If `w` and `h` are not specified, the actual image size is automatically used.
 - If size is specified, the image is displayed at that size (aspect ratio is not preserved).
@@ -280,6 +295,7 @@ A node for drawing shapes. Different representations are possible with or withou
 | `text`          | string (text inside the shape)                                                                            |
 | `fill`          | `fill.color="hex" fill.transparency="0.5"`                                                                |
 | `line`          | `line.color="hex" line.width="2" line.dashType="dash"`                                                    |
+| `rotate`        | number (degrees clockwise, render-only)                                                                   |
 | Text attributes | `fontSize` `color` `textAlign` `bold` `italic` `underline` `strike` `highlight` `fontFamily` `lineHeight` |
 
 **Common Shape Types:**
@@ -886,6 +902,7 @@ A node for displaying icons from the Lucide icon library. Icons are rendered as 
 | `color`   | hex color (default: `#000000`)                                              |
 | `variant` | `circle-filled`, `circle-outlined`, `square-filled`, `square-outlined`      |
 | `bgColor` | hex color for the background shape (default: `#E0E0E0` when variant is set) |
+| `rotate`  | number (degrees clockwise, render-only)                                     |
 
 All [Lucide icons](https://lucide.dev/icons/) are available. Below are common examples:
 

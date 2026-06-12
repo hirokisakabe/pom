@@ -80,6 +80,10 @@ Declare a color palette once at the top level and reference each token from any 
 | `alignSelf`       | `auto` / `start` / `center` / `end` / `stretch`            | Override parent's alignItems for this node |
 | `shadow`          | `shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000"` | Drop shadow (shorthand + dot notation can be mixed; not supported on Line) |
 
+## Leaf Rotation
+
+`Text`, `Shape`, `Image`, and `Icon` support `rotate="<number>"` in degrees clockwise. Rotation is applied only during PowerPoint rendering; yoga layout still uses the unrotated bounding box, so sibling placement and parent size are unchanged.
+
 ## Layout Nodes
 
 ### VStack / HStack
@@ -134,6 +138,7 @@ Positions children using absolute coordinates. Children require `x` and `y`. Sou
 | `letterSpacing`          | number in px (letter spacing, converted to pt on output)   |
 | `glow`                   | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"`     |
 | `outline`                | `outline.size="2" outline.color="0088CC"`                  |
+| `rotate`                 | number (degrees clockwise, render-only)                    |
 
 Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
 
@@ -207,6 +212,7 @@ All Ul attributes plus:
 | --------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `src`     | string (URL / path / base64)                                                                                             |
 | `sizing`  | `'{"type":"contain"}' ` / `'{"type":"cover"}'` / `'{"type":"crop","x":0,"y":0,"w":100,"h":100}'`                         |
+| `rotate`  | number (degrees clockwise, render-only)                                                                                  |
 
 ### Icon
 
@@ -222,6 +228,7 @@ Displays an icon from the Lucide icon library (1,900+ icons available).
 | `name`    | Lucide icon name (required). See examples below                          |
 | `size`    | number (default: 24, in px)                                              |
 | `color`   | hex color (`#` prefix optional, default: `#000000`)                      |
+| `rotate`  | number (degrees clockwise, render-only)                                |
 | `variant` | `circle-filled`, `circle-outlined`, `square-filled`, `square-outlined`   |
 | `bgColor` | hex color for background shape (`#` prefix optional, default: `#E0E0E0`) |
 
@@ -279,6 +286,7 @@ For the full icon list, see https://lucide.dev/icons/ (use the icon name in keba
 | `text`          | string (text inside shape)                                                                                |
 | `fill`          | `fill.color="hex" fill.transparency="0.5"`                                                                |
 | `line`          | `line.color="hex" line.width="2" line.dashType="dash"`                                                    |
+| `rotate`        | number (degrees clockwise, render-only)                                                                   |
 | Text attributes | `fontSize` `color` `textAlign` `bold` `italic` `underline` `strike` `highlight` `fontFamily` `lineHeight` |
 
 `fill`, `line`, and other style objects also allow mixing shorthand + dot notation on the same node (dot notation overrides specific keys).

@@ -24,6 +24,7 @@ export function renderIconNode(
       fill: isFilled ? { color: colorValue } : { type: "none" as const },
       line: isFilled ? undefined : { color: colorValue, width: 1.5 },
       rectRadius: isCircle ? undefined : 0.1,
+      rotate: node.rotate,
     };
 
     ctx.slide.addShape(shapeType, shapeOptions);
@@ -35,5 +36,6 @@ export function renderIconNode(
     y: pxToIn(node.iconY ?? node.y),
     w: pxToIn(node.iconW ?? node.w),
     h: pxToIn(node.iconH ?? node.h),
+    rotate: node.rotate,
   });
 }

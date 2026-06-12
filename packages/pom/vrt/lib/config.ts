@@ -59,6 +59,7 @@ export const PAGE_NAMES = [
   "43-dark-theme",
   "44-per-side-border",
   "45-text-effects",
+  "46-rotate",
 ] as const;
 
 export const THRESHOLD = 0.1;

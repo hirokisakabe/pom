@@ -59,6 +59,125 @@ describe("renderShapeNode", () => {
       fill: { color: "FF0000" },
     });
   });
+
+  it("rotate を pptxgenjs options に渡す", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "shape",
+          shapeType: "rect",
+          x: 96,
+          y: 96,
+          w: 192,
+          h: 96,
+          rotate: 45,
+        },
+      ]),
+    );
+
+    expect(objects[0].options.rotate).toBe(45);
+  });
+});
+
+describe("renderTextNode", () => {
+  it("rotate を通常テキストの pptxgenjs options に渡す", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "text",
+          text: "rotated",
+          x: 0,
+          y: 0,
+          w: 160,
+          h: 40,
+          rotate: 15,
+        },
+      ]),
+    );
+
+    expect(objects[0].options.rotate).toBe(15);
+  });
+
+  it("rotate を inline runs テキストの pptxgenjs options に渡す", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "text",
+          text: "rotated",
+          runs: [{ text: "rotated" }],
+          x: 0,
+          y: 0,
+          w: 160,
+          h: 40,
+          rotate: -15,
+        },
+      ]),
+    );
+
+    expect(objects[0].options.rotate).toBe(-15);
+  });
+});
+
+describe("renderImageNode", () => {
+  it("rotate を pptxgenjs options に渡す", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "image",
+          src: "sample_images/sample_0.png",
+          x: 0,
+          y: 0,
+          w: 120,
+          h: 80,
+          rotate: 30,
+        },
+      ]),
+    );
+
+    expect(objects[0].options.rotate).toBe(30);
+  });
+});
+
+describe("renderIconNode", () => {
+  it("rotate をアイコン画像の pptxgenjs options に渡す", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "icon",
+          name: "cpu",
+          iconImageData: "data:image/png;base64,AA==",
+          x: 0,
+          y: 0,
+          w: 32,
+          h: 32,
+          rotate: 90,
+        },
+      ]),
+    );
+
+    expect(objects[0].options.rotate).toBe(90);
+  });
+
+  it("rotate を variant 背景図形にも渡す", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "icon",
+          name: "cpu",
+          iconImageData: "data:image/png;base64,AA==",
+          variant: "circle-filled",
+          x: 0,
+          y: 0,
+          w: 56,
+          h: 56,
+          rotate: 90,
+        },
+      ]),
+    );
+
+    expect(objects[0].options.rotate).toBe(90);
+    expect(objects[1].options.rotate).toBe(90);
+  });
 });
 
 describe("renderUlNode", () => {
