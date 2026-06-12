@@ -17,10 +17,22 @@ describe("parseXml", () => {
       ]);
     });
 
+    it("Text ノードの rotate 属性を number に変換する", () => {
+      const result = parseXml('<Text rotate="15">Hello</Text>');
+      expect(result).toEqual([{ type: "text", text: "Hello", rotate: 15 }]);
+    });
+
     it("Image ノードを変換する（self-closing）", () => {
       const result = parseXml('<Image src="image.png" w="400" h="300" />');
       expect(result).toEqual([
         { type: "image", src: "image.png", w: 400, h: 300 },
+      ]);
+    });
+
+    it("Image ノードの rotate 属性を number に変換する", () => {
+      const result = parseXml('<Image src="image.png" rotate="-30" />');
+      expect(result).toEqual([
+        { type: "image", src: "image.png", rotate: -30 },
       ]);
     });
 
@@ -30,6 +42,13 @@ describe("parseXml", () => {
       );
       expect(result).toEqual([
         { type: "shape", shapeType: "rect", w: 200, h: 100, text: "Hello" },
+      ]);
+    });
+
+    it("Shape ノードの rotate 属性を number に変換する", () => {
+      const result = parseXml('<Shape shapeType="rect" rotate="45" />');
+      expect(result).toEqual([
+        { type: "shape", shapeType: "rect", rotate: 45 },
       ]);
     });
 
@@ -184,6 +203,11 @@ describe("parseXml", () => {
       expect(result).toEqual([
         { type: "icon", name: "cpu", size: 32, color: "#1D4ED8" },
       ]);
+    });
+
+    it("Icon ノードの rotate 属性を number に変換する", () => {
+      const result = parseXml('<Icon name="cpu" rotate="90" />');
+      expect(result).toEqual([{ type: "icon", name: "cpu", rotate: 90 }]);
     });
 
     it("Icon ノードでデフォルト値を使う", () => {

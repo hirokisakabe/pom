@@ -44,6 +44,7 @@
 - **Design Tokens** — Declare a color palette once with a top-level `<Theme>` element and reference tokens as `$name` from any color attribute. See [Nodes — Top-Level `<Theme>`](./docs/nodes.md#top-level-theme-design-tokens).
 - **Schema-validated** — XML input is validated with Zod schemas at runtime with clear error messages.
 - **PowerPoint Native** — Generates real editable PowerPoint shapes — not images. Recipients can modify everything. Linear gradient backgrounds (`backgroundGradient="linear-gradient(135deg, #667EEA 0%, #764BA2 100%)"`) are exported as native gradient fills.
+- **Leaf Rotation** — `Text`, `Shape`, `Image`, and `Icon` support `rotate` in clockwise degrees at render time without affecting flex layout.
 - **Pixel Units** — Intuitive pixel-based sizing (internally converted to inches at 96 DPI).
 - **Master Slide** — Define headers, footers, and page numbers once — applied to all slides automatically.
 - **Accurate Text Measurement** — Text width measured with opentype.js and bundled Noto Sans JP fonts for consistent layout.
@@ -85,28 +86,28 @@ Each slide must be wrapped in a `<Slide>` element. To produce multiple slides, l
 
 ## Available Nodes
 
-| Node         | Description                                                                                                                                     |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Text         | Text with font styling, decoration, letter spacing, glow / outline effects, inline bold/italic/underline/strike/highlight/color, and hyperlinks |
-| Ul           | Unordered (bullet) list with Li items                                                                                                           |
-| Ol           | Ordered (numbered) list with Li items                                                                                                           |
-| Image        | Images from file path, URL, or base64                                                                                                           |
-| Table        | Tables with customizable columns and rows                                                                                                       |
-| Shape        | PowerPoint shapes (roundRect, ellipse, etc.)                                                                                                    |
-| Chart        | Charts (bar, line, pie, area, doughnut, radar)                                                                                                  |
-| Timeline     | Timeline / roadmap visualizations                                                                                                               |
-| Matrix       | 2x2 positioning maps                                                                                                                            |
-| Tree         | Organization charts and decision trees                                                                                                          |
-| Flow         | Flowcharts with nodes and edges                                                                                                                 |
-| ProcessArrow | Chevron-style process diagrams                                                                                                                  |
-| Pyramid      | Pyramid diagrams for hierarchies                                                                                                                |
-| Line         | Horizontal / vertical lines                                                                                                                     |
-| Arrow        | Connectors between nodes referenced by ID                                                                                                       |
-| Layer        | Absolute-positioned overlay container                                                                                                           |
-| VStack       | Vertical stack layout                                                                                                                           |
-| HStack       | Horizontal stack layout                                                                                                                         |
-| Icon         | Lucide icons                                                                                                                                    |
-| Svg          | Inline SVG graphics                                                                                                                             |
+| Node         | Description                                                                                                                                               |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Text         | Text with font styling, decoration, rotation, letter spacing, glow / outline effects, inline bold/italic/underline/strike/highlight/color, and hyperlinks |
+| Ul           | Unordered (bullet) list with Li items                                                                                                                     |
+| Ol           | Ordered (numbered) list with Li items                                                                                                                     |
+| Image        | Images from file path, URL, or base64, with optional rotation                                                                                             |
+| Table        | Tables with customizable columns and rows                                                                                                                 |
+| Shape        | PowerPoint shapes (roundRect, ellipse, etc.) with optional rotation                                                                                       |
+| Chart        | Charts (bar, line, pie, area, doughnut, radar)                                                                                                            |
+| Timeline     | Timeline / roadmap visualizations                                                                                                                         |
+| Matrix       | 2x2 positioning maps                                                                                                                                      |
+| Tree         | Organization charts and decision trees                                                                                                                    |
+| Flow         | Flowcharts with nodes and edges                                                                                                                           |
+| ProcessArrow | Chevron-style process diagrams                                                                                                                            |
+| Pyramid      | Pyramid diagrams for hierarchies                                                                                                                          |
+| Line         | Horizontal / vertical lines                                                                                                                               |
+| Arrow        | Connectors between nodes referenced by ID                                                                                                                 |
+| Layer        | Absolute-positioned overlay container                                                                                                                     |
+| VStack       | Vertical stack layout                                                                                                                                     |
+| HStack       | Horizontal stack layout                                                                                                                                   |
+| Icon         | Lucide icons with optional rotation                                                                                                                       |
+| Svg          | Inline SVG graphics                                                                                                                                       |
 
 For detailed node documentation, see [Nodes](./docs/nodes.md).
 

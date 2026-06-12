@@ -47,6 +47,7 @@ export function renderTextNode(
       y: textOptions.y,
       w: textOptions.w,
       h: textOptions.h,
+      rotate: textOptions.rotate,
       align: textOptions.align,
       valign: textOptions.valign,
       margin: textOptions.margin,

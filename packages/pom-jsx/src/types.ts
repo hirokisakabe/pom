@@ -119,6 +119,7 @@ export type ThemeProps = Record<string, string>;
 // ===== Text =====
 export interface TextProps extends BaseProps, TextStyleProps {
   children?: ReactNode;
+  rotate?: number;
   textAlign?: TextAlign;
   lineHeight?: number;
   letterSpacing?: number;
@@ -201,6 +202,7 @@ export interface ImageSizing {
 export interface ImageProps extends BaseProps {
   src: string;
   sizing?: ImageSizing;
+  rotate?: number;
 }
 
 // ===== VStack / HStack =====
@@ -225,6 +227,7 @@ export interface ShapeProps extends BaseProps, TextStyleProps {
   shapeType: string;
   children?: ReactNode;
   text?: string;
+  rotate?: number;
   fill?: FillStyle;
   line?: BorderStyle;
   textAlign?: TextAlign;
@@ -393,6 +396,7 @@ export interface IconProps extends BaseProps {
   name: string;
   size?: number;
   color?: string;
+  rotate?: number;
   variant?:
     | "circle-filled"
     | "circle-outlined"

@@ -21,6 +21,7 @@ export function renderShapeNode(
       : undefined,
     line: node.line ? convertBorderLine(node.line) : undefined,
     shadow: convertShadow(node.shadow),
+    rotate: node.rotate,
   };
 
   if (node.text) {

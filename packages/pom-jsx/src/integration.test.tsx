@@ -16,6 +16,7 @@ import {
   Th,
   Chart,
   Shape,
+  Icon,
   Timeline,
   Matrix,
   ProcessArrow,
@@ -77,6 +78,22 @@ describe("pom core との統合テスト", () => {
     assertParsable(xml);
     expect(xml).toContain(`glow='{"size":8,"opacity":0.5,"color":"FF3399"}'`);
     expect(xml).toContain(`outline='{"size":2,"color":"0088CC"}'`);
+  });
+
+  it("rotate 付きの leaf ノードが parseXml でパースできる", () => {
+    const xml = renderToXml(
+      <Slide>
+        <Text rotate={12}>Rotated text</Text>
+        <Shape shapeType="rect" w={120} h={60} rotate={-15} />
+        <Image src="image.png" w={120} h={80} rotate={8} />
+        <Icon name="cpu" rotate={45} />
+      </Slide>,
+    );
+    assertParsable(xml);
+    expect(xml).toContain('rotate="12"');
+    expect(xml).toContain('rotate="-15"');
+    expect(xml).toContain('rotate="8"');
+    expect(xml).toContain('rotate="45"');
   });
 
   it("Theme トークン宣言と $name 参照が parseXml で解決できる", () => {

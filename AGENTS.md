@@ -64,6 +64,7 @@ PPTX generation pipeline: **calcYogaLayout** → **toPositioned** → **renderPp
 ### Key Internal Types
 
 - `PositionedNode` — Node with absolute position (x, y, w, h)
+- Leaf nodes `Text` / `Shape` / `Image` / `Icon` may include `rotate` (degrees clockwise). Rotation is applied in `renderPptx` only; yoga layout uses unrotated bounds.
 
 ## Packages
 

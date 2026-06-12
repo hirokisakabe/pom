@@ -14,6 +14,7 @@ export function renderImageNode(
   const imageOptions: Record<string, unknown> = {
     ...rectPxToIn(content),
     shadow: convertShadow(node.shadow),
+    rotate: node.rotate,
   };
 
   if (node.sizing) {
