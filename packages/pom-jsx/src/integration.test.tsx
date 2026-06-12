@@ -60,6 +60,25 @@ describe("pom core との統合テスト", () => {
     expect(xml).toContain('<Span letterSpacing="6">字間広め</Span>');
   });
 
+  it("glow / outline 付きの Text が parseXml でパースできる", () => {
+    const xml = renderToXml(
+      <Slide>
+        <Text
+          fontSize={40}
+          bold
+          color="FFFFFF"
+          glow={{ size: 8, opacity: 0.5, color: "FF3399" }}
+          outline={{ size: 2, color: "0088CC" }}
+        >
+          Glowing title
+        </Text>
+      </Slide>,
+    );
+    assertParsable(xml);
+    expect(xml).toContain(`glow='{"size":8,"opacity":0.5,"color":"FF3399"}'`);
+    expect(xml).toContain(`outline='{"size":2,"color":"0088CC"}'`);
+  });
+
   it("Theme トークン宣言と $name 参照が parseXml で解決できる", () => {
     const xml = renderToXml(
       <>

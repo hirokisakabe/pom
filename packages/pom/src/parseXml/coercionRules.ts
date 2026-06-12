@@ -289,6 +289,16 @@ const UNDERLINE_RULE: CoercionRule = {
   ],
 };
 
+const TEXT_GLOW_RULE: CoercionRule = {
+  type: "object",
+  shape: { size: "number", opacity: "number", color: "string" },
+};
+
+const TEXT_OUTLINE_RULE: CoercionRule = {
+  type: "object",
+  shape: { size: "number", color: "string" },
+};
+
 const LINE_ARROW_RULE: CoercionRule = {
   type: "union",
   options: ["boolean", { type: "object", shape: { type: "string" } }],
@@ -378,6 +388,8 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     text: "string",
     ...TEXT_STYLE_RULES,
     letterSpacing: "number",
+    glow: TEXT_GLOW_RULE,
+    outline: TEXT_OUTLINE_RULE,
   },
   ul: {
     ...BASE_RULES,

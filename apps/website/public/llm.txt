@@ -132,8 +132,17 @@ Positions children using absolute coordinates. Children require `x` and `y`. Sou
 | `fontFamily`             | string (default: `Noto Sans JP`)                           |
 | `lineHeight`             | number (default: 1.3)                                      |
 | `letterSpacing`          | number in px (letter spacing, converted to pt on output)   |
+| `glow`                   | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"`     |
+| `outline`                | `outline.size="2" outline.color="0088CC"`                  |
 
 Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
+
+**Text effects (glow / outline):** `glow` adds a glow around the characters (`size` in px, `opacity` 0-1, `color` hex; defaults: 8 / 0.75 / FFFFFF). `outline` draws a border along the character edges (`size` in px, `color` hex; defaults: 1 / FFFFFF). Both export as native PowerPoint text effects (editable, not rasterized) and are useful for keeping titles legible on top of background images. They apply per text node; with inline formatting the node-level effect applies to all runs.
+
+```xml
+<Text fontSize="40" bold="true" color="FFFFFF" glow.size="8" glow.opacity="0.5" glow.color="1D4ED8">Glowing title</Text>
+<Text fontSize="40" bold="true" color="FFFFFF" outline.size="2" outline.color="0F172A">Outlined title</Text>
+```
 
 **Inline formatting:** Use `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` child elements for partial bold/italic/underline/strikethrough/highlight/color and hyperlinks:
 

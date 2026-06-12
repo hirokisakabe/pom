@@ -1,5 +1,11 @@
-import { describe, expect, it } from "vitest";
-import { createTextOptions } from "./textOptions.ts";
+import { describe, expect, it, vi } from "vitest";
+import {
+  createTextOptions,
+  convertGlow,
+  convertOutline,
+} from "./textOptions.ts";
+import { renderTextNode } from "./nodes/text.ts";
+import type { RenderContext } from "./types.ts";
 import { pxToIn, pxToPt } from "./units.ts";
 
 describe("createTextOptions", () => {
@@ -65,5 +71,118 @@ describe("createTextOptions", () => {
     });
 
     expect(options.charSpacing).toBeUndefined();
+  });
+
+  it("glow / outline をオプションに反映する", () => {
+    const options = createTextOptions({
+      type: "text",
+      text: "hello",
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 20,
+      glow: { size: 8, opacity: 0.5, color: "FF3399" },
+      outline: { size: 2, color: "0088CC" },
+    });
+
+    expect(options.glow).toEqual({
+      size: pxToPt(8),
+      opacity: 0.5,
+      color: "FF3399",
+    });
+    expect(options.outline).toEqual({ size: pxToPt(2), color: "0088CC" });
+  });
+
+  it("glow / outline が未指定なら undefined になる", () => {
+    const options = createTextOptions({
+      type: "text",
+      text: "hello",
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 20,
+    });
+
+    expect(options.glow).toBeUndefined();
+    expect(options.outline).toBeUndefined();
+  });
+});
+
+describe("renderTextNode (runs 分岐)", () => {
+  it("runs ありの Text でノード単位の glow / outline が各 run に適用される", () => {
+    const addText = vi.fn();
+    const ctx = { slide: { addText } } as unknown as RenderContext;
+
+    renderTextNode(
+      {
+        type: "text",
+        text: "AB",
+        runs: [{ text: "A" }, { text: "B", bold: true }],
+        x: 0,
+        y: 0,
+        w: 100,
+        h: 50,
+        glow: { size: 8, opacity: 0.5, color: "FF3399" },
+        outline: { size: 2, color: "0088CC" },
+      },
+      ctx,
+    );
+
+    expect(addText).toHaveBeenCalledTimes(1);
+    const textItems = addText.mock.calls[0][0];
+    expect(textItems).toHaveLength(2);
+    for (const item of textItems) {
+      expect(item.options.glow).toEqual({
+        size: pxToPt(8),
+        opacity: 0.5,
+        color: "FF3399",
+      });
+      expect(item.options.outline).toEqual({
+        size: pxToPt(2),
+        color: "0088CC",
+      });
+    }
+  });
+});
+
+describe("convertGlow", () => {
+  it("size (px) を pt に変換する", () => {
+    expect(convertGlow({ size: 8, opacity: 0.5, color: "FF3399" })).toEqual({
+      size: pxToPt(8),
+      opacity: 0.5,
+      color: "FF3399",
+    });
+  });
+
+  it("省略されたフィールドにデフォルト値を補完する", () => {
+    expect(convertGlow({})).toEqual({
+      size: pxToPt(8),
+      opacity: 0.75,
+      color: "FFFFFF",
+    });
+  });
+
+  it("undefined を渡すと undefined を返す", () => {
+    expect(convertGlow(undefined)).toBeUndefined();
+  });
+});
+
+describe("convertOutline", () => {
+  it("size (px) を pt に変換する", () => {
+    expect(convertOutline({ size: 2, color: "0088CC" })).toEqual({
+      size: pxToPt(2),
+      color: "0088CC",
+    });
+  });
+
+  it("省略されたフィールドにデフォルト値を補完する", () => {
+    expect(convertOutline({})).toEqual({
+      size: pxToPt(1),
+      color: "FFFFFF",
+    });
+  });
+
+  it("undefined を渡すと undefined を返す", () => {
+    expect(convertOutline(undefined)).toBeUndefined();
   });
 });

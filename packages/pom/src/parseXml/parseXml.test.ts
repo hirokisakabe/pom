@@ -1200,6 +1200,41 @@ describe("parseXml", () => {
       });
     });
 
+    it("Text の glow をドット記法で変換する", () => {
+      const result = parseXml(
+        '<Text glow.size="8" glow.opacity="0.5" glow.color="FF3399">A</Text>',
+      );
+      expect((result[0] as Record<string, unknown>).glow).toEqual({
+        size: 8,
+        opacity: 0.5,
+        color: "FF3399",
+      });
+    });
+
+    it("Text の outline をドット記法で変換する", () => {
+      const result = parseXml(
+        '<Text outline.size="2" outline.color="0088CC">A</Text>',
+      );
+      expect((result[0] as Record<string, unknown>).outline).toEqual({
+        size: 2,
+        color: "0088CC",
+      });
+    });
+
+    it("glow.size / outline.size の負値を拒否する", () => {
+      expect(() => parseXml('<Text glow.size="-1">A</Text>')).toThrow();
+      expect(() => parseXml('<Text outline.size="-1">A</Text>')).toThrow();
+    });
+
+    it("Text の glow / outline を JSON shorthand で変換する", () => {
+      const result = parseXml(
+        `<Text glow='{"size":8,"opacity":0.5,"color":"FF3399"}' outline='{"size":2,"color":"0088CC"}'>A</Text>`,
+      );
+      const node = result[0] as Record<string, unknown>;
+      expect(node.glow).toEqual({ size: 8, opacity: 0.5, color: "FF3399" });
+      expect(node.outline).toEqual({ size: 2, color: "0088CC" });
+    });
+
     it("ドット記法で fill 属性を変換する", () => {
       const result = parseXml(
         '<Shape shapeType="rect" fill.color="1D4ED8" fill.transparency="0.5" />',

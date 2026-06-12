@@ -58,6 +58,7 @@ export const PAGE_NAMES = [
   "42-flex-grow",
   "43-dark-theme",
   "44-per-side-border",
+  "45-text-effects",
 ] as const;
 
 export const THRESHOLD = 0.1;

@@ -95,6 +95,17 @@ export const underlineSchema = z.union([
   }),
 ]);
 
+export const textGlowSchema = z.object({
+  size: z.number().nonnegative().optional(),
+  opacity: z.number().min(0).max(1).optional(),
+  color: z.string().optional(),
+});
+
+export const textOutlineSchema = z.object({
+  size: z.number().nonnegative().optional(),
+  color: z.string().optional(),
+});
+
 const alignItemsSchema = z.enum(["start", "center", "end", "stretch"]);
 
 const alignSelfSchema = z.enum(["auto", "start", "center", "end", "stretch"]);
@@ -301,6 +312,8 @@ export type FlexWrap = z.infer<typeof flexWrapSchema>;
 export type JustifyContent = z.infer<typeof justifyContentSchema>;
 export type UnderlineStyle = z.infer<typeof underlineStyleSchema>;
 export type Underline = z.infer<typeof underlineSchema>;
+export type TextGlow = z.infer<typeof textGlowSchema>;
+export type TextOutline = z.infer<typeof textOutlineSchema>;
 
 // ===== Background Image =====
 const backgroundImageSizingSchema = z.enum(["cover", "contain"]);
@@ -382,6 +395,8 @@ export const textNodeSchema = basePOMNodeSchema.extend({
   fontFamily: z.string().optional(),
   lineHeight: z.number().optional(),
   letterSpacing: z.number().optional(),
+  glow: textGlowSchema.optional(),
+  outline: textOutlineSchema.optional(),
 });
 
 export const liNodeSchema = z.object({
