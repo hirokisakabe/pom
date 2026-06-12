@@ -1,5 +1,6 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
+import { stripHash } from "../utils/visualStyle.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 import { measureFlow } from "../../calcYogaLayout/measureCompositeNodes.ts";
 import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
@@ -114,8 +115,8 @@ export function renderFlowNode(
         fontSize: pxToPt(10 * scaleFactor),
         fontFace: "Noto Sans JP",
         color:
-          conn.labelColor?.replace("#", "") ??
-          connectorStyle.labelColor?.replace("#", "") ??
+          stripHash(conn.labelColor) ??
+          stripHash(connectorStyle.labelColor) ??
           "64748B",
         align: "center",
         valign: "middle",

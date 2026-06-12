@@ -1,5 +1,6 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
+import { stripHash } from "../utils/visualStyle.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 import { measureMatrix } from "../../calcYogaLayout/measureCompositeNodes.ts";
 import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
@@ -18,8 +19,8 @@ export function renderMatrixNode(
   const baseItemSize = 24; // px
   const baseLineWidth = 2; // px
   const axisColor = "E2E8F0";
-  const axisLabelColor = node.axisLabelColor?.replace("#", "") ?? "64748B";
-  const itemLabelColor = node.itemLabelColor?.replace("#", "") ?? "1E293B";
+  const axisLabelColor = stripHash(node.axisLabelColor) ?? "64748B";
+  const itemLabelColor = stripHash(node.itemLabelColor) ?? "1E293B";
 
   // スケール係数を計算（コンテンツ領域基準）
   const { content, scaleFactor } = resolveScaledContentArea(
@@ -106,7 +107,7 @@ export function renderMatrixNode(
       centerX,
       centerY,
       scaleFactor,
-      node.quadrantLabelColor?.replace("#", "") ?? "94A3B8",
+      stripHash(node.quadrantLabelColor) ?? "94A3B8",
     );
   }
 
@@ -140,7 +141,7 @@ export function renderMatrixNode(
       h: pxToIn(itemLabelH),
       fontSize: pxToPt(11 * scaleFactor),
       fontFace: "Noto Sans JP",
-      color: item.textColor?.replace("#", "") ?? itemLabelColor,
+      color: stripHash(item.textColor) ?? itemLabelColor,
       bold: true,
       align: "center",
       valign: "bottom",

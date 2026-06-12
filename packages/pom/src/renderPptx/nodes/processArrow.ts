@@ -1,5 +1,6 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
+import { stripHash } from "../utils/visualStyle.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 import { convertUnderline, convertStrike } from "../textOptions.ts";
 import { measureProcessArrow } from "../../calcYogaLayout/measureCompositeNodes.ts";
@@ -99,8 +100,8 @@ function renderHorizontalProcessArrow(
   steps.forEach((step, index) => {
     const stepX = startX + index * (itemWidth + gap);
     const stepY = centerY - itemHeight / 2;
-    const fillColor = step.color?.replace("#", "") ?? defaultColor;
-    const textColor = step.textColor?.replace("#", "") ?? defaultTextColor;
+    const fillColor = stripHash(step.color) ?? defaultColor;
+    const textColor = stripHash(step.textColor) ?? defaultTextColor;
 
     // custGeom でシェブロン形状を描画
     const isFirst = index === 0;
@@ -178,8 +179,8 @@ function renderVerticalProcessArrow(
   steps.forEach((step, index) => {
     const stepX = centerX - itemWidth / 2;
     const stepY = startY + index * (itemHeight + gap);
-    const fillColor = step.color?.replace("#", "") ?? defaultColor;
-    const textColor = step.textColor?.replace("#", "") ?? defaultTextColor;
+    const fillColor = stripHash(step.color) ?? defaultColor;
+    const textColor = stripHash(step.textColor) ?? defaultTextColor;
 
     const isFirst = index === 0;
     const points = isFirst

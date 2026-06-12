@@ -1,5 +1,6 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
+import { stripHash } from "../utils/visualStyle.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 import { measurePyramid } from "../../calcYogaLayout/measureCompositeNodes.ts";
 import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
@@ -36,8 +37,8 @@ export function renderPyramidNode(
 
   for (let i = 0; i < levelCount; i++) {
     const level = levels[i];
-    const fillColor = level.color?.replace("#", "") ?? defaultColor;
-    const textColor = level.textColor?.replace("#", "") ?? defaultTextColor;
+    const fillColor = stripHash(level.color) ?? defaultColor;
+    const textColor = stripHash(level.textColor) ?? defaultTextColor;
 
     const layerY = startY + i * (layerHeight + gap);
 

@@ -5,6 +5,7 @@ import type {
   TreeConnectorStyle,
 } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
+import { stripHash } from "../utils/visualStyle.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
 
@@ -31,7 +32,7 @@ export function renderTreeNode(
   const siblingGap = node.siblingGap ?? 20;
   const connectorStyle = node.connectorStyle ?? {};
   const defaultColor = "1D4ED8";
-  const defaultTextColor = node.textColor?.replace("#", "") ?? "FFFFFF";
+  const defaultTextColor = stripHash(node.textColor) ?? "FFFFFF";
 
   // サブツリーの幅/高さを計算
   function calculateSubtreeSize(item: TreeDataItem): {
@@ -263,7 +264,7 @@ export function renderTreeNode(
       h: pxToIn(drawH),
       fontSize: pxToPt(12 * sf),
       fontFace: "Noto Sans JP",
-      color: layoutNode.item.textColor?.replace("#", "") ?? defaultTextColor,
+      color: stripHash(layoutNode.item.textColor) ?? defaultTextColor,
       align: "center",
       valign: "middle",
     });

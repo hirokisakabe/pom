@@ -1,5 +1,6 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
+import { stripHash } from "../utils/visualStyle.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 import { measureTimeline } from "../../calcYogaLayout/measureCompositeNodes.ts";
 import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
@@ -28,9 +29,9 @@ export function renderTimelineNode(
   const baseLineWidth = 4; // px
 
   const textColors: TimelineTextColors = {
-    date: node.dateColor?.replace("#", "") ?? "64748B",
-    title: node.titleColor?.replace("#", "") ?? "1E293B",
-    description: node.descriptionColor?.replace("#", "") ?? "64748B",
+    date: stripHash(node.dateColor) ?? "64748B",
+    title: stripHash(node.titleColor) ?? "1E293B",
+    description: stripHash(node.descriptionColor) ?? "64748B",
   };
 
   // スケール係数を計算（コンテンツ領域基準）
