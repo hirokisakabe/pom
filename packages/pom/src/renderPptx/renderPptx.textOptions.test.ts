@@ -1,9 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   createTextOptions,
   convertGlow,
   convertOutline,
 } from "./textOptions.ts";
+import { renderTextNode } from "./nodes/text.ts";
+import type { RenderContext } from "./types.ts";
 import { pxToIn, pxToPt } from "./units.ts";
 
 describe("createTextOptions", () => {
@@ -103,6 +105,43 @@ describe("createTextOptions", () => {
 
     expect(options.glow).toBeUndefined();
     expect(options.outline).toBeUndefined();
+  });
+});
+
+describe("renderTextNode (runs 分岐)", () => {
+  it("runs ありの Text でノード単位の glow / outline が各 run に適用される", () => {
+    const addText = vi.fn();
+    const ctx = { slide: { addText } } as unknown as RenderContext;
+
+    renderTextNode(
+      {
+        type: "text",
+        text: "AB",
+        runs: [{ text: "A" }, { text: "B", bold: true }],
+        x: 0,
+        y: 0,
+        w: 100,
+        h: 50,
+        glow: { size: 8, opacity: 0.5, color: "FF3399" },
+        outline: { size: 2, color: "0088CC" },
+      },
+      ctx,
+    );
+
+    expect(addText).toHaveBeenCalledTimes(1);
+    const textItems = addText.mock.calls[0][0];
+    expect(textItems).toHaveLength(2);
+    for (const item of textItems) {
+      expect(item.options.glow).toEqual({
+        size: pxToPt(8),
+        opacity: 0.5,
+        color: "FF3399",
+      });
+      expect(item.options.outline).toEqual({
+        size: pxToPt(2),
+        color: "0088CC",
+      });
+    }
   });
 });
 

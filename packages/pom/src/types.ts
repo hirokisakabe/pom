@@ -96,13 +96,13 @@ export const underlineSchema = z.union([
 ]);
 
 export const textGlowSchema = z.object({
-  size: z.number().optional(),
+  size: z.number().nonnegative().optional(),
   opacity: z.number().min(0).max(1).optional(),
   color: z.string().optional(),
 });
 
 export const textOutlineSchema = z.object({
-  size: z.number().optional(),
+  size: z.number().nonnegative().optional(),
   color: z.string().optional(),
 });
 

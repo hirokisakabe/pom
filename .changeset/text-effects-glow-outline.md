@@ -1,5 +1,6 @@
 ---
 "@hirokisakabe/pom": minor
+"@hirokisakabe/pom-jsx": minor
 ---
 
 feat: Text ノードに glow / outline 文字効果を追加

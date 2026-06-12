@@ -33,6 +33,8 @@ type ShadowStyle = {
   offset?: number;
   color?: string;
 };
+type TextGlow = { size?: number; opacity?: number; color?: string };
+type TextOutline = { size?: number; color?: string };
 type AlignItems = "start" | "center" | "end" | "stretch";
 type AlignSelf = "auto" | "start" | "center" | "end" | "stretch";
 type JustifyContent =
@@ -116,6 +118,8 @@ export interface TextProps extends BaseProps, TextStyleProps {
   textAlign?: TextAlign;
   lineHeight?: number;
   letterSpacing?: number;
+  glow?: TextGlow;
+  outline?: TextOutline;
 }
 
 // ===== Inline text components =====

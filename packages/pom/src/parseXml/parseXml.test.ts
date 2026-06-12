@@ -1209,6 +1209,11 @@ describe("parseXml", () => {
       });
     });
 
+    it("glow.size / outline.size の負値を拒否する", () => {
+      expect(() => parseXml('<Text glow.size="-1">A</Text>')).toThrow();
+      expect(() => parseXml('<Text outline.size="-1">A</Text>')).toThrow();
+    });
+
     it("Text の glow / outline を JSON shorthand で変換する", () => {
       const result = parseXml(
         `<Text glow='{"size":8,"opacity":0.5,"color":"FF3399"}' outline='{"size":2,"color":"0088CC"}'>A</Text>`,
