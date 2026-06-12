@@ -30,7 +30,15 @@ export async function toPositioned(
 
   // ノード固有のカスタム変換がある場合はそれを使用
   if (def.toPositioned) {
-    return def.toPositioned(pom, absoluteX, absoluteY, layout, ctx, map);
+    return def.toPositioned(
+      pom,
+      absoluteX,
+      absoluteY,
+      layout,
+      ctx,
+      map,
+      toPositioned,
+    );
   }
 
   // category ベースのデフォルト処理

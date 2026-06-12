@@ -1,12 +1,11 @@
 import { type POMNode, type PositionedLayerChild } from "../../types.ts";
 import type { NodeDefinition } from "../types.ts";
-import { toPositioned } from "../../toPositioned/toPositioned.ts";
 import { getNodeMetadata } from "../nodeMetadata.ts";
 
 export const layerNodeDef: NodeDefinition = {
   ...getNodeMetadata("layer"),
   // applyYogaStyle: layer は子を絶対配置するコンテナ。サイズは明示的に指定されることを期待
-  async toPositioned(pom, absoluteX, absoluteY, layout, ctx, map) {
+  async toPositioned(pom, absoluteX, absoluteY, layout, ctx, map, recurse) {
     const n = pom as Extract<POMNode, { type: "layer" }>;
     // layer の子要素は layer 内の相対座標（child.x, child.y）を持つ
     // layer の絶対座標に加算してスライド上の絶対座標に変換
@@ -63,7 +62,7 @@ export const layerNodeDef: NodeDefinition = {
           const adjustedParentX = absoluteX + childX - childLayout.left;
           const adjustedParentY = absoluteY + childY - childLayout.top;
 
-          return await toPositioned(
+          return await recurse(
             child,
             ctx,
             map,

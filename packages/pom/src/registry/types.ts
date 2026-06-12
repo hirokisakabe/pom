@@ -8,6 +8,19 @@ import type { z } from "zod";
 
 export type Yoga = Awaited<ReturnType<typeof loadYoga>>;
 
+/**
+ * toPositioned ステージ入口関数の再帰呼び出し用コールバック。
+ * 定義側がステージ入口を直接 import すると registry ↔ toPositioned の
+ * 循環依存になるため、hook 引数として注入する
+ */
+export type ToPositionedRecurse = (
+  pom: POMNode,
+  ctx: BuildContext,
+  map: LayoutResultMap,
+  parentX?: number,
+  parentY?: number,
+) => Promise<PositionedNode>;
+
 /** ノードのカテゴリ。子要素の扱い方を決定する */
 export type NodeCategory =
   | "leaf" // 子要素なし
@@ -60,6 +73,7 @@ export interface NodeDefinition {
     layout: { width: number; height: number },
     ctx: BuildContext,
     map: LayoutResultMap,
+    recurse: ToPositionedRecurse,
   ) => PositionedNode | Promise<PositionedNode>;
 
   /** PositionedNode をスライドにレンダリングする（リーフノード用） */
