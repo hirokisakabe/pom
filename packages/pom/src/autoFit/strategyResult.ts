@@ -2,8 +2,8 @@
 export type AutoFitSkipReason =
   /** 調整対象となる属性を持つノードが存在しない */
   | "no-target"
-  /** 調整対象はあるが、すべて下限値に達していて縮小余地がない */
-  | "already-at-minimum";
+  /** 調整対象はあるが、下限値への到達や丸めにより値が変化しなかった */
+  | "no-effective-change";
 
 /** AutoFit strategy の適用結果 */
 export type AutoFitStrategyResult =
@@ -22,6 +22,6 @@ export function toStrategyResult(params: {
   }
   return {
     changed: false,
-    reason: params.sawTarget ? "already-at-minimum" : "no-target",
+    reason: params.sawTarget ? "no-effective-change" : "no-target",
   };
 }

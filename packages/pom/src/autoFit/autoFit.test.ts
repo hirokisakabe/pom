@@ -88,7 +88,7 @@ describe("reduceTableRowHeight", () => {
     expect(result).toEqual({ changed: false, reason: "no-target" });
   });
 
-  it("すべて下限値の場合は already-at-minimum を返す", () => {
+  it("すべて下限値の場合は no-effective-change を返す", () => {
     const node: POMNode = {
       type: "table",
       columns: [{}],
@@ -96,7 +96,7 @@ describe("reduceTableRowHeight", () => {
       defaultRowHeight: 20,
     };
     const result = reduceTableRowHeight(node, 0.5);
-    expect(result).toEqual({ changed: false, reason: "already-at-minimum" });
+    expect(result).toEqual({ changed: false, reason: "no-effective-change" });
     expect(node.defaultRowHeight).toBe(20);
   });
 });
@@ -145,11 +145,19 @@ describe("reduceFontSize", () => {
     expect(result).toEqual({ changed: false, reason: "no-target" });
   });
 
-  it("すべて下限値の場合は already-at-minimum を返す", () => {
+  it("すべて下限値の場合は no-effective-change を返す", () => {
     const node: POMNode = { type: "text", text: "hello", fontSize: 10 };
     const result = reduceFontSize(node, 0.6);
-    expect(result).toEqual({ changed: false, reason: "already-at-minimum" });
+    expect(result).toEqual({ changed: false, reason: "no-effective-change" });
     expect(node.fontSize).toBe(10);
+  });
+
+  it("丸めにより値が変化しない場合も no-effective-change を返す", () => {
+    // Math.round(21 * 0.99) === 21: 下限未到達でも値が変化しない
+    const node: POMNode = { type: "text", text: "hello", fontSize: 21 };
+    const result = reduceFontSize(node, 0.99);
+    expect(result).toEqual({ changed: false, reason: "no-effective-change" });
+    expect(node.fontSize).toBe(21);
   });
 });
 
