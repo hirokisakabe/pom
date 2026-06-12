@@ -4,7 +4,7 @@ description: Generate pom presentation slides from natural language. Applies des
 license: MIT
 allowed-tools: Write,Edit,Read,Bash
 metadata:
-  version: "1.3.0"
+  version: "1.3.1"
 ---
 
 自然言語の指示から pom XML スライドを生成し、ファイルに保存する。デザイン原則（配色・タイポグラフィ・余白・アーキタイプ）に基づいて初版の質を高め、`/pom-theme` skill が生成したテーマファイル（`pom-theme.json`）があればブランド配色・フォントを適用する。レンダリング結果を自分で見て修正するセルフレビューを行ったうえで、pom-cli がインストール済みの場合はプレビューサーバーを起動する。
@@ -100,6 +100,8 @@ XML を書き始める前に、デッキ全体のデザイントークン（配�
 | KPI | display サイズの数字 2〜4 個 + caption のラベル |
 | まとめ / CTA | キーメッセージの再掲 + 次のアクション |
 
+**縦方向の揃え**: アクセントバー・番号・アイコンなど高さの異なる要素をテキストと HStack で並べるときは `alignItems="end"` を基本にする。`Text` のレイアウトボックスは `fontSize × lineHeight` の高さを持ち行送り分の余白を含むため、グリフはボックス内で下寄りに描かれる。`center` で揃えると隣の要素が文字より上に浮いて見える。
+
 代表例（パレット: コーポレート）:
 
 ```xml
@@ -117,11 +119,11 @@ XML を書き始める前に、デッキ全体のデザイントークン（配�
   <VStack w="100%" h="max" padding="64" backgroundColor="F8F9FB" gap="32">
     <Text fontSize="32" bold="true" color="1F2937">アジェンダ</Text>
     <VStack gap="16">
-      <HStack gap="16" alignItems="center">
+      <HStack gap="16" alignItems="end">
         <Text fontSize="20" bold="true" color="1E3A8A">01</Text>
         <Text fontSize="16" color="1F2937">背景と課題</Text>
       </HStack>
-      <HStack gap="16" alignItems="center">
+      <HStack gap="16" alignItems="end">
         <Text fontSize="20" bold="true" color="1E3A8A">02</Text>
         <Text fontSize="16" color="1F2937">提案内容</Text>
       </HStack>
@@ -151,6 +153,12 @@ XML を書き始める前に、デッキ全体のデザイントークン（配�
     </HStack>
   </VStack>
 </Slide>
+
+<!-- 本編スライド共通の見出し（アクセントバー + タイトル）。center だとバーが文字より上に浮く -->
+<HStack gap="16" alignItems="end">
+  <Shape shapeType="rect" w="6" h="32" fill.color="1E3A8A" />
+  <Text fontSize="32" bold="true" color="1F2937">スライドタイトル</Text>
+</HStack>
 ```
 
 ### 3. pom XML の生成
@@ -808,7 +816,7 @@ Building emits warnings (`diagnostics`) for layout problems that can be detected
 
 - **はみ出し・重なり**: スライド外へのはみ出しと要素同士の重なりは build 時の警告で検出済みの前提。画像では警告に出ない残り（テキストの見切れ、`rotate` したノードや `Layer` 内の意図しない衝突）だけを確認する（見つけたら最優先で修正する）
 - **余白**: 外周 padding が確保されているか。要素が窮屈になっていないか、一部だけ不自然に空いていないか
-- **整列**: 揃うべき左端・上端が揃っているか。並べたカードの幅が均等か
+- **整列**: 揃うべき左端・上端が揃っているか。並べたカードの幅が均等か。アクセントバー・番号・アイコンが隣のテキストの文字より上に浮いていないか（`alignItems="center"` 起因のズレは `end` に変える）
 - **階層**: タイトルが一目で本文と区別できるか。視線の流れ（左上 → 右下）が自然か
 - **配色**: Step 2 で決めたパレットから逸脱した色が混入していないか。テキストと背景のコントラストが十分か
 - **密度**: 詰め込みすぎのスライドがないか（あれば 2 枚に分割する）
