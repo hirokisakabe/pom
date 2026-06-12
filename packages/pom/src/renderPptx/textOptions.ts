@@ -1,6 +1,6 @@
 import type { PositionedNode, Underline, UnderlineStyle } from "../types.ts";
-import { pxToIn, pxToPt } from "./units.ts";
-import { getContentArea } from "./utils/contentArea.ts";
+import { pxToPt } from "./units.ts";
+import { getContentAreaIn } from "./utils/contentArea.ts";
 
 type TextNode = Extract<PositionedNode, { type: "text" }>;
 
@@ -33,13 +33,9 @@ export function createTextOptions(node: TextNode) {
   const fontSizePx = node.fontSize ?? 24;
   const fontFamily = node.fontFamily ?? "Noto Sans JP";
   const lineHeight = node.lineHeight ?? 1.3;
-  const content = getContentArea(node);
 
   return {
-    x: pxToIn(content.x),
-    y: pxToIn(content.y),
-    w: pxToIn(content.w),
-    h: pxToIn(content.h),
+    ...getContentAreaIn(node),
     fontSize: pxToPt(fontSizePx),
     fontFace: fontFamily,
     align: node.textAlign ?? "left",

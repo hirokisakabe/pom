@@ -2,7 +2,7 @@ import type { PositionedNode } from "../../types.ts";
 import { getImageData } from "../../shared/measureImage.ts";
 import { registerBackgroundGradient } from "../gradientFills.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToIn } from "../units.ts";
+import { pxToIn, rectPxToIn } from "../units.ts";
 import {
   BORDER_SIDES,
   convertShadow,
@@ -82,10 +82,7 @@ export function renderBackgroundAndBorder(
         : { type: "none" as const };
 
       ctx.slide.addShape(shapeType, {
-        x: pxToIn(node.x),
-        y: pxToIn(node.y),
-        w: pxToIn(node.w),
-        h: pxToIn(node.h),
+        ...rectPxToIn(node),
         fill,
         line,
         rectRadius,
@@ -102,10 +99,7 @@ export function renderBackgroundAndBorder(
   // 1. 背景色
   if (hasBackground) {
     ctx.slide.addShape(shapeType, {
-      x: pxToIn(node.x),
-      y: pxToIn(node.y),
-      w: pxToIn(node.w),
-      h: pxToIn(node.h),
+      ...rectPxToIn(node),
       fill: resolveBackgroundFill(
         backgroundColor,
         node.opacity,
@@ -120,10 +114,7 @@ export function renderBackgroundAndBorder(
   if (backgroundImage) {
     const sizing = backgroundImage.sizing ?? "cover";
     const imageOptions: Record<string, unknown> = {
-      x: pxToIn(node.x),
-      y: pxToIn(node.y),
-      w: pxToIn(node.w),
-      h: pxToIn(node.h),
+      ...rectPxToIn(node),
       sizing: {
         type: sizing,
         w: pxToIn(node.w),
@@ -145,10 +136,7 @@ export function renderBackgroundAndBorder(
   // 3. ボーダー
   if (hasUniformBorder || hasShadow) {
     ctx.slide.addShape(shapeType, {
-      x: pxToIn(node.x),
-      y: pxToIn(node.y),
-      w: pxToIn(node.w),
-      h: pxToIn(node.h),
+      ...rectPxToIn(node),
       fill: { type: "none" as const },
       line: hasUniformBorder
         ? convertBorderLine(border, "000000")
@@ -205,10 +193,7 @@ export function renderBorderOnly(
     : ctx.pptx.ShapeType.rect;
 
   ctx.slide.addShape(shapeType, {
-    x: pxToIn(node.x),
-    y: pxToIn(node.y),
-    w: pxToIn(node.w),
-    h: pxToIn(node.h),
+    ...rectPxToIn(node),
     fill: { type: "none" as const },
     line: convertBorderLine(border, "000000"),
     rectRadius: resolveRectRadius(borderRadius, node.w, node.h),
@@ -238,12 +223,8 @@ function renderPerSideBorderLines(
     const style = perSideBorders[side];
     if (!style) continue;
 
-    const edge = edges[side];
     ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-      x: pxToIn(edge.x),
-      y: pxToIn(edge.y),
-      w: pxToIn(edge.w),
-      h: pxToIn(edge.h),
+      ...rectPxToIn(edges[side]),
       line: convertBorderLine(style, "000000"),
     });
   }

@@ -5,9 +5,9 @@ import type {
   TreeConnectorStyle,
 } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
+import { stripHash } from "../utils/visualStyle.ts";
 import { pxToIn, pxToPt } from "../units.ts";
-import { calcScaleFactor } from "../utils/scaleToFit.ts";
-import { getContentArea } from "../utils/contentArea.ts";
+import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
 
 type TreePositionedNode = Extract<PositionedNode, { type: "tree" }>;
 
@@ -32,7 +32,7 @@ export function renderTreeNode(
   const siblingGap = node.siblingGap ?? 20;
   const connectorStyle = node.connectorStyle ?? {};
   const defaultColor = "1D4ED8";
-  const defaultTextColor = node.textColor?.replace("#", "") ?? "FFFFFF";
+  const defaultTextColor = stripHash(node.textColor) ?? "FFFFFF";
 
   // サブツリーの幅/高さを計算
   function calculateSubtreeSize(item: TreeDataItem): {
@@ -264,7 +264,7 @@ export function renderTreeNode(
       h: pxToIn(drawH),
       fontSize: pxToPt(12 * sf),
       fontFace: "Noto Sans JP",
-      color: layoutNode.item.textColor?.replace("#", "") ?? defaultTextColor,
+      color: stripHash(layoutNode.item.textColor) ?? defaultTextColor,
       align: "center",
       valign: "middle",
     });
@@ -300,14 +300,10 @@ export function renderTreeNode(
   const treeSize = calculateSubtreeSize(node.data);
 
   // スケール係数を計算（コンテンツ領域基準）
-  const content = getContentArea(node);
-  const scaleFactor = calcScaleFactor(
-    content.w,
-    content.h,
-    treeSize.width,
-    treeSize.height,
-    "tree",
-    ctx.buildContext.diagnostics,
+  const { content, scaleFactor } = resolveScaledContentArea(
+    node,
+    treeSize,
+    ctx,
   );
 
   // スケール後のサイズで中央配置オフセットを計算

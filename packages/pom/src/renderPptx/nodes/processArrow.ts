@@ -1,15 +1,16 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
+import { stripHash } from "../utils/visualStyle.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 import { convertUnderline, convertStrike } from "../textOptions.ts";
 import { measureProcessArrow } from "../../calcYogaLayout/measureCompositeNodes.ts";
-import { calcScaleFactor } from "../utils/scaleToFit.ts";
+import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
 import {
   ARROW_DEPTH_RATIO,
   DEFAULT_PROCESS_ARROW_ITEM_WIDTH,
   DEFAULT_PROCESS_ARROW_ITEM_HEIGHT,
 } from "../../shared/processArrowConstants.ts";
-import { getContentArea } from "../utils/contentArea.ts";
+import { withContentBounds } from "../utils/contentArea.ts";
 
 type ProcessArrowPositionedNode = Extract<
   PositionedNode,
@@ -34,15 +35,10 @@ export function renderProcessArrowNode(
   const gap = node.gap ?? -arrowDepth;
 
   // スケール係数を計算（コンテンツ領域基準）
-  const content = getContentArea(node);
-  const intrinsic = measureProcessArrow(node);
-  const scaleFactor = calcScaleFactor(
-    content.w,
-    content.h,
-    intrinsic.width,
-    intrinsic.height,
-    "processArrow",
-    ctx.buildContext.diagnostics,
+  const { content, scaleFactor } = resolveScaledContentArea(
+    node,
+    measureProcessArrow(node),
+    ctx,
   );
 
   const scaledItemWidth = itemWidth * scaleFactor;
@@ -51,13 +47,7 @@ export function renderProcessArrowNode(
   const scaledArrowDepth = arrowDepth * scaleFactor;
 
   // コンテンツ領域を使用するための仮想ノードを作成
-  const contentNode = {
-    ...node,
-    x: content.x,
-    y: content.y,
-    w: content.w,
-    h: content.h,
-  };
+  const contentNode = withContentBounds(node, content);
 
   if (direction === "horizontal") {
     renderHorizontalProcessArrow(
@@ -110,8 +100,8 @@ function renderHorizontalProcessArrow(
   steps.forEach((step, index) => {
     const stepX = startX + index * (itemWidth + gap);
     const stepY = centerY - itemHeight / 2;
-    const fillColor = step.color?.replace("#", "") ?? defaultColor;
-    const textColor = step.textColor?.replace("#", "") ?? defaultTextColor;
+    const fillColor = stripHash(step.color) ?? defaultColor;
+    const textColor = stripHash(step.textColor) ?? defaultTextColor;
 
     // custGeom でシェブロン形状を描画
     const isFirst = index === 0;
@@ -189,8 +179,8 @@ function renderVerticalProcessArrow(
   steps.forEach((step, index) => {
     const stepX = centerX - itemWidth / 2;
     const stepY = startY + index * (itemHeight + gap);
-    const fillColor = step.color?.replace("#", "") ?? defaultColor;
-    const textColor = step.textColor?.replace("#", "") ?? defaultTextColor;
+    const fillColor = stripHash(step.color) ?? defaultColor;
+    const textColor = stripHash(step.textColor) ?? defaultTextColor;
 
     const isFirst = index === 0;
     const points = isFirst

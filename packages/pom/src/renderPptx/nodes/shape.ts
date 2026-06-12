@@ -1,8 +1,8 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToIn, pxToPt } from "../units.ts";
+import { pxToPt } from "../units.ts";
 import { convertUnderline, convertStrike } from "../textOptions.ts";
-import { getContentArea } from "../utils/contentArea.ts";
+import { getContentAreaIn } from "../utils/contentArea.ts";
 import { convertBorderLine, convertShadow } from "../utils/visualStyle.ts";
 
 type ShapePositionedNode = Extract<PositionedNode, { type: "shape" }>;
@@ -11,12 +11,8 @@ export function renderShapeNode(
   node: ShapePositionedNode,
   ctx: RenderContext,
 ): void {
-  const content = getContentArea(node);
   const shapeOptions = {
-    x: pxToIn(content.x),
-    y: pxToIn(content.y),
-    w: pxToIn(content.w),
-    h: pxToIn(content.h),
+    ...getContentAreaIn(node),
     fill: node.fill
       ? {
           color: node.fill.color,
