@@ -1,5 +1,6 @@
 import type { POMNode } from "../../types.ts";
 import { walkPOMTree } from "../../shared/walkTree.ts";
+import { mapBoxSpacing } from "../../shared/boxSpacing.ts";
 
 const MIN_GAP = 2;
 const MIN_PADDING = 2;
@@ -28,24 +29,12 @@ export function reduceGapAndPadding(
 
     // padding の縮小
     if (n.padding !== undefined) {
-      if (typeof n.padding === "number") {
-        const newPadding = Math.max(MIN_PADDING, Math.round(n.padding * ratio));
-        if (newPadding !== n.padding) {
-          n.padding = newPadding;
-          changed = true;
-        }
-      } else {
-        const dirs = ["top", "right", "bottom", "left"] as const;
-        for (const dir of dirs) {
-          const val = n.padding[dir];
-          if (val !== undefined) {
-            const newVal = Math.max(MIN_PADDING, Math.round(val * ratio));
-            if (newVal !== val) {
-              n.padding[dir] = newVal;
-              changed = true;
-            }
-          }
-        }
+      const result = mapBoxSpacing(n.padding, (v) =>
+        Math.max(MIN_PADDING, Math.round(v * ratio)),
+      );
+      if (result.changed) {
+        n.padding = result.value;
+        changed = true;
       }
     }
   });

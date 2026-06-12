@@ -29,6 +29,7 @@ import type { RenderContext, NodeBounds } from "./types.ts";
 import { pxToIn, pxToPt } from "./units.ts";
 import { convertUnderline, convertStrike } from "./textOptions.ts";
 import { getImageData } from "../shared/measureImage.ts";
+import { resolveBoxSpacing } from "../shared/boxSpacing.ts";
 import { renderBackgroundAndBorder } from "./utils/backgroundBorder.ts";
 import {
   convertBorderLine,
@@ -189,16 +190,13 @@ function defineSlideMasterFromOptions(
 
   // margin の変換 (px -> inches)
   if (master.margin !== undefined) {
-    if (typeof master.margin === "number") {
-      masterProps.margin = pxToIn(master.margin);
-    } else {
-      masterProps.margin = [
-        pxToIn(master.margin.top ?? 0),
-        pxToIn(master.margin.right ?? 0),
-        pxToIn(master.margin.bottom ?? 0),
-        pxToIn(master.margin.left ?? 0),
-      ];
-    }
+    const margin = resolveBoxSpacing(master.margin);
+    masterProps.margin = [
+      pxToIn(margin.top),
+      pxToIn(margin.right),
+      pxToIn(margin.bottom),
+      pxToIn(margin.left),
+    ];
   }
 
   // objects の変換

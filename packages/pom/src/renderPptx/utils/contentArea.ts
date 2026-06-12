@@ -1,11 +1,7 @@
-type Padding =
-  | number
-  | {
-      top?: number;
-      right?: number;
-      bottom?: number;
-      left?: number;
-    };
+import {
+  resolveBoxSpacing,
+  type BoxSpacingInput,
+} from "../../shared/boxSpacing.ts";
 
 interface ContentArea {
   x: number;
@@ -24,22 +20,13 @@ export function getContentArea(node: {
   y: number;
   w: number;
   h: number;
-  padding?: Padding;
+  padding?: BoxSpacingInput;
 }): ContentArea {
   if (node.padding === undefined) {
     return { x: node.x, y: node.y, w: node.w, h: node.h };
   }
 
-  let top: number, right: number, bottom: number, left: number;
-
-  if (typeof node.padding === "number") {
-    top = right = bottom = left = node.padding;
-  } else {
-    top = node.padding.top ?? 0;
-    right = node.padding.right ?? 0;
-    bottom = node.padding.bottom ?? 0;
-    left = node.padding.left ?? 0;
-  }
+  const { top, right, bottom, left } = resolveBoxSpacing(node.padding);
 
   return {
     x: node.x + left,

@@ -5,6 +5,7 @@ import { Node as YogaNode } from "yoga-layout";
 import { loadYoga } from "yoga-layout/load";
 import { prefetchImageSize } from "../shared/measureImage.ts";
 import { freeYogaTree } from "../shared/freeYogaTree.ts";
+import { resolveBoxSpacing } from "../shared/boxSpacing.ts";
 import { getNodeDef } from "../registry/index.ts";
 
 /**
@@ -280,50 +281,22 @@ async function applyStyleToYogaNode(
     yn.setMaxHeight(node.maxH);
   }
 
-  // padding
+  // padding（yoga の未設定 edge は 0 扱いのため、解決済みの 0 を明示設定しても等価）
   if (node.padding !== undefined) {
-    if (typeof node.padding === "number") {
-      yn.setPadding(yoga.EDGE_TOP, node.padding);
-      yn.setPadding(yoga.EDGE_RIGHT, node.padding);
-      yn.setPadding(yoga.EDGE_BOTTOM, node.padding);
-      yn.setPadding(yoga.EDGE_LEFT, node.padding);
-    } else {
-      if (node.padding.top !== undefined) {
-        yn.setPadding(yoga.EDGE_TOP, node.padding.top);
-      }
-      if (node.padding.right !== undefined) {
-        yn.setPadding(yoga.EDGE_RIGHT, node.padding.right);
-      }
-      if (node.padding.bottom !== undefined) {
-        yn.setPadding(yoga.EDGE_BOTTOM, node.padding.bottom);
-      }
-      if (node.padding.left !== undefined) {
-        yn.setPadding(yoga.EDGE_LEFT, node.padding.left);
-      }
-    }
+    const padding = resolveBoxSpacing(node.padding);
+    yn.setPadding(yoga.EDGE_TOP, padding.top);
+    yn.setPadding(yoga.EDGE_RIGHT, padding.right);
+    yn.setPadding(yoga.EDGE_BOTTOM, padding.bottom);
+    yn.setPadding(yoga.EDGE_LEFT, padding.left);
   }
 
   // margin
   if (node.margin !== undefined) {
-    if (typeof node.margin === "number") {
-      yn.setMargin(yoga.EDGE_TOP, node.margin);
-      yn.setMargin(yoga.EDGE_RIGHT, node.margin);
-      yn.setMargin(yoga.EDGE_BOTTOM, node.margin);
-      yn.setMargin(yoga.EDGE_LEFT, node.margin);
-    } else {
-      if (node.margin.top !== undefined) {
-        yn.setMargin(yoga.EDGE_TOP, node.margin.top);
-      }
-      if (node.margin.right !== undefined) {
-        yn.setMargin(yoga.EDGE_RIGHT, node.margin.right);
-      }
-      if (node.margin.bottom !== undefined) {
-        yn.setMargin(yoga.EDGE_BOTTOM, node.margin.bottom);
-      }
-      if (node.margin.left !== undefined) {
-        yn.setMargin(yoga.EDGE_LEFT, node.margin.left);
-      }
-    }
+    const margin = resolveBoxSpacing(node.margin);
+    yn.setMargin(yoga.EDGE_TOP, margin.top);
+    yn.setMargin(yoga.EDGE_RIGHT, margin.right);
+    yn.setMargin(yoga.EDGE_BOTTOM, margin.bottom);
+    yn.setMargin(yoga.EDGE_LEFT, margin.left);
   }
 
   // position

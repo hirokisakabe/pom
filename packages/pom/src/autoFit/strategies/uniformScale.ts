@@ -1,5 +1,6 @@
 import type { POMNode } from "../../types.ts";
 import { walkPOMTree } from "../../shared/walkTree.ts";
+import { mapBoxSpacing } from "../../shared/boxSpacing.ts";
 
 const MIN_SCALE = 0.5;
 
@@ -36,24 +37,10 @@ export function uniformScale(node: POMNode, targetRatio: number): boolean {
 
     // padding
     if (n.padding !== undefined) {
-      if (typeof n.padding === "number") {
-        const newVal = scaleNumber(n.padding, ratio, 1);
-        if (newVal !== n.padding) {
-          n.padding = newVal;
-          changed = true;
-        }
-      } else {
-        const dirs = ["top", "right", "bottom", "left"] as const;
-        for (const dir of dirs) {
-          const val = n.padding[dir];
-          if (val !== undefined) {
-            const newVal = scaleNumber(val, ratio, 1);
-            if (newVal !== val) {
-              n.padding[dir] = newVal;
-              changed = true;
-            }
-          }
-        }
+      const result = mapBoxSpacing(n.padding, (v) => scaleNumber(v, ratio, 1));
+      if (result.changed) {
+        n.padding = result.value;
+        changed = true;
       }
     }
 
