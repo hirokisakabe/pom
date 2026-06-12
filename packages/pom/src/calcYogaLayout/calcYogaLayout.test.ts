@@ -112,3 +112,62 @@ describe("calcYogaLayout grow 属性", () => {
     expect(right.w).toBeCloseTo(200);
   });
 });
+
+describe("Layer の絶対配置", () => {
+  it("Layer の子が layer 左上からの相対座標で絶対配置される", async () => {
+    const positioned = await layoutSlide(
+      `<Slide>
+        <Layer w="600" h="400">
+          <Shape shapeType="rect" x="50" y="50" w="120" h="80" />
+          <Line x1="170" y1="90" x2="300" y2="90" />
+          <VStack x="300" y="20" w="200" h="100">
+            <Shape shapeType="rect" w="100" h="40" />
+          </VStack>
+        </Layer>
+      </Slide>`,
+    );
+    expect(positioned.type).toBe("layer");
+    const [shape, line, vstack] = childrenOf(positioned);
+
+    expect(shape).toMatchObject({
+      x: positioned.x + 50,
+      y: positioned.y + 50,
+      w: 120,
+      h: 80,
+    });
+
+    // Line は x1/y1/x2/y2 が layer 内相対座標として加算される
+    expect(line).toMatchObject({
+      x1: positioned.x + 170,
+      y1: positioned.y + 90,
+      x2: positioned.x + 300,
+      y2: positioned.y + 90,
+      x: positioned.x + 170,
+      w: 130,
+    });
+
+    // VStack は recurse 経由で通常のフロー配置に戻る
+    expect(vstack).toMatchObject({ x: positioned.x + 300, y: positioned.y + 20 });
+    const [inner] = childrenOf(vstack);
+    expect(inner).toMatchObject({ x: vstack.x, y: vstack.y, w: 100, h: 40 });
+  });
+
+  it("Layer 内の Arrow は layer の絶対座標とサイズ 0 で配置される", async () => {
+    const positioned = await layoutSlide(
+      `<Slide>
+        <Layer w="600" h="400">
+          <Shape id="a" shapeType="rect" x="50" y="50" w="120" h="40" />
+          <Shape id="b" shapeType="rect" x="50" y="200" w="120" h="40" />
+          <Arrow x="0" y="0" from="a" to="b" />
+        </Layer>
+      </Slide>`,
+    );
+    const [, , arrow] = childrenOf(positioned);
+    expect(arrow).toMatchObject({
+      x: positioned.x,
+      y: positioned.y,
+      w: 0,
+      h: 0,
+    });
+  });
+});

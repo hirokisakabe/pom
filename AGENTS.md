@@ -18,6 +18,7 @@ TypeScript 5.x, yoga-layout 3.2.1, pptxgenjs 4.0.1, opentype.js 1.3.x, fast-xml-
 ```bash
 pnpm run build           # TypeScript compilation
 pnpm run lint            # ESLint
+pnpm run lint:deps       # Dependency layer boundary check (dependency-cruiser)
 pnpm run fmt             # Prettier formatting
 pnpm run typecheck       # Type checking
 pnpm run knip            # Detect unused code
