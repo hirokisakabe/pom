@@ -19,6 +19,7 @@ const SEVERITY_MAP: Record<DiagnosticCode, vscode.DiagnosticSeverity> = {
   MASTER_PPTX_PARSE_FAILED: vscode.DiagnosticSeverity.Warning,
   ARROW_REF_NOT_FOUND: vscode.DiagnosticSeverity.Warning,
   DUPLICATE_NODE_ID: vscode.DiagnosticSeverity.Warning,
+  PER_SIDE_BORDER_WITH_RADIUS: vscode.DiagnosticSeverity.Warning,
 };
 
 function toVsDiagnostics(items: Diagnostic[]): vscode.Diagnostic[] {

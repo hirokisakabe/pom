@@ -1,6 +1,7 @@
 ---
 "@hirokisakabe/pom": minor
 "@hirokisakabe/pom-jsx": minor
+"pom-vscode": patch
 ---
 
 feat: 辺ごとの border 指定 `borderTop` / `borderRight` / `borderBottom` / `borderLeft` を追加
@@ -12,3 +13,4 @@ feat: 辺ごとの border 指定 `borderTop` / `borderRight` / `borderBottom` / 
 - `border` のみ指定した既存 XML の出力は変化しません (後方互換)
 - `borderRadius` との併用はサポート外です。併用時は diagnostics 警告 (`PER_SIDE_BORDER_WITH_RADIUS`) を発し、辺ごとの指定を無視して一律 `border` で描画します
 - pom-jsx の `BaseProps` にも同名の props を追加しました
+- pom-vscode の diagnostics 重大度マップに `PER_SIDE_BORDER_WITH_RADIUS` (Warning) を追加しました
