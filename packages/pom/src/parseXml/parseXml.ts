@@ -7,6 +7,20 @@ import {
   NODE_METADATA,
 } from "../registry/nodeMetadata.ts";
 import {
+  INLINE_BOOLEAN_FORMATS,
+  INLINE_FORMAT_TAG_LIST,
+  INLINE_FORMAT_TAGS,
+  INLINE_LINK_TAG,
+  INLINE_MARK_TAG,
+  INLINE_SPAN_TAG,
+  MARK_DEFAULT_HIGHLIGHT_COLOR,
+  formatExpectedTags,
+  type NodeSpecificChildRule,
+  type RepeatedChildRule,
+  type TextRun,
+  type XmlChildRule,
+} from "../registry/xmlChildRules.ts";
+import {
   type CoercionRule,
   NODE_COERCION_MAP,
   CHILD_ELEMENT_COERCION_MAP,
@@ -310,8 +324,6 @@ function getRawChildren(node: XmlElement): XmlNode[] {
   return (node[tagName] as XmlNode[] | undefined) ?? [];
 }
 
-const INLINE_FORMAT_TAGS = new Set(["B", "I", "A", "U", "S", "Mark", "Span"]);
-
 function hasInlineFormatChildren(childElements: XmlElement[]): boolean {
   return (
     childElements.length > 0 &&
@@ -319,172 +331,56 @@ function hasInlineFormatChildren(childElements: XmlElement[]): boolean {
   );
 }
 
-type TextRunResult = {
-  text: string;
-  bold?: boolean;
-  italic?: boolean;
-  underline?: boolean;
-  strike?: boolean;
-  highlight?: string;
-  color?: string;
-  href?: string;
-  fontFamily?: string;
-  letterSpacing?: number;
-};
-
 function extractTextRuns(
   children: XmlNode[],
-  inheritBold?: boolean,
-  inheritItalic?: boolean,
-  inheritHref?: string,
-  inheritUnderline?: boolean,
-  inheritStrike?: boolean,
-  inheritHighlight?: string,
-  inheritColor?: string,
-  inheritFontFamily?: string,
-  inheritLetterSpacing?: number,
-): TextRunResult[] {
-  const runs: TextRunResult[] = [];
+  inherited: Partial<Omit<TextRun, "text">> = {},
+): TextRun[] {
+  const runs: TextRun[] = [];
   for (const child of children) {
     if (isTextNode(child)) {
-      const run: TextRunResult = { text: child["#text"] };
-      if (inheritBold) run.bold = true;
-      if (inheritItalic) run.italic = true;
-      if (inheritUnderline) run.underline = true;
-      if (inheritStrike) run.strike = true;
-      if (inheritHighlight) run.highlight = inheritHighlight;
-      if (inheritColor) run.color = inheritColor;
-      if (inheritHref) run.href = inheritHref;
-      if (inheritFontFamily) run.fontFamily = inheritFontFamily;
-      if (inheritLetterSpacing !== undefined)
-        run.letterSpacing = inheritLetterSpacing;
-      runs.push(run);
-    } else {
-      const tag = getTagName(child);
-      const innerChildren = getRawChildren(child);
-      if (tag === "B") {
-        runs.push(
-          ...extractTextRuns(
-            innerChildren,
-            true,
-            inheritItalic,
-            inheritHref,
-            inheritUnderline,
-            inheritStrike,
-            inheritHighlight,
-            inheritColor,
-            inheritFontFamily,
-            inheritLetterSpacing,
-          ),
-        );
-      } else if (tag === "I") {
-        runs.push(
-          ...extractTextRuns(
-            innerChildren,
-            inheritBold,
-            true,
-            inheritHref,
-            inheritUnderline,
-            inheritStrike,
-            inheritHighlight,
-            inheritColor,
-            inheritFontFamily,
-            inheritLetterSpacing,
-          ),
-        );
-      } else if (tag === "A") {
-        const href = getAttributes(child).href ?? "";
-        runs.push(
-          ...extractTextRuns(
-            innerChildren,
-            inheritBold,
-            inheritItalic,
-            href,
-            inheritUnderline,
-            inheritStrike,
-            inheritHighlight,
-            inheritColor,
-            inheritFontFamily,
-            inheritLetterSpacing,
-          ),
-        );
-      } else if (tag === "U") {
-        runs.push(
-          ...extractTextRuns(
-            innerChildren,
-            inheritBold,
-            inheritItalic,
-            inheritHref,
-            true,
-            inheritStrike,
-            inheritHighlight,
-            inheritColor,
-            inheritFontFamily,
-            inheritLetterSpacing,
-          ),
-        );
-      } else if (tag === "S") {
-        runs.push(
-          ...extractTextRuns(
-            innerChildren,
-            inheritBold,
-            inheritItalic,
-            inheritHref,
-            inheritUnderline,
-            true,
-            inheritHighlight,
-            inheritColor,
-            inheritFontFamily,
-            inheritLetterSpacing,
-          ),
-        );
-      } else if (tag === "Mark") {
-        const rawColor = getAttributes(child).color;
-        const color = rawColor && rawColor.trim() ? rawColor : "FFFF00";
-        runs.push(
-          ...extractTextRuns(
-            innerChildren,
-            inheritBold,
-            inheritItalic,
-            inheritHref,
-            inheritUnderline,
-            inheritStrike,
-            color,
-            inheritColor,
-            inheritFontFamily,
-            inheritLetterSpacing,
-          ),
-        );
-      } else if (tag === "Span") {
-        const spanAttrs = getAttributes(child);
-        const rawSpanColor = spanAttrs.color;
-        const spanColor =
-          rawSpanColor && rawSpanColor.trim() ? rawSpanColor : inheritColor;
-        const rawSpanFontFamily = spanAttrs.fontFamily;
-        const spanFontFamily =
-          rawSpanFontFamily && rawSpanFontFamily.trim()
-            ? rawSpanFontFamily
-            : inheritFontFamily;
-        const rawSpanLetterSpacing = spanAttrs.letterSpacing;
-        const spanLetterSpacing =
-          rawSpanLetterSpacing && rawSpanLetterSpacing.trim()
-            ? Number(rawSpanLetterSpacing)
-            : inheritLetterSpacing;
-        runs.push(
-          ...extractTextRuns(
-            innerChildren,
-            inheritBold,
-            inheritItalic,
-            inheritHref,
-            inheritUnderline,
-            inheritStrike,
-            inheritHighlight,
-            spanColor,
-            spanFontFamily,
-            spanLetterSpacing,
-          ),
-        );
+      runs.push({ text: child["#text"], ...inherited });
+      continue;
+    }
+    const tag = getTagName(child);
+    const innerChildren = getRawChildren(child);
+    const booleanFormat = INLINE_BOOLEAN_FORMATS.find(
+      (format) => format.tag === tag,
+    );
+    if (booleanFormat) {
+      runs.push(
+        ...extractTextRuns(innerChildren, {
+          ...inherited,
+          [booleanFormat.property]: true,
+        }),
+      );
+    } else if (tag === INLINE_LINK_TAG) {
+      // href なしの <A> は外側の href を引き継がない（リンク解除として扱う）
+      const next = { ...inherited };
+      const href = getAttributes(child).href;
+      if (href) {
+        next.href = href;
+      } else {
+        delete next.href;
       }
+      runs.push(...extractTextRuns(innerChildren, next));
+    } else if (tag === INLINE_MARK_TAG) {
+      const rawColor = getAttributes(child).color;
+      const highlight =
+        rawColor && rawColor.trim() ? rawColor : MARK_DEFAULT_HIGHLIGHT_COLOR;
+      runs.push(...extractTextRuns(innerChildren, { ...inherited, highlight }));
+    } else if (tag === INLINE_SPAN_TAG) {
+      const spanAttrs = getAttributes(child);
+      const next = { ...inherited };
+      if (spanAttrs.color && spanAttrs.color.trim()) {
+        next.color = spanAttrs.color;
+      }
+      if (spanAttrs.fontFamily && spanAttrs.fontFamily.trim()) {
+        next.fontFamily = spanAttrs.fontFamily;
+      }
+      if (spanAttrs.letterSpacing && spanAttrs.letterSpacing.trim()) {
+        next.letterSpacing = Number(spanAttrs.letterSpacing);
+      }
+      runs.push(...extractTextRuns(innerChildren, next));
     }
   }
   return runs;
@@ -492,7 +388,7 @@ function extractTextRuns(
 
 function buildRunsAndText(
   node: XmlElement,
-): { runs: TextRunResult[]; text: string } | null {
+): { runs: TextRun[]; text: string } | null {
   const rawChildren = getRawChildren(node);
   const childElements = rawChildren.filter(
     (c): c is XmlElement => !isTextNode(c),
@@ -581,54 +477,36 @@ function coerceChildAttrs(
 }
 
 // ===== Child element converters =====
-type ChildElementConverter = (
-  childElements: XmlElement[],
-  result: Record<string, unknown>,
-  errors: string[],
-  node?: XmlElement,
-) => void;
 
-function convertProcessArrowChildren(
-  childElements: XmlElement[],
-  result: Record<string, unknown>,
-  errors: string[],
-): void {
-  const steps: Record<string, unknown>[] = [];
-  for (const child of childElements) {
-    const tag = getTagName(child);
-    if (tag !== "ProcessArrowStep") {
-      errors.push(
-        `Unknown child element <${tag}> inside <ProcessArrow>. Expected: <ProcessArrowStep>`,
-      );
-      continue;
-    }
-    steps.push(
-      coerceChildAttrs("ProcessArrow", tag, getAttributes(child), errors),
-    );
-  }
-  result.steps = steps;
+function unknownChildError(
+  childTag: string,
+  parentTag: string,
+  expectedTags: readonly string[],
+): string {
+  return `Unknown child element <${childTag}> inside <${parentTag}>. Expected: ${formatExpectedTags(expectedTags)}`;
 }
 
-function convertPyramidChildren(
-  childElements: XmlElement[],
-  result: Record<string, unknown>,
-  errors: string[],
+/** element の text content / インライン装飾を attrs の text / runs へ反映する */
+function applyTextAndRuns(
+  element: XmlElement,
+  attrs: Record<string, unknown>,
 ): void {
-  const levels: Record<string, unknown>[] = [];
-  for (const child of childElements) {
-    const tag = getTagName(child);
-    if (tag !== "PyramidLevel") {
-      errors.push(
-        `Unknown child element <${tag}> inside <Pyramid>. Expected: <PyramidLevel>`,
-      );
-      continue;
+  const runsResult = buildRunsAndText(element);
+  if (runsResult) {
+    attrs.runs = runsResult.runs;
+    attrs.text = runsResult.text;
+  } else {
+    const textContent = getTextContent(element);
+    if (textContent !== undefined && !("text" in attrs)) {
+      attrs.text = textContent;
     }
-    levels.push(coerceChildAttrs("Pyramid", tag, getAttributes(child), errors));
   }
-  result.levels = levels;
 }
 
-function convertTimelineChildren(
+/** RepeatedChildRule (単一種類の child tag の繰り返し → 配列 property) の汎用 converter */
+function convertRepeatedChildren(
+  rule: RepeatedChildRule,
+  parentTag: string,
   childElements: XmlElement[],
   result: Record<string, unknown>,
   errors: string[],
@@ -636,18 +514,36 @@ function convertTimelineChildren(
   const items: Record<string, unknown>[] = [];
   for (const child of childElements) {
     const tag = getTagName(child);
-    if (tag !== "TimelineItem") {
-      errors.push(
-        `Unknown child element <${tag}> inside <Timeline>. Expected: <TimelineItem>`,
-      );
+    if (tag !== rule.childTag) {
+      errors.push(unknownChildError(tag, parentTag, [rule.childTag]));
       continue;
     }
-    items.push(coerceChildAttrs("Timeline", tag, getAttributes(child), errors));
+    const attrs = coerceChildAttrs(
+      parentTag,
+      tag,
+      getAttributes(child),
+      errors,
+    );
+    if (rule.allowsItemText) {
+      applyTextAndRuns(child, attrs);
+    }
+    items.push(attrs);
   }
-  result.items = items;
+  result[rule.property] = items;
 }
 
+/** NodeSpecificChildRule を処理する専用 converter のシグネチャ */
+type NodeSpecificChildConverter = (
+  rule: NodeSpecificChildRule,
+  tagName: string,
+  childElements: XmlElement[],
+  result: Record<string, unknown>,
+  errors: string[],
+) => void;
+
 function convertMatrixChildren(
+  rule: NodeSpecificChildRule,
+  tagName: string,
   childElements: XmlElement[],
   result: Record<string, unknown>,
   errors: string[],
@@ -658,7 +554,7 @@ function convertMatrixChildren(
     switch (tag) {
       case "MatrixAxes":
         result.axes = coerceChildAttrs(
-          "Matrix",
+          tagName,
           tag,
           getAttributes(child),
           errors,
@@ -666,7 +562,7 @@ function convertMatrixChildren(
         break;
       case "MatrixQuadrants":
         result.quadrants = coerceChildAttrs(
-          "Matrix",
+          tagName,
           tag,
           getAttributes(child),
           errors,
@@ -674,13 +570,11 @@ function convertMatrixChildren(
         break;
       case "MatrixItem":
         items.push(
-          coerceChildAttrs("Matrix", tag, getAttributes(child), errors),
+          coerceChildAttrs(tagName, tag, getAttributes(child), errors),
         );
         break;
       default:
-        errors.push(
-          `Unknown child element <${tag}> inside <Matrix>. Expected: <MatrixAxes>, <MatrixQuadrants>, or <MatrixItem>`,
-        );
+        errors.push(unknownChildError(tag, tagName, rule.expectedTags));
     }
   }
   if (items.length > 0) {
@@ -689,6 +583,8 @@ function convertMatrixChildren(
 }
 
 function convertFlowChildren(
+  rule: NodeSpecificChildRule,
+  tagName: string,
   childElements: XmlElement[],
   result: Record<string, unknown>,
   errors: string[],
@@ -699,17 +595,15 @@ function convertFlowChildren(
     const tag = getTagName(child);
     switch (tag) {
       case "FlowNode":
-        nodes.push(coerceChildAttrs("Flow", tag, getAttributes(child), errors));
+        nodes.push(coerceChildAttrs(tagName, tag, getAttributes(child), errors));
         break;
       case "FlowConnection":
         connections.push(
-          coerceChildAttrs("Flow", tag, getAttributes(child), errors),
+          coerceChildAttrs(tagName, tag, getAttributes(child), errors),
         );
         break;
       default:
-        errors.push(
-          `Unknown child element <${tag}> inside <Flow>. Expected: <FlowNode> or <FlowConnection>`,
-        );
+        errors.push(unknownChildError(tag, tagName, rule.expectedTags));
     }
   }
   if (nodes.length > 0) {
@@ -721,6 +615,8 @@ function convertFlowChildren(
 }
 
 function convertChartChildren(
+  rule: NodeSpecificChildRule,
+  tagName: string,
   childElements: XmlElement[],
   result: Record<string, unknown>,
   errors: string[],
@@ -729,9 +625,7 @@ function convertChartChildren(
   for (const child of childElements) {
     const tag = getTagName(child);
     if (tag !== "ChartSeries") {
-      errors.push(
-        `Unknown child element <${tag}> inside <Chart>. Expected: <ChartSeries>`,
-      );
+      errors.push(unknownChildError(tag, tagName, rule.expectedTags));
       continue;
     }
     const attrs = getAttributes(child);
@@ -748,7 +642,7 @@ function convertChartChildren(
       const dpTag = getTagName(dp);
       if (dpTag !== "ChartDataPoint") {
         errors.push(
-          `Unknown child element <${dpTag}> inside <ChartSeries>. Expected: <ChartDataPoint>`,
+          unknownChildError(dpTag, "ChartSeries", ["ChartDataPoint"]),
         );
         continue;
       }
@@ -778,6 +672,8 @@ function convertChartChildren(
 }
 
 function convertTableChildren(
+  rule: NodeSpecificChildRule,
+  tagName: string,
   childElements: XmlElement[],
   result: Record<string, unknown>,
   errors: string[],
@@ -789,7 +685,7 @@ function convertTableChildren(
     switch (tag) {
       case "Col":
         columns.push(
-          coerceChildAttrs("Table", tag, getAttributes(child), errors),
+          coerceChildAttrs(tagName, tag, getAttributes(child), errors),
         );
         break;
       case "Tr": {
@@ -798,9 +694,7 @@ function convertTableChildren(
         for (const cellEl of getChildElements(child)) {
           const cellTag = getTagName(cellEl);
           if (cellTag !== "Td") {
-            errors.push(
-              `Unknown child element <${cellTag}> inside <Tr>. Expected: <Td>`,
-            );
+            errors.push(unknownChildError(cellTag, "Tr", ["Td"]));
             continue;
           }
           const cellAttrs = coerceChildAttrs(
@@ -809,16 +703,7 @@ function convertTableChildren(
             getAttributes(cellEl),
             errors,
           );
-          const runsResult = buildRunsAndText(cellEl);
-          if (runsResult) {
-            cellAttrs.runs = runsResult.runs;
-            cellAttrs.text = runsResult.text;
-          } else {
-            const cellText = getTextContent(cellEl);
-            if (cellText !== undefined && !("text" in cellAttrs)) {
-              cellAttrs.text = cellText;
-            }
-          }
+          applyTextAndRuns(cellEl, cellAttrs);
           cells.push(cellAttrs);
         }
         const row: Record<string, unknown> = { cells };
@@ -836,9 +721,7 @@ function convertTableChildren(
         break;
       }
       default:
-        errors.push(
-          `Unknown child element <${tag}> inside <Table>. Expected: <Col> or <Tr>`,
-        );
+        errors.push(unknownChildError(tag, tagName, rule.expectedTags));
     }
   }
   if (columns.length > 0) {
@@ -884,9 +767,7 @@ function convertTreeItem(
       .map((child) => {
         const tag = getTagName(child);
         if (tag !== "TreeItem") {
-          errors.push(
-            `Unknown child element <${tag}> inside <TreeItem>. Expected: <TreeItem>`,
-          );
+          errors.push(unknownChildError(tag, "TreeItem", ["TreeItem"]));
           return null;
         }
         return convertTreeItem(child, errors);
@@ -897,6 +778,8 @@ function convertTreeItem(
 }
 
 function convertTreeChildren(
+  rule: NodeSpecificChildRule,
+  tagName: string,
   childElements: XmlElement[],
   result: Record<string, unknown>,
   errors: string[],
@@ -910,48 +793,10 @@ function convertTreeChildren(
   const child = childElements[0];
   const tag = getTagName(child);
   if (tag !== "TreeItem") {
-    errors.push(
-      `Unknown child element <${tag}> inside <Tree>. Expected: <TreeItem>`,
-    );
+    errors.push(unknownChildError(tag, tagName, rule.expectedTags));
     return;
   }
   result.data = convertTreeItem(child, errors);
-}
-
-function convertListChildren(
-  parentTag: string,
-  childElements: XmlElement[],
-  result: Record<string, unknown>,
-  errors: string[],
-): void {
-  const items: Record<string, unknown>[] = [];
-  for (const child of childElements) {
-    const tag = getTagName(child);
-    if (tag !== "Li") {
-      errors.push(
-        `Unknown child element <${tag}> inside <${parentTag}>. Expected: <Li>`,
-      );
-      continue;
-    }
-    const attrs = coerceChildAttrs(
-      parentTag,
-      tag,
-      getAttributes(child),
-      errors,
-    );
-    const runsResult = buildRunsAndText(child);
-    if (runsResult) {
-      attrs.runs = runsResult.runs;
-      attrs.text = runsResult.text;
-    } else {
-      const textContent = getTextContent(child);
-      if (textContent !== undefined && !("text" in attrs)) {
-        attrs.text = textContent;
-      }
-    }
-    items.push(attrs);
-  }
-  result.items = items;
 }
 
 // SVG 要素を XML 文字列に再構築する
@@ -966,6 +811,8 @@ function serializeSvgElement(svgElement: XmlElement): string {
 }
 
 function convertSvgChildren(
+  _rule: NodeSpecificChildRule,
+  _tagName: string,
   childElements: XmlElement[],
   result: Record<string, unknown>,
   errors: string[],
@@ -987,7 +834,8 @@ function convertSvgChildren(
   result.svgContent = serializeSvgElement(child);
 }
 
-function convertTextInlineChildren(
+function convertInlineRunsChildren(
+  tagName: string,
   childElements: XmlElement[],
   result: Record<string, unknown>,
   errors: string[],
@@ -997,8 +845,10 @@ function convertTextInlineChildren(
   for (const el of childElements) {
     const tag = getTagName(el);
     if (!INLINE_FORMAT_TAGS.has(tag)) {
+      const allowedTags = INLINE_FORMAT_TAG_LIST.map((t) => `<${t}>`);
+      const allowedList = `${allowedTags.slice(0, -1).join(", ")}, and ${allowedTags[allowedTags.length - 1]}`;
       errors.push(
-        `<Text>: Unexpected child element <${tag}>. Only <B>, <I>, <A>, <U>, <S>, <Mark>, and <Span> are allowed inside <Text>`,
+        `<${tagName}>: Unexpected child element <${tag}>. Only ${allowedList} are allowed inside <${tagName}>`,
       );
       return;
     }
@@ -1011,15 +861,11 @@ function convertTextInlineChildren(
   }
 }
 
-const CHILD_ELEMENT_CONVERTERS: Record<string, ChildElementConverter> = {
-  text: convertTextInlineChildren,
-  ul: (childElements, result, errors) =>
-    convertListChildren("Ul", childElements, result, errors),
-  ol: (childElements, result, errors) =>
-    convertListChildren("Ol", childElements, result, errors),
-  processArrow: convertProcessArrowChildren,
-  pyramid: convertPyramidChildren,
-  timeline: convertTimelineChildren,
+/** NodeSpecificChildRule を持つノードの専用 converter テーブル */
+const NODE_SPECIFIC_CHILD_CONVERTERS: Record<
+  string,
+  NodeSpecificChildConverter
+> = {
   matrix: convertMatrixChildren,
   flow: convertFlowChildren,
   chart: convertChartChildren,
@@ -1027,6 +873,33 @@ const CHILD_ELEMENT_CONVERTERS: Record<string, ChildElementConverter> = {
   tree: convertTreeChildren,
   svg: convertSvgChildren,
 };
+
+/** NodeMetadata の xmlChildRule に従って child element を変換する */
+function applyXmlChildRule(
+  rule: XmlChildRule,
+  nodeType: string,
+  tagName: string,
+  childElements: XmlElement[],
+  result: Record<string, unknown>,
+  errors: string[],
+  node?: XmlElement,
+): void {
+  if (rule.kind === "inline-runs") {
+    convertInlineRunsChildren(tagName, childElements, result, errors, node);
+    return;
+  }
+  if (rule.kind === "repeated") {
+    convertRepeatedChildren(rule, tagName, childElements, result, errors);
+    return;
+  }
+  const converter = NODE_SPECIFIC_CHILD_CONVERTERS[nodeType];
+  if (!converter) {
+    throw new Error(
+      `No node-specific child converter registered for node type: ${nodeType}`,
+    );
+  }
+  converter(rule, tagName, childElements, result, errors);
+}
 
 // ===== Theme tokens =====
 const THEME_TOKEN_NAME_PATTERN = /^[A-Za-z][A-Za-z0-9_-]*$/;
@@ -1279,9 +1152,17 @@ function convertPomNode(
   }
 
   // Child element notation for complex properties
-  const childConverter = CHILD_ELEMENT_CONVERTERS[nodeType];
-  if (childConverter && childElements.length > 0) {
-    childConverter(childElements, result, errors, xmlNode);
+  const childRule = def.xmlChildRule;
+  if (childRule && childElements.length > 0) {
+    applyXmlChildRule(
+      childRule,
+      nodeType,
+      tagName,
+      childElements,
+      result,
+      errors,
+      xmlNode,
+    );
   }
   // Children for container nodes
   else if (
@@ -1296,7 +1177,7 @@ function convertPomNode(
   // Leaf nodes that shouldn't have child elements
   else if (
     def.childPolicy.kind !== "pom-children" &&
-    !childConverter &&
+    !childRule &&
     childElements.length > 0
   ) {
     errors.push(
