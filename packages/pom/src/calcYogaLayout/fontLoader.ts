@@ -96,6 +96,41 @@ export function measureTextWidth(
 }
 
 /**
+ * フォントの縦方向メトリクスを fontSizePx に対する比率で取得する
+ *
+ * - typoAscender / typoDescender: グリフ ink のおおよその上端・下端
+ *   (descender は正の値に符号反転して返す)
+ * - winDescent: レンダラが固定行送り (spcPts) のときに行下端から
+ *   baseline までの距離として確保する descent
+ *
+ * バンドル外フォント使用時もバンドルフォント (Noto Sans JP) の値を
+ * 近似値として使う想定 (テキスト幅計測と同じ方針)。
+ *
+ * @param weight フォントウェイト
+ * @returns 各メトリクスの fontSizePx に対する比率
+ */
+export function measureFontVerticalMetricsRatio(weight: "normal" | "bold"): {
+  typoAscender: number;
+  typoDescender: number;
+  winDescent: number;
+} {
+  const font = getFont(weight);
+  const upm = font.unitsPerEm;
+  const os2 = font.tables?.os2;
+
+  if (!os2) {
+    // メトリクスが取れない場合は Noto Sans JP 相当の値で近似する
+    return { typoAscender: 0.88, typoDescender: 0.12, winDescent: 0.288 };
+  }
+
+  return {
+    typoAscender: os2.sTypoAscender / upm,
+    typoDescender: -os2.sTypoDescender / upm,
+    winDescent: os2.usWinDescent / upm,
+  };
+}
+
+/**
  * フォントの自然な行高さ比率を取得する
  *
  * PowerPoint の lineHeight はフォントサイズではなく、

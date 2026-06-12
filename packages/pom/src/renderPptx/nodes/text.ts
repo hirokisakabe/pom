@@ -51,7 +51,7 @@ export function renderTextNode(
       align: textOptions.align,
       valign: textOptions.valign,
       margin: textOptions.margin,
-      lineSpacingMultiple: textOptions.lineSpacingMultiple,
+      lineSpacing: textOptions.lineSpacing,
     });
   } else {
     ctx.slide.addText(node.text ?? "", textOptions);

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   createTextOptions,
+  calcGlyphCenteringShiftPx,
   convertGlow,
   convertOutline,
 } from "./textOptions.ts";
@@ -23,12 +24,31 @@ describe("createTextOptions", () => {
     });
 
     expect(options.x).toBe(pxToIn(12));
-    expect(options.y).toBe(pxToIn(34));
+    // y はグリフ中央化補正 (#846) の分だけずれる
+    expect(options.y).toBe(
+      pxToIn(34 - calcGlyphCenteringShiftPx(32, 1.3, "normal")),
+    );
     expect(options.w).toBe(pxToIn(200));
     expect(options.h).toBe(pxToIn(100));
     expect(options.fontSize).toBe(pxToPt(32));
     expect(options.align).toBe("center");
     expect(options.color).toBe("FF00FF");
+  });
+
+  it("行送りを固定値 (fontSize × lineHeight) の lineSpacing で出力する", () => {
+    const options = createTextOptions({
+      type: "text",
+      text: "hello",
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 20,
+      fontSize: 14,
+      lineHeight: 1.5,
+    });
+
+    expect(options.lineSpacing).toBe(pxToPt(14 * 1.5));
+    expect(options).not.toHaveProperty("lineSpacingMultiple");
   });
 
   it("色や配置が指定されない場合のデフォルト値を設定する", () => {
@@ -105,6 +125,22 @@ describe("createTextOptions", () => {
 
     expect(options.glow).toBeUndefined();
     expect(options.outline).toBeUndefined();
+  });
+});
+
+describe("calcGlyphCenteringShiftPx", () => {
+  it("Noto Sans JP のメトリクスでグリフ ink を行内中央に置く補正量を返す", () => {
+    // Noto Sans JP: typoAscender 0.88 / typoDescender 0.12 / winDescent 0.288
+    // L = 14 × 1.5 = 21px
+    // baseline 実位置 = 21 − 0.288×14 = 16.968px
+    // 中央化 baseline = (21 − 1.0×14)/2 + 0.88×14 = 15.82px
+    expect(calcGlyphCenteringShiftPx(14, 1.5, "normal")).toBeCloseTo(1.148, 3);
+  });
+
+  it("lineHeight が小さい場合は負の補正 (下方向) になる", () => {
+    // L = 14 × 1.0 = 14px: ink (1.0em) を中央 (=上端ぴったり) に置くには
+    // baseline 実位置 (9.968px) より下 (12.32px) に動かす必要がある
+    expect(calcGlyphCenteringShiftPx(14, 1.0, "normal")).toBeCloseTo(-2.352, 3);
   });
 });
 
