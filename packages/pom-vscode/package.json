@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "pom",
   "description": "Live preview for pom-md / pom XML presentations",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "publisher": "hirokisakabe",
   "license": "MIT",
   "repository": {
