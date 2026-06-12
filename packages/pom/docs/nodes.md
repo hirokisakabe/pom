@@ -79,7 +79,7 @@ Layout attributes that all nodes can have.
 - `border`: Can be combined with `color`, `width`, and `dashType` (`"solid"` / `"dash"` / `"dashDot"` / `"lgDash"` / `"lgDashDot"` / `"lgDashDotDot"` / `"sysDash"` / `"sysDot"`).
 - `opacity`: 0 = fully transparent, 1 = fully opaque. Useful for semi-transparent overlays with Layer nodes.
 - Shorthand (`padding="16"` / `border='{"color":"333","width":1}'`) and dot notation (`padding.top="8"` / `border.color="FF0000"`) can be mixed on the same node. Shorthand is used as the default value, then dot notation overrides each top-level key.
-- Mixed shorthand + dot notation is supported for: `padding` `margin` `border` `cellBorder` `line` `fill` `shadow` `underline` `beginArrow` `endArrow` `backgroundImage` `connectorStyle` `sizing`.
+- Mixed shorthand + dot notation is supported for: `padding` `margin` `border` `cellBorder` `line` `fill` `shadow` `underline` `beginArrow` `endArrow` `backgroundImage` `connectorStyle` `sizing` `glow` `outline`.
 
 ## Node List
 
@@ -104,6 +104,8 @@ A node for displaying text.
 | `fontFamily`             | string (default: `Noto Sans JP`)                           |
 | `lineHeight`             | number (default: 1.3)                                      |
 | `letterSpacing`          | number in px (letter spacing, converted to pt on output)   |
+| `glow`                   | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"`     |
+| `outline`                | `outline.size="2" outline.color="0088CC"`                  |
 
 **Inline Formatting:**
 
@@ -133,6 +135,20 @@ Use `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` child elements for
 ```
 
 See [Styling Guide](./styling-guide.md#font-size-guide) for recommended font sizes.
+
+**Text Effects (glow / outline):**
+
+`glow` adds a glow effect around the characters, and `outline` draws a border along the character edges. Both are exported as native PowerPoint text effects (editable in PowerPoint, not rasterized). They are useful for keeping titles legible on top of background images.
+
+```xml
+<Text fontSize="40" bold="true" color="FFFFFF" glow.size="8" glow.opacity="0.5" glow.color="1D4ED8">Glowing title</Text>
+<Text fontSize="40" bold="true" color="FFFFFF" outline.size="2" outline.color="0F172A">Outlined title</Text>
+```
+
+- `glow.size`: glow radius in px (converted to pt on output, default: 8). `glow.opacity`: 0–1 (default: 0.75). `glow.color`: hex (default: `FFFFFF`).
+- `outline.size`: outline width in px (converted to pt on output, default: 1). `outline.color`: hex (default: `FFFFFF`).
+- Both apply per text node. When inline formatting (`<B>`, `<Span>`, ...) is used, the node-level effect applies to all runs.
+- Note: LibreOffice does not render character glow (outline renders fine); open the PPTX in PowerPoint to see the glow effect.
 
 **UnderlineStyle:**
 
