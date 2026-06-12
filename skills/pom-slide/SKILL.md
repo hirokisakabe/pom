@@ -763,6 +763,13 @@ When the same property is specified via both attributes (JSON string) and child 
 - Property names are `w` / `h` (not `width` / `height`)
 - Children of `Layer` require `x` and `y`
 - `Tree` must have exactly one root `<TreeItem>`
+
+## Build Diagnostics
+
+Building emits warnings (`diagnostics`) for layout problems that can be detected from the computed coordinates — fix the XML when these appear:
+
+- `NODE_OUT_OF_BOUNDS` — a node's rectangle extends beyond the slide bounds. The message identifies the slide, the node (tag / `id` / path), and the overflowing edges. Shrink or move the node, reduce content, or split the slide.
+- `NODE_OVERLAP` — siblings inside `VStack` / `HStack` overlap unintentionally (e.g. via `top` / `left` offsets). Intentional overlaps are NOT reported: children of `Layer`, `position="absolute"` nodes, negative `margin` / `gap` (e.g. `ProcessArrow`'s default negative gap), and nodes with an explicit `zIndex`. To keep a deliberate overlap, express it with one of those mechanisms.
 <!-- END llm.txt -->
 
 ---
@@ -776,7 +783,7 @@ When the same property is specified via both attributes (JSON string) and child 
 
 ### 5. セルフレビュー（レンダリング → 自己批評 → 修正）
 
-保存した XML をレンダリングして画像として確認し、デザイン上の問題を修正するループ。レイアウト崩れやはみ出しは XML を眺めるだけでは検出できないため、必ず画像で確認する。
+保存した XML をレンダリングして画像として確認し、デザイン上の問題を修正するループ。スライド外へのはみ出しと要素同士の重なりは build 時の警告（`NODE_OUT_OF_BOUNDS` / `NODE_OVERLAP`）として機械的に検出されるため、画像批評は警告では拾えない項目（階層・余白バランス・密度など）に集中する。
 
 #### レンダリング手段の確認
 
@@ -785,8 +792,9 @@ When the same property is specified via both attributes (JSON string) and child 
 #### ループ手順
 
 1. **レンダリング**: `pom render <保存したファイル名> -o /tmp/pom-review` で全スライドの PNG（`slide-01.png` 形式）を出力する。2 周目以降は `--slides 2,5` のように修正したスライドだけを再レンダリングしてよい
-2. **批評**: 各 PNG を `Read` ツールで読み、下のチェックリストで全スライドを評価する
-3. **修正**: 問題があれば XML を修正して 1 に戻る
+2. **ビルド警告の対応**: `pom render` / `pom build` は、はみ出し・重なりがあると `[NODE_OUT_OF_BOUNDS]` / `[NODE_OVERLAP]` の警告メッセージとともに失敗する。メッセージにはスライド番号・ノード（タグ / id / ルートからのパス）・はみ出し方向が含まれるので、該当ノードを修正して 1 に戻る。意図的な重なりは `Layer` / `zIndex` / 負 margin のいずれかで表現すれば警告されない
+3. **批評**: 各 PNG を `Read` ツールで読み、下のチェックリストで全スライドを評価する
+4. **修正**: 問題があれば XML を修正して 1 に戻る
 
 #### fallback: soffice チェーン（render 未対応の古い pom-cli 用）
 
@@ -798,7 +806,7 @@ When the same property is specified via both attributes (JSON string) and child 
 
 #### 批評チェックリスト
 
-- **はみ出し・重なり**: テキストの見切れ、要素同士の重なり、スライド外へのはみ出し（最優先で修正する）
+- **はみ出し・重なり**: スライド外へのはみ出しと要素同士の重なりは build 時の警告で検出済みの前提。画像では警告に出ない残り（テキストの見切れ、`rotate` したノードや `Layer` 内の意図しない衝突）だけを確認する（見つけたら最優先で修正する）
 - **余白**: 外周 padding が確保されているか。要素が窮屈になっていないか、一部だけ不自然に空いていないか
 - **整列**: 揃うべき左端・上端が揃っているか。並べたカードの幅が均等か
 - **階層**: タイトルが一目で本文と区別できるか。視線の流れ（左上 → 右下）が自然か
