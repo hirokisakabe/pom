@@ -1,5 +1,67 @@
 # @hirokisakabe/pom-jsx
 
+## 0.3.0
+
+### Minor Changes
+
+- [#821](https://github.com/hirokisakabe/pom/pull/821) [`7dae5eb`](https://github.com/hirokisakabe/pom/commit/7dae5eb25daee47e088363d72f9c1e6281917205) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - feat: テーマ機構を導入 — 複合ノードのテキスト色制御 + `<Theme>` デザイントークン参照
+
+  **複合ノードのテキスト色制御**: 内部テキスト色が固定だった複合ノードに、既存の `textColor` と命名・挙動を揃えた色属性を追加しました（optional / `#` 任意 / 未指定時は従来色で後方互換）。
+  - `Timeline`: `dateColor` / `titleColor` / `descriptionColor`
+  - `Matrix`: `axisLabelColor` / `quadrantLabelColor` / `itemLabelColor` + `<MatrixItem textColor>`
+  - `Tree`: `textColor` + `<TreeItem textColor>`
+  - `Flow`: `connectorStyle.labelColor` + `<FlowConnection labelColor>`
+
+  **デザイントークン参照**: トップレベル `<Theme>` 要素で配色トークンを 1 箇所宣言し、各ノードの色属性から `$name` で参照できるようになりました。参照は `parseXml` 時に解決され、未知トークンは "did you mean" つきの `ParseXmlError` になります。
+
+  ```xml
+  <Theme surface="0F172A" accent="38BDF8" textMain="F8FAFC" textMuted="94A3B8" />
+  <Slide>
+    <VStack w="100%" h="max" padding="48" backgroundColor="$surface">
+      <Timeline dateColor="$textMuted" titleColor="$textMain" w="1000" h="120">
+        <TimelineItem date="Q1" title="Phase 1" color="$accent" />
+      </Timeline>
+    </VStack>
+  </Slide>
+  ```
+
+  これによりダーク背景でも `Timeline` 等の全テキストが視認できるようになり、パレットの hex 値を全ノードに繰り返し書く必要がなくなります。
+
+- [#836](https://github.com/hirokisakabe/pom/pull/836) [`481cbeb`](https://github.com/hirokisakabe/pom/commit/481cbeba4a106464d2e6b206741459c9e8813a72) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - feat: 辺ごとの border 指定 `borderTop` / `borderRight` / `borderBottom` / `borderLeft` を追加
+
+  全ノード共通属性として、辺ごとに `color` / `width` / `dashType` を指定できる per-side border を追加しました。「左辺だけ太いアクセントバー付きのカード」「下線だけのセクション見出し」などをワークアラウンドなしで表現できます。
+  - `borderLeft.color="1D4ED8" borderLeft.width="6"` のように dot 記法 / JSON shorthand の両方で指定可能
+  - 既存の `border` (4 辺一律) と併用した場合、各辺はフィールド単位でマージされ辺ごとの指定が優先されます
+  - `border` のみ指定した既存 XML の出力は変化しません (後方互換)
+  - `borderRadius` との併用はサポート外です。併用時は diagnostics 警告 (`PER_SIDE_BORDER_WITH_RADIUS`) を発し、辺ごとの指定を無視して一律 `border` で描画します
+  - pom-jsx の `BaseProps` にも同名の props を追加しました
+  - pom-vscode の diagnostics 重大度マップに `PER_SIDE_BORDER_WITH_RADIUS` (Warning) を追加しました
+
+- [#839](https://github.com/hirokisakabe/pom/pull/839) [`41bd4d7`](https://github.com/hirokisakabe/pom/commit/41bd4d761f1ec65110de866b3fe535882b122abe) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - feat: Text / Shape / Image / Icon に rotate 属性を追加
+
+  `Text` / `Shape` / `Image` / `Icon` ノードで `rotate` 属性を指定できるようになりました。値は時計回りの度数で、PowerPoint への描画時に pptxgenjs の `rotate` option として渡されます。
+
+  回転はレイアウト計算後の描画時にのみ適用されます。Yoga layout は非回転時のバウンディングボックスで計算するため、回転しても兄弟要素の配置や親サイズには影響しません。
+
+  ```xml
+  <Text rotate="12">Rotated label</Text>
+  <Shape shapeType="rect" w="120" h="60" rotate="-15" />
+  <Image src="sample_images/sample_0.png" w="160" h="100" rotate="8" />
+  <Icon name="cpu" rotate="45" />
+  ```
+
+- [#837](https://github.com/hirokisakabe/pom/pull/837) [`d0c1bbb`](https://github.com/hirokisakabe/pom/commit/d0c1bbb39c849d35b7ca4f0069a62645d548c67a) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - feat: Text ノードに glow / outline 文字効果を追加
+
+  `Text` ノードで `glow`（光彩）と `outline`（文字の輪郭線）を指定できるようになりました。背景画像の上に置くタイトル文字など、視認性と装飾性を両立したいケースで使えます。どちらも PowerPoint のネイティブ文字効果として出力されるため、生成後も PowerPoint 上で編集できます（画像化しません）。
+  - `glow`: `size`（px、デフォルト 8）/ `opacity`（0–1、デフォルト 0.75）/ `color`（hex、デフォルト `FFFFFF`）
+  - `outline`: `size`（px、デフォルト 1）/ `color`（hex、デフォルト `FFFFFF`）
+  - ドット記法・JSON shorthand の両方に対応。インライン整形（`<B>` / `<Span>` など）併用時はノード単位の効果が全 run に適用されます。
+
+  ```xml
+  <Text fontSize="40" bold="true" color="FFFFFF" glow.size="8" glow.opacity="0.5" glow.color="1D4ED8">Glowing title</Text>
+  <Text fontSize="40" bold="true" color="FFFFFF" outline.size="2" outline.color="0F172A">Outlined title</Text>
+  ```
+
 ## 0.2.0
 
 ### Minor Changes
