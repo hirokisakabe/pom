@@ -47,7 +47,6 @@
   },
   "scripts": {
     "build": "tsdown",
-    "prepublishOnly": "pnpm run build && pnpm run lint && pnpm run fmt:check && pnpm run typecheck && pnpm run test:run",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
     "knip": "knip",

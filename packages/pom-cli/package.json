@@ -31,7 +31,6 @@
   },
   "scripts": {
     "build": "tsc && node -e \"require('fs').chmodSync('dist/cli.js', '755')\"",
-    "prepublishOnly": "pnpm run build",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
     "lint": "eslint",
