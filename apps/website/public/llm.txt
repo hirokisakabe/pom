@@ -606,5 +606,5 @@ When the same property is specified via both attributes (JSON string) and child 
 
 Building emits warnings (`diagnostics`) for layout problems that can be detected from the computed coordinates — fix the XML when these appear:
 
-- `NODE_OUT_OF_BOUNDS` — a node's rectangle extends beyond the slide bounds. The message identifies the slide, the node (tag / `id` / path), and the overflowing edges. Shrink or move the node, reduce content, or split the slide.
+- `NODE_OUT_OF_BOUNDS` — a node's rectangle extends beyond the slide bounds. The message identifies the slide, the node (tag / `id` / path), and the overflowing edges. Shrink or move the node, reduce content, or split the slide. Nodes with `rotate` and `Line` / `Arrow` are not checked (their final bounds cannot be derived statically), so verify those visually.
 - `NODE_OVERLAP` — siblings inside `VStack` / `HStack` overlap unintentionally (e.g. via `top` / `left` offsets). Intentional overlaps are NOT reported: children of `Layer`, `position="absolute"` nodes, negative `margin` / `gap` (e.g. `ProcessArrow`'s default negative gap), and nodes with an explicit `zIndex`. To keep a deliberate overlap, express it with one of those mechanisms.

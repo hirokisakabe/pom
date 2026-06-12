@@ -54,6 +54,15 @@ describe("validatePositioned NODE_OUT_OF_BOUNDS", () => {
     ).toHaveLength(0);
   });
 
+  it("Line / Arrow は境界判定の対象外なのでスライド外でも警告しない", async () => {
+    const xml = `<Slide><Layer w="1280" h="720"><Shape id="a" x="1300" y="100" shapeType="rect" w="120" h="40" zIndex="1" /><Line x="1300" y="200" x1="0" y1="0" x2="2000" y2="1000" /><Arrow x="1300" y="0" from="a" to="a" /></Layer></Slide>`;
+    const diagnostics = await getDiagnostics(xml);
+    const found = diagnostics.filter((d) => d.code === "NODE_OUT_OF_BOUNDS");
+    // スライド外にあるのは Shape / Line / Arrow の 3 つだが、報告されるのは Shape のみ
+    expect(found).toHaveLength(1);
+    expect(found[0].message).toContain("<Shape");
+  });
+
   it("スライド内に収まるノードでは警告が出ない", async () => {
     const xml = `<Slide><VStack padding="40" gap="16"><Text fontSize="24">a</Text><Text fontSize="24">b</Text></VStack></Slide>`;
     const diagnostics = await getDiagnostics(xml);
