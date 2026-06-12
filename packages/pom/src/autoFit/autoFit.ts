@@ -7,11 +7,12 @@ import { reduceTableRowHeight } from "./strategies/reduceTableRowHeight.ts";
 import { reduceFontSize } from "./strategies/reduceFontSize.ts";
 import { reduceGapAndPadding } from "./strategies/reduceGapAndPadding.ts";
 import { uniformScale } from "./strategies/uniformScale.ts";
+import type { AutoFitStrategyResult } from "./strategyResult.ts";
 
 /** オーバーフロー判定の許容マージン（0.5%） */
 const OVERFLOW_TOLERANCE = 1.005;
 
-type Strategy = (node: POMNode, targetRatio: number) => boolean;
+type Strategy = (node: POMNode, targetRatio: number) => AutoFitStrategyResult;
 
 const strategies: Strategy[] = [
   reduceTableRowHeight,
@@ -100,8 +101,8 @@ export async function autoFitSlide(
       break;
     }
 
-    const changed = strategy(node, result.targetRatio);
-    if (!changed) {
+    const strategyResult = strategy(node, result.targetRatio);
+    if (!strategyResult.changed) {
       continue;
     }
   }

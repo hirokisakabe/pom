@@ -55,8 +55,8 @@ describe("reduceTableRowHeight", () => {
       rows: [{ cells: [{ text: "a" }] }],
       defaultRowHeight: 40,
     };
-    const changed = reduceTableRowHeight(node, 0.7);
-    expect(changed).toBe(true);
+    const result = reduceTableRowHeight(node, 0.7);
+    expect(result.changed).toBe(true);
     expect(node.defaultRowHeight).toBe(28);
   });
 
@@ -66,8 +66,8 @@ describe("reduceTableRowHeight", () => {
       columns: [{}],
       rows: [{ cells: [{ text: "a" }], height: 50 }],
     };
-    const changed = reduceTableRowHeight(node, 0.8);
-    expect(changed).toBe(true);
+    const result = reduceTableRowHeight(node, 0.8);
+    expect(result.changed).toBe(true);
     expect(node.rows[0].height).toBe(40);
   });
 
@@ -82,10 +82,22 @@ describe("reduceTableRowHeight", () => {
     expect(node.defaultRowHeight).toBe(20);
   });
 
-  it("テーブルがない場合は false を返す", () => {
+  it("テーブルがない場合は no-target を返す", () => {
     const node: POMNode = { type: "text", text: "hello" };
-    const changed = reduceTableRowHeight(node, 0.7);
-    expect(changed).toBe(false);
+    const result = reduceTableRowHeight(node, 0.7);
+    expect(result).toEqual({ changed: false, reason: "no-target" });
+  });
+
+  it("すべて下限値の場合は already-at-minimum を返す", () => {
+    const node: POMNode = {
+      type: "table",
+      columns: [{}],
+      rows: [{ cells: [{ text: "a" }] }],
+      defaultRowHeight: 20,
+    };
+    const result = reduceTableRowHeight(node, 0.5);
+    expect(result).toEqual({ changed: false, reason: "already-at-minimum" });
+    expect(node.defaultRowHeight).toBe(20);
   });
 });
 
@@ -93,8 +105,8 @@ describe("reduceTableRowHeight", () => {
 describe("reduceFontSize", () => {
   it("テキストの fontSize を縮小する", () => {
     const node: POMNode = { type: "text", text: "hello", fontSize: 24 };
-    const changed = reduceFontSize(node, 0.8);
-    expect(changed).toBe(true);
+    const result = reduceFontSize(node, 0.8);
+    expect(result.changed).toBe(true);
     expect(node.fontSize).toBe(19);
   });
 
@@ -110,8 +122,8 @@ describe("reduceFontSize", () => {
       items: [{ text: "item", fontSize: 20 }],
       fontSize: 20,
     };
-    const changed = reduceFontSize(node, 0.8);
-    expect(changed).toBe(true);
+    const result = reduceFontSize(node, 0.8);
+    expect(result.changed).toBe(true);
     expect(node.items[0].fontSize).toBe(16);
     expect(node.fontSize).toBe(16);
   });
@@ -122,15 +134,22 @@ describe("reduceFontSize", () => {
       columns: [{}],
       rows: [{ cells: [{ text: "a", fontSize: 14 }] }],
     };
-    const changed = reduceFontSize(node, 0.8);
-    expect(changed).toBe(true);
+    const result = reduceFontSize(node, 0.8);
+    expect(result.changed).toBe(true);
     expect(node.rows[0].cells[0].fontSize).toBe(11);
   });
 
-  it("fontSize が未設定のノードは変更しない", () => {
+  it("fontSize が未設定のノードは no-target を返す", () => {
     const node: POMNode = { type: "text", text: "hello" };
-    const changed = reduceFontSize(node, 0.8);
-    expect(changed).toBe(false);
+    const result = reduceFontSize(node, 0.8);
+    expect(result).toEqual({ changed: false, reason: "no-target" });
+  });
+
+  it("すべて下限値の場合は already-at-minimum を返す", () => {
+    const node: POMNode = { type: "text", text: "hello", fontSize: 10 };
+    const result = reduceFontSize(node, 0.6);
+    expect(result).toEqual({ changed: false, reason: "already-at-minimum" });
+    expect(node.fontSize).toBe(10);
   });
 });
 
@@ -142,8 +161,8 @@ describe("reduceGapAndPadding", () => {
       children: [{ type: "text", text: "a" }],
       gap: 16,
     };
-    const changed = reduceGapAndPadding(node, 0.7);
-    expect(changed).toBe(true);
+    const result = reduceGapAndPadding(node, 0.7);
+    expect(result.changed).toBe(true);
     expect(node.gap).toBe(11);
   });
 
@@ -178,6 +197,15 @@ describe("reduceGapAndPadding", () => {
     expect(node.gap).toBe(2);
     expect(node.padding).toBe(2);
   });
+
+  it("gap も padding もない場合は no-target を返す", () => {
+    const node: POMNode = {
+      type: "vstack",
+      children: [{ type: "text", text: "a" }],
+    };
+    const result = reduceGapAndPadding(node, 0.7);
+    expect(result).toEqual({ changed: false, reason: "no-target" });
+  });
 });
 
 // ===== uniformScale =====
@@ -189,8 +217,8 @@ describe("uniformScale", () => {
       gap: 10,
       padding: 16,
     };
-    const changed = uniformScale(node, 0.7);
-    expect(changed).toBe(true);
+    const result = uniformScale(node, 0.7);
+    expect(result.changed).toBe(true);
     expect(node.gap).toBe(7);
     expect(node.padding).toBe(11);
     const text = node.children[0];
@@ -230,8 +258,8 @@ describe("uniformScale", () => {
       name: "star",
       size: 48,
     };
-    const changed = uniformScale(node, 0.7);
-    expect(changed).toBe(true);
+    const result = uniformScale(node, 0.7);
+    expect(result.changed).toBe(true);
     expect(node.size).toBe(34);
   });
 });
