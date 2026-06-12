@@ -117,6 +117,15 @@ describe("serializeXml", () => {
       expect(result).toEqual(original);
     });
 
+    it("boolean 装飾のネスト順は B > I > U > S で直列化される", () => {
+      const nodes = parseXml(
+        `<Slide><Text><B><I><U><S>全装飾</S></U></I></B></Text></Slide>`,
+      );
+      const serialized = serializeXml(nodes);
+      expect(serialized).toContain("<B><I><U><S>全装飾</S></U></I></B>");
+      expect(parseXml(serialized)).toEqual(nodes);
+    });
+
     it("Span の letterSpacing を runs として往復変換する", () => {
       const original = parseXml(
         `<Slide><Text>通常 <Span letterSpacing="6">字間広め</Span></Text></Slide>`,
@@ -157,6 +166,9 @@ describe("serializeXml", () => {
         `<Slide><Ul><Li><B>太字</B>の項目</Li><Li>通常の項目</Li></Ul></Slide>`,
       );
       const serialized = serializeXml(original);
+      // serialize 側は child element notation ではなく JSON 属性として出力する (現状仕様の固定)
+      expect(serialized).toContain('items="');
+      expect(serialized).not.toContain("<Li");
       const result = parseXml(serialized);
       expect(result).toEqual(original);
     });
