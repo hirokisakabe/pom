@@ -100,6 +100,12 @@ To output SVG instead of PNG:
 pom render slides.pom.xml -o ./images --format svg
 ```
 
+By default, SVG output converts text to `<path>` outlines so it renders identically in any environment. Pass `--text-output text` to emit native `<text>` elements with subsetted fonts embedded as `@font-face` data URIs instead — text becomes selectable and renders with browser font hinting, but may not display correctly when the SVG is referenced via `<img src="...">` or sanitized:
+
+```bash
+pom render slides.pom.xml -o ./images --format svg --text-output text
+```
+
 To render only specific slides (1-based, comma-separated) — useful when re-checking just the slides you edited:
 
 ```bash

@@ -87,6 +87,33 @@ describe("runRender", () => {
     expect(fs.readdirSync(outputDir)).toEqual(["slide-01.svg"]);
   });
 
+  it("textOutput 指定は convertPptxToSvg にそのまま渡される", async () => {
+    convertPptxToSvgMock.mockResolvedValue([
+      { slideNumber: 1, svg: "<svg/>" },
+    ] as never);
+
+    await runRender(inputFile, outputDir, {
+      format: "svg",
+      textOutput: "text",
+    });
+
+    expect(convertPptxToSvgMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ textOutput: "text" }),
+    );
+  });
+
+  it("textOutput 未指定では convertPptxToSvg にキー自体を渡さない", async () => {
+    convertPptxToSvgMock.mockResolvedValue([
+      { slideNumber: 1, svg: "<svg/>" },
+    ] as never);
+
+    await runRender(inputFile, outputDir, { format: "svg" });
+
+    const options = convertPptxToSvgMock.mock.calls[0][1];
+    expect(options).not.toHaveProperty("textOutput");
+  });
+
   it("slides 指定に存在しない番号があれば警告する", async () => {
     convertPptxToPngMock.mockResolvedValue(makePngSlides(1) as never);
 

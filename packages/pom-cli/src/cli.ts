@@ -4,7 +4,7 @@ import { Command } from "commander";
 import { DiagnosticsError } from "@hirokisakabe/pom";
 import { runBuild, runBuildWatch } from "./build.ts";
 import { runPreview } from "./preview.ts";
-import { runRender, type RenderFormat } from "./render.ts";
+import { runRender, type RenderFormat, type TextOutput } from "./render.ts";
 
 const require = createRequire(import.meta.url);
 const { version } = require("../package.json") as { version: string };
@@ -102,6 +102,10 @@ program
     "--slides <numbers>",
     "Comma-separated slide numbers to render (e.g. 2,5)",
   )
+  .option(
+    "--text-output <mode>",
+    'SVG text output mode: "path" (glyph outlines) or "text" (native <text> with embedded subset fonts). Only valid with --format svg',
+  )
   .option("--verbose", "Show build step timing on stderr")
   .action(
     (
@@ -110,6 +114,7 @@ program
         o: string;
         format: string;
         slides?: string;
+        textOutput?: string;
         verbose?: boolean;
       },
     ) => {
@@ -120,6 +125,19 @@ program
         process.exit(1);
       }
       const format: RenderFormat = options.format;
+      if (options.textOutput !== undefined) {
+        if (options.textOutput !== "path" && options.textOutput !== "text") {
+          console.error(
+            `Invalid text output mode: ${options.textOutput} (expected "path" or "text")`,
+          );
+          process.exit(1);
+        }
+        if (format !== "svg") {
+          console.error("--text-output is only valid with --format svg");
+          process.exit(1);
+        }
+      }
+      const textOutput: TextOutput | undefined = options.textOutput;
       let slides: number[] | undefined;
       if (options.slides !== undefined) {
         slides = options.slides.split(",").map((s) => Number(s.trim()));
@@ -136,6 +154,7 @@ program
       runRender(input, options.o, {
         format,
         slides,
+        textOutput,
         verbose: options.verbose,
       }).catch((err: unknown) => {
         printBuildError(err);

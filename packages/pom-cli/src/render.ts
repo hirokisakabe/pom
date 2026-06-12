@@ -6,6 +6,7 @@ import { EXTRA_FONT_MAPPING, resolveBundledFontsDir } from "./glimpse.ts";
 import { loadInput } from "./input.ts";
 
 export type RenderFormat = "png" | "svg";
+export type TextOutput = "path" | "text";
 
 function makeLog(verbose: boolean) {
   if (!verbose) return (_msg: string) => {};
@@ -18,6 +19,7 @@ export async function runRender(
   options: {
     format?: RenderFormat;
     slides?: number[];
+    textOutput?: TextOutput;
     verbose?: boolean;
   } = {},
 ): Promise<void> {
@@ -67,7 +69,10 @@ export async function runRender(
   const t2 = Date.now();
   let outputs: { slideNumber: number; data: string | Buffer }[];
   if (format === "svg") {
-    const slides = await convertPptxToSvg(buffer, convertOptions);
+    const slides = await convertPptxToSvg(buffer, {
+      ...convertOptions,
+      ...(options.textOutput ? { textOutput: options.textOutput } : {}),
+    });
     outputs = slides.map((s) => ({ slideNumber: s.slideNumber, data: s.svg }));
   } else {
     const slides = await convertPptxToPng(buffer, convertOptions);
