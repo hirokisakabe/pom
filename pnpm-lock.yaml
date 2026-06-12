@@ -43,6 +43,9 @@ importers:
       typescript:
         specifier: 6.0.3
         version: 6.0.3
+      typescript-eslint:
+        specifier: ^8.60.1
+        version: 8.60.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       vitest:
         specifier: ^4.1.8
         version: 4.1.8(@types/node@25.9.2)(@vitest/coverage-v8@4.1.8)(@vitest/ui@4.1.8)(happy-dom@20.10.2)(msw@2.14.6(@types/node@25.9.2)(typescript@6.0.3))(vite@8.0.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.2)(esbuild@0.27.4)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0))
@@ -131,9 +134,6 @@ importers:
         specifier: ~4.3.6
         version: 4.3.6
     devDependencies:
-      "@eslint/js":
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.4.1(jiti@2.7.0))
       "@tailwindcss/postcss":
         specifier: ^4
         version: 4.3.0
@@ -158,12 +158,6 @@ importers:
       "@vitest/coverage-v8":
         specifier: ^4.1.8
         version: 4.1.8(vitest@4.1.8)
-      eslint:
-        specifier: ^10.4.1
-        version: 10.4.1(jiti@2.7.0)
-      globals:
-        specifier: ^17.6.0
-        version: 17.6.0
       happy-dom:
         specifier: ^20.10.2
         version: 20.10.2
@@ -173,9 +167,6 @@ importers:
       tailwindcss:
         specifier: ^4
         version: 4.3.0
-      typescript-eslint:
-        specifier: ^8.60.1
-        version: 8.60.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       vitest:
         specifier: ^4.1.8
         version: 4.1.8(@types/node@25.9.2)(@vitest/coverage-v8@4.1.8)(@vitest/ui@4.1.8)(happy-dom@20.10.2)(msw@2.14.6(@types/node@25.9.2)(typescript@6.0.3))(vite@8.0.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.2)(esbuild@0.27.4)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0))
@@ -243,9 +234,6 @@ importers:
       tsx:
         specifier: 4.22.4
         version: 4.22.4
-      typescript-eslint:
-        specifier: ^8.60.1
-        version: 8.60.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
 
   packages/pom-cli:
     dependencies:
@@ -265,9 +253,6 @@ importers:
       "@types/node":
         specifier: ^25.9.2
         version: 25.9.2
-      typescript-eslint:
-        specifier: ^8.60.1
-        version: 8.60.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
 
   packages/pom-editor:
     dependencies:
@@ -290,9 +275,6 @@ importers:
       "@types/react":
         specifier: ^19
         version: 19.2.17
-      typescript-eslint:
-        specifier: ^8.60.1
-        version: 8.60.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
 
   packages/pom-jsx:
     devDependencies:
@@ -302,9 +284,6 @@ importers:
       "@vitest/coverage-v8":
         specifier: ^4.1.8
         version: 4.1.8(vitest@4.1.8)
-      typescript-eslint:
-        specifier: ^8.60.1
-        version: 8.60.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
 
   packages/pom-md:
     dependencies:
@@ -318,9 +297,6 @@ importers:
       "@vitest/coverage-v8":
         specifier: ^4.1.8
         version: 4.1.8(vitest@4.1.8)
-      typescript-eslint:
-        specifier: ^8.60.1
-        version: 8.60.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
 
   packages/pom-vscode:
     devDependencies:
@@ -363,9 +339,6 @@ importers:
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
-      typescript-eslint:
-        specifier: ^8.60.1
-        version: 8.60.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
 
 packages:
   "@adobe/css-tools@4.4.4":

@@ -1,13 +1,16 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "ignore": ["content/**", "playground/components/ui/**"],
-  "ignoreBinaries": ["knip", "tsc"],
+  "ignoreBinaries": ["eslint", "knip", "tsc"],
   "ignoreDependencies": [
     "@resvg/resvg-js",
     "@vitest/coverage-v8",
     "postcss",
     "sharp"
   ],
+  "eslint": {
+    "config": ["eslint.config.mjs"]
+  },
   "next": {
     "config": ["next.config.mjs"]
   },

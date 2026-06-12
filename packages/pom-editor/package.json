@@ -48,8 +48,7 @@
     "@hirokisakabe/pom": "workspace:*"
   },
   "devDependencies": {
-    "@types/react": "^19",
-    "typescript-eslint": "^8.60.1"
+    "@types/react": "^19"
   },
   "publishConfig": {
     "access": "public"
