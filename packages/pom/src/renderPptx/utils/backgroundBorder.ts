@@ -44,17 +44,7 @@ export function renderBackgroundAndBorder(
       )
     : undefined;
 
-  // 辺ごとの border 指定を解決する。borderRadius との併用は角の接続処理が
-  // 複雑になるためサポートせず、警告を発して 4 辺一律の border に
-  // フォールバックする
-  let perSideBorders = resolvePerSideBorders(node);
-  if (perSideBorders && borderRadius !== undefined) {
-    ctx.buildContext.diagnostics.add(
-      "PER_SIDE_BORDER_WITH_RADIUS",
-      'borderTop / borderRight / borderBottom / borderLeft cannot be combined with borderRadius — falling back to the uniform "border" style',
-    );
-    perSideBorders = undefined;
-  }
+  const perSideBorders = resolveEffectivePerSideBorders(node, ctx);
 
   const hasBackground = Boolean(backgroundColor) || Boolean(gradientMarker);
   const hasBackgroundImage = Boolean(backgroundImage);
@@ -169,6 +159,60 @@ export function renderBackgroundAndBorder(
   }
 
   renderPerSideBorderLines(node, perSideBorders, ctx);
+}
+
+/**
+ * 辺ごとの border 指定を解決する。borderRadius との併用は角の接続処理が
+ * 複雑になるためサポートせず、警告を発して 4 辺一律の border に
+ * フォールバックする
+ */
+function resolveEffectivePerSideBorders(
+  node: PositionedNode,
+  ctx: RenderContext,
+): PerSideBorders | undefined {
+  const perSideBorders = resolvePerSideBorders(node);
+  if (perSideBorders && node.borderRadius !== undefined) {
+    ctx.buildContext.diagnostics.add(
+      "PER_SIDE_BORDER_WITH_RADIUS",
+      'borderTop / borderRight / borderBottom / borderLeft cannot be combined with borderRadius — falling back to the uniform "border" style',
+    );
+    return undefined;
+  }
+  return perSideBorders;
+}
+
+/**
+ * ノードの border のみを描画する (背景・影は描画しない)。
+ * ルートノードの backgroundColor / backgroundImage を slide.background に
+ * 適用した後、border だけを個別に描画するパス用
+ */
+export function renderBorderOnly(
+  node: PositionedNode,
+  ctx: RenderContext,
+): void {
+  const { border, borderRadius } = node;
+
+  const perSideBorders = resolveEffectivePerSideBorders(node, ctx);
+  if (perSideBorders) {
+    renderPerSideBorderLines(node, perSideBorders, ctx);
+    return;
+  }
+
+  if (!hasVisibleBorder(border)) return;
+
+  const shapeType = borderRadius
+    ? ctx.pptx.ShapeType.roundRect
+    : ctx.pptx.ShapeType.rect;
+
+  ctx.slide.addShape(shapeType, {
+    x: pxToIn(node.x),
+    y: pxToIn(node.y),
+    w: pxToIn(node.w),
+    h: pxToIn(node.h),
+    fill: { type: "none" as const },
+    line: convertBorderLine(border, "000000"),
+    rectRadius: resolveRectRadius(borderRadius, node.w, node.h),
+  });
 }
 
 /**

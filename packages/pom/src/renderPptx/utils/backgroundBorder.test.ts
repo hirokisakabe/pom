@@ -51,6 +51,26 @@ describe("renderBackgroundAndBorder の辺ごと border", () => {
     expect(countLineShapes(slideXml)).toBe(0);
   });
 
+  it("背景付きルートノード (slide.background 最適化パス) でも辺ごとの border が描画される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max" backgroundColor="F8FAFC" borderLeft.color="FF0000" borderLeft.width="6">
+      <Text w="200" h="100">test</Text>
+    </VStack></Slide>`;
+    const slideXml = await buildSlideXml(xml);
+
+    expect(countLineShapes(slideXml)).toBe(1);
+    expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
+  });
+
+  it("背景画像付きルートノードでも辺ごとの border が描画される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max" backgroundImage.src="https://example.com/bg.png" borderBottom.color="FF0000" borderBottom.width="3">
+      <Text w="200" h="100">test</Text>
+    </VStack></Slide>`;
+    const slideXml = await buildSlideXml(xml);
+
+    expect(countLineShapes(slideXml)).toBe(1);
+    expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
+  });
+
   it("borderRadius と併用した場合は辺ごとの指定を無視して一律 border で描画する", async () => {
     const xml = `<Slide><VStack w="100%" h="max">
       <Text w="200" h="100" borderRadius="8" border.color="000000" borderLeft.color="FF0000">test</Text>
