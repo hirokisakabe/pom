@@ -1,11 +1,6 @@
----
-paths:
-  - packages/pom-jsx/**
----
+# AGENTS.md — packages/pom-jsx
 
-## pom-jsx (`packages/pom-jsx/`)
-
-JSX/TSX authoring package for pom. Provides a custom JSX runtime so users can write pom slides as JSX/TSX components, which are serialized to pom XML strings and passed to `buildPptx()`.
+JSX/TSX authoring package for pom. Provides a custom JSX runtime so users can write pom slides as JSX/TSX components, which are serialized to pom XML strings and passed to `buildPptx()`. リポジトリ共通ルールはルート `AGENTS.md` を参照。
 
 ```bash
 pnpm --filter @hirokisakabe/pom-jsx run build           # TypeScript compilation
@@ -18,7 +13,7 @@ pnpm --filter @hirokisakabe/pom-jsx run test:run        # Run tests
 pnpm --filter @hirokisakabe/pom-jsx run test:coverage   # Run tests with coverage
 ```
 
-### Adding a New Node Type
+## Adding a New Node Type
 
 When a new node type is added to `@hirokisakabe/pom`, update the following files in order:
 
@@ -28,7 +23,7 @@ When a new node type is added to `@hirokisakabe/pom`, update the following files
 4. **`src/integration.test.tsx`** — Add integration test covering the new node
 5. **`README.md`** — Document the new component
 
-### Release Flow
+## Release Flow
 
 pom-jsx uses Changesets for versioning. The release is handled by the unified `release.yml` workflow.
 
@@ -36,6 +31,6 @@ pom-jsx uses Changesets for versioning. The release is handled by the unified `r
 2. Release PR merges → `changeset version` bumps `package.json` version
 3. `release.yml` runs `changeset publish` → publishes to npm as `@hirokisakabe/pom-jsx`
 
-### PR 作成前チェック
+## PR 作成前チェック
 
 - [ ] changeset を追加する: `pnpm exec changeset add`

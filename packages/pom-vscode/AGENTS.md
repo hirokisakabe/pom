@@ -1,11 +1,6 @@
----
-paths:
-  - packages/pom-vscode/**
----
+# AGENTS.md — packages/pom-vscode
 
-## pom-vscode (`packages/pom-vscode/`)
-
-VS Code extension for live preview of `.pom.md` / `.pom.xml` files. Converts content to SVG via pptx-glimpse and displays in a webview panel.
+VS Code extension for live preview of `.pom.md` / `.pom.xml` files. Converts content to SVG via pptx-glimpse and displays in a webview panel. リポジトリ共通ルールはルート `AGENTS.md` を参照。
 
 ```bash
 pnpm --filter pom-vscode run build       # esbuild bundle
@@ -24,7 +19,7 @@ Pipeline:
 
 To test locally: open `packages/pom-vscode` in VS Code and press F5 to launch Extension Development Host.
 
-### Documentation Symlinks
+## Documentation Symlinks
 
 `packages/pom-vscode/docs/` 配下にドキュメントファイルを追加・リネーム・削除した場合、`apps/website/content/pom-vscode/` 側にもファイル単位の symlink を追加・更新する。Next 16 / Turbopack はディレクトリ symlink を辿れないため、ファイルごとに symlink を張る方針を採用している。
 
@@ -34,7 +29,7 @@ cd apps/website/content/pom-vscode
 ln -s ../../../../packages/pom-vscode/docs/<new-file>.md <new-file>.md
 ```
 
-### Release Flow
+## Release Flow
 
 pom-vscode uses Changesets for versioning (`privatePackages` config). The release is handled by the unified `release.yml` workflow.
 
@@ -44,6 +39,6 @@ pom-vscode uses Changesets for versioning (`privatePackages` config). The releas
 
 Each publish/tag/release step is idempotent: if the workflow fails midway, re-running will skip already-completed steps and resume from the point of failure.
 
-### PR 作成前チェック
+## PR 作成前チェック
 
 - [ ] changeset を追加する: `pnpm exec changeset add`

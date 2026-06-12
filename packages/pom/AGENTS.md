@@ -1,9 +1,10 @@
----
-paths:
-  - packages/pom/src/**
----
+# AGENTS.md — packages/pom
+
+Core library of pom. PPTX generation pipeline: `parseXml/` → `calcYogaLayout/` → `toPositioned/` → `renderPptx/`. リポジトリ共通ルールはルート `AGENTS.md` を参照。
 
 ## Feature Addition Checklist
+
+適用条件: `src/**` を変更して新しいプロパティや機能を追加する場合。
 
 When adding new properties or features, update the following files:
 
@@ -18,7 +19,7 @@ When adding new properties or features, update the following files:
    - `packages/pom/README.md` - User-facing documentation
    - `packages/pom/docs/nodes.md` - Nodes
    - `apps/website/public/llm.txt` - XML reference for LLMs (for prompts)
-   - `CLAUDE.md` - Add to Key Internal Types section
+   - ルート `AGENTS.md` - Add to Key Internal Types section
 9. **Documentation image updates** (when adding new node types):
    - Add to `NODE_TYPES` in `packages/pom/scripts/docs-images/config.ts`
    - Define sample XML in `packages/pom/scripts/docs-images/sampleNodes.ts`
@@ -34,3 +35,38 @@ When adding new properties or features, update the following files:
 12. **pom-editor updates** (when adding new node types):
     - `packages/pom-editor/src/ast.ts` - Add new node type to AST mapping if needed
     - `packages/pom-editor/src/AstTree.tsx` - Add label to `NODE_LABELS` if needed
+
+## Preview Workflow
+
+適用条件: `main.ts` を編集して PPTX 出力を検証する場合。
+
+1. Edit `packages/pom/main.ts` (and modify logic under `packages/pom/src/` as needed)
+2. Run `pnpm run preview:docker` from `packages/pom/`
+3. Visually verify `packages/pom/preview/output/sample.png`
+4. If there are layout issues, fix and return to step 2
+5. If everything looks good, commit
+
+### Output Files
+
+- `packages/pom/preview/output/sample.pptx` - Generated PPTX
+- `packages/pom/preview/output/sample.png` - PNG image (for layout verification)
+
+## Text Measurement
+
+適用条件: `src/calcYogaLayout/**` を変更する場合。
+
+Text width measurement uses `opentype.js`. The Noto Sans JP font is bundled with the library and works in both Node.js and browser environments.
+
+- `packages/pom/src/calcYogaLayout/measureText.ts` - Text measurement logic
+- `packages/pom/src/calcYogaLayout/fontLoader.ts` - Font loading (opentype.js)
+- `packages/pom/src/calcYogaLayout/fonts/` - Bundled fonts (Base64)
+- The `textMeasurement` option in `buildPptx` allows explicit specification of the measurement method
+  - `"opentype"`: Always measure with opentype.js (default)
+  - `"fallback"`: Always use fallback calculation (CJK characters = 1em, alphanumeric = 0.5em)
+  - `"auto"`: Measure with opentype.js (default)
+
+### Unit Conversion
+
+- User input: pixels (px)
+- Internal layout: pixels (yoga-layout)
+- PPTX output: inches (converted via `pxToIn`, 96 DPI basis)
