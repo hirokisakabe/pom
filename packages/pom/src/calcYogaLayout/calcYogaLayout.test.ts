@@ -147,7 +147,10 @@ describe("Layer の絶対配置", () => {
     });
 
     // VStack は recurse 経由で通常のフロー配置に戻る
-    expect(vstack).toMatchObject({ x: positioned.x + 300, y: positioned.y + 20 });
+    expect(vstack).toMatchObject({
+      x: positioned.x + 300,
+      y: positioned.y + 20,
+    });
     const [inner] = childrenOf(vstack);
     expect(inner).toMatchObject({ x: vstack.x, y: vstack.y, w: 100, h: 40 });
   });
