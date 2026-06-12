@@ -2,6 +2,7 @@ import {
   resolveBoxSpacing,
   type BoxSpacingInput,
 } from "../../shared/boxSpacing.ts";
+import { rectPxToIn } from "../units.ts";
 
 interface ContentArea {
   x: number;
@@ -34,4 +35,15 @@ export function getContentArea(node: {
     w: Math.max(0, node.w - left - right),
     h: Math.max(0, node.h - top - bottom),
   };
+}
+
+/**
+ * コンテンツ描画領域を pptxgenjs の位置オプション (inch 単位の x/y/w/h)
+ * として返す。コンテンツを領域いっぱいに描画する renderer はこれを
+ * addShape / addText 等のオプションへ spread するだけでよい。
+ */
+export function getContentAreaIn(
+  node: Parameters<typeof getContentArea>[0],
+): ContentArea {
+  return rectPxToIn(getContentArea(node));
 }

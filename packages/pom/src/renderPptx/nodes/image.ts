@@ -1,6 +1,6 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToIn } from "../units.ts";
+import { pxToIn, rectPxToIn } from "../units.ts";
 import { getContentArea } from "../utils/contentArea.ts";
 import { convertShadow } from "../utils/visualStyle.ts";
 
@@ -12,10 +12,7 @@ export function renderImageNode(
 ): void {
   const content = getContentArea(node);
   const imageOptions: Record<string, unknown> = {
-    x: pxToIn(content.x),
-    y: pxToIn(content.y),
-    w: pxToIn(content.w),
-    h: pxToIn(content.h),
+    ...rectPxToIn(content),
     shadow: convertShadow(node.shadow),
   };
 
