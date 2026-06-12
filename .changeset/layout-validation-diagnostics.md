@@ -1,5 +1,6 @@
 ---
 "@hirokisakabe/pom": minor
+"pom-vscode": patch
 ---
 
 feat: はみ出し・重なりを build 時に静的検出する diagnostics を追加
