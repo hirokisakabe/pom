@@ -137,14 +137,12 @@ describe("renderTimelineNode", () => {
 
   it("割り当てが固有サイズの半分未満なら SCALE_BELOW_THRESHOLD を記録して 0.5 にクランプする", async () => {
     const { objects, buildContext } = await renderPage(
-      vstackPage([
-        { type: "timeline", x: 0, y: 0, w: 100, h: 50, items },
-      ]),
+      vstackPage([{ type: "timeline", x: 0, y: 0, w: 100, h: 50, items }]),
     );
 
-    expect(
-      buildContext.diagnostics.items.map((d) => d.code),
-    ).toContain("SCALE_BELOW_THRESHOLD");
+    expect(buildContext.diagnostics.items.map((d) => d.code)).toContain(
+      "SCALE_BELOW_THRESHOLD",
+    );
 
     // nodeRadius 12px が scaleFactor 0.5 でスケールされる
     const ellipse = objects.find((o) => o.shape === "ellipse");
