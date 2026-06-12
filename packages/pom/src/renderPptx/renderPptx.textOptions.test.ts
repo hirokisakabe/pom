@@ -140,10 +140,7 @@ describe("calcGlyphCenteringShiftPx", () => {
   it("lineHeight が小さい場合は負の補正 (下方向) になる", () => {
     // L = 14 × 1.0 = 14px: ink (1.0em) を中央 (=上端ぴったり) に置くには
     // baseline 実位置 (9.968px) より下 (12.32px) に動かす必要がある
-    expect(calcGlyphCenteringShiftPx(14, 1.0, "normal")).toBeCloseTo(
-      -2.352,
-      3,
-    );
+    expect(calcGlyphCenteringShiftPx(14, 1.0, "normal")).toBeCloseTo(-2.352, 3);
   });
 });
 
