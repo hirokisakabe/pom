@@ -45,6 +45,7 @@ import {
   page41GradientXml,
   page42FlexGrowXml,
   page43DarkThemeXml,
+  page44PerSideBorderXml,
   vrtThemeXml,
 } from "./slides/index.js";
 
@@ -94,6 +95,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
     page41GradientXml,
     page42FlexGrowXml,
     page43DarkThemeXml,
+    page44PerSideBorderXml,
   ]
     .map((pageXml) => `<Slide>${pageXml}</Slide>`)
     .join("\n");

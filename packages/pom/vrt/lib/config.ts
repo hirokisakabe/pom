@@ -57,6 +57,7 @@ export const PAGE_NAMES = [
   "41-gradient",
   "42-flex-grow",
   "43-dark-theme",
+  "44-per-side-border",
 ] as const;
 
 export const THRESHOLD = 0.1;
