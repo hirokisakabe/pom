@@ -151,6 +151,44 @@ describe("serializeXml", () => {
     });
   });
 
+  describe("child element notation ノードの往復変換", () => {
+    it("Ul (Li + インライン装飾) を往復変換する", () => {
+      const original = parseXml(
+        `<Slide><Ul><Li><B>太字</B>の項目</Li><Li>通常の項目</Li></Ul></Slide>`,
+      );
+      const serialized = serializeXml(original);
+      const result = parseXml(serialized);
+      expect(result).toEqual(original);
+    });
+
+    it("Timeline を往復変換する", () => {
+      const original = parseXml(
+        `<Slide><Timeline><TimelineItem date="2026-01" title="開始" /><TimelineItem date="2026-06" title="完了" color="FF0000" /></Timeline></Slide>`,
+      );
+      const serialized = serializeXml(original);
+      const result = parseXml(serialized);
+      expect(result).toEqual(original);
+    });
+
+    it("ProcessArrow を往復変換する", () => {
+      const original = parseXml(
+        `<Slide><ProcessArrow><ProcessArrowStep label="調査" /><ProcessArrowStep label="実装" /></ProcessArrow></Slide>`,
+      );
+      const serialized = serializeXml(original);
+      const result = parseXml(serialized);
+      expect(result).toEqual(original);
+    });
+
+    it("Table (Td + インライン装飾) を往復変換する", () => {
+      const original = parseXml(
+        `<Slide><Table><Tr><Td><B>見出し</B></Td><Td>値</Td></Tr></Table></Slide>`,
+      );
+      const serialized = serializeXml(original);
+      const result = parseXml(serialized);
+      expect(result).toEqual(original);
+    });
+  });
+
   describe("特殊文字のエスケープ", () => {
     it("属性値の特殊文字をエスケープする", () => {
       const xml = `<Text text="a &amp; b" />`;

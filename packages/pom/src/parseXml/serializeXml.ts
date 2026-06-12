@@ -1,21 +1,15 @@
 import type { POMNode } from "../types.ts";
 import { getNodeMetadata } from "../registry/nodeMetadata.ts";
+import {
+  INLINE_BOOLEAN_FORMATS,
+  INLINE_LINK_TAG,
+  INLINE_MARK_TAG,
+  INLINE_SPAN_TAG,
+  type TextRun,
+} from "../registry/xmlChildRules.ts";
 
 // runs と svgContent は専用の直列化パスで処理する
 const SKIP_KEYS = new Set(["type", "children", "runs", "svgContent"]);
-
-interface TextRun {
-  text: string;
-  bold?: boolean;
-  italic?: boolean;
-  underline?: boolean;
-  strike?: boolean;
-  highlight?: string;
-  color?: string;
-  href?: string;
-  fontFamily?: string;
-  letterSpacing?: number;
-}
 
 function escapeAttrValue(value: string): string {
   return value
@@ -69,10 +63,10 @@ function serializeRun(run: TextRun): string {
   let content = escapeXmlContent(run.text);
 
   if (run.href) {
-    content = `<A href="${escapeAttrValue(run.href)}">${content}</A>`;
+    content = `<${INLINE_LINK_TAG} href="${escapeAttrValue(run.href)}">${content}</${INLINE_LINK_TAG}>`;
   }
   if (run.highlight) {
-    content = `<Mark color="${escapeAttrValue(run.highlight)}">${content}</Mark>`;
+    content = `<${INLINE_MARK_TAG} color="${escapeAttrValue(run.highlight)}">${content}</${INLINE_MARK_TAG}>`;
   }
   const spanAttrs: string[] = [];
   if (run.color) spanAttrs.push(`color="${escapeAttrValue(run.color)}"`);
@@ -81,12 +75,13 @@ function serializeRun(run: TextRun): string {
   if (run.letterSpacing !== undefined)
     spanAttrs.push(`letterSpacing="${run.letterSpacing}"`);
   if (spanAttrs.length > 0) {
-    content = `<Span ${spanAttrs.join(" ")}>${content}</Span>`;
+    content = `<${INLINE_SPAN_TAG} ${spanAttrs.join(" ")}>${content}</${INLINE_SPAN_TAG}>`;
   }
-  if (run.strike) content = `<S>${content}</S>`;
-  if (run.underline) content = `<U>${content}</U>`;
-  if (run.italic) content = `<I>${content}</I>`;
-  if (run.bold) content = `<B>${content}</B>`;
+  // INLINE_BOOLEAN_FORMATS は外側→内側のネスト順なので、内側から順に包む
+  for (let i = INLINE_BOOLEAN_FORMATS.length - 1; i >= 0; i--) {
+    const { tag, property } = INLINE_BOOLEAN_FORMATS[i];
+    if (run[property]) content = `<${tag}>${content}</${tag}>`;
+  }
   return content;
 }
 

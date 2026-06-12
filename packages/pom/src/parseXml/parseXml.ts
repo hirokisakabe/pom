@@ -595,7 +595,9 @@ function convertFlowChildren(
     const tag = getTagName(child);
     switch (tag) {
       case "FlowNode":
-        nodes.push(coerceChildAttrs(tagName, tag, getAttributes(child), errors));
+        nodes.push(
+          coerceChildAttrs(tagName, tag, getAttributes(child), errors),
+        );
         break;
       case "FlowConnection":
         connections.push(

@@ -105,6 +105,7 @@ describe("NodeRegistry", () => {
         schema: def.schema,
         defaults: def.defaults,
         childPolicy: def.childPolicy,
+        xmlChildRule: def.xmlChildRule,
         textContentProperty: def.textContentProperty,
         supportsInlineRuns: def.supportsInlineRuns,
       }).toEqual(metadata);
