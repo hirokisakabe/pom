@@ -25,11 +25,13 @@ export function renderShapeNode(
   };
 
   if (node.text) {
+    const fontSizePx = node.fontSize ?? 24;
+    const lineHeight = node.lineHeight ?? 1.3;
     // テキストがある場合：addTextでshapeを指定
     ctx.slide.addText(node.text, {
       ...shapeOptions,
       shape: node.shapeType,
-      fontSize: pxToPt(node.fontSize ?? 24),
+      fontSize: pxToPt(fontSizePx),
       fontFace: node.fontFamily ?? "Noto Sans JP",
       color: node.color,
       bold: node.bold,
@@ -39,7 +41,11 @@ export function renderShapeNode(
       highlight: node.highlight,
       align: node.textAlign ?? "center",
       valign: "middle" as const,
-      lineSpacingMultiple: node.lineHeight ?? 1.3,
+      // Text と同じく行送りを固定値 (spcPts) で指定し、計測高さ
+      // (行数 × fontSize × lineHeight) と実描画の行高さを一致させる (#846)。
+      // valign middle のためテキストブロックは枠内中央に配置され、
+      // Text のような描画 y 補正は不要
+      lineSpacing: pxToPt(fontSizePx * lineHeight),
     });
   } else {
     // テキストがない場合：addShapeを使用
