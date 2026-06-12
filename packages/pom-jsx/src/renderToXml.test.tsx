@@ -62,6 +62,15 @@ describe("renderToXml", () => {
       expect(xml).toContain('"bottom":5');
     });
 
+    it("辺ごとの border 属性が JSON 文字列になる", () => {
+      const xml = renderToXml(
+        <Text borderLeft={{ color: "1D4ED8", width: 6 }}>テキスト</Text>,
+      );
+      expect(xml).toContain("borderLeft=");
+      expect(xml).toContain('"color":"1D4ED8"');
+      expect(xml).toContain('"width":6');
+    });
+
     it("配列属性が JSON 文字列になる", () => {
       const xml = renderToXml(
         <Chart

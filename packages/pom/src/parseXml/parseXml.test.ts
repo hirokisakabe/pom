@@ -406,6 +406,17 @@ describe("parseXml", () => {
       });
     });
 
+    it("辺ごとの borderTop / borderRight / borderBottom / borderLeft を変換する", () => {
+      const result = parseXml(
+        '<Text borderTop.color="FF0000" borderTop.width="4" borderRight.dashType="dash" borderBottom.width="1" borderLeft.color="0000FF">test</Text>',
+      );
+      const node = result[0] as Record<string, unknown>;
+      expect(node.borderTop).toEqual({ color: "FF0000", width: 4 });
+      expect(node.borderRight).toEqual({ dashType: "dash" });
+      expect(node.borderBottom).toEqual({ width: 1 });
+      expect(node.borderLeft).toEqual({ color: "0000FF" });
+    });
+
     it("union 型（number | string）の length を正しく変換する", () => {
       // number
       const r1 = parseXml('<Text w="400">test</Text>');
@@ -990,7 +1001,7 @@ describe("parseXml", () => {
       const result = parseXmlRaw(`
         <Theme accent="1D4ED8" muted="94A3B8" />
         <Slide>
-          <VStack border.color="$muted">
+          <VStack border.color="$muted" borderLeft.color="$accent">
             <Timeline dateColor="$muted">
               <TimelineItem date="Q1" title="A" color="$accent" />
             </Timeline>
@@ -1002,6 +1013,7 @@ describe("parseXml", () => {
       `);
       const vstack = result[0] as Record<string, unknown>;
       expect(vstack.border).toEqual({ color: "94A3B8" });
+      expect(vstack.borderLeft).toEqual({ color: "1D4ED8" });
       const children = vstack.children as Record<string, unknown>[];
       expect(children[0].dateColor).toBe("94A3B8");
       expect(children[0].items).toEqual([
