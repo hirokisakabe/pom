@@ -16,6 +16,7 @@ on:
       - "packages/pom/tsconfig.check.json"
       - "packages/pom/main.ts"
       - "packages/pom/eslint.config.mts"
+      - "packages/pom/.dependency-cruiser.cjs"
       - "packages/pom/knip.json"
       - "packages/pom/vitest.config.ts"
       - ".node-version"
@@ -35,6 +36,7 @@ on:
       - "packages/pom/tsconfig.check.json"
       - "packages/pom/main.ts"
       - "packages/pom/eslint.config.mts"
+      - "packages/pom/.dependency-cruiser.cjs"
       - "packages/pom/knip.json"
       - "packages/pom/vitest.config.ts"
       - ".node-version"
@@ -57,6 +59,8 @@ jobs:
       - run: pnpm run fmt:check
         working-directory: packages/pom
       - run: pnpm run lint
+        working-directory: packages/pom
+      - run: pnpm run lint:deps
         working-directory: packages/pom
       - run: pnpm run knip
         working-directory: packages/pom
