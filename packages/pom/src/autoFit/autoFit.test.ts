@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { walkPOMTree } from "../shared/walkTree.ts";
 import { reduceTableRowHeight } from "./strategies/reduceTableRowHeight.ts";
 import { reduceFontSize } from "./strategies/reduceFontSize.ts";

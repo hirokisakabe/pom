@@ -255,7 +255,7 @@ describe("parseXml", () => {
           type: "svg",
           w: 32,
           h: 32,
-          svgContent: expect.stringContaining("<svg"),
+          svgContent: expect.stringContaining("<svg") as string,
         },
       ]);
       // svgContent に path が含まれることを確認
@@ -274,7 +274,7 @@ describe("parseXml", () => {
           w: 32,
           h: 32,
           color: "#1D4ED8",
-          svgContent: expect.stringContaining("<svg"),
+          svgContent: expect.stringContaining("<svg") as string,
         },
       ]);
     });

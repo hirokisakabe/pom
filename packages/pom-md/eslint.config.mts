@@ -3,5 +3,5 @@ import { defineSharedConfig } from "../../eslint.config.shared.mjs";
 export default defineSharedConfig({
   tsconfigRootDir: import.meta.dirname,
   environment: "browser",
-  ignores: ["**/*.test.ts", "docs/**", "eslint.config.mts", "vitest.config.ts"],
+  ignores: ["docs/**", "eslint.config.mts", "vitest.config.ts"],
 });
