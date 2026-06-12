@@ -142,6 +142,13 @@ describe("serializeXml", () => {
       const result = roundTrip(xml);
       expect(result).toEqual(original);
     });
+
+    it("辺ごとの border を往復変換する", () => {
+      const xml = `<VStack borderTop.color="FF0000" borderTop.width="4" borderLeft.dashType="dash"><Text>bordered</Text></VStack>`;
+      const original = parseXml(`<Slide>${xml}</Slide>`);
+      const result = roundTrip(xml);
+      expect(result).toEqual(original);
+    });
   });
 
   describe("特殊文字のエスケープ", () => {
