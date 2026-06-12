@@ -63,6 +63,48 @@ export function hasVisibleBorder(
   );
 }
 
+export const BORDER_SIDES = ["top", "right", "bottom", "left"] as const;
+export type BorderSide = (typeof BORDER_SIDES)[number];
+
+export type PerSideBorders = Partial<Record<BorderSide, BorderStyle>>;
+
+/**
+ * 4 辺一律の border と辺ごとの borderTop / borderRight / borderBottom /
+ * borderLeft をマージし、描画対象となる辺ごとの BorderStyle を返す。
+ *
+ * - 辺ごとの指定が 1 つも無い場合は undefined を返し、呼び出し側は
+ *   従来の 4 辺一律描画 (shape の line オプション) にフォールバックする
+ * - 辺ごとの指定がある場合、各辺は border をベースに辺ごとの指定で
+ *   フィールド単位に上書きした BorderStyle になる (辺ごとの指定が優先)
+ * - マージ結果が描画対象とならない辺 (指定なし) は結果に含まれない
+ */
+export function resolvePerSideBorders(style: {
+  border?: BorderStyle;
+  borderTop?: BorderStyle;
+  borderRight?: BorderStyle;
+  borderBottom?: BorderStyle;
+  borderLeft?: BorderStyle;
+}): PerSideBorders | undefined {
+  const overrides: Partial<Record<BorderSide, BorderStyle | undefined>> = {
+    top: style.borderTop,
+    right: style.borderRight,
+    bottom: style.borderBottom,
+    left: style.borderLeft,
+  };
+
+  const hasPerSideOverride = Object.values(overrides).some(hasVisibleBorder);
+  if (!hasPerSideOverride) return undefined;
+
+  const result: PerSideBorders = {};
+  for (const side of BORDER_SIDES) {
+    const merged = { ...style.border, ...overrides[side] };
+    if (hasVisibleBorder(merged)) {
+      result[side] = merged;
+    }
+  }
+  return result;
+}
+
 /**
  * BorderStyle を pptxgenjs の line オプションに変換する
  * width はユーザー入力 px、pptxgenjs の line.width は pt
