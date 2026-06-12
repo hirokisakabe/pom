@@ -1,7 +1,6 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToIn } from "../units.ts";
-import { getContentArea } from "../utils/contentArea.ts";
+import { getContentAreaIn } from "../utils/contentArea.ts";
 
 type ChartPositionedNode = Extract<PositionedNode, { type: "chart" }>;
 
@@ -15,12 +14,8 @@ export function renderChartNode(
     values: d.values,
   }));
 
-  const content = getContentArea(node);
   const chartOptions: Record<string, unknown> = {
-    x: pxToIn(content.x),
-    y: pxToIn(content.y),
-    w: pxToIn(content.w),
-    h: pxToIn(content.h),
+    ...getContentAreaIn(node),
     showLegend: node.showLegend ?? false,
     showTitle: node.showTitle ?? false,
     title: node.title,

@@ -26,7 +26,7 @@ import type {
 } from "../types.ts";
 import type { BuildContext } from "../buildContext.ts";
 import type { RenderContext, NodeBounds } from "./types.ts";
-import { pxToIn, pxToPt } from "./units.ts";
+import { pxToIn, pxToPt, rectPxToIn } from "./units.ts";
 import { convertUnderline, convertStrike } from "./textOptions.ts";
 import { getImageData } from "../shared/measureImage.ts";
 import { resolveBoxSpacing } from "../shared/boxSpacing.ts";
@@ -322,10 +322,7 @@ export async function renderPptx(
               : ctx.pptx.ShapeType.rect;
             const rectRadius = resolveRectRadius(borderRadius, node.w, node.h);
             ctx.slide.addShape(shapeType, {
-              x: pxToIn(node.x),
-              y: pxToIn(node.y),
-              w: pxToIn(node.w),
-              h: pxToIn(node.h),
+              ...rectPxToIn(node),
               fill: { type: "none" },
               line,
               rectRadius,

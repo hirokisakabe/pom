@@ -2,7 +2,7 @@ import type { PositionedNode } from "../../types.ts";
 import { getImageData } from "../../shared/measureImage.ts";
 import { registerBackgroundGradient } from "../gradientFills.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToIn } from "../units.ts";
+import { pxToIn, rectPxToIn } from "../units.ts";
 import {
   convertShadow,
   convertBorderLine,
@@ -68,10 +68,7 @@ export function renderBackgroundAndBorder(
       : { type: "none" as const };
 
     ctx.slide.addShape(shapeType, {
-      x: pxToIn(node.x),
-      y: pxToIn(node.y),
-      w: pxToIn(node.w),
-      h: pxToIn(node.h),
+      ...rectPxToIn(node),
       fill,
       line,
       rectRadius,
@@ -85,10 +82,7 @@ export function renderBackgroundAndBorder(
   // 1. 背景色
   if (hasBackground) {
     ctx.slide.addShape(shapeType, {
-      x: pxToIn(node.x),
-      y: pxToIn(node.y),
-      w: pxToIn(node.w),
-      h: pxToIn(node.h),
+      ...rectPxToIn(node),
       fill: resolveBackgroundFill(
         backgroundColor,
         node.opacity,
@@ -103,10 +97,7 @@ export function renderBackgroundAndBorder(
   if (backgroundImage) {
     const sizing = backgroundImage.sizing ?? "cover";
     const imageOptions: Record<string, unknown> = {
-      x: pxToIn(node.x),
-      y: pxToIn(node.y),
-      w: pxToIn(node.w),
-      h: pxToIn(node.h),
+      ...rectPxToIn(node),
       sizing: {
         type: sizing,
         w: pxToIn(node.w),
@@ -128,10 +119,7 @@ export function renderBackgroundAndBorder(
   // 3. ボーダー
   if (hasBorder || hasShadow) {
     ctx.slide.addShape(shapeType, {
-      x: pxToIn(node.x),
-      y: pxToIn(node.y),
-      w: pxToIn(node.w),
-      h: pxToIn(node.h),
+      ...rectPxToIn(node),
       fill: { type: "none" as const },
       line: hasBorder
         ? convertBorderLine(border, "000000")

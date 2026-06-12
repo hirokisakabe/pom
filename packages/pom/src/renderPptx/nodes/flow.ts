@@ -1,9 +1,10 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
+import { stripHash } from "../utils/visualStyle.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 import { measureFlow } from "../../calcYogaLayout/measureCompositeNodes.ts";
-import { calcScaleFactor } from "../utils/scaleToFit.ts";
-import { getContentArea } from "../utils/contentArea.ts";
+import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
+import { withContentBounds } from "../utils/contentArea.ts";
 
 type FlowPositionedNode = Extract<PositionedNode, { type: "flow" }>;
 
@@ -28,15 +29,10 @@ export function renderFlowNode(
   const defaultColor = "1D4ED8";
 
   // スケール係数を計算（コンテンツ領域基準）
-  const content = getContentArea(node);
-  const intrinsic = measureFlow(node);
-  const scaleFactor = calcScaleFactor(
-    content.w,
-    content.h,
-    intrinsic.width,
-    intrinsic.height,
-    "flow",
-    ctx.buildContext.diagnostics,
+  const { content, scaleFactor } = resolveScaledContentArea(
+    node,
+    measureFlow(node),
+    ctx,
   );
 
   const scaledNodeWidth = nodeWidth * scaleFactor;
@@ -47,13 +43,7 @@ export function renderFlowNode(
   const nodeCount = node.nodes.length;
 
   // コンテンツ領域を使用するための仮想ノードを作成
-  const contentNode = {
-    ...node,
-    x: content.x,
-    y: content.y,
-    w: content.w,
-    h: content.h,
-  };
+  const contentNode = withContentBounds(node, content);
 
   // ノードのレイアウトを計算
   if (direction === "horizontal") {
@@ -125,8 +115,8 @@ export function renderFlowNode(
         fontSize: pxToPt(10 * scaleFactor),
         fontFace: "Noto Sans JP",
         color:
-          conn.labelColor?.replace("#", "") ??
-          connectorStyle.labelColor?.replace("#", "") ??
+          stripHash(conn.labelColor) ??
+          stripHash(connectorStyle.labelColor) ??
           "64748B",
         align: "center",
         valign: "middle",
