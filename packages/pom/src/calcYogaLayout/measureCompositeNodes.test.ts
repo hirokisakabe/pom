@@ -12,7 +12,7 @@ function makeNode(overrides: Partial<ProcessArrowNode> = {}): ProcessArrowNode {
     type: "processArrow",
     steps: [{ label: "A" }, { label: "B" }, { label: "C" }],
     ...overrides,
-  } as ProcessArrowNode;
+  };
 }
 
 describe("measureProcessArrow", () => {

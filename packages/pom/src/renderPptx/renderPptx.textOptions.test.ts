@@ -110,7 +110,10 @@ describe("createTextOptions", () => {
 
 describe("renderTextNode (runs 分岐)", () => {
   it("runs ありの Text でノード単位の glow / outline が各 run に適用される", () => {
-    const addText = vi.fn();
+    const addText =
+      vi.fn<
+        (items: { options: { glow?: unknown; outline?: unknown } }[]) => void
+      >();
     const ctx = { slide: { addText } } as unknown as RenderContext;
 
     renderTextNode(
