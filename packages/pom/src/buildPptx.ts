@@ -13,6 +13,7 @@ import { renderPptx } from "./renderPptx/renderPptx.ts";
 import { freeYogaTree } from "./shared/freeYogaTree.ts";
 import { toPositioned } from "./toPositioned/toPositioned.ts";
 import { PositionedNode, SlideMasterOptions } from "./types.ts";
+import { validatePositioned } from "./validatePositioned/validatePositioned.ts";
 
 export type { TextMeasurementMode };
 
@@ -44,7 +45,7 @@ export async function buildPptx(
   const nodes = parseXml(xml);
   const positionedPages: PositionedNode[] = [];
 
-  for (const node of nodes) {
+  for (const [slideIndex, node] of nodes.entries()) {
     let map: YogaNodeMap | undefined;
     try {
       if (options?.autoFit !== false) {
@@ -54,6 +55,7 @@ export async function buildPptx(
       }
       const layoutMap = extractLayoutResults(map);
       const positioned = await toPositioned(node, ctx, layoutMap);
+      validatePositioned(positioned, slideSize, ctx, slideIndex);
       positionedPages.push(positioned);
     } finally {
       if (map) freeYogaTree(map);
