@@ -4,7 +4,6 @@ export default defineSharedConfig({
   tsconfigRootDir: import.meta.dirname,
   environment: "browser",
   ignores: [
-    "**/*.test.ts",
     "main.ts",
     "vrt/**",
     "preview/**",
