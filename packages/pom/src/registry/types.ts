@@ -5,6 +5,7 @@ import type { loadYoga } from "yoga-layout/load";
 import type { BuildContext } from "../buildContext.ts";
 import type { LayoutResultMap } from "../calcYogaLayout/types.ts";
 import type { z } from "zod";
+import type { XmlChildRule } from "./xmlChildRules.ts";
 
 export type Yoga = Awaited<ReturnType<typeof loadYoga>>;
 
@@ -50,6 +51,13 @@ export interface NodeDefinition {
 
   /** XML child element の受け入れルール */
   childPolicy: ChildPolicy;
+
+  /**
+   * XML child element notation の変換ルール。
+   * childPolicy.kind === "custom" のノードは必ずこのルールを持つ
+   * （対応関係は xmlChildRules.test.ts で検証される）
+   */
+  xmlChildRule?: XmlChildRule;
 
   /** テキスト content を流し込む属性名 */
   textContentProperty?: string;

@@ -31,6 +31,7 @@ export type NodeMetadata = Pick<
   | "schema"
   | "defaults"
   | "childPolicy"
+  | "xmlChildRule"
   | "textContentProperty"
   | "supportsInlineRuns"
 >;
@@ -45,7 +46,11 @@ function leaf(
   options: Partial<
     Pick<
       NodeMetadata,
-      "defaults" | "childPolicy" | "textContentProperty" | "supportsInlineRuns"
+      | "defaults"
+      | "childPolicy"
+      | "xmlChildRule"
+      | "textContentProperty"
+      | "supportsInlineRuns"
     >
   > = {},
 ): NodeMetadata {
@@ -82,6 +87,7 @@ export const NODE_METADATA = [
       lineHeight: 1.3,
     },
     childPolicy: { kind: "custom" },
+    xmlChildRule: { kind: "inline-runs" },
     textContentProperty: "text",
     supportsInlineRuns: true,
   }),
@@ -92,6 +98,12 @@ export const NODE_METADATA = [
       lineHeight: 1.3,
     },
     childPolicy: { kind: "custom", optionalProperties: ["items"] },
+    xmlChildRule: {
+      kind: "repeated",
+      childTag: "Li",
+      property: "items",
+      allowsItemText: true,
+    },
   }),
   leaf("ol", "Ol", olNodeSchema, {
     defaults: {
@@ -100,6 +112,12 @@ export const NODE_METADATA = [
       lineHeight: 1.3,
     },
     childPolicy: { kind: "custom", optionalProperties: ["items"] },
+    xmlChildRule: {
+      kind: "repeated",
+      childTag: "Li",
+      property: "items",
+      allowsItemText: true,
+    },
   }),
   leaf("image", "Image", imageNodeSchema),
   leaf("table", "Table", tableNodeSchema, {
@@ -107,6 +125,7 @@ export const NODE_METADATA = [
       kind: "custom",
       optionalProperties: ["columns", "rows"],
     },
+    xmlChildRule: { kind: "node-specific", expectedTags: ["Col", "Tr"] },
   }),
   container("vstack", "VStack", "multi-child", vStackNodeSchema),
   container("hstack", "HStack", "multi-child", hStackNodeSchema),
@@ -121,30 +140,55 @@ export const NODE_METADATA = [
   }),
   leaf("chart", "Chart", chartNodeSchema, {
     childPolicy: { kind: "custom", optionalProperties: ["data"] },
+    xmlChildRule: { kind: "node-specific", expectedTags: ["ChartSeries"] },
   }),
   leaf("timeline", "Timeline", timelineNodeSchema, {
     childPolicy: { kind: "custom", optionalProperties: ["items"] },
+    xmlChildRule: {
+      kind: "repeated",
+      childTag: "TimelineItem",
+      property: "items",
+    },
   }),
   leaf("matrix", "Matrix", matrixNodeSchema, {
     childPolicy: {
       kind: "custom",
       optionalProperties: ["axes", "items", "quadrants"],
     },
+    xmlChildRule: {
+      kind: "node-specific",
+      expectedTags: ["MatrixAxes", "MatrixQuadrants", "MatrixItem"],
+    },
   }),
   leaf("tree", "Tree", treeNodeSchema, {
     childPolicy: { kind: "custom", optionalProperties: ["data"] },
+    xmlChildRule: { kind: "node-specific", expectedTags: ["TreeItem"] },
   }),
   leaf("flow", "Flow", flowNodeSchema, {
     childPolicy: {
       kind: "custom",
       optionalProperties: ["nodes", "connections"],
     },
+    xmlChildRule: {
+      kind: "node-specific",
+      expectedTags: ["FlowNode", "FlowConnection"],
+    },
   }),
   leaf("processArrow", "ProcessArrow", processArrowNodeSchema, {
     childPolicy: { kind: "custom", optionalProperties: ["steps"] },
+    xmlChildRule: {
+      kind: "repeated",
+      childTag: "ProcessArrowStep",
+      property: "steps",
+    },
   }),
   leaf("pyramid", "Pyramid", pyramidNodeSchema, {
     childPolicy: { kind: "custom", optionalProperties: ["levels"] },
+    xmlChildRule: {
+      kind: "repeated",
+      childTag: "PyramidLevel",
+      property: "levels",
+    },
   }),
   leaf("line", "Line", lineNodeSchema),
   leaf("arrow", "Arrow", arrowNodeSchema),
@@ -164,6 +208,7 @@ export const NODE_METADATA = [
       kind: "custom",
       optionalProperties: ["svgContent"],
     },
+    xmlChildRule: { kind: "node-specific", expectedTags: ["svg"] },
   }),
 ] as const satisfies readonly NodeMetadata[];
 

@@ -117,6 +117,15 @@ describe("serializeXml", () => {
       expect(result).toEqual(original);
     });
 
+    it("boolean 装飾のネスト順は B > I > U > S で直列化される", () => {
+      const nodes = parseXml(
+        `<Slide><Text><B><I><U><S>全装飾</S></U></I></B></Text></Slide>`,
+      );
+      const serialized = serializeXml(nodes);
+      expect(serialized).toContain("<B><I><U><S>全装飾</S></U></I></B>");
+      expect(parseXml(serialized)).toEqual(nodes);
+    });
+
     it("Span の letterSpacing を runs として往復変換する", () => {
       const original = parseXml(
         `<Slide><Text>通常 <Span letterSpacing="6">字間広め</Span></Text></Slide>`,
@@ -147,6 +156,47 @@ describe("serializeXml", () => {
       const xml = `<VStack borderTop.color="FF0000" borderTop.width="4" borderLeft.dashType="dash"><Text>bordered</Text></VStack>`;
       const original = parseXml(`<Slide>${xml}</Slide>`);
       const result = roundTrip(xml);
+      expect(result).toEqual(original);
+    });
+  });
+
+  describe("child element notation ノードの往復変換", () => {
+    it("Ul (Li + インライン装飾) を往復変換する", () => {
+      const original = parseXml(
+        `<Slide><Ul><Li><B>太字</B>の項目</Li><Li>通常の項目</Li></Ul></Slide>`,
+      );
+      const serialized = serializeXml(original);
+      // serialize 側は child element notation ではなく JSON 属性として出力する (現状仕様の固定)
+      expect(serialized).toContain('items="');
+      expect(serialized).not.toContain("<Li");
+      const result = parseXml(serialized);
+      expect(result).toEqual(original);
+    });
+
+    it("Timeline を往復変換する", () => {
+      const original = parseXml(
+        `<Slide><Timeline><TimelineItem date="2026-01" title="開始" /><TimelineItem date="2026-06" title="完了" color="FF0000" /></Timeline></Slide>`,
+      );
+      const serialized = serializeXml(original);
+      const result = parseXml(serialized);
+      expect(result).toEqual(original);
+    });
+
+    it("ProcessArrow を往復変換する", () => {
+      const original = parseXml(
+        `<Slide><ProcessArrow><ProcessArrowStep label="調査" /><ProcessArrowStep label="実装" /></ProcessArrow></Slide>`,
+      );
+      const serialized = serializeXml(original);
+      const result = parseXml(serialized);
+      expect(result).toEqual(original);
+    });
+
+    it("Table (Td + インライン装飾) を往復変換する", () => {
+      const original = parseXml(
+        `<Slide><Table><Tr><Td><B>見出し</B></Td><Td>値</Td></Tr></Table></Slide>`,
+      );
+      const serialized = serializeXml(original);
+      const result = parseXml(serialized);
       expect(result).toEqual(original);
     });
   });
