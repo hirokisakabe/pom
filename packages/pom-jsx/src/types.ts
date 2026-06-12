@@ -80,6 +80,10 @@ export interface BaseProps {
   backgroundGradient?: string;
   backgroundImage?: BackgroundImage;
   border?: BorderStyle;
+  borderTop?: BorderStyle;
+  borderRight?: BorderStyle;
+  borderBottom?: BorderStyle;
+  borderLeft?: BorderStyle;
   borderRadius?: number;
   opacity?: number;
   zIndex?: number;

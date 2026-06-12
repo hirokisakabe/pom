@@ -229,6 +229,7 @@ Declare a color palette once at the top level and reference each token from any 
 | `backgroundGradient` | `linear-gradient(135deg, #667EEA 0%, #764BA2 100%)`     | Linear gradient background. Angle (`<n>deg` or `to right` etc., default `180deg`) + 2 or more hex color stops with optional `%` positions. Takes precedence over `backgroundColor`. On the slide root node it becomes the slide background |
 | `backgroundImage` | `backgroundImage.src="url" backgroundImage.sizing="cover"` | Background image                           |
 | `border`          | `border.color="333" border.width="1"`                      | Border (shorthand + dot notation can be mixed) |
+| `borderTop` `borderRight` `borderBottom` `borderLeft` | `borderLeft.color="1D4ED8" borderLeft.width="6"` | Per-side border with the same fields as `border`. Overrides `border` for that side (field-by-field). Useful for accent bars / underlined headings. Cannot be combined with `borderRadius` (per-side values are ignored with a warning) |
 | `borderRadius`    | number                                                     | Border radius (px)                         |
 | `opacity`         | 0-1                                                        | Background opacity                         |
 | `margin`          | number / `margin.top="8" margin.bottom="8"`                | Margin (shorthand + dot notation can be mixed) |

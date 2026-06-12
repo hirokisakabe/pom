@@ -48,35 +48,37 @@ A pom XML document may declare a single `<Theme>` element at the top level. Each
 
 Layout attributes that all nodes can have.
 
-| Attribute            | Type                                                                       | Description                                                     |
-| -------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `id`                 | string                                                                     | Unique identifier within the slide (used by `Arrow` connectors) |
-| `w`                  | number / `"max"` / `"50%"`                                                 | Width                                                           |
-| `h`                  | number / `"max"` / `"50%"`                                                 | Height                                                          |
-| `grow`               | positive number                                                            | Flex grow ratio among siblings (CSS `flex-grow`)                |
-| `minW` `maxW`        | number                                                                     | Min/Max width                                                   |
-| `minH` `maxH`        | number                                                                     | Min/Max height                                                  |
-| `padding`            | number / `padding.top="8" padding.bottom="8"`                              | Padding                                                         |
-| `backgroundColor`    | hex                                                                        | Background color (e.g., `F8F9FA`)                               |
-| `backgroundGradient` | `linear-gradient(135deg, #667EEA 0%, #764BA2 100%)`                        | Linear gradient background                                      |
-| `backgroundImage`    | `backgroundImage.src="url" backgroundImage.sizing="cover"`                 | Background image                                                |
-| `border`             | `border.color="333" border.width="1"`                                      | Border                                                          |
-| `borderRadius`       | number                                                                     | Corner radius (px)                                              |
-| `opacity`            | 0-1                                                                        | Background transparency                                         |
-| `margin`             | number / `margin.top="8" margin.bottom="8"`                                | Outer margin                                                    |
-| `zIndex`             | number                                                                     | Stacking order (higher = on top)                                |
-| `position`           | `relative` / `absolute`                                                    | Positioning mode                                                |
-| `top`                | number                                                                     | Top offset (with position)                                      |
-| `right`              | number                                                                     | Right offset (with position)                                    |
-| `bottom`             | number                                                                     | Bottom offset (with position)                                   |
-| `left`               | number                                                                     | Left offset (with position)                                     |
-| `alignSelf`          | `auto` / `start` / `center` / `end` / `stretch`                            | Override parent alignItems                                      |
-| `shadow`             | `shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000"` | Drop shadow (not supported on Line)                             |
+| Attribute                                             | Type                                                                       | Description                                                     |
+| ----------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `id`                                                  | string                                                                     | Unique identifier within the slide (used by `Arrow` connectors) |
+| `w`                                                   | number / `"max"` / `"50%"`                                                 | Width                                                           |
+| `h`                                                   | number / `"max"` / `"50%"`                                                 | Height                                                          |
+| `grow`                                                | positive number                                                            | Flex grow ratio among siblings (CSS `flex-grow`)                |
+| `minW` `maxW`                                         | number                                                                     | Min/Max width                                                   |
+| `minH` `maxH`                                         | number                                                                     | Min/Max height                                                  |
+| `padding`                                             | number / `padding.top="8" padding.bottom="8"`                              | Padding                                                         |
+| `backgroundColor`                                     | hex                                                                        | Background color (e.g., `F8F9FA`)                               |
+| `backgroundGradient`                                  | `linear-gradient(135deg, #667EEA 0%, #764BA2 100%)`                        | Linear gradient background                                      |
+| `backgroundImage`                                     | `backgroundImage.src="url" backgroundImage.sizing="cover"`                 | Background image                                                |
+| `border`                                              | `border.color="333" border.width="1"`                                      | Border                                                          |
+| `borderTop` `borderRight` `borderBottom` `borderLeft` | `borderLeft.color="1D4ED8" borderLeft.width="6"`                           | Per-side border (overrides `border` for that side)              |
+| `borderRadius`                                        | number                                                                     | Corner radius (px)                                              |
+| `opacity`                                             | 0-1                                                                        | Background transparency                                         |
+| `margin`                                              | number / `margin.top="8" margin.bottom="8"`                                | Outer margin                                                    |
+| `zIndex`                                              | number                                                                     | Stacking order (higher = on top)                                |
+| `position`                                            | `relative` / `absolute`                                                    | Positioning mode                                                |
+| `top`                                                 | number                                                                     | Top offset (with position)                                      |
+| `right`                                               | number                                                                     | Right offset (with position)                                    |
+| `bottom`                                              | number                                                                     | Bottom offset (with position)                                   |
+| `left`                                                | number                                                                     | Left offset (with position)                                     |
+| `alignSelf`                                           | `auto` / `start` / `center` / `end` / `stretch`                            | Override parent alignItems                                      |
+| `shadow`                                              | `shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000"` | Drop shadow (not supported on Line)                             |
 
 - `grow`: Distributes the remaining space of a `VStack` / `HStack` among siblings in proportion to their `grow` values (e.g., `grow="2"` and `grow="1"` produce a 2:1 split). Along the parent's main axis, `w="max"` / `h="max"` behave as `grow="1"`; when `grow` is specified together with them, `grow` takes precedence. See [Layout System](./layout-system.md) for details.
 - `backgroundGradient`: CSS-like `linear-gradient()` syntax. The angle accepts `<n>deg` (0 = bottom-to-top, clockwise) or `to <direction>` keywords (`to right`, `to bottom left`, ...) and defaults to `180deg` (top-to-bottom). Two or more hex color stops are required; stop positions (`%`) are optional and distributed evenly when omitted. Exported as a native PowerPoint gradient fill (editable, not rasterized). Takes precedence over `backgroundColor`. When set on the root node of a slide, it is applied as the slide background. Note: in browser environments use `pptx.write()` — `pptx.writeFile()` falls back to plain pptxgenjs output without the gradient post-processing.
 - `backgroundImage`: `src` accepts a URL or local file path. `sizing` controls how the image fits: `"cover"` (default) fills the area, `"contain"` fits within the area.
 - `border`: Can be combined with `color`, `width`, and `dashType` (`"solid"` / `"dash"` / `"dashDot"` / `"lgDash"` / `"lgDashDot"` / `"lgDashDotDot"` / `"sysDash"` / `"sysDot"`).
+- `borderTop` / `borderRight` / `borderBottom` / `borderLeft`: Per-side borders with the same fields as `border` (`color` / `width` / `dashType`). Useful for accent bars (`borderLeft.width="6"`) or underlined headings (`borderBottom.width="3"`). When combined with `border`, each side merges field-by-field with the per-side value taking precedence. Cannot be combined with `borderRadius` — the per-side values are ignored with a diagnostics warning and the uniform `border` is used instead.
 - `opacity`: 0 = fully transparent, 1 = fully opaque. Useful for semi-transparent overlays with Layer nodes.
 - Shorthand (`padding="16"` / `border='{"color":"333","width":1}'`) and dot notation (`padding.top="8"` / `border.color="FF0000"`) can be mixed on the same node. Shorthand is used as the default value, then dot notation overrides each top-level key.
 - Mixed shorthand + dot notation is supported for: `padding` `margin` `border` `cellBorder` `line` `fill` `shadow` `underline` `beginArrow` `endArrow` `backgroundImage` `connectorStyle` `sizing` `glow` `outline`.

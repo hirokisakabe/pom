@@ -132,6 +132,20 @@ describe("buildPptx diagnostics", () => {
     expect(result.diagnostics).toEqual([]);
     expect(result.pptx).toBeDefined();
   });
+
+  it("辺ごとの border のみのビルドでは diagnostics が空配列", async () => {
+    const xml = `<Slide><VStack><Text fontSize="24" borderLeft.color="FF0000" borderLeft.width="4">accent</Text></VStack></Slide>`;
+    const result = await buildPptx(xml, slideSize, { autoFit: false });
+    expect(result.diagnostics).toEqual([]);
+  });
+
+  it("borderRadius と辺ごとの border の併用で PER_SIDE_BORDER_WITH_RADIUS が記録される", async () => {
+    const xml = `<Slide><VStack><Text fontSize="24" borderRadius="8" borderLeft.color="FF0000">rounded</Text></VStack></Slide>`;
+    const result = await buildPptx(xml, slideSize, { autoFit: false });
+    expect(
+      result.diagnostics.some((d) => d.code === "PER_SIDE_BORDER_WITH_RADIUS"),
+    ).toBe(true);
+  });
 });
 
 describe("buildPptx SlideMaster margin", () => {

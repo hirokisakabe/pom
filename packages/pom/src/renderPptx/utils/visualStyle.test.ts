@@ -5,6 +5,7 @@ import {
   convertBorderLine,
   opacityToTransparency,
   resolveBackgroundFill,
+  resolvePerSideBorders,
   resolveRectRadius,
   stripHash,
 } from "./visualStyle.ts";
@@ -70,6 +71,41 @@ describe("hasVisibleBorder", () => {
     expect(hasVisibleBorder({ color: "FF0000" })).toBe(true);
     expect(hasVisibleBorder({ width: 2 })).toBe(true);
     expect(hasVisibleBorder({ dashType: "dash" })).toBe(true);
+  });
+});
+
+describe("resolvePerSideBorders", () => {
+  it("辺ごとの指定が 1 つも無い場合は undefined を返す (一律 border のみでも)", () => {
+    expect(resolvePerSideBorders({})).toBeUndefined();
+    expect(
+      resolvePerSideBorders({ border: { color: "000000", width: 2 } }),
+    ).toBeUndefined();
+  });
+
+  it("空オブジェクトの辺指定は指定なしとして扱う", () => {
+    expect(resolvePerSideBorders({ borderTop: {} })).toBeUndefined();
+  });
+
+  it("指定した辺だけが結果に含まれる", () => {
+    expect(
+      resolvePerSideBorders({ borderLeft: { color: "FF0000", width: 4 } }),
+    ).toEqual({
+      left: { color: "FF0000", width: 4 },
+    });
+  });
+
+  it("一律 border をベースに辺ごとの指定がフィールド単位で優先される", () => {
+    expect(
+      resolvePerSideBorders({
+        border: { color: "000000", width: 2 },
+        borderTop: { color: "FF0000" },
+      }),
+    ).toEqual({
+      top: { color: "FF0000", width: 2 },
+      right: { color: "000000", width: 2 },
+      bottom: { color: "000000", width: 2 },
+      left: { color: "000000", width: 2 },
+    });
   });
 });
 

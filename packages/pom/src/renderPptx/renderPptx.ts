@@ -26,16 +26,14 @@ import type {
 } from "../types.ts";
 import type { BuildContext } from "../buildContext.ts";
 import type { RenderContext, NodeBounds } from "./types.ts";
-import { pxToIn, pxToPt, rectPxToIn } from "./units.ts";
+import { pxToIn, pxToPt } from "./units.ts";
 import { convertUnderline, convertStrike } from "./textOptions.ts";
 import { getImageData } from "../shared/measureImage.ts";
 import { resolveBoxSpacing } from "../shared/boxSpacing.ts";
-import { renderBackgroundAndBorder } from "./utils/backgroundBorder.ts";
 import {
-  convertBorderLine,
-  hasVisibleBorder,
-  resolveRectRadius,
-} from "./utils/visualStyle.ts";
+  renderBackgroundAndBorder,
+  renderBorderOnly,
+} from "./utils/backgroundBorder.ts";
 import { registerBackgroundGradient } from "./gradientFills.ts";
 import { getNodeDef } from "../registry/index.ts";
 
@@ -314,20 +312,7 @@ export async function renderPptx(
               !rootHasOpacity))
         ) {
           // border のみ描画（backgroundColor/backgroundImage はスキップ）
-          const { border, borderRadius } = node;
-          if (hasVisibleBorder(border)) {
-            const line = convertBorderLine(border, "000000");
-            const shapeType = borderRadius
-              ? ctx.pptx.ShapeType.roundRect
-              : ctx.pptx.ShapeType.rect;
-            const rectRadius = resolveRectRadius(borderRadius, node.w, node.h);
-            ctx.slide.addShape(shapeType, {
-              ...rectPxToIn(node),
-              fill: { type: "none" },
-              line,
-              rectRadius,
-            });
-          }
+          renderBorderOnly(node, ctx);
         } else {
           renderBackgroundAndBorder(node, ctx);
         }

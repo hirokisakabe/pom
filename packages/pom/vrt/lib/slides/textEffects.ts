@@ -1,12 +1,12 @@
 import { palette } from "./palette.js";
 
 // ============================================================
-// Page 44: Text Effects Test (glow / outline)
+// Page 45: Text Effects Test (glow / outline)
 // テスト対象: Text glow, Text outline, glow + outline 併用, runs との併用
 // ============================================================
-export const page44TextEffectsXml = `
+export const page45TextEffectsXml = `
 <VStack w="100%" h="max" padding="48" gap="20" alignItems="stretch" backgroundColor="${palette.background}">
-  <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 44: Text Effects Test (glow / outline)</Text>
+  <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 45: Text Effects Test (glow / outline)</Text>
   <!-- glow variations -->
   <VStack padding="16" backgroundColor="${palette.navy}" gap="8">
     <Text fontSize="14" bold="true" color="FFFFFF">glow:</Text>
