@@ -1,4 +1,10 @@
-import type { PositionedNode, Underline, UnderlineStyle } from "../types.ts";
+import type {
+  PositionedNode,
+  TextGlow,
+  TextOutline,
+  Underline,
+  UnderlineStyle,
+} from "../types.ts";
 import { pxToIn, pxToPt } from "./units.ts";
 import { getContentArea } from "./utils/contentArea.ts";
 
@@ -29,6 +35,37 @@ export function convertStrike(
   return undefined;
 }
 
+/**
+ * glow プロパティを pptxgenjs 形式に変換する
+ * size はユーザー入力 px、pptxgenjs の glow.size は pt。
+ * pptxgenjs は省略時デフォルトを Object.assign で合成するため undefined を
+ * 渡すとデフォルトが消える。ここで pom 側のデフォルトを確定させる。
+ */
+export function convertGlow(
+  glow: TextGlow | undefined,
+): { size: number; opacity: number; color: string } | undefined {
+  if (glow === undefined) return undefined;
+  return {
+    size: pxToPt(glow.size ?? 8),
+    opacity: glow.opacity ?? 0.75,
+    color: glow.color ?? "FFFFFF",
+  };
+}
+
+/**
+ * outline プロパティを pptxgenjs 形式に変換する
+ * size はユーザー入力 px、pptxgenjs の outline.size は pt
+ */
+export function convertOutline(
+  outline: TextOutline | undefined,
+): { size: number; color: string } | undefined {
+  if (outline === undefined) return undefined;
+  return {
+    size: pxToPt(outline.size ?? 1),
+    color: outline.color ?? "FFFFFF",
+  };
+}
+
 export function createTextOptions(node: TextNode) {
   const fontSizePx = node.fontSize ?? 24;
   const fontFamily = node.fontFamily ?? "Noto Sans JP";
@@ -52,6 +89,8 @@ export function createTextOptions(node: TextNode) {
     underline: convertUnderline(node.underline),
     strike: convertStrike(node.strike),
     highlight: node.highlight,
+    glow: convertGlow(node.glow),
+    outline: convertOutline(node.outline),
     // letterSpacing はユーザー入力 px、pptxgenjs の charSpacing は pt
     charSpacing:
       node.letterSpacing !== undefined ? pxToPt(node.letterSpacing) : undefined,

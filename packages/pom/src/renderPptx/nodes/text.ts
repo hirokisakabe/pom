@@ -4,6 +4,8 @@ import {
   createTextOptions,
   convertUnderline,
   convertStrike,
+  convertGlow,
+  convertOutline,
 } from "../textOptions.ts";
 import { pxToPt } from "../units.ts";
 
@@ -31,6 +33,9 @@ export function renderTextNode(
           underline: convertUnderline(run.underline ?? node.underline),
           strike: convertStrike(run.strike ?? node.strike),
           highlight: run.highlight ?? node.highlight,
+          // glow / outline はノード単位指定のみ (run 単位はスコープ外)
+          glow: convertGlow(node.glow),
+          outline: convertOutline(node.outline),
           charSpacing:
             letterSpacingPx !== undefined ? pxToPt(letterSpacingPx) : undefined,
           ...(run.href ? { hyperlink: { url: run.href } } : {}),
