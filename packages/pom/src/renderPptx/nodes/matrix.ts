@@ -2,8 +2,7 @@ import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 import { measureMatrix } from "../../calcYogaLayout/measureCompositeNodes.ts";
-import { calcScaleFactor } from "../utils/scaleToFit.ts";
-import { getContentArea } from "../utils/contentArea.ts";
+import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
 
 type MatrixPositionedNode = Extract<PositionedNode, { type: "matrix" }>;
 
@@ -23,15 +22,10 @@ export function renderMatrixNode(
   const itemLabelColor = node.itemLabelColor?.replace("#", "") ?? "1E293B";
 
   // スケール係数を計算（コンテンツ領域基準）
-  const content = getContentArea(node);
-  const intrinsic = measureMatrix(node);
-  const scaleFactor = calcScaleFactor(
-    content.w,
-    content.h,
-    intrinsic.width,
-    intrinsic.height,
-    "matrix",
-    ctx.buildContext.diagnostics,
+  const { content, scaleFactor } = resolveScaledContentArea(
+    node,
+    measureMatrix(node),
+    ctx,
   );
 
   const itemSize = baseItemSize * scaleFactor;

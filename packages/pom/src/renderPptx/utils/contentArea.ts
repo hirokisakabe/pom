@@ -47,3 +47,14 @@ export function getContentAreaIn(
 ): ContentArea {
   return rectPxToIn(getContentArea(node));
 }
+
+/**
+ * ノードの x/y/w/h を指定領域 (通常はコンテンツ領域) で置き換えた
+ * 仮想ノードを返す。padding を解決済みの領域を基準に下位の描画関数へ
+ * ノードを渡すために使う。
+ */
+export function withContentBounds<
+  T extends { x: number; y: number; w: number; h: number },
+>(node: T, bounds: ContentArea): T {
+  return { ...node, x: bounds.x, y: bounds.y, w: bounds.w, h: bounds.h };
+}

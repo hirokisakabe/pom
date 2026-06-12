@@ -2,8 +2,8 @@ import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 import { measureTimeline } from "../../calcYogaLayout/measureCompositeNodes.ts";
-import { calcScaleFactor } from "../utils/scaleToFit.ts";
-import { getContentArea } from "../utils/contentArea.ts";
+import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
+import { withContentBounds } from "../utils/contentArea.ts";
 
 type TimelinePositionedNode = Extract<PositionedNode, { type: "timeline" }>;
 
@@ -34,28 +34,17 @@ export function renderTimelineNode(
   };
 
   // スケール係数を計算（コンテンツ領域基準）
-  const content = getContentArea(node);
-  const intrinsic = measureTimeline(node);
-  const scaleFactor = calcScaleFactor(
-    content.w,
-    content.h,
-    intrinsic.width,
-    intrinsic.height,
-    "timeline",
-    ctx.buildContext.diagnostics,
+  const { content, scaleFactor } = resolveScaledContentArea(
+    node,
+    measureTimeline(node),
+    ctx,
   );
 
   const nodeRadius = baseNodeRadius * scaleFactor;
   const lineWidth = baseLineWidth * scaleFactor;
 
   // コンテンツ領域を使用するための仮想ノードを作成
-  const contentNode = {
-    ...node,
-    x: content.x,
-    y: content.y,
-    w: content.w,
-    h: content.h,
-  };
+  const contentNode = withContentBounds(node, content);
 
   if (direction === "horizontal") {
     renderHorizontalTimeline(
