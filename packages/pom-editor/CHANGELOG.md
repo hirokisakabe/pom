@@ -1,5 +1,12 @@
 # @hirokisakabe/pom-editor
 
+## 0.2.4
+
+### Patch Changes
+
+- Updated dependencies [[`7977b7b`](https://github.com/hirokisakabe/pom/commit/7977b7b425f11e4c2bce2eb854e2c76177154f7b)]:
+  - @hirokisakabe/pom@8.5.0
+
 ## 0.2.3
 
 ### Patch Changes
