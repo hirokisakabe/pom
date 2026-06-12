@@ -44,7 +44,7 @@ export function getContentArea(node: {
  */
 export function getContentAreaIn(
   node: Parameters<typeof getContentArea>[0],
-): ContentArea {
+): ReturnType<typeof rectPxToIn> {
   return rectPxToIn(getContentArea(node));
 }
 

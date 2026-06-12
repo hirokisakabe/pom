@@ -24,7 +24,7 @@ import type { BorderStyle, ShadowStyle } from "../../types.ts";
 import { pxToPt } from "../units.ts";
 
 /**
- * 色指定の "#" prefix を取り除き、pptxgenjs が受け付ける HEX 文字列にする。
+ * 色文字列から "#" を 1 つ取り除き、pptxgenjs が受け付ける HEX 文字列にする。
  * undefined はそのまま返すため `stripHash(color) ?? fallback` の形で使える。
  */
 export function stripHash(color: string | undefined): string | undefined {

@@ -171,8 +171,34 @@ describe("renderPyramidNode", () => {
     const shapes = objects.filter((o) => o.shape === "custGeom");
     expect(shapes[0].options.fill).toEqual({ color: "112233" });
 
-    const labels = objects.filter((o) => o.shape === "rect");
+    // ラベルは text を持つオブジェクト (図形は text: null)
+    const labels = objects.filter((o) => Array.isArray(o.text));
     expect(labels[1].options.color).toBe("445566");
+  });
+});
+
+describe("ルートノードの background + border", () => {
+  it("backgroundColor は slide.background に逃がし、border のみノード全体に fill なしで描画する", async () => {
+    const { objects } = await renderPage({
+      type: "vstack",
+      x: 0,
+      y: 0,
+      w: 1280,
+      h: 720,
+      backgroundColor: "EEEEEE",
+      border: { color: "FF0000", width: 2 },
+      children: [],
+    });
+
+    expect(objects).toHaveLength(1);
+    expect(objects[0].options).toMatchObject({
+      x: 0,
+      y: 0,
+      w: pxToIn(1280),
+      h: pxToIn(720),
+      fill: { type: "none" },
+    });
+    expect(objects[0].options.line).toMatchObject({ color: "FF0000" });
   });
 });
 
