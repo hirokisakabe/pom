@@ -133,3 +133,33 @@ describe("buildPptx diagnostics", () => {
     expect(result.pptx).toBeDefined();
   });
 });
+
+describe("buildPptx SlideMaster margin", () => {
+  const slideSize = { w: 1280, h: 720 };
+  const xml = `<Slide><VStack><Text fontSize="24">margin test</Text></VStack></Slide>`;
+
+  async function getMasterMargin(
+    margin:
+      | number
+      | { top?: number; right?: number; bottom?: number; left?: number },
+  ): Promise<unknown> {
+    const { pptx } = await buildPptx(xml, slideSize, {
+      master: { title: "M1", margin },
+    });
+    const layouts = (
+      pptx as unknown as { slideLayouts: { _name: string; _margin: unknown }[] }
+    ).slideLayouts;
+    return layouts.find((l) => l._name === "M1")?._margin;
+  }
+
+  it("number 指定は 4 辺等値の配列 (inch) として渡される", async () => {
+    // pptxgenjs では margin: n と [n, n, n, n] は同義 (全辺に適用)
+    expect(await getMasterMargin(96)).toEqual([1, 1, 1, 1]);
+  });
+
+  it("object 指定は未指定 edge を 0 として [top, right, bottom, left] で渡される", async () => {
+    expect(await getMasterMargin({ top: 96, left: 48 })).toEqual([
+      1, 0, 0, 0.5,
+    ]);
+  });
+});

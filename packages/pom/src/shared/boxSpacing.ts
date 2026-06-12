@@ -15,6 +15,10 @@
  * 複合ノードのスケーリングは renderPptx/utils/scaleToFit.ts が担当する (本モジュールの対象外)。
  */
 
+/**
+ * types.ts の paddingSchema / slideMasterMarginSchema と同じ shape。
+ * schema 側を変更する場合は本型も同期すること。
+ */
 export type BoxSpacingInput =
   | number
   | {
