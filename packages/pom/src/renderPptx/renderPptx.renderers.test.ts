@@ -1,0 +1,290 @@
+/**
+ * ノード renderer の出力回帰テスト。
+ *
+ * renderPptx に PositionedNode を直接渡し、pptxgenjs 内部の
+ * _slideObjects (描画オブジェクトの位置・スタイル) を検証することで、
+ * renderer 内部のリファクタリングで public な出力挙動が変わっていない
+ * ことを保証する。
+ */
+import { describe, expect, it } from "vitest";
+import { renderPptx } from "./renderPptx.ts";
+import { createBuildContext } from "../buildContext.ts";
+import { pxToIn, pxToPt } from "./units.ts";
+import type { PositionedNode } from "../types.ts";
+
+type SlideObject = {
+  _type: string;
+  shape?: string;
+  options: Record<string, unknown>;
+  text?: unknown;
+};
+
+async function renderPage(page: PositionedNode) {
+  const buildContext = createBuildContext();
+  const pptx = await renderPptx([page], { w: 1280, h: 720 }, buildContext);
+  const slides = (
+    pptx as unknown as { _slides: { _slideObjects: SlideObject[] }[] }
+  )._slides;
+  return { objects: slides[0]._slideObjects, buildContext };
+}
+
+function vstackPage(children: PositionedNode[]): PositionedNode {
+  return { type: "vstack", x: 0, y: 0, w: 1280, h: 720, children };
+}
+
+describe("renderShapeNode", () => {
+  it("padding を除いたコンテンツ領域に inch 変換して描画される", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "shape",
+          shapeType: "rect",
+          x: 96,
+          y: 96,
+          w: 192,
+          h: 96,
+          padding: 24,
+          fill: { color: "FF0000" },
+        },
+      ]),
+    );
+
+    expect(objects).toHaveLength(1);
+    expect(objects[0].shape).toBe("rect");
+    expect(objects[0].options).toMatchObject({
+      x: pxToIn(96 + 24),
+      y: pxToIn(96 + 24),
+      w: pxToIn(192 - 48),
+      h: pxToIn(96 - 48),
+      fill: { color: "FF0000" },
+    });
+  });
+});
+
+describe("renderUlNode", () => {
+  it("padding を除いたコンテンツ領域にテキストが配置される", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "ul",
+          x: 0,
+          y: 480,
+          w: 384,
+          h: 192,
+          padding: { left: 48, top: 24 },
+          fontSize: 24,
+          items: [{ text: "a" }, { text: "b" }],
+        },
+      ]),
+    );
+
+    expect(objects).toHaveLength(1);
+    expect(objects[0]._type).toBe("text");
+    expect(objects[0].options).toMatchObject({
+      x: pxToIn(48),
+      y: pxToIn(480 + 24),
+      w: pxToIn(384 - 48),
+      h: pxToIn(192 - 24),
+      fontSize: pxToPt(24),
+      bullet: true,
+    });
+  });
+});
+
+describe("renderTimelineNode", () => {
+  const items = [
+    { date: "D1", title: "T1" },
+    { date: "D2", title: "T2" },
+  ];
+
+  it("padding 分オフセットしたコンテンツ領域基準で線とノード円を描画する", async () => {
+    // content = (148, 148, 704, 304)。intrinsic (240x128) より大きいため scaleFactor = 1
+    const { objects, buildContext } = await renderPage(
+      vstackPage([
+        {
+          type: "timeline",
+          x: 100,
+          y: 100,
+          w: 800,
+          h: 400,
+          padding: 48,
+          items,
+        },
+      ]),
+    );
+
+    expect(buildContext.diagnostics.items).toEqual([]);
+
+    // メイン線: 端点は labelW/2 = 60 インセット、lineY はコンテンツ領域の垂直中央
+    const lineY = 148 + 304 / 2;
+    expect(objects[0].shape).toBe("line");
+    expect(objects[0].options).toMatchObject({
+      x: pxToIn(148 + 60),
+      y: pxToIn(lineY),
+      w: pxToIn(704 - 120),
+      h: 0,
+    });
+
+    // 最初のアイテムのノード円 (半径 12px)
+    const ellipse = objects.find((o) => o.shape === "ellipse");
+    expect(ellipse?.options).toMatchObject({
+      x: pxToIn(148 + 60 - 12),
+      y: pxToIn(lineY - 12),
+      w: pxToIn(24),
+      h: pxToIn(24),
+    });
+  });
+
+  it("割り当てが固有サイズの半分未満なら SCALE_BELOW_THRESHOLD を記録して 0.5 にクランプする", async () => {
+    const { objects, buildContext } = await renderPage(
+      vstackPage([{ type: "timeline", x: 0, y: 0, w: 100, h: 50, items }]),
+    );
+
+    expect(buildContext.diagnostics.items.map((d) => d.code)).toContain(
+      "SCALE_BELOW_THRESHOLD",
+    );
+
+    // nodeRadius 12px が scaleFactor 0.5 でスケールされる
+    const ellipse = objects.find((o) => o.shape === "ellipse");
+    expect(ellipse?.options).toMatchObject({ w: pxToIn(12), h: pxToIn(12) });
+  });
+});
+
+describe("renderPyramidNode", () => {
+  it('"#" 付きの色指定は "#" なしで pptxgenjs に渡される', async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "pyramid",
+          x: 100,
+          y: 200,
+          w: 480,
+          h: 200,
+          levels: [
+            { label: "L1", color: "#112233" },
+            { label: "L2", textColor: "#445566" },
+          ],
+        },
+      ]),
+    );
+
+    const shapes = objects.filter((o) => o.shape === "custGeom");
+    expect(shapes[0].options.fill).toEqual({ color: "112233" });
+
+    // ラベルは text を持つオブジェクト (図形は text: null)
+    const labels = objects.filter((o) => Array.isArray(o.text));
+    expect(labels[1].options.color).toBe("445566");
+  });
+});
+
+describe("ルートノードの background + border", () => {
+  it("backgroundColor は slide.background に逃がし、border のみノード全体に fill なしで描画する", async () => {
+    const { objects } = await renderPage({
+      type: "vstack",
+      x: 0,
+      y: 0,
+      w: 1280,
+      h: 720,
+      backgroundColor: "EEEEEE",
+      border: { color: "FF0000", width: 2 },
+      children: [],
+    });
+
+    expect(objects).toHaveLength(1);
+    expect(objects[0].options).toMatchObject({
+      x: 0,
+      y: 0,
+      w: pxToIn(1280),
+      h: pxToIn(720),
+      fill: { type: "none" },
+    });
+    expect(objects[0].options.line).toMatchObject({ color: "FF0000" });
+  });
+});
+
+describe("renderLineNode / renderArrowNode", () => {
+  it("line: 逆向き座標は左上原点 + flip で表現される", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "line",
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+          x1: 300,
+          y1: 100,
+          x2: 100,
+          y2: 50,
+          color: "00FF00",
+        },
+      ]),
+    );
+
+    expect(objects[0].shape).toBe("line");
+    expect(objects[0].options).toMatchObject({
+      x: pxToIn(100),
+      y: pxToIn(50),
+      w: pxToIn(200),
+      h: pxToIn(50),
+      flipH: true,
+      flipV: true,
+    });
+    expect(objects[0].options.line).toMatchObject({ color: "00FF00" });
+  });
+
+  it("arrow: 参照ノードの中心同士を結ぶ線を描画する", async () => {
+    const { objects } = await renderPage({
+      type: "layer",
+      x: 0,
+      y: 0,
+      w: 1280,
+      h: 720,
+      children: [
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "a",
+          x: 50,
+          y: 50,
+          w: 100,
+          h: 100,
+        },
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "b",
+          x: 250,
+          y: 150,
+          w: 100,
+          h: 100,
+        },
+        {
+          type: "arrow",
+          from: "a",
+          to: "b",
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+          color: "0000FF",
+          endArrow: true,
+        },
+      ],
+    });
+
+    const line = objects.find((o) => o.shape === "line");
+    expect(line?.options).toMatchObject({
+      x: pxToIn(100),
+      y: pxToIn(100),
+      w: pxToIn(200),
+      h: pxToIn(100),
+      flipH: false,
+      flipV: false,
+    });
+    expect(line?.options.line).toMatchObject({
+      color: "0000FF",
+      endArrowType: "triangle",
+    });
+  });
+});

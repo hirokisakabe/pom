@@ -6,7 +6,22 @@ import {
   opacityToTransparency,
   resolveBackgroundFill,
   resolveRectRadius,
+  stripHash,
 } from "./visualStyle.ts";
+
+describe("stripHash", () => {
+  it('"#" prefix を取り除く', () => {
+    expect(stripHash("#FF0000")).toBe("FF0000");
+  });
+
+  it('"#" なしの色はそのまま返す', () => {
+    expect(stripHash("FF0000")).toBe("FF0000");
+  });
+
+  it("undefined はそのまま undefined を返す", () => {
+    expect(stripHash(undefined)).toBeUndefined();
+  });
+});
 
 describe("convertShadow", () => {
   it("undefined はそのまま undefined を返す", () => {

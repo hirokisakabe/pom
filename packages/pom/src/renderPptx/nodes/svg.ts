@@ -1,6 +1,6 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToIn } from "../units.ts";
+import { rectPxToIn } from "../units.ts";
 
 type SvgPositionedNode = Extract<PositionedNode, { type: "svg" }>;
 
@@ -10,9 +10,6 @@ export function renderSvgNode(
 ): void {
   ctx.slide.addImage({
     data: node.iconImageData,
-    x: pxToIn(node.x),
-    y: pxToIn(node.y),
-    w: pxToIn(node.w),
-    h: pxToIn(node.h),
+    ...rectPxToIn(node),
   });
 }

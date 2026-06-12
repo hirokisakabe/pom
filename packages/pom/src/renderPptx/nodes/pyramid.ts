@@ -1,9 +1,9 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
+import { stripHash } from "../utils/visualStyle.ts";
 import { pxToIn, pxToPt } from "../units.ts";
 import { measurePyramid } from "../../calcYogaLayout/measureCompositeNodes.ts";
-import { calcScaleFactor } from "../utils/scaleToFit.ts";
-import { getContentArea } from "../utils/contentArea.ts";
+import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
 
 type PyramidPositionedNode = Extract<PositionedNode, { type: "pyramid" }>;
 
@@ -21,15 +21,10 @@ export function renderPyramidNode(
   const defaultTextColor = "FFFFFF";
 
   // スケール係数を計算（コンテンツ領域基準）
-  const content = getContentArea(node);
-  const intrinsic = measurePyramid(node);
-  const scaleFactor = calcScaleFactor(
-    content.w,
-    content.h,
-    intrinsic.width,
-    intrinsic.height,
-    "pyramid",
-    ctx.buildContext.diagnostics,
+  const { content, scaleFactor } = resolveScaledContentArea(
+    node,
+    measurePyramid(node),
+    ctx,
   );
 
   const baseWidth = 400 * scaleFactor;
@@ -42,8 +37,8 @@ export function renderPyramidNode(
 
   for (let i = 0; i < levelCount; i++) {
     const level = levels[i];
-    const fillColor = level.color?.replace("#", "") ?? defaultColor;
-    const textColor = level.textColor?.replace("#", "") ?? defaultTextColor;
+    const fillColor = stripHash(level.color) ?? defaultColor;
+    const textColor = stripHash(level.textColor) ?? defaultTextColor;
 
     const layerY = startY + i * (layerHeight + gap);
 

@@ -4,7 +4,7 @@ import {
   resolveColumnWidths,
   resolveRowHeights,
 } from "../../shared/tableUtils.ts";
-import { pxToIn, pxToPt } from "../units.ts";
+import { pxToIn, pxToPt, rectPxToIn } from "../units.ts";
 import { convertUnderline, convertStrike } from "../textOptions.ts";
 import { getContentArea } from "../utils/contentArea.ts";
 
@@ -71,10 +71,7 @@ export function renderTableNode(
 
   const content = getContentArea(node);
   const tableOptions: Record<string, unknown> = {
-    x: pxToIn(content.x),
-    y: pxToIn(content.y),
-    w: pxToIn(content.w),
-    h: pxToIn(content.h),
+    ...rectPxToIn(content),
     colW: resolveColumnWidths(node, content.w).map((width) => pxToIn(width)),
     rowH: resolveRowHeights(node).map((height) => pxToIn(height)),
     margin: 0,
