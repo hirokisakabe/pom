@@ -11,6 +11,14 @@ export default defineConfig({
     coverage: {
       include: ["src/**/*.ts"],
       reporter: ["text", "html", "json", "json-summary"],
+      // 実測値 (2026-06-13 時点: statements 89.62 / branches 92.5 / functions 76.74 / lines 98.63)
+      // からわずかなマージンを引いた値。下回ると test:coverage が fail する。
+      thresholds: {
+        statements: 89,
+        branches: 92,
+        functions: 76,
+        lines: 98,
+      },
     },
   },
   resolve: {
