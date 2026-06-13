@@ -1,5 +1,11 @@
 # pom-vscode
 
+## 0.3.4
+
+### Patch Changes
+
+- [#857](https://github.com/hirokisakabe/pom/pull/857) [`50770de`](https://github.com/hirokisakabe/pom/commit/50770de0904631f19129be0d58185ce810414067) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - pptx-glimpse を 1.1.1 に更新しました。
+
 ## 0.3.3
 
 ### Patch Changes
