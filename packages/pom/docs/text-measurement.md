@@ -43,3 +43,13 @@ Font resolution applies consistently to all text-bearing nodes: `Text`, `Ul`, `O
 - **All environments**: Default (`"auto"`) works fine - bundled fonts ensure consistent results
 - **Reduced bundle size**: Use `"fallback"` if you want to avoid loading bundled fonts (less accurate but smaller bundle)
 - **Custom fonts**: When using `fontFamily` other than `Noto Sans JP`, pom automatically uses fallback measurement to avoid metric mismatch
+
+## Line Height and Rendering
+
+The user-supplied `lineHeight` (default `1.3`) is reflected in the yoga layout measurement of `Text` (and the text inside `Shape`): the block height is `lines × fontSize × lineHeight`.
+
+To keep the measured height aligned with the rendered output, the renderer emits the line spacing as a fixed value (PowerPoint `spcPts` = `fontSize × lineHeight` in pt). Using a fixed value instead of a multiplier (`spcPct`) avoids font-metric mismatches that previously left asymmetric whitespace above/below the glyph ink — see [PR #854](https://github.com/hirokisakabe/pom/pull/854). Glyphs are also vertically centered within the line box so a custom `lineHeight` produces evenly distributed top/bottom padding.
+
+`Ul` / `Ol` still use the multiplier form (`spcPct` = `lineHeight` × bundled-font line-height ratio). Their measurement and rendering both go through `measureFontLineHeightRatio × lineHeight`, so the block height matches the rendered line spacing, but it differs slightly from a `Text` block with the same `lineHeight`.
+
+The PNG / SVG output produced by `pom render` and the previews shown by `pom preview` / pom-vscode go through `pptx-glimpse`, which has supported `spcPts` since version 1.1.1. Both rendering paths now honor the fixed `Text` line spacing emitted by pom.

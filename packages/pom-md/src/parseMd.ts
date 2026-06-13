@@ -340,7 +340,12 @@ function collectTable(
  * ## 詳細
  *
  * \`\`\`pomxml
- * <Chart type="bar" labels="Q1,Q2" values="100,200" />
+ * <Chart chartType="bar" w="600" h="300">
+ *   <ChartSeries name="Revenue">
+ *     <ChartDataPoint label="Q1" value="100" />
+ *     <ChartDataPoint label="Q2" value="200" />
+ *   </ChartSeries>
+ * </Chart>
  * \`\`\`
  * `);
  *

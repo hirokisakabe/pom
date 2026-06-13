@@ -29,7 +29,7 @@
 - **AI Friendly** — Simple XML structure designed for LLM code generation.
 - **Declarative** — Describe slides as XML. No imperative API calls needed.
 - **Flexible Layout** — Flexbox-style layout with VStack / HStack, powered by yoga-layout.
-- **Rich Nodes** — 18 built-in node types: charts, flowcharts, tables, timelines, org trees, and more.
+- **Rich Nodes** — 20 built-in node types: charts, flowcharts, tables, timelines, org trees, and more.
 - **Schema-validated** — XML input is validated with Zod schemas at runtime with clear error messages.
 - **PowerPoint Native** — Full access to native PowerPoint shape features (roundRect, ellipse, arrows, etc.).
 
@@ -45,10 +45,12 @@ npm install @hirokisakabe/pom
 import { buildPptx } from "@hirokisakabe/pom";
 
 const xml = `
-<VStack w="100%" h="max" padding="48" gap="24" alignItems="start">
-  <Text fontSize="48" bold="true">Presentation Title</Text>
-  <Text fontSize="24" color="666666">Subtitle</Text>
-</VStack>
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24" alignItems="start">
+    <Text fontSize="48" bold="true">Presentation Title</Text>
+    <Text fontSize="24" color="666666">Subtitle</Text>
+  </VStack>
+</Slide>
 `;
 
 const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });

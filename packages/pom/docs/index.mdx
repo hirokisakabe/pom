@@ -11,7 +11,8 @@
 - **AI Friendly** — Simple XML structure suited for LLM code generation
 - **Declarative** — Describe slides in XML. No imperative API calls needed
 - **Flexible Layout** — Flexbox-style layout powered by yoga-layout (VStack / HStack)
-- **Rich Nodes** — 18 built-in node types: charts, flowcharts, tables, timelines, and more
+- **Rich Nodes** — 20 built-in node types: charts, flowcharts, tables, timelines, and more
+- **Design Tokens** — Declare a color palette once with a top-level `<Theme>` element and reference tokens as `$name` from any color attribute
 - **Schema-validated** — Runtime validation with Zod schemas
 - **PowerPoint Native** — Full use of native PowerPoint shape features
 - **Pixel Units** — Intuitive pixel-based sizing (internally converted to inches at 96 DPI)
@@ -62,10 +63,12 @@ Each slide must be wrapped in a `<Slide>` element. To produce multiple slides, l
 | ProcessArrow | Chevron-style process diagram                 |
 | Pyramid      | Pyramid diagram                               |
 | Line         | Line / arrow                                  |
+| Arrow        | Connector between nodes referenced by `id`    |
 | Layer        | Absolute positioning container                |
 | VStack       | Vertical stack layout                         |
 | HStack       | Horizontal stack layout                       |
 | Icon         | Lucide icon                                   |
+| Svg          | Inline SVG graphic                            |
 
 See the [Nodes](/nodes) for details. For color, font, and visual effect guidance, see the [Styling Guide](/styling-guide).
 

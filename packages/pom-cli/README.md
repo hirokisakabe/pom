@@ -118,6 +118,10 @@ To print per-step timing on stderr:
 pom render slides.pom.xml -o ./images --verbose
 ```
 
+## Diagnostics
+
+`pom build` and `pom render` invoke `buildPptx` with `strict: true`, so any diagnostic collected during the build — layout problems (`NODE_OUT_OF_BOUNDS`, `NODE_OVERLAP`, `ARROW_REF_NOT_FOUND`, `PER_SIDE_BORDER_WITH_RADIUS`), image / master issues (`IMAGE_MEASURE_FAILED`, `IMAGE_NOT_PREFETCHED`, `MASTER_PPTX_PARSE_FAILED`), or `AUTOFIT_OVERFLOW` — fails the run with a non-zero exit code and prints the diagnostic codes / messages to stderr. Fix the offending XML or input and re-run to proceed. The `pom preview` server continues to update even when diagnostics are emitted, so you can iterate on the file interactively.
+
 ## Fonts
 
 This package bundles Carlito and Noto Sans CJK JP fonts for image rendering. These fonts are used when converting slides to SVG in the preview server and to PNG / SVG in `pom render`. System fonts are not scanned.
