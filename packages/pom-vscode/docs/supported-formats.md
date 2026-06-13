@@ -28,13 +28,15 @@ Write slides directly in pom XML for full control over layout and styling.
 **Pipeline:** `.pom.xml → buildPptx() → pptx-glimpse → SVG → Webview`
 
 ```xml
-<VStack w="100%" h="max" padding="48" gap="24" alignItems="start">
-  <Text fontSize="28" bold="true">Hello World</Text>
-  <Ul>
-    <Li>First point</Li>
-    <Li>Second point</Li>
-  </Ul>
-</VStack>
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24" alignItems="start">
+    <Text fontSize="28" bold="true">Hello World</Text>
+    <Ul>
+      <Li>First point</Li>
+      <Li>Second point</Li>
+    </Ul>
+  </VStack>
+</Slide>
 ```
 
 See the [Nodes](/nodes) reference for the full list of available XML nodes and their attributes.
