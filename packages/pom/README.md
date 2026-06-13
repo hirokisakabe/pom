@@ -40,7 +40,7 @@
 - **Flexible Layout** — Flexbox-style layout with VStack / HStack, powered by yoga-layout. Ratio-based layouts (e.g., 2:1 columns) via the `grow` attribute (CSS `flex-grow`).
 - **Shorthand + Dot Notation** — Layout/style attributes (e.g. `padding`, `margin`, `border`, `fill`, `shadow`) can mix shorthand and dot notation on the same node. Shorthand sets defaults and dot notation overrides specific keys.
 - **Per-Side Borders** — `borderTop` / `borderRight` / `borderBottom` / `borderLeft` style each edge independently (e.g. `borderLeft.width="6"` for an accent bar, `borderBottom.width="3"` for an underlined heading), merging field-by-field with the uniform `border`. See [Nodes — Common Properties](./docs/nodes.md#common-properties).
-- **Rich Nodes** — 18 built-in node types: charts, flowcharts, tables, timelines, org trees, and more.
+- **Rich Nodes** — 20 built-in node types: charts, flowcharts, tables, timelines, org trees, and more.
 - **Design Tokens** — Declare a color palette once with a top-level `<Theme>` element and reference tokens as `$name` from any color attribute. See [Nodes — Top-Level `<Theme>`](./docs/nodes.md#top-level-theme-design-tokens).
 - **Schema-validated** — XML input is validated with Zod schemas at runtime with clear error messages.
 - **PowerPoint Native** — Generates real editable PowerPoint shapes — not images. Recipients can modify everything. Linear gradient backgrounds (`backgroundGradient="linear-gradient(135deg, #667EEA 0%, #764BA2 100%)"`) are exported as native gradient fills.
