@@ -15,8 +15,9 @@ async function buildPptx(
     masterPptx?: ArrayBuffer | Uint8Array;
     textMeasurement?: TextMeasurementMode;
     autoFit?: boolean;
+    strict?: boolean;
   },
-): Promise<PptxGenJS>;
+): Promise<BuildPptxResult>;
 ```
 
 ### Parameters
