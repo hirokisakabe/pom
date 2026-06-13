@@ -8,7 +8,14 @@ Wrap pom XML in a fenced code block with the `pomxml` language identifier:
 
 ````markdown
 ```pomxml
-<Chart type="bar" labels="Q1,Q2,Q3,Q4" values="100,80,120,150" />
+<Chart chartType="bar" w="600" h="300">
+  <ChartSeries name="Revenue">
+    <ChartDataPoint label="Q1" value="100" />
+    <ChartDataPoint label="Q2" value="80" />
+    <ChartDataPoint label="Q3" value="120" />
+    <ChartDataPoint label="Q4" value="150" />
+  </ChartSeries>
+</Chart>
 ```
 ````
 
@@ -20,7 +27,14 @@ The content inside `pomxml` fences is passed through to the output XML as-is, wi
 
 ````markdown
 ```pomxml
-<Chart type="bar" labels="Q1,Q2,Q3,Q4" values="100,80,120,150" />
+<Chart chartType="bar" w="600" h="300">
+  <ChartSeries name="Revenue">
+    <ChartDataPoint label="Q1" value="100" />
+    <ChartDataPoint label="Q2" value="80" />
+    <ChartDataPoint label="Q3" value="120" />
+    <ChartDataPoint label="Q4" value="150" />
+  </ChartSeries>
+</Chart>
 ```
 ````
 
@@ -28,10 +42,12 @@ The content inside `pomxml` fences is passed through to the output XML as-is, wi
 
 ````markdown
 ```pomxml
-<Flow>
-  <Step>Plan</Step>
-  <Step>Develop</Step>
-  <Step>Release</Step>
+<Flow direction="horizontal" w="600" h="200">
+  <FlowNode id="plan" shape="flowChartProcess" text="Plan" />
+  <FlowNode id="develop" shape="flowChartProcess" text="Develop" />
+  <FlowNode id="release" shape="flowChartTerminator" text="Release" />
+  <FlowConnection from="plan" to="develop" />
+  <FlowConnection from="develop" to="release" />
 </Flow>
 ```
 ````
@@ -40,10 +56,10 @@ The content inside `pomxml` fences is passed through to the output XML as-is, wi
 
 ````markdown
 ```pomxml
-<Timeline>
-  <Event>Phase 1</Event>
-  <Event>Phase 2</Event>
-  <Event>Phase 3</Event>
+<Timeline direction="horizontal" w="900" h="120">
+  <TimelineItem date="Q1" title="Phase 1" />
+  <TimelineItem date="Q2" title="Phase 2" />
+  <TimelineItem date="Q3" title="Phase 3" />
 </Timeline>
 ```
 ````
@@ -59,7 +75,14 @@ You can freely mix Markdown content and `pomxml` code fences within the same sli
 - Budget within target
 
 ```pomxml
-<Chart type="bar" labels="Q1,Q2,Q3,Q4" values="100,80,120,150" />
+<Chart chartType="bar" w="600" h="300">
+  <ChartSeries name="Revenue">
+    <ChartDataPoint label="Q1" value="100" />
+    <ChartDataPoint label="Q2" value="80" />
+    <ChartDataPoint label="Q3" value="120" />
+    <ChartDataPoint label="Q4" value="150" />
+  </ChartSeries>
+</Chart>
 ```
 ````
 

@@ -27,7 +27,14 @@ size: 16:9
 ## Detailed Data
 
 ```pomxml
-<Chart type="bar" labels="Q1,Q2,Q3,Q4" values="100,80,120,150" />
+<Chart chartType="bar" w="600" h="300">
+  <ChartSeries name="Revenue">
+    <ChartDataPoint label="Q1" value="100" />
+    <ChartDataPoint label="Q2" value="80" />
+    <ChartDataPoint label="Q3" value="120" />
+    <ChartDataPoint label="Q4" value="150" />
+  </ChartSeries>
+</Chart>
 ```
 
 ---
@@ -35,10 +42,12 @@ size: 16:9
 ## Process
 
 ```pomxml
-<Flow>
-  <Step>Plan</Step>
-  <Step>Develop</Step>
-  <Step>Release</Step>
+<Flow direction="horizontal" w="600" h="200">
+  <FlowNode id="plan" shape="flowChartProcess" text="Plan" />
+  <FlowNode id="develop" shape="flowChartProcess" text="Develop" />
+  <FlowNode id="release" shape="flowChartTerminator" text="Release" />
+  <FlowConnection from="plan" to="develop" />
+  <FlowConnection from="develop" to="release" />
 </Flow>
 ```
 ````
