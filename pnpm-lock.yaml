@@ -105,8 +105,8 @@ importers:
         specifier: ^4
         version: 4.6.1(@types/react@19.2.17)(next@16.2.9(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(nextra@4.6.1(next@16.2.9(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(use-sync-external-store@1.6.0(react@19.2.7))
       pptx-glimpse:
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.1.1
+        version: 1.1.1
       radix-ui:
         specifier: ^1.5.0
         version: 1.5.0(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -251,8 +251,8 @@ importers:
         specifier: ^15.0.0
         version: 15.0.0
       pptx-glimpse:
-        specifier: ^1.1.0
-        version: 1.1.0
+        specifier: ^1.1.1
+        version: 1.1.1
     devDependencies:
       '@types/node':
         specifier: ^25.9.2
@@ -338,8 +338,8 @@ importers:
         specifier: ^11.7.6
         version: 11.7.6
       pptx-glimpse:
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.1.1
+        version: 1.1.1
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
@@ -6332,12 +6332,8 @@ packages:
     resolution: {integrity: sha512-dM0jVuXJPsDN6DvRpea484tCUaMiXWjuCn++HGTqUWzGDjv5tZkEZldAJ/UMlqRYGFrD/etByo4/xOuC/snX2A==}
     engines: {node: '>=20'}
 
-  pptx-glimpse@1.0.1:
-    resolution: {integrity: sha512-aZVo5hVEDSB/peKfBxo0xTb+6H2YMin3RP1Fwry37IRDn6K+7RjU/RPliiSJSTNJpgKDQYPLdIejBIoJfapLhw==}
-    engines: {node: '>=22'}
-
-  pptx-glimpse@1.1.0:
-    resolution: {integrity: sha512-yGCg170cWATRnlLv6QZ8ytf6UGoxp2ddWbWd61KdR6D+FR7qXx5GxkY2CZni2NhvIfEUx0Asc/IK0N7qoIgjMg==}
+  pptx-glimpse@1.1.1:
+    resolution: {integrity: sha512-hvCx7fIgmfOjsj6AQH5DoDPEjBAjhVhlggXC6evURI47nmP4Avdj8uX0Kneu+1t4cNNS/Lm1kkTGiWpWgk6s1Q==}
     engines: {node: '>=22'}
 
   pptxgenjs@4.0.1:
@@ -14191,14 +14187,7 @@ snapshots:
 
   powershell-utils@0.1.0: {}
 
-  pptx-glimpse@1.0.1:
-    dependencies:
-      '@resvg/resvg-wasm': 2.6.2
-      fast-xml-parser: 5.8.0
-      fflate: 0.8.3
-      opentype.js: 1.3.4
-
-  pptx-glimpse@1.1.0:
+  pptx-glimpse@1.1.1:
     dependencies:
       '@resvg/resvg-wasm': 2.6.2
       fast-xml-parser: 5.8.0
