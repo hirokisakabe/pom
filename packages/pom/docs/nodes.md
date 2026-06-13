@@ -208,6 +208,8 @@ A node for displaying bullet-point lists. Use `<Li>` child elements to define li
 
 Li also supports `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` inline formatting: `<Li>Normal <B>bold</B> item</Li>`, `<Li>See <A href="https://example.com">link</A></Li>`, `<Li><U>underline</U> item</Li>`, `<Li><Span color="FF0000">red</Span> item</Li>`
 
+> **Line spacing convention:** `Ul` / `Ol` use a different line-spacing rule than `Text`. The rendered row height (and the yoga layout measurement) follows the bundled-font line-height ratio multiplied by `lineHeight`: `measureFontLineHeightRatio × lineHeight × fontSize`. In contrast, `Text` (and the text inside `Shape`) uses a fixed value of `lineHeight × fontSize` for both measurement and rendering (PowerPoint `spcPts`). Use the same `lineHeight` value when you want a `Ul` block and a `Text` block to look visually consistent; the absolute pixel values may differ slightly. See [Text Measurement — Line Height and Rendering](./text-measurement.md#line-height-and-rendering).
+
 ### 3. Ol (Ordered List)
 
 A node for displaying numbered lists. Has all Ul attributes plus the following:
