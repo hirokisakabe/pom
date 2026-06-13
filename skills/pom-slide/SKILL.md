@@ -16,6 +16,7 @@ metadata:
 ユーザーの指示からスライドの内容・枚数・テーマを把握する。
 
 明示されていない場合のデフォルト:
+
 - 枚数: 指示の内容量に適した枚数（3〜8 枚程度）
 - ファイル名: `slides.pom.xml`
 
@@ -42,34 +43,34 @@ XML を書き始める前に、デッキ全体のデザイントークン（配�
 
 デッキごとに以下の 5 ロールの色を決める。アクセントは 1 色に絞り、使用面積はスライドの 1 割以下に抑える（見出し脇のバー、強調数字、アイコンなど）。
 
-| ロール | 役割 |
-| --- | --- |
-| base | スライド背景。真っ白 `FFFFFF` 固定にしない（オフホワイトやダークも検討する） |
-| surface | カード・パネルの背景 |
-| ink | 本文テキスト。純黒 `000000` は避ける |
-| muted | 補助テキスト・キャプション |
-| accent | 強調 1 色。多用しない |
+| ロール  | 役割                                                                         |
+| ------- | ---------------------------------------------------------------------------- |
+| base    | スライド背景。真っ白 `FFFFFF` 固定にしない（オフホワイトやダークも検討する） |
+| surface | カード・パネルの背景                                                         |
+| ink     | 本文テキスト。純黒 `000000` は避ける                                         |
+| muted   | 補助テキスト・キャプション                                                   |
+| accent  | 強調 1 色。多用しない                                                        |
 
 プリセット例（そのまま使ってよいが、テーマに合わせて調整する）:
 
-| トーン | base | surface | ink | muted | accent |
-| --- | --- | --- | --- | --- | --- |
-| コーポレート | `F8F9FB` | `FFFFFF` | `1F2937` | `6B7280` | `1E3A8A` |
+| トーン                   | base     | surface  | ink      | muted    | accent   |
+| ------------------------ | -------- | -------- | -------- | -------- | -------- |
+| コーポレート             | `F8F9FB` | `FFFFFF` | `1F2937` | `6B7280` | `1E3A8A` |
 | ウォーム・エディトリアル | `FAF6F0` | `FFFFFF` | `292524` | `78716C` | `C2410C` |
-| ダーク・テック | `0F172A` | `1E293B` | `F1F5F9` | `94A3B8` | `38BDF8` |
-| フレッシュ | `F6FBF9` | `FFFFFF` | `1A2E2A` | `5F7470` | `0D9488` |
+| ダーク・テック           | `0F172A` | `1E293B` | `F1F5F9` | `94A3B8` | `38BDF8` |
+| フレッシュ               | `F6FBF9` | `FFFFFF` | `1A2E2A` | `5F7470` | `0D9488` |
 
 #### タイポグラフィスケール
 
 デッキ全体で以下の 5 段階だけを使う。中間サイズを場当たりで増やさず、1 枚のスライドに使うのは最大 3 段階まで。
 
-| 段階 | fontSize | 用途 |
-| --- | --- | --- |
-| display | 44〜60, bold | 表紙タイトル、KPI の数字 |
-| title | 28〜32, bold | スライドタイトル |
-| heading | 18〜20, bold | カード見出し・小見出し |
-| body | 14〜16 | 本文・箇条書き |
-| caption | 11〜12, muted 色 | 補足・出典・ページ番号 |
+| 段階    | fontSize         | 用途                     |
+| ------- | ---------------- | ------------------------ |
+| display | 44〜60, bold     | 表紙タイトル、KPI の数字 |
+| title   | 28〜32, bold     | スライドタイトル         |
+| heading | 18〜20, bold     | カード見出し・小見出し   |
+| body    | 14〜16           | 本文・箇条書き           |
+| caption | 11〜12, muted 色 | 補足・出典・ページ番号   |
 
 - タイトルと本文のジャンプ率（サイズ差）をはっきりつける。中途半端な差（例: 24 と 20 の併用）は階層を曖昧にする
 - bold は display / title / heading と強調語のみ。本文全体を bold にしない
@@ -88,17 +89,17 @@ XML を書き始める前に、デッキ全体のデザイントークン（配�
 
 デッキは以下のアーキタイプの組み合わせで構成する。全スライドを同じレイアウトにせず、アーキタイプを切り替えてリズムを作る。
 
-| アーキタイプ | 構成 |
-| --- | --- |
-| 表紙 | display タイトル + サブタイトル + アクセントの細いバー。要素を絞り、余白を大胆に取る |
-| アジェンダ | accent 色の番号 + 項目名の縦リスト |
-| セクション扉 | 章番号と章タイトルのみ。表紙と同系の構成にして本編スライドと区別する |
-| キーメッセージ | title + 本文 or 箇条書き。最も基本の 1 カラム |
-| 比較 | 見出し付きカード 2〜3 枚を HStack で均等幅に並べる |
-| タイムライン / プロセス | `Timeline` / `ProcessArrow` ノードを使う |
-| データ | `Chart` / `Table` + そこから言えるインサイト 1 行（heading） |
-| KPI | display サイズの数字 2〜4 個 + caption のラベル |
-| まとめ / CTA | キーメッセージの再掲 + 次のアクション |
+| アーキタイプ            | 構成                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------ |
+| 表紙                    | display タイトル + サブタイトル + アクセントの細いバー。要素を絞り、余白を大胆に取る |
+| アジェンダ              | accent 色の番号 + 項目名の縦リスト                                                   |
+| セクション扉            | 章番号と章タイトルのみ。表紙と同系の構成にして本編スライドと区別する                 |
+| キーメッセージ          | title + 本文 or 箇条書き。最も基本の 1 カラム                                        |
+| 比較                    | 見出し付きカード 2〜3 枚を HStack で均等幅に並べる                                   |
+| タイムライン / プロセス | `Timeline` / `ProcessArrow` ノードを使う                                             |
+| データ                  | `Chart` / `Table` + そこから言えるインサイト 1 行（heading）                         |
+| KPI                     | display サイズの数字 2〜4 個 + caption のラベル                                      |
+| まとめ / CTA            | キーメッセージの再掲 + 次のアクション                                                |
 
 **縦方向の揃え**: アクセントバー・番号・アイコンなど高さの異なる要素をテキストと HStack で並べるときは `alignItems="center"` を基本にする。`Text` のレイアウトボックスは `fontSize × lineHeight` の高さを持つが、グリフは行ボックス内で上下中央に描画されるため、`center` で揃えると隣接要素も視覚的にテキストの中央に揃う。文字の baseline と合わせたいときは `end` を使う。
 
@@ -168,6 +169,7 @@ Step 2 で決めたデザイントークンとアーキタイプを全スライ�
 ---
 
 <!-- BEGIN llm.txt -->
+
 # pom XML Reference
 
 A compact reference for the pom XML format, designed to be pasted into LLM prompts.
@@ -224,31 +226,31 @@ Declare a color palette once at the top level and reference each token from any 
 
 ## Common Attributes (All Nodes)
 
-| Attribute         | Type                                                       | Description                                |
-| ----------------- | ---------------------------------------------------------- | ------------------------------------------ |
-| `id`              | string                                                     | Unique identifier within the slide (used by `Arrow` connectors) |
-| `w`               | number / `"max"` / `"50%"`                                 | Width                                      |
-| `h`               | number / `"max"` / `"50%"`                                 | Height                                     |
-| `grow`            | positive number                                            | Flex grow ratio among siblings (CSS `flex-grow`). `grow="2"` and `grow="1"` produce a 2:1 split. Along the parent's main axis `w="max"` / `h="max"` behave as `grow="1"`; when both are specified, `grow` takes precedence |
-| `minW` `maxW`     | number                                                     | Min / max width                            |
-| `minH` `maxH`     | number                                                     | Min / max height                           |
-| `padding`         | number / `padding.top="8" padding.bottom="8"`              | Padding (shorthand + dot notation can be mixed) |
-| `backgroundColor` | hex                                                        | Background color                           |
-| `backgroundGradient` | `linear-gradient(135deg, #667EEA 0%, #764BA2 100%)`     | Linear gradient background. Angle (`<n>deg` or `to right` etc., default `180deg`) + 2 or more hex color stops with optional `%` positions. Takes precedence over `backgroundColor`. On the slide root node it becomes the slide background |
-| `backgroundImage` | `backgroundImage.src="url" backgroundImage.sizing="cover"` | Background image                           |
-| `border`          | `border.color="333" border.width="1"`                      | Border (shorthand + dot notation can be mixed) |
-| `borderTop` `borderRight` `borderBottom` `borderLeft` | `borderLeft.color="1D4ED8" borderLeft.width="6"` | Per-side border with the same fields as `border`. Overrides `border` for that side (field-by-field). Useful for accent bars / underlined headings. Cannot be combined with `borderRadius` (per-side values are ignored with a warning) |
-| `borderRadius`    | number                                                     | Border radius (px)                         |
-| `opacity`         | 0-1                                                        | Background opacity                         |
-| `margin`          | number / `margin.top="8" margin.bottom="8"`                | Margin (shorthand + dot notation can be mixed) |
-| `zIndex`          | number                                                     | Stacking order (higher = on top)           |
-| `position`        | `relative` / `absolute`                                    | Positioning mode                           |
-| `top`             | number                                                     | Top offset (when using position)           |
-| `right`           | number                                                     | Right offset (when using position)         |
-| `bottom`          | number                                                     | Bottom offset (when using position)        |
-| `left`            | number                                                     | Left offset (when using position)          |
-| `alignSelf`       | `auto` / `start` / `center` / `end` / `stretch`            | Override parent's alignItems for this node |
-| `shadow`          | `shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000"` | Drop shadow (shorthand + dot notation can be mixed; not supported on Line) |
+| Attribute                                             | Type                                                                       | Description                                                                                                                                                                                                                                |
+| ----------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`                                                  | string                                                                     | Unique identifier within the slide (used by `Arrow` connectors)                                                                                                                                                                            |
+| `w`                                                   | number / `"max"` / `"50%"`                                                 | Width                                                                                                                                                                                                                                      |
+| `h`                                                   | number / `"max"` / `"50%"`                                                 | Height                                                                                                                                                                                                                                     |
+| `grow`                                                | positive number                                                            | Flex grow ratio among siblings (CSS `flex-grow`). `grow="2"` and `grow="1"` produce a 2:1 split. Along the parent's main axis `w="max"` / `h="max"` behave as `grow="1"`; when both are specified, `grow` takes precedence                 |
+| `minW` `maxW`                                         | number                                                                     | Min / max width                                                                                                                                                                                                                            |
+| `minH` `maxH`                                         | number                                                                     | Min / max height                                                                                                                                                                                                                           |
+| `padding`                                             | number / `padding.top="8" padding.bottom="8"`                              | Padding (shorthand + dot notation can be mixed)                                                                                                                                                                                            |
+| `backgroundColor`                                     | hex                                                                        | Background color                                                                                                                                                                                                                           |
+| `backgroundGradient`                                  | `linear-gradient(135deg, #667EEA 0%, #764BA2 100%)`                        | Linear gradient background. Angle (`<n>deg` or `to right` etc., default `180deg`) + 2 or more hex color stops with optional `%` positions. Takes precedence over `backgroundColor`. On the slide root node it becomes the slide background |
+| `backgroundImage`                                     | `backgroundImage.src="url" backgroundImage.sizing="cover"`                 | Background image                                                                                                                                                                                                                           |
+| `border`                                              | `border.color="333" border.width="1"`                                      | Border (shorthand + dot notation can be mixed)                                                                                                                                                                                             |
+| `borderTop` `borderRight` `borderBottom` `borderLeft` | `borderLeft.color="1D4ED8" borderLeft.width="6"`                           | Per-side border with the same fields as `border`. Overrides `border` for that side (field-by-field). Useful for accent bars / underlined headings. Cannot be combined with `borderRadius` (per-side values are ignored with a warning)     |
+| `borderRadius`                                        | number                                                                     | Border radius (px)                                                                                                                                                                                                                         |
+| `opacity`                                             | 0-1                                                                        | Background opacity                                                                                                                                                                                                                         |
+| `margin`                                              | number / `margin.top="8" margin.bottom="8"`                                | Margin (shorthand + dot notation can be mixed)                                                                                                                                                                                             |
+| `zIndex`                                              | number                                                                     | Stacking order (higher = on top)                                                                                                                                                                                                           |
+| `position`                                            | `relative` / `absolute`                                                    | Positioning mode                                                                                                                                                                                                                           |
+| `top`                                                 | number                                                                     | Top offset (when using position)                                                                                                                                                                                                           |
+| `right`                                               | number                                                                     | Right offset (when using position)                                                                                                                                                                                                         |
+| `bottom`                                              | number                                                                     | Bottom offset (when using position)                                                                                                                                                                                                        |
+| `left`                                                | number                                                                     | Left offset (when using position)                                                                                                                                                                                                          |
+| `alignSelf`                                           | `auto` / `start` / `center` / `end` / `stretch`                            | Override parent's alignItems for this node                                                                                                                                                                                                 |
+| `shadow`                                              | `shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000"` | Drop shadow (shorthand + dot notation can be mixed; not supported on Line)                                                                                                                                                                 |
 
 ## Leaf Rotation
 
@@ -378,11 +380,11 @@ All Ul attributes plus:
 <Image src="https://example.com/img.png" w="200" h="150" />
 ```
 
-| Attribute | Type / Values                                                                                                            |
-| --------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `src`     | string (URL / path / base64)                                                                                             |
-| `sizing`  | `'{"type":"contain"}' ` / `'{"type":"cover"}'` / `'{"type":"crop","x":0,"y":0,"w":100,"h":100}'`                         |
-| `rotate`  | number (degrees clockwise, render-only)                                                                                  |
+| Attribute | Type / Values                                                                                    |
+| --------- | ------------------------------------------------------------------------------------------------ |
+| `src`     | string (URL / path / base64)                                                                     |
+| `sizing`  | `'{"type":"contain"}' ` / `'{"type":"cover"}'` / `'{"type":"crop","x":0,"y":0,"w":100,"h":100}'` |
+| `rotate`  | number (degrees clockwise, render-only)                                                          |
 
 ### Icon
 
@@ -398,7 +400,7 @@ Displays an icon from the Lucide icon library (1,900+ icons available).
 | `name`    | Lucide icon name (required). See examples below                          |
 | `size`    | number (default: 24, in px)                                              |
 | `color`   | hex color (`#` prefix optional, default: `#000000`)                      |
-| `rotate`  | number (degrees clockwise, render-only)                                |
+| `rotate`  | number (degrees clockwise, render-only)                                  |
 | `variant` | `circle-filled`, `circle-outlined`, `square-filled`, `square-outlined`   |
 | `bgColor` | hex color for background shape (`#` prefix optional, default: `#E0E0E0`) |
 
@@ -414,11 +416,11 @@ Renders an inline SVG as a rasterized PNG image. Use this node for custom SVG gr
 </Svg>
 ```
 
-| Attribute | Type / Values                                          |
-| --------- | ------------------------------------------------------ |
-| `w`       | number (default: 24, width in px)                      |
-| `h`       | number (default: 24, height in px)                     |
-| `color`   | hex color (`#` prefix optional)                        |
+| Attribute | Type / Values                      |
+| --------- | ---------------------------------- |
+| `w`       | number (default: 24, width in px)  |
+| `h`       | number (default: 24, height in px) |
+| `color`   | hex color (`#` prefix optional)    |
 
 A `<svg>` child element is required. When `color` is specified, it sets `stroke` and `fill="none"` on the root `<svg>` element; explicit `stroke`/`fill` on child elements take precedence.
 
@@ -627,7 +629,7 @@ Connector between two nodes referenced by `id`. Draws a straight line between th
 | ---------------- | ----------------------------------------------------- |
 | `layout`         | `vertical` / `horizontal`                             |
 | `nodeShape`      | `rect` / `roundRect` / `ellipse`                      |
-| `textColor`      | hex (node label text color, default: `FFFFFF`)       |
+| `textColor`      | hex (node label text color, default: `FFFFFF`)        |
 | `nodeWidth`      | number (default: 120)                                 |
 | `nodeHeight`     | number (default: 40)                                  |
 | `levelGap`       | number (default: 60)                                  |
@@ -650,12 +652,12 @@ Connector between two nodes referenced by `id`. Draws a straight line between th
 </Flow>
 ```
 
-| Attribute        | Type / Values                                                                          |
-| ---------------- | -------------------------------------------------------------------------------------- |
-| `direction`      | `horizontal` / `vertical`                                                              |
-| `nodeWidth`      | number (default: 120)                                                                  |
-| `nodeHeight`     | number (default: 60)                                                                   |
-| `nodeGap`        | number (default: 80)                                                                   |
+| Attribute        | Type / Values                                                                                                          |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `direction`      | `horizontal` / `vertical`                                                                                              |
+| `nodeWidth`      | number (default: 120)                                                                                                  |
+| `nodeHeight`     | number (default: 60)                                                                                                   |
+| `nodeGap`        | number (default: 80)                                                                                                   |
 | `connectorStyle` | `connectorStyle.color="hex" connectorStyle.width="2" connectorStyle.arrowType="arrow" connectorStyle.labelColor="hex"` |
 
 `<FlowNode>` attributes:
@@ -721,19 +723,19 @@ Connector between two nodes referenced by `id`. Draws a straight line between th
 
 ## Child Element Tag Reference
 
-| Parent Node      | Child Tags                                          | Mapped Property              |
-| ---------------- | --------------------------------------------------- | ---------------------------- |
-| `<Chart>`        | `<ChartSeries>` > `<ChartDataPoint>`                | `data`                       |
-| `<Table>`        | `<Col>`, `<Tr>` > `<Td>`       | `columns`, `rows`            |
+| Parent Node      | Child Tags                                            | Mapped Property              |
+| ---------------- | ----------------------------------------------------- | ---------------------------- |
+| `<Chart>`        | `<ChartSeries>` > `<ChartDataPoint>`                  | `data`                       |
+| `<Table>`        | `<Col>`, `<Tr>` > `<Td>`                              | `columns`, `rows`            |
 | `<Text>`         | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
 | `<Li>`           | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
-| `<Td>`    | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
-| `<Timeline>`     | `<TimelineItem>`                                    | `items`                      |
-| `<Matrix>`       | `<MatrixAxes>`, `<MatrixQuadrants>`, `<MatrixItem>` | `axes`, `quadrants`, `items` |
-| `<Tree>`         | `<TreeItem>` (recursive)                            | `data`                       |
-| `<Flow>`         | `<FlowNode>`, `<FlowConnection>`                    | `nodes`, `connections`       |
-| `<ProcessArrow>` | `<ProcessArrowStep>`                                | `steps`                      |
-| `<Pyramid>`      | `<PyramidLevel>`                                    | `levels`                     |
+| `<Td>`           | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
+| `<Timeline>`     | `<TimelineItem>`                                      | `items`                      |
+| `<Matrix>`       | `<MatrixAxes>`, `<MatrixQuadrants>`, `<MatrixItem>`   | `axes`, `quadrants`, `items` |
+| `<Tree>`         | `<TreeItem>` (recursive)                              | `data`                       |
+| `<Flow>`         | `<FlowNode>`, `<FlowConnection>`                      | `nodes`, `connections`       |
+| `<ProcessArrow>` | `<ProcessArrowStep>`                                  | `steps`                      |
+| `<Pyramid>`      | `<PyramidLevel>`                                      | `levels`                     |
 
 When the same property is specified via both attributes (JSON string) and child elements, child elements take precedence.
 
@@ -845,6 +847,7 @@ pom-cli がない場合はスキップしてその旨を伝える。
 ### 7. 完了報告
 
 以下を報告する:
+
 - 保存したファイル名
 - 生成したスライドの枚数と各スライドのタイトル
 - セルフレビューの結果: 実施した修正の概要と残課題（スキップした場合はその理由）

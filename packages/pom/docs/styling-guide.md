@@ -170,13 +170,13 @@ Apply a background highlight to text:
 <Text fontSize="40" bold="true" color="FFFFFF" outline.size="2" outline.color="0F172A">Outlined title</Text>
 ```
 
-| Property         | Type   | Description                                       |
-| ---------------- | ------ | ------------------------------------------------- |
-| `glow.size`      | number | Glow radius in px (default: `8`)                  |
-| `glow.opacity`   | 0–1    | Glow opacity (default: `0.75`)                    |
-| `glow.color`     | hex    | Glow color (default: `FFFFFF`)                    |
-| `outline.size`   | number | Outline width in px (default: `1`)                |
-| `outline.color`  | hex    | Outline color (default: `FFFFFF`)                 |
+| Property        | Type   | Description                        |
+| --------------- | ------ | ---------------------------------- |
+| `glow.size`     | number | Glow radius in px (default: `8`)   |
+| `glow.opacity`  | 0–1    | Glow opacity (default: `0.75`)     |
+| `glow.color`    | hex    | Glow color (default: `FFFFFF`)     |
+| `outline.size`  | number | Outline width in px (default: `1`) |
+| `outline.color` | hex    | Outline color (default: `FFFFFF`)  |
 
 - Both apply per text node. When inline formatting (`<B>`, `<Span>`, ...) is used, the node-level effect applies to all runs.
 - LibreOffice does not render character glow (outline renders fine); open the PPTX in PowerPoint to see the glow.
