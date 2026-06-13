@@ -16,6 +16,7 @@ import matrixImg from "@/content/images/matrix.png";
 import processArrowImg from "@/content/images/processArrow.png";
 import pyramidImg from "@/content/images/pyramid.png";
 import shapeImg from "@/content/images/shape.png";
+import svgImg from "@/content/images/svg.png";
 import tableImg from "@/content/images/table.png";
 import textImg from "@/content/images/text.png";
 import timelineImg from "@/content/images/timeline.png";
@@ -54,7 +55,7 @@ const features = [
   {
     title: "Rich Nodes",
     description:
-      "18 built-in node types: charts, flowcharts, tables, timelines, org trees, and more.",
+      "20 built-in node types: charts, flowcharts, tables, timelines, org trees, and more.",
     icon: "🧩",
   },
   {
@@ -88,19 +89,22 @@ const nodes: { name: string; image: StaticImageData }[] = [
   { name: "Layer", image: layerImg },
   { name: "VStack", image: vstackImg },
   { name: "HStack", image: hstackImg },
+  { name: "Svg", image: svgImg },
 ];
 
 const codeExample = `import { buildPptx } from "@hirokisakabe/pom";
 
 const xml = \`
-<VStack w="100%" h="max" padding="48" gap="24" alignItems="start">
-  <Text fontSize="48" bold="true">
-    Presentation Title
-  </Text>
-  <Text fontSize="24" color="666666">
-    Generated with pom
-  </Text>
-</VStack>
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24" alignItems="start">
+    <Text fontSize="48" bold="true">
+      Presentation Title
+    </Text>
+    <Text fontSize="24" color="666666">
+      Generated with pom
+    </Text>
+  </VStack>
+</Slide>
 \`;
 
 const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
@@ -165,7 +169,7 @@ export default async function LandingPage() {
         </h1>
         <p className="mb-10 max-w-2xl text-lg text-gray-600 dark:text-gray-400">
           Write XML. Get editable PPTX. pom turns declarative markup into native
-          PowerPoint slides with Flexbox layout, 18 built-in node types, and
+          PowerPoint slides with Flexbox layout, 20 built-in node types, and
           first-class AI support.
         </p>
         <div className="flex gap-4">

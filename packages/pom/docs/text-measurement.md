@@ -48,7 +48,7 @@ Font resolution applies consistently to all text-bearing nodes: `Text`, `Ul`, `O
 
 The user-supplied `lineHeight` (default `1.3`) is reflected in the yoga layout measurement of `Text` (and the text inside `Shape`): the block height is `lines × fontSize × lineHeight`.
 
-To keep the measured height aligned with the rendered output, the renderer emits the line spacing as a fixed value (PowerPoint `spcPts` = `fontSize × lineHeight` in pt). Using a fixed value instead of a multiplier (`spcPct`) avoids font-metric mismatches that previously left asymmetric whitespace above/below the glyph ink — see [#846](https://github.com/hirokisakabe/pom/pull/854). Glyphs are also vertically centered within the line box so a custom `lineHeight` produces evenly distributed top/bottom padding.
+To keep the measured height aligned with the rendered output, the renderer emits the line spacing as a fixed value (PowerPoint `spcPts` = `fontSize × lineHeight` in pt). Using a fixed value instead of a multiplier (`spcPct`) avoids font-metric mismatches that previously left asymmetric whitespace above/below the glyph ink — see [PR #854](https://github.com/hirokisakabe/pom/pull/854). Glyphs are also vertically centered within the line box so a custom `lineHeight` produces evenly distributed top/bottom padding.
 
 `Ul` / `Ol` still use the multiplier form (`spcPct` = `lineHeight` × bundled-font line-height ratio). Their measurement and rendering both go through `measureFontLineHeightRatio × lineHeight`, so the block height matches the rendered line spacing, but it differs slightly from a `Text` block with the same `lineHeight`.
 
