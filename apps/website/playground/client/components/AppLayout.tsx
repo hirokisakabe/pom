@@ -1,7 +1,6 @@
 "use client";
 
 import { EditorView } from "@codemirror/view";
-import { PomAstEditor } from "@hirokisakabe/pom-editor";
 import {
   BookOpen,
   ChevronDown,
@@ -9,6 +8,7 @@ import {
   ExternalLink,
   RefreshCw,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -40,6 +40,11 @@ import { XmlEditor } from "./XmlEditor";
 type EditorMode = "xml" | "ast";
 
 const DEBOUNCE_MS = 500;
+
+const PomAstEditor = dynamic(
+  () => import("@hirokisakabe/pom-editor").then((m) => m.PomAstEditor),
+  { ssr: false },
+);
 
 export function AppLayout() {
   const [xmlValue, setXmlValue] = useState(DEFAULT_TEMPLATE.xml);
