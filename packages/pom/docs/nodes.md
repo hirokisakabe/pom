@@ -153,9 +153,10 @@ Use `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, and `<Span>` 
 <Text fontSize="16"><B><Span color="1D4ED8">bold blue</Span></B></Text>
 <Text fontSize="16" fontFamily="Noto Sans JP">Default <Span fontFamily="Arial">Arial section</Span> default</Text>
 <Text fontSize="16">Normal <Span letterSpacing="6">spaced out</Span> normal</Text>
+<Text fontSize="52" bold="true" color="1D4ED8">¥84.2<Span fontSize="20">M</Span></Text>
 ```
 
-`<Span>` supports `color`, `fontFamily`, and `letterSpacing` attributes. When `fontFamily` is specified, that run uses the given font face (overrides the parent Text's `fontFamily`). `letterSpacing` adjusts the spacing between characters for that run only. Note: `<Span letterSpacing>` is effective inside `<Text>` only (ignored inside `<Li>` / `<Td>`), and layout measurement uses the Text-level `letterSpacing` (run-level spacing affects rendering only).
+`<Span>` supports `color`, `fontFamily`, `fontSize`, and `letterSpacing` attributes. When `fontFamily` is specified, that run uses the given font face (overrides the parent Text's `fontFamily`). `fontSize` overrides the font size for that run only (useful for inline "big number + small unit" layouts such as KPI numerals like `¥84.2M` or `118%`). `letterSpacing` adjusts the spacing between characters for that run only. Note: `<Span letterSpacing>` is effective inside `<Text>` only (ignored inside `<Li>` / `<Td>`), and layout measurement uses the Text-level `letterSpacing` (run-level spacing affects rendering only). For `<Span fontSize>`, layout measurement uses the largest run-level `fontSize` to avoid clipping.
 
 **Subscript / Superscript:**
 

@@ -209,6 +209,54 @@ export const page40LetterSpacingXml = `
 `;
 
 // ============================================================
+// Page 49: Span fontSize (inline number + unit composition)
+// テスト対象: <Span fontSize> による run 単位のフォントサイズ上書き
+// (Text / Li / Td での挙動、親スタイルの継承)
+// ============================================================
+export const page49SpanFontSizeXml = `
+<VStack w="100%" h="max" padding="48" gap="20" alignItems="stretch" backgroundColor="${palette.background}">
+  <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 49: Span fontSize</Text>
+  <!-- KPI 風: 大きい数字 + 小さい単位 -->
+  <VStack padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="12">
+    <Text fontSize="14" bold="true">KPI numeral (大きい数字 + 小さい単位):</Text>
+    <Text fontSize="52" bold="true" color="${palette.navy}">¥84.2<Span fontSize="20">M</Span></Text>
+    <Text fontSize="52" bold="true" color="${palette.blue}">118<Span fontSize="20">%</Span></Text>
+    <Text fontSize="52" bold="true" color="${palette.charcoal}"><Span fontSize="20">$</Span>2,480</Text>
+  </VStack>
+  <!-- 親の bold / color / fontFamily を継承し、Span fontSize だけ上書きする -->
+  <VStack padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="8">
+    <Text fontSize="14" bold="true">親スタイルの継承 (Span fontSize のみ上書き):</Text>
+    <Text fontSize="32" bold="true" color="${palette.navy}">親の bold/color が <Span fontSize="14">small (継承)</Span> に伝わる</Text>
+    <Text fontSize="14">通常 <Span fontSize="28" color="${palette.blue}">大きい青</Span> 通常</Text>
+  </VStack>
+  <!-- Li / Td 内の Span fontSize -->
+  <VStack padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="8">
+    <Text fontSize="14" bold="true">Li / Td 内の Span fontSize:</Text>
+    <Ul fontSize="16">
+      <Li>売上 ¥84.2<Span fontSize="12">M</Span></Li>
+      <Li>成長率 118<Span fontSize="12">%</Span></Li>
+    </Ul>
+    <Table>
+      <Col width="200" />
+      <Col width="200" />
+      <Tr>
+        <Td fontSize="14" bold="true">指標</Td>
+        <Td fontSize="14" bold="true">値</Td>
+      </Tr>
+      <Tr>
+        <Td fontSize="14">MRR</Td>
+        <Td fontSize="28">¥12.4<Span fontSize="12">M</Span></Td>
+      </Tr>
+      <Tr>
+        <Td fontSize="14">NRR</Td>
+        <Td fontSize="28">118<Span fontSize="12">%</Span></Td>
+      </Tr>
+    </Table>
+  </VStack>
+</VStack>
+`;
+
+// ============================================================
 // Page 2: List Test (Ul / Ol)
 // テスト対象: Ul, Ol, Li, numberType, numberStartAt, Li style override
 // ============================================================

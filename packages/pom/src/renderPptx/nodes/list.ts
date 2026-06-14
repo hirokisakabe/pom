@@ -59,6 +59,7 @@ function buildListTextItems(
           text,
           options: {
             ...baseOptions,
+            fontSize: pxToPt(run.fontSize ?? style.fontSize),
             fontFace: run.fontFamily ?? style.fontFamily,
             color: run.color ?? style.color,
             bold: run.bold ?? style.bold,

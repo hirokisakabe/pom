@@ -63,6 +63,18 @@ describe("pom core との統合テスト", () => {
     expect(xml).toContain('<Span letterSpacing="6">字間広め</Span>');
   });
 
+  it("fontSize 付きの Span が parseXml でパースできる", () => {
+    const xml = renderToXml(
+      <Slide>
+        <Text fontSize={52} bold color="1D4ED8">
+          ¥84.2<Span fontSize={20}>M</Span>
+        </Text>
+      </Slide>,
+    );
+    assertParsable(xml);
+    expect(xml).toContain('<Span fontSize="20">M</Span>');
+  });
+
   it("glow / outline 付きの Text が parseXml でパースできる", () => {
     const xml = renderToXml(
       <Slide>

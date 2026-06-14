@@ -23,11 +23,12 @@ export function renderTextNode(
     const fontFamily = node.fontFamily ?? "Noto Sans JP";
     const textItems = node.runs.map((run) => {
       const letterSpacingPx = run.letterSpacing ?? node.letterSpacing;
+      const runFontSizePx = run.fontSize ?? fontSizePx;
       const subSup = resolveSubSup(run, node);
       return {
         text: run.text,
         options: {
-          fontSize: pxToPt(fontSizePx),
+          fontSize: pxToPt(runFontSizePx),
           fontFace: run.fontFamily ?? fontFamily,
           color: run.color ?? node.color,
           bold: run.bold ?? node.bold,

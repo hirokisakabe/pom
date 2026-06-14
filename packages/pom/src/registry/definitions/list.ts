@@ -15,7 +15,20 @@ function applyListYogaStyle(
 ) {
   const n = node as Extract<POMNode, { type: "ul" | "ol" }>;
   const combinedText = n.items.map((item) => item.text).join("\n");
-  const fontSizePx = n.fontSize ?? 24;
+  const baseFontSizePx = n.fontSize ?? 24;
+  // Li 単位の fontSize 上書きと、Li 内 <Span fontSize="..."> による run 単位
+  // 上書きを両方考慮した最大値で計測する。単一 fontSize でしか計測できない
+  // 制約に対する保守的な見積もりで、横方向は過剰評価になるが縦方向 clipping
+  // を防ぐ。
+  const fontSizePx = Math.max(
+    baseFontSizePx,
+    ...n.items.flatMap((item) => [
+      item.fontSize ?? baseFontSizePx,
+      ...(item.runs?.map(
+        (r) => r.fontSize ?? item.fontSize ?? baseFontSizePx,
+      ) ?? []),
+    ]),
+  );
   const fontFamily = n.fontFamily ?? "Noto Sans JP";
   const fontWeight = n.bold ? "bold" : "normal";
   const spacingMultiple = n.lineHeight ?? 1.3;
