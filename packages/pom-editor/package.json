@@ -31,11 +31,13 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
     "knip": "knip",
     "lint": "eslint",
+    "test": "vitest",
+    "test:run": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "peerDependencies": {
@@ -48,7 +50,15 @@
     "@hirokisakabe/pom": "workspace:*"
   },
   "devDependencies": {
-    "@types/react": "^19"
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.2",
+    "jsdom": "^28.0.1",
+    "react": "^19",
+    "react-dom": "^19",
+    "vitest": "^4.1.8"
   },
   "publishConfig": {
     "access": "public"
