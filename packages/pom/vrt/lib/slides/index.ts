@@ -53,3 +53,4 @@ export { page43DarkThemeXml, vrtThemeXml } from "./darkTheme.js";
 export { page44PerSideBorderXml } from "./perSideBorder.js";
 export { page45TextEffectsXml } from "./textEffects.js";
 export { page46RotateXml } from "./rotate.js";
+export { page47SubSuperscriptXml } from "./subSuperscript.js";

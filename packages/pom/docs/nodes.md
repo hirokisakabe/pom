@@ -108,30 +108,32 @@ A node for displaying text.
 <Text fontSize="24" bold="true" color="333333" textAlign="center">Title</Text>
 ```
 
-| Attribute                | Values                                                     |
-| ------------------------ | ---------------------------------------------------------- |
-| `fontSize`               | number (default: 24)                                       |
-| `color`                  | hex (text color)                                           |
-| `textAlign`              | `left` / `center` / `right`                                |
-| `bold` `italic` `strike` | `true` / `false`                                           |
-| `underline`              | `true` / `underline.style="wavy" underline.color="FF0000"` |
-| `highlight`              | hex (highlight color)                                      |
-| `fontFamily`             | string (default: `Noto Sans JP`)                           |
-| `lineHeight`             | number (default: 1.3)                                      |
-| `letterSpacing`          | number in px (letter spacing, converted to pt on output)   |
-| `glow`                   | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"`     |
-| `outline`                | `outline.size="2" outline.color="0088CC"`                  |
-| `rotate`                 | number (degrees clockwise, render-only)                    |
+| Attribute                 | Values                                                     |
+| ------------------------- | ---------------------------------------------------------- |
+| `fontSize`                | number (default: 24)                                       |
+| `color`                   | hex (text color)                                           |
+| `textAlign`               | `left` / `center` / `right`                                |
+| `bold` `italic` `strike`  | `true` / `false`                                           |
+| `subscript` `superscript` | `true` / `false`                                           |
+| `underline`               | `true` / `underline.style="wavy" underline.color="FF0000"` |
+| `highlight`               | hex (highlight color)                                      |
+| `fontFamily`              | string (default: `Noto Sans JP`)                           |
+| `lineHeight`              | number (default: 1.3)                                      |
+| `letterSpacing`           | number in px (letter spacing, converted to pt on output)   |
+| `glow`                    | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"`     |
+| `outline`                 | `outline.size="2" outline.color="0088CC"`                  |
+| `rotate`                  | number (degrees clockwise, render-only)                    |
 
 **Inline Formatting:**
 
-Use `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` child elements for partial bold/italic/underline/strikethrough/highlight/color and hyperlinks within a single text node:
+Use `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, and `<Span>` child elements for partial bold/italic/underline/strikethrough/subscript/superscript/highlight/color and hyperlinks within a single text node:
 
 ```xml
 <Text fontSize="16">Normal <B>bold</B> and <I>italic</I> text</Text>
 <Text fontSize="16"><B><I>Bold italic</I></B></Text>
 <Text fontSize="16">Visit <A href="https://example.com">our site</A></Text>
 <Text fontSize="16">Normal <U>underline</U> and <S>strikethrough</S> text</Text>
+<Text fontSize="16">H<Sub>2</Sub>O and x<Sup>2</Sup> + y<Sup>2</Sup></Text>
 <Text fontSize="16"><Mark color="FFFF00">highlighted</Mark> text</Text>
 <Text fontSize="16"><B><U>Bold underline nested</U></B></Text>
 <Text fontSize="16">Normal <Span color="FF0000">red text</Span> normal</Text>
@@ -184,29 +186,31 @@ A node for displaying bullet-point lists. Use `<Li>` child elements to define li
 
 **Ul Attributes:**
 
-| Attribute                | Values                           |
-| ------------------------ | -------------------------------- |
-| `fontSize`               | number (default: 24)             |
-| `color`                  | hex (text color)                 |
-| `textAlign`              | `left` / `center` / `right`      |
-| `bold` `italic` `strike` | `true` / `false`                 |
-| `underline`              | `true` / underline options       |
-| `highlight`              | hex (highlight color)            |
-| `fontFamily`             | string (default: `Noto Sans JP`) |
-| `lineHeight`             | number (default: 1.3)            |
+| Attribute                 | Values                           |
+| ------------------------- | -------------------------------- |
+| `fontSize`                | number (default: 24)             |
+| `color`                   | hex (text color)                 |
+| `textAlign`               | `left` / `center` / `right`      |
+| `bold` `italic` `strike`  | `true` / `false`                 |
+| `subscript` `superscript` | `true` / `false`                 |
+| `underline`               | `true` / underline options       |
+| `highlight`               | hex (highlight color)            |
+| `fontFamily`              | string (default: `Noto Sans JP`) |
+| `lineHeight`              | number (default: 1.3)            |
 
 **Li Attributes (overrides parent Ul/Ol style):**
 
-| Attribute                | Values                     |
-| ------------------------ | -------------------------- |
-| `fontSize`               | number                     |
-| `color`                  | hex (text color)           |
-| `bold` `italic` `strike` | `true` / `false`           |
-| `underline`              | `true` / underline options |
-| `highlight`              | hex (highlight color)      |
-| `fontFamily`             | string                     |
+| Attribute                 | Values                     |
+| ------------------------- | -------------------------- |
+| `fontSize`                | number                     |
+| `color`                   | hex (text color)           |
+| `bold` `italic` `strike`  | `true` / `false`           |
+| `subscript` `superscript` | `true` / `false`           |
+| `underline`               | `true` / underline options |
+| `highlight`               | hex (highlight color)      |
+| `fontFamily`              | string                     |
 
-Li also supports `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` inline formatting: `<Li>Normal <B>bold</B> item</Li>`, `<Li>See <A href="https://example.com">link</A></Li>`, `<Li><U>underline</U> item</Li>`, `<Li><Span color="FF0000">red</Span> item</Li>`
+Li also supports `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, and `<Span>` inline formatting: `<Li>Normal <B>bold</B> item</Li>`, `<Li>See <A href="https://example.com">link</A></Li>`, `<Li>x<Sup>2</Sup> + y<Sup>2</Sup></Li>`, `<Li>H<Sub>2</Sub>O</Li>`, `<Li><Span color="FF0000">red</Span> item</Li>`
 
 > **Line spacing convention:** `Ul` / `Ol` use a different line-spacing rule than `Text`. The rendered row height (and the yoga layout measurement) follows the bundled-font line-height ratio multiplied by `lineHeight`: `measureFontLineHeightRatio × lineHeight × fontSize`. In contrast, `Text` (and the text inside `Shape`) uses a fixed value of `lineHeight × fontSize` for both measurement and rendering (PowerPoint `spcPts`). Use the same `lineHeight` value when you want a `Ul` block and a `Text` block to look visually consistent; the absolute pixel values may differ slightly. See [Text Measurement — Line Height and Rendering](./text-measurement.md#line-height-and-rendering).
 
@@ -274,7 +278,7 @@ A node for drawing tables. Column widths and row heights are declared in px, wit
 
 - `<Col>`: `width` (omit for even distribution)
 - `<Tr>`: `height` (omit to apply `defaultRowHeight`, default 32)
-- `<Td>`: Text content + `fontSize` `color` `bold` `italic` `underline` `strike` `highlight` `fontFamily` `textAlign` `backgroundColor` `colspan` `rowspan`. Also supports `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` inline formatting
+- `<Td>`: Text content + `fontSize` `color` `bold` `italic` `underline` `strike` `subscript` `superscript` `highlight` `fontFamily` `textAlign` `backgroundColor` `colspan` `rowspan`. Also supports `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, and `<Span>` inline formatting
 
 | Attribute          | Values                                         |
 | ------------------ | ---------------------------------------------- |
@@ -291,14 +295,14 @@ A node for drawing shapes. Different representations are possible with or withou
 <Shape shapeType="roundRect" w="200" h="60" text="Button" fontSize="16" fill.color="1D4ED8" color="FFFFFF" />
 ```
 
-| Attribute       | Values                                                                                                    |
-| --------------- | --------------------------------------------------------------------------------------------------------- |
-| `shapeType`     | Shape type (178 types — see list below)                                                                   |
-| `text`          | string (text inside the shape)                                                                            |
-| `fill`          | `fill.color="hex" fill.transparency="0.5"`                                                                |
-| `line`          | `line.color="hex" line.width="2" line.dashType="dash"`                                                    |
-| `rotate`        | number (degrees clockwise, render-only)                                                                   |
-| Text attributes | `fontSize` `color` `textAlign` `bold` `italic` `underline` `strike` `highlight` `fontFamily` `lineHeight` |
+| Attribute       | Values                                                                                                                              |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `shapeType`     | Shape type (178 types — see list below)                                                                                             |
+| `text`          | string (text inside the shape)                                                                                                      |
+| `fill`          | `fill.color="hex" fill.transparency="0.5"`                                                                                          |
+| `line`          | `line.color="hex" line.width="2" line.dashType="dash"`                                                                              |
+| `rotate`        | number (degrees clockwise, render-only)                                                                                             |
+| Text attributes | `fontSize` `color` `textAlign` `bold` `italic` `underline` `strike` `subscript` `superscript` `highlight` `fontFamily` `lineHeight` |
 
 **Common Shape Types:**
 
