@@ -8,13 +8,11 @@
   <a href="https://github.com/hirokisakabe/pom/blob/main/LICENSE"><img src="https://img.shields.io/github/license/hirokisakabe/pom.svg" alt="License"></a>
 </p>
 
+<p align="center">
+  <img src="images/preview.png" alt="pom-vscode preview" width="800">
+</p>
+
 ---
-
-## Overview
-
-**pom-vscode** brings live slide preview to VS Code. Write presentations in Markdown (`.pom.md`) or XML (`.pom.xml`) and see the result instantly — no manual export needed during editing.
-
-![pom-vscode preview](images/preview.png)
 
 ## Features
 
@@ -24,22 +22,20 @@
 - **Error Diagnostics** — Inline error display helps you catch issues as you type.
 - **Command Palette** — Open preview via `pom: Open Preview`, export via `pom: Export PPTX`.
 
-## Getting Started
+## Installation
 
 > Requires VS Code 1.85+
 
-### Install
-
 Search for **pom** in the VS Code Extensions view, or install from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=hirokisakabe.pom-vscode).
 
-### Usage
+## Quick Start
 
 1. Create a new file with `.pom.md` or `.pom.xml` extension
 2. Click the preview icon in the editor title bar, or run `pom: Open Preview` from the Command Palette
 3. Edit your file — the preview updates in real time
 4. When ready, run `pom: Export PPTX` to generate a PowerPoint file
 
-### Supported Formats
+## Supported Formats
 
 | Format  | Extension  | Description                                       |
 | ------- | ---------- | ------------------------------------------------- |
