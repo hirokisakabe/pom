@@ -440,14 +440,15 @@ A node for drawing charts. Supports bar charts, line charts, pie charts, area ch
 </Chart>
 ```
 
-| Attribute     | Values                                                 |
-| ------------- | ------------------------------------------------------ |
-| `chartType`   | `bar` / `line` / `pie` / `area` / `doughnut` / `radar` |
-| `showLegend`  | boolean                                                |
-| `showTitle`   | boolean                                                |
-| `title`       | string                                                 |
-| `chartColors` | JSON array `'["hex1","hex2"]'`                         |
-| `radarStyle`  | `standard` / `marker` / `filled` (radar only)          |
+| Attribute     | Values                                                                                                       |
+| ------------- | ------------------------------------------------------------------------------------------------------------ |
+| `chartType`   | `bar` / `line` / `pie` / `area` / `doughnut` / `radar`                                                       |
+| `showLegend`  | boolean                                                                                                      |
+| `showTitle`   | boolean                                                                                                      |
+| `title`       | string                                                                                                       |
+| `chartColors` | JSON array `'["hex1","hex2"]'`                                                                               |
+| `radarStyle`  | `standard` / `marker` / `filled` (radar only)                                                                |
+| `sparkline`   | boolean — hides legend / axes / gridlines / margins for compact display (`bar` / `line` / `area`, e.g. h=40) |
 
 **Usage Examples:**
 
@@ -491,7 +492,19 @@ A node for drawing charts. Supports bar charts, line charts, pie charts, area ch
     <ChartDataPoint label="Support" value="90" />
   </ChartSeries>
 </Chart>
+
+<!-- Sparkline (compact h=40 inline chart with no chrome) -->
+<Chart chartType="bar" w="200" h="40" sparkline="true" chartColors='["0088CC"]'>
+  <ChartSeries name="Sales">
+    <ChartDataPoint label="Q1" value="100" />
+    <ChartDataPoint label="Q2" value="200" />
+    <ChartDataPoint label="Q3" value="150" />
+    <ChartDataPoint label="Q4" value="300" />
+  </ChartSeries>
+</Chart>
 ```
+
+> **Sparkline mode (`sparkline="true"`)**: hides legend / axis titles / axis labels / gridlines / margins and stretches the plot area to fill the chart bounds. Designed for small inline charts (e.g. `h=40`) inside KPI tiles. Works best with `bar` / `line` / `area`.
 
 ### 10. Timeline
 

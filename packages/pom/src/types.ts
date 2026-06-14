@@ -592,6 +592,9 @@ export const chartNodeSchema = basePOMNodeSchema.extend({
   chartColors: z.array(z.string()).optional(),
   // radar専用オプション
   radarStyle: radarStyleSchema.optional(),
+  // sparkline モード: true のとき凡例 / 軸 / マージンをすべて非表示にして
+  // 小さい寸法 (h=40px 程度) でも視認できる sparkline 風表示にする
+  sparkline: z.boolean().optional(),
 });
 
 export type TextNode = z.infer<typeof textNodeSchema>;

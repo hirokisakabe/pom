@@ -321,6 +321,109 @@ describe("ルートノードの background + border", () => {
   });
 });
 
+describe("renderChartNode", () => {
+  const sampleData = [
+    {
+      name: "Sales",
+      labels: ["Q1", "Q2", "Q3", "Q4"],
+      values: [100, 200, 150, 300],
+    },
+  ];
+
+  it("通常モードでは sparkline 関連オプションを渡さない (後方互換)", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "chart",
+          chartType: "bar",
+          data: sampleData,
+          x: 0,
+          y: 0,
+          w: 400,
+          h: 200,
+          showLegend: true,
+          showTitle: true,
+          title: "Sales",
+        },
+      ]),
+    );
+
+    const chart = objects.find((o) => o._type === "chart");
+    expect(chart).toBeDefined();
+    expect(chart?.options).toMatchObject({
+      showLegend: true,
+      showTitle: true,
+      title: "Sales",
+    });
+    expect(chart?.options.catAxisHidden).toBeUndefined();
+    expect(chart?.options.valAxisHidden).toBeUndefined();
+    expect(chart?.options.layout).toBeUndefined();
+  });
+
+  it("sparkline=true のとき凡例 / 軸 / マージンを非表示にする", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "chart",
+          chartType: "bar",
+          data: sampleData,
+          x: 0,
+          y: 0,
+          w: 200,
+          h: 40,
+          sparkline: true,
+          showLegend: true,
+          showTitle: true,
+          title: "ignored",
+        },
+      ]),
+    );
+
+    const chart = objects.find((o) => o._type === "chart");
+    expect(chart).toBeDefined();
+    expect(chart?.options).toMatchObject({
+      showLegend: false,
+      showTitle: false,
+      catAxisHidden: true,
+      valAxisHidden: true,
+      catAxisLineShow: false,
+      valAxisLineShow: false,
+      showCatAxisTitle: false,
+      showValAxisTitle: false,
+      catGridLine: { style: "none" },
+      valGridLine: { style: "none" },
+      layout: { x: 0, y: 0, w: 1, h: 1 },
+    });
+    expect(chart?.options.title).toBeUndefined();
+  });
+
+  it("sparkline=true でも pie などサポート外の chartType では通常描画にフォールバックする", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "chart",
+          chartType: "pie",
+          data: sampleData,
+          x: 0,
+          y: 0,
+          w: 200,
+          h: 200,
+          sparkline: true,
+          showLegend: true,
+        },
+      ]),
+    );
+
+    const chart = objects.find((o) => o._type === "chart");
+    expect(chart).toBeDefined();
+    expect(chart?.options).toMatchObject({
+      showLegend: true,
+    });
+    expect(chart?.options.catAxisHidden).toBeUndefined();
+    expect(chart?.options.layout).toBeUndefined();
+  });
+});
+
 describe("renderLineNode / renderArrowNode", () => {
   it("line: 逆向き座標は左上原点 + flip で表現される", async () => {
     const { objects } = await renderPage(

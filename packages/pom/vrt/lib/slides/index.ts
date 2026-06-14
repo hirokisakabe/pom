@@ -8,7 +8,11 @@ export {
 export { page3ImageXml, page3bImageSizingXml } from "./image.js";
 export { page4TableXml } from "./table.js";
 export { page5ShapeXml } from "./shape.js";
-export { page6ChartXml, page10ChartAdditionalXml } from "./chart.js";
+export {
+  page6ChartXml,
+  page10ChartAdditionalXml,
+  page48ChartSparklineXml,
+} from "./chart.js";
 export {
   page7LayoutXml,
   page16LayerXml,

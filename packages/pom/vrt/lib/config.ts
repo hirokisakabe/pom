@@ -61,6 +61,7 @@ export const PAGE_NAMES = [
   "45-text-effects",
   "46-rotate",
   "47-sub-superscript",
+  "48-chart-sparkline",
 ] as const;
 
 export const THRESHOLD = 0.1;
