@@ -26,6 +26,8 @@ The remaining sections describe nodes that go inside a `<Slide>`. For brevity, t
 
 A pom XML document may declare a single `<Theme>` element at the top level. Each attribute declares a named color token, and any color attribute in the document can reference a token as `$tokenName`. This keeps the palette in one place instead of repeating hex values on every node.
 
+![Theme tokens example](./images/attr-theme-tokens.png)
+
 ```xml
 <Theme surface="0F172A" accent="38BDF8" textMain="F8FAFC" textMuted="94A3B8" />
 <Slide>
@@ -75,10 +77,19 @@ Layout attributes that all nodes can have.
 | `shadow`                                              | `shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000"` | Drop shadow (not supported on Line)                             |
 
 - `grow`: Distributes the remaining space of a `VStack` / `HStack` among siblings in proportion to their `grow` values (e.g., `grow="2"` and `grow="1"` produce a 2:1 split). Along the parent's main axis, `w="max"` / `h="max"` behave as `grow="1"`; when `grow` is specified together with them, `grow` takes precedence. See [Layout System](./layout-system.md) for details.
+
+  ![grow example](./images/attr-grow.png)
+
 - `backgroundGradient`: CSS-like `linear-gradient()` syntax. The angle accepts `<n>deg` (0 = bottom-to-top, clockwise) or `to <direction>` keywords (`to right`, `to bottom left`, ...) and defaults to `180deg` (top-to-bottom). Two or more hex color stops are required; stop positions (`%`) are optional and distributed evenly when omitted. Exported as a native PowerPoint gradient fill (editable, not rasterized). Takes precedence over `backgroundColor`. When set on the root node of a slide, it is applied as the slide background. Note: in browser environments use `pptx.write()` — `pptx.writeFile()` falls back to plain pptxgenjs output without the gradient post-processing.
+
+  ![backgroundGradient example](./images/attr-background-gradient.png)
+
 - `backgroundImage`: `src` accepts a URL or local file path. `sizing` controls how the image fits: `"cover"` (default) fills the area, `"contain"` fits within the area.
 - `border`: Can be combined with `color`, `width`, and `dashType` (`"solid"` / `"dash"` / `"dashDot"` / `"lgDash"` / `"lgDashDot"` / `"lgDashDotDot"` / `"sysDash"` / `"sysDot"`).
 - `borderTop` / `borderRight` / `borderBottom` / `borderLeft`: Per-side borders with the same fields as `border` (`color` / `width` / `dashType`). Useful for accent bars (`borderLeft.width="6"`) or underlined headings (`borderBottom.width="3"`). When combined with `border`, each side merges field-by-field with the per-side value taking precedence. Cannot be combined with `borderRadius` — the per-side values are ignored with a diagnostics warning and the uniform `border` is used instead.
+
+  ![Per-side border example](./images/attr-per-side-border.png)
+
 - `opacity`: 0 = fully transparent, 1 = fully opaque. Useful for semi-transparent overlays with Layer nodes.
 - Shorthand (`padding="16"` / `border='{"color":"333","width":1}'`) and dot notation (`padding.top="8"` / `border.color="FF0000"`) can be mixed on the same node. Shorthand is used as the default value, then dot notation overrides each top-level key.
 - Mixed shorthand + dot notation is supported for: `padding` `margin` `border` `cellBorder` `line` `fill` `shadow` `underline` `beginArrow` `endArrow` `backgroundImage` `connectorStyle` `sizing` `glow` `outline`.
@@ -86,6 +97,8 @@ Layout attributes that all nodes can have.
 ## Leaf Rotation
 
 `Text`, `Shape`, `Image`, and `Icon` support `rotate` as a number of degrees clockwise.
+
+![Leaf rotation example](./images/attr-rotation.png)
 
 ```xml
 <Text rotate="12">Rotated label</Text>
@@ -144,9 +157,23 @@ Use `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, and `<Span>` 
 
 `<Span>` supports `color`, `fontFamily`, and `letterSpacing` attributes. When `fontFamily` is specified, that run uses the given font face (overrides the parent Text's `fontFamily`). `letterSpacing` adjusts the spacing between characters for that run only. Note: `<Span letterSpacing>` is effective inside `<Text>` only (ignored inside `<Li>` / `<Td>`), and layout measurement uses the Text-level `letterSpacing` (run-level spacing affects rendering only).
 
+**Subscript / Superscript:**
+
+Use `<Sub>` / `<Sup>` inline tags for chemical formulas, exponents, and ordinals, or the node-level `subscript` / `superscript` attributes to apply the effect to a whole `<Text>`. The two are mutually exclusive on the same run.
+
+![Subscript / Superscript example](./images/attr-sub-sup.png)
+
+```xml
+<Text fontSize="16">H<Sub>2</Sub>O and x<Sup>2</Sup> + y<Sup>2</Sup></Text>
+<Text fontSize="14" subscript="true">whole text rendered as subscript</Text>
+<Text fontSize="14" superscript="true">whole text rendered as superscript</Text>
+```
+
 **Letter Spacing:**
 
 `letterSpacing` is specified in px (consistent with other user-facing units such as `fontSize`) and converted to pt internally for the PPTX output. Layout measurement accounts for the extra width (`letterSpacing × character count`), so spaced text does not overflow its container.
+
+![letterSpacing example](./images/attr-letter-spacing.png)
 
 ```xml
 <Text fontSize="32" bold="true" letterSpacing="8">SECTION TITLE</Text>
@@ -157,6 +184,8 @@ See [Styling Guide](./styling-guide.md#font-size-guide) for recommended font siz
 **Text Effects (glow / outline):**
 
 `glow` adds a glow effect around the characters, and `outline` draws a border along the character edges. Both are exported as native PowerPoint text effects (editable in PowerPoint, not rasterized). They are useful for keeping titles legible on top of background images.
+
+![Text effects example](./images/attr-text-effects.png)
 
 ```xml
 <Text fontSize="40" bold="true" color="FFFFFF" glow.size="8" glow.opacity="0.5" glow.color="1D4ED8">Glowing title</Text>
