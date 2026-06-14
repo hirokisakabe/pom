@@ -163,9 +163,9 @@ describe("AppLayout", () => {
       );
 
       await user.click(screen.getByRole("radio", { name: "XML" }));
-      expect(
-        screen.getByTestId<HTMLTextAreaElement>("xml-editor").value,
-      ).toBe("<Text>persisted</Text>");
+      expect(screen.getByTestId<HTMLTextAreaElement>("xml-editor").value).toBe(
+        "<Text>persisted</Text>",
+      );
     });
 
     it("AST モードで発火された onChange が xmlValue に反映され、プレビューも再生成される", async () => {
@@ -199,9 +199,9 @@ describe("AppLayout", () => {
 
       // XML モードに戻したときも値が共有されている
       await user.click(screen.getByRole("radio", { name: "XML" }));
-      expect(
-        screen.getByTestId<HTMLTextAreaElement>("xml-editor").value,
-      ).toBe("<Text>from-ast</Text>");
+      expect(screen.getByTestId<HTMLTextAreaElement>("xml-editor").value).toBe(
+        "<Text>from-ast</Text>",
+      );
     });
   });
 
