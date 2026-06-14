@@ -37,6 +37,22 @@ export function convertStrike(
 }
 
 /**
+ * run と親 (node / cell / li) の subscript / superscript を相互排他に解決する。
+ * OOXML の baseline 値で表現される性質上、両方 true は意味を持たないため、
+ * run 側で sub/sup のいずれかが指定された場合は親の指定をまるごと無効化する
+ * (片方だけ指定して反対側を親から漏らさない)。
+ */
+export function resolveSubSup(
+  run: { subscript?: boolean; superscript?: boolean },
+  parent: { subscript?: boolean; superscript?: boolean },
+): { subscript: boolean | undefined; superscript: boolean | undefined } {
+  if (run.subscript !== undefined || run.superscript !== undefined) {
+    return { subscript: run.subscript, superscript: run.superscript };
+  }
+  return { subscript: parent.subscript, superscript: parent.superscript };
+}
+
+/**
  * glow プロパティを pptxgenjs 形式に変換する
  * size はユーザー入力 px、pptxgenjs の glow.size は pt。
  * pptxgenjs は省略時デフォルトを Object.assign で合成するため undefined を
@@ -123,6 +139,8 @@ export function createTextOptions(node: TextNode) {
     italic: node.italic,
     underline: convertUnderline(node.underline),
     strike: convertStrike(node.strike),
+    subscript: node.subscript,
+    superscript: node.superscript,
     highlight: node.highlight,
     glow: convertGlow(node.glow),
     outline: convertOutline(node.outline),

@@ -60,6 +60,7 @@ export const PAGE_NAMES = [
   "44-per-side-border",
   "45-text-effects",
   "46-rotate",
+  "47-sub-superscript",
 ] as const;
 
 export const THRESHOLD = 0.1;

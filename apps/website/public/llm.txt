@@ -125,20 +125,21 @@ Positions children using absolute coordinates. Children require `x` and `y`. Sou
 <Text fontSize="24" bold="true" color="333333" textAlign="center">Title</Text>
 ```
 
-| Attribute                | Type / Values                                              |
-| ------------------------ | ---------------------------------------------------------- |
-| `fontSize`               | number (default: 24)                                       |
-| `color`                  | hex (text color)                                           |
-| `textAlign`              | `left` / `center` / `right`                                |
-| `bold` `italic` `strike` | `true` / `false`                                           |
-| `underline`              | `true` / `underline.style="wavy" underline.color="FF0000"` |
-| `highlight`              | hex (highlight color)                                      |
-| `fontFamily`             | string (default: `Noto Sans JP`)                           |
-| `lineHeight`             | number (default: 1.3)                                      |
-| `letterSpacing`          | number in px (letter spacing, converted to pt on output)   |
-| `glow`                   | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"`     |
-| `outline`                | `outline.size="2" outline.color="0088CC"`                  |
-| `rotate`                 | number (degrees clockwise, render-only)                    |
+| Attribute                                  | Type / Values                                              |
+| ------------------------------------------ | ---------------------------------------------------------- |
+| `fontSize`                                 | number (default: 24)                                       |
+| `color`                                    | hex (text color)                                           |
+| `textAlign`                                | `left` / `center` / `right`                                |
+| `bold` `italic` `strike`                   | `true` / `false`                                           |
+| `subscript` `superscript`                  | `true` / `false`                                           |
+| `underline`                                | `true` / `underline.style="wavy" underline.color="FF0000"` |
+| `highlight`                                | hex (highlight color)                                      |
+| `fontFamily`                               | string (default: `Noto Sans JP`)                           |
+| `lineHeight`                               | number (default: 1.3)                                      |
+| `letterSpacing`                            | number in px (letter spacing, converted to pt on output)   |
+| `glow`                                     | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"`     |
+| `outline`                                  | `outline.size="2" outline.color="0088CC"`                  |
+| `rotate`                                   | number (degrees clockwise, render-only)                    |
 
 Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
 
@@ -149,12 +150,13 @@ Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
 <Text fontSize="40" bold="true" color="FFFFFF" outline.size="2" outline.color="0F172A">Outlined title</Text>
 ```
 
-**Inline formatting:** Use `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` child elements for partial bold/italic/underline/strikethrough/highlight/color and hyperlinks:
+**Inline formatting:** Use `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, and `<Span>` child elements for partial bold/italic/underline/strikethrough/subscript/superscript/highlight/color and hyperlinks:
 
 ```xml
 <Text fontSize="16">Normal <B>bold</B> and <I>italic</I> text</Text>
 <Text fontSize="16">Visit <A href="https://example.com">our site</A></Text>
 <Text fontSize="16">Normal <U>underline</U> and <S>strikethrough</S> text</Text>
+<Text fontSize="16">H<Sub>2</Sub>O and x<Sup>2</Sup> + y<Sup>2</Sup></Text>
 <Text fontSize="16"><Mark color="FFFF00">highlighted</Mark> text</Text>
 <Text fontSize="16">Normal <Span color="FF0000">red text</Span> normal</Text>
 <Text fontSize="16" fontFamily="Noto Sans JP">Default <Span fontFamily="Arial">Arial part</Span> default</Text>
@@ -163,7 +165,7 @@ Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
 
 `<Span>` supports `color`, `fontFamily` (overrides the parent's `fontFamily` for that run), and `letterSpacing` (adjusts letter spacing for that run; effective inside `<Text>` only).
 
-`<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` also work inside `<Li>` and `<Td>`.
+`<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, and `<Span>` also work inside `<Li>` and `<Td>`.
 
 ### Ul (Bullet List)
 
@@ -175,16 +177,17 @@ Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
 </Ul>
 ```
 
-| Attribute                | Type / Values                    |
-| ------------------------ | -------------------------------- |
-| `fontSize`               | number (default: 24)             |
-| `color`                  | hex (text color)                 |
-| `textAlign`              | `left` / `center` / `right`      |
-| `bold` `italic` `strike` | `true` / `false`                 |
-| `fontFamily`             | string (default: `Noto Sans JP`) |
-| `lineHeight`             | number (default: 1.3)            |
+| Attribute                  | Type / Values                    |
+| -------------------------- | -------------------------------- |
+| `fontSize`                 | number (default: 24)             |
+| `color`                    | hex (text color)                 |
+| `textAlign`                | `left` / `center` / `right`      |
+| `bold` `italic` `strike`   | `true` / `false`                 |
+| `subscript` `superscript`  | `true` / `false`                 |
+| `fontFamily`               | string (default: `Noto Sans JP`) |
+| `lineHeight`               | number (default: 1.3)            |
 
-Li attributes (override parent styles): `bold`, `italic`, `strike`, `underline`, `highlight`, `color`, `fontSize`, `fontFamily`
+Li attributes (override parent styles): `bold`, `italic`, `strike`, `subscript`, `superscript`, `underline`, `highlight`, `color`, `fontSize`, `fontFamily`
 
 ### Ol (Numbered List)
 
@@ -287,7 +290,7 @@ For the full icon list, see https://lucide.dev/icons/ (use the icon name in keba
 | `fill`          | `fill.color="hex" fill.transparency="0.5"`                                                                |
 | `line`          | `line.color="hex" line.width="2" line.dashType="dash"`                                                    |
 | `rotate`        | number (degrees clockwise, render-only)                                                                   |
-| Text attributes | `fontSize` `color` `textAlign` `bold` `italic` `underline` `strike` `highlight` `fontFamily` `lineHeight` |
+| Text attributes | `fontSize` `color` `textAlign` `bold` `italic` `underline` `strike` `subscript` `superscript` `highlight` `fontFamily` `lineHeight` |
 
 `fill`, `line`, and other style objects also allow mixing shorthand + dot notation on the same node (dot notation overrides specific keys).
 
@@ -383,7 +386,7 @@ Connector between two nodes referenced by `id`. Draws a straight line between th
 - `<Table>`: `defaultRowHeight` (default 32), `cellBorder` (`{color, width, dashType}` — cell border style)
 - `<Col>`: `width` (omit for equal distribution)
 - `<Tr>`: `height` (omit to use `defaultRowHeight`, default 32)
-- `<Td>`: text content + `fontSize` `color` `bold` `italic` `underline` `strike` `highlight` `fontFamily` `textAlign` `backgroundColor` `colspan` `rowspan`
+- `<Td>`: text content + `fontSize` `color` `bold` `italic` `underline` `strike` `subscript` `superscript` `highlight` `fontFamily` `textAlign` `backgroundColor` `colspan` `rowspan`
 
 ### Chart
 
@@ -555,9 +558,9 @@ Connector between two nodes referenced by `id`. Draws a straight line between th
 | ---------------- | --------------------------------------------------- | ---------------------------- |
 | `<Chart>`        | `<ChartSeries>` > `<ChartDataPoint>`                | `data`                       |
 | `<Table>`        | `<Col>`, `<Tr>` > `<Td>`       | `columns`, `rows`            |
-| `<Text>`         | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
-| `<Li>`           | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
-| `<Td>`    | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
+| `<Text>`         | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
+| `<Li>`           | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
+| `<Td>`    | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
 | `<Timeline>`     | `<TimelineItem>`                                    | `items`                      |
 | `<Matrix>`       | `<MatrixAxes>`, `<MatrixQuadrants>`, `<MatrixItem>` | `axes`, `quadrants`, `items` |
 | `<Tree>`         | `<TreeItem>` (recursive)                            | `data`                       |

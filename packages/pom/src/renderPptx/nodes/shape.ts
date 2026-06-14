@@ -38,6 +38,8 @@ export function renderShapeNode(
       italic: node.italic,
       underline: convertUnderline(node.underline),
       strike: convertStrike(node.strike),
+      subscript: node.subscript,
+      superscript: node.superscript,
       highlight: node.highlight,
       align: node.textAlign ?? "center",
       valign: "middle" as const,

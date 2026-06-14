@@ -1,7 +1,7 @@
 /**
  * parseXml / serializeXml が共有する XML child handling のルール定義。
  *
- * - インライン装飾タグ (B/I/A/U/S/Mark/Span) と TextRun property の対応
+ * - インライン装飾タグ (B/I/A/U/S/Sub/Sup/Mark/Span) と TextRun property の対応
  * - ノードごとの XML child element 受け入れルール (XmlChildRule)
  *
  * parse 側 (parseXml.ts) と serialize 側 (serializeXml.ts) の双方がこの
@@ -10,7 +10,7 @@
  * からは parseXml / serializeXml を import しない）。
  */
 
-// ===== インライン装飾 (B/I/A/U/S/Mark/Span) =====
+// ===== インライン装飾 (B/I/A/U/S/Sub/Sup/Mark/Span) =====
 
 /** Text / Shape / Li / Td 内のインライン装飾を表すテキスト run */
 export interface TextRun {
@@ -19,6 +19,8 @@ export interface TextRun {
   italic?: boolean;
   underline?: boolean;
   strike?: boolean;
+  subscript?: boolean;
+  superscript?: boolean;
   highlight?: string;
   color?: string;
   href?: string;
@@ -32,12 +34,20 @@ export interface TextRun {
  */
 export const INLINE_BOOLEAN_FORMATS: readonly {
   readonly tag: string;
-  readonly property: "bold" | "italic" | "underline" | "strike";
+  readonly property:
+    | "bold"
+    | "italic"
+    | "underline"
+    | "strike"
+    | "subscript"
+    | "superscript";
 }[] = [
   { tag: "B", property: "bold" },
   { tag: "I", property: "italic" },
   { tag: "U", property: "underline" },
   { tag: "S", property: "strike" },
+  { tag: "Sub", property: "subscript" },
+  { tag: "Sup", property: "superscript" },
 ];
 
 /** ハイパーリンクタグ。href 属性 → TextRun.href */
@@ -59,6 +69,8 @@ export const INLINE_FORMAT_TAG_LIST: readonly string[] = [
   "A",
   "U",
   "S",
+  "Sub",
+  "Sup",
   "Mark",
   "Span",
 ];

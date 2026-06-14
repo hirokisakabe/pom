@@ -721,6 +721,50 @@ describe("parseXml", () => {
       });
     });
 
+    it("Sub タグを subscript の run に変換する", () => {
+      const result = parseXml("<Text>H<Sub>2</Sub>O</Text>");
+      expect(result[0]).toMatchObject({
+        type: "text",
+        text: "H2O",
+        runs: [{ text: "H" }, { text: "2", subscript: true }, { text: "O" }],
+      });
+    });
+
+    it("Sup タグを superscript の run に変換する", () => {
+      const result = parseXml("<Text>x<Sup>2</Sup></Text>");
+      expect(result[0]).toMatchObject({
+        type: "text",
+        text: "x2",
+        runs: [{ text: "x" }, { text: "2", superscript: true }],
+      });
+    });
+
+    it("ネストした Sub / Sup は内側の指定を優先して相互排他化する", () => {
+      const result = parseXml("<Text><Sub><Sup>x</Sup></Sub></Text>");
+      const runs = (result[0] as Record<string, unknown>).runs as Record<
+        string,
+        unknown
+      >[];
+      expect(runs[0].text).toBe("x");
+      expect(runs[0].superscript).toBe(true);
+      expect(runs[0].subscript).toBeUndefined();
+    });
+
+    it("Text 全体に subscript / superscript 属性が指定できる", () => {
+      const sup = parseXml('<Text superscript="true">注釈</Text>');
+      expect(sup[0]).toMatchObject({
+        type: "text",
+        text: "注釈",
+        superscript: true,
+      });
+      const sub = parseXml('<Text subscript="true">添字</Text>');
+      expect(sub[0]).toMatchObject({
+        type: "text",
+        text: "添字",
+        subscript: true,
+      });
+    });
+
     it("Mark タグをハイライトの run に変換する", () => {
       const result = parseXml(
         '<Text>通常 <Mark color="FFFF00">ハイライト</Mark> テキスト</Text>',
