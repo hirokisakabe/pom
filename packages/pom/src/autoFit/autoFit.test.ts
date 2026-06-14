@@ -147,10 +147,7 @@ describe("reduceFontSize", () => {
           type: "text",
           text: "AB",
           fontSize: 50,
-          runs: [
-            { text: "A" },
-            { text: "B", fontSize: 20 },
-          ],
+          runs: [{ text: "A" }, { text: "B", fontSize: 20 }],
         },
         {
           type: "ul",
@@ -158,10 +155,7 @@ describe("reduceFontSize", () => {
           items: [
             {
               text: "AB",
-              runs: [
-                { text: "A" },
-                { text: "B", fontSize: 12 },
-              ],
+              runs: [{ text: "A" }, { text: "B", fontSize: 12 }],
             },
           ],
         },
@@ -174,10 +168,7 @@ describe("reduceFontSize", () => {
                 {
                   text: "AB",
                   fontSize: 18,
-                  runs: [
-                    { text: "A" },
-                    { text: "B", fontSize: 10 },
-                  ],
+                  runs: [{ text: "A" }, { text: "B", fontSize: 10 }],
                 },
               ],
             },

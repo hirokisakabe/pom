@@ -155,10 +155,7 @@ describe("renderTextNode (runs 分岐)", () => {
         type: "text",
         text: "¥84.2M",
         fontSize: 52,
-        runs: [
-          { text: "¥84.2" },
-          { text: "M", fontSize: 18 },
-        ],
+        runs: [{ text: "¥84.2" }, { text: "M", fontSize: 18 }],
         x: 0,
         y: 0,
         w: 100,

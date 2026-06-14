@@ -24,8 +24,9 @@ function applyListYogaStyle(
     baseFontSizePx,
     ...n.items.flatMap((item) => [
       item.fontSize ?? baseFontSizePx,
-      ...(item.runs?.map((r) => r.fontSize ?? item.fontSize ?? baseFontSizePx) ??
-        []),
+      ...(item.runs?.map(
+        (r) => r.fontSize ?? item.fontSize ?? baseFontSizePx,
+      ) ?? []),
     ]),
   );
   const fontFamily = n.fontFamily ?? "Noto Sans JP";
