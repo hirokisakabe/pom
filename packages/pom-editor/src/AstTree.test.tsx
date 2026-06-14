@@ -140,6 +140,25 @@ describe("AstTree DnD state transitions", () => {
     expect(t1.text).toBe("A");
   });
 
+  it("トップレベル slide の reorder (parentId === 'root') が onChange に反映される", () => {
+    const onChange = vi.fn();
+    render(<AstTree ast={makeAst()} onChange={onChange} />);
+
+    // Drag slide 1 (id 0, parent root) over slide 2 (id 3, parent root).
+    // applyReorder() has a dedicated `activeParentId === "root"` branch — cover it.
+    capturedHandlers.onDragEnd?.(event("0", "root", "3", "root"));
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    const newNodes = onChange.mock.calls[0][0] as POMNode[];
+    expect(newNodes).toHaveLength(2);
+    // After swap, the (previously second) VStack with a single "C" child comes first.
+    const first = newNodes[0] as POMNode & { children: POMNode[] };
+    const second = newNodes[1] as POMNode & { children: POMNode[] };
+    expect(first.children).toHaveLength(1);
+    expect((first.children[0] as POMNode & { text: string }).text).toBe("C");
+    expect(second.children).toHaveLength(2);
+  });
+
   it("異なる親への drag では onChange が呼ばれない (silent rejection)", () => {
     const onChange = vi.fn();
     render(<AstTree ast={makeAst()} onChange={onChange} />);
