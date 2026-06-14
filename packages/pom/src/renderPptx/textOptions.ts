@@ -123,6 +123,8 @@ export function createTextOptions(node: TextNode) {
     italic: node.italic,
     underline: convertUnderline(node.underline),
     strike: convertStrike(node.strike),
+    subscript: node.subscript,
+    superscript: node.superscript,
     highlight: node.highlight,
     glow: convertGlow(node.glow),
     outline: convertOutline(node.outline),

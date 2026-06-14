@@ -19,6 +19,8 @@ export interface TextRun {
   italic?: boolean;
   underline?: boolean;
   strike?: boolean;
+  subscript?: boolean;
+  superscript?: boolean;
   highlight?: string;
   color?: string;
   href?: string;
@@ -32,12 +34,20 @@ export interface TextRun {
  */
 export const INLINE_BOOLEAN_FORMATS: readonly {
   readonly tag: string;
-  readonly property: "bold" | "italic" | "underline" | "strike";
+  readonly property:
+    | "bold"
+    | "italic"
+    | "underline"
+    | "strike"
+    | "subscript"
+    | "superscript";
 }[] = [
   { tag: "B", property: "bold" },
   { tag: "I", property: "italic" },
   { tag: "U", property: "underline" },
   { tag: "S", property: "strike" },
+  { tag: "Sub", property: "subscript" },
+  { tag: "Sup", property: "superscript" },
 ];
 
 /** ハイパーリンクタグ。href 属性 → TextRun.href */
@@ -59,6 +69,8 @@ export const INLINE_FORMAT_TAG_LIST: readonly string[] = [
   "A",
   "U",
   "S",
+  "Sub",
+  "Sup",
   "Mark",
   "Span",
 ];

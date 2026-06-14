@@ -15,6 +15,8 @@ function resolveStyle(li: LiNode, parent: UlPositionedNode | OlPositionedNode) {
     italic: li.italic ?? parent.italic,
     underline: li.underline ?? parent.underline,
     strike: li.strike ?? parent.strike,
+    subscript: li.subscript ?? parent.subscript,
+    superscript: li.superscript ?? parent.superscript,
     highlight: li.highlight ?? parent.highlight,
     fontFamily: li.fontFamily ?? parent.fontFamily ?? "Noto Sans JP",
   };
@@ -36,6 +38,8 @@ function buildListTextItems(
       color: style.color,
       underline: convertUnderline(style.underline),
       strike: convertStrike(style.strike),
+      subscript: style.subscript,
+      superscript: style.superscript,
       highlight: style.highlight,
     };
 
@@ -55,6 +59,8 @@ function buildListTextItems(
             italic: run.italic ?? style.italic,
             underline: convertUnderline(run.underline ?? style.underline),
             strike: convertStrike(run.strike ?? style.strike),
+            subscript: run.subscript ?? style.subscript,
+            superscript: run.superscript ?? style.superscript,
             highlight: run.highlight ?? style.highlight,
             bullet: j === 0 ? bullet : false,
             ...(run.href ? { hyperlink: { url: run.href } } : {}),
@@ -85,6 +91,8 @@ function hasItemStyleOverride(items: LiNode[]): boolean {
       li.italic !== undefined ||
       li.underline !== undefined ||
       li.strike !== undefined ||
+      li.subscript !== undefined ||
+      li.superscript !== undefined ||
       li.highlight !== undefined ||
       li.fontFamily !== undefined ||
       li.runs !== undefined,
@@ -125,6 +133,8 @@ export function renderUlNode(node: UlPositionedNode, ctx: RenderContext): void {
       italic: node.italic,
       underline: convertUnderline(node.underline),
       strike: convertStrike(node.strike),
+      subscript: node.subscript,
+      superscript: node.superscript,
       highlight: node.highlight,
       bullet: true,
     });
@@ -171,6 +181,8 @@ export function renderOlNode(node: OlPositionedNode, ctx: RenderContext): void {
       italic: node.italic,
       underline: convertUnderline(node.underline),
       strike: convertStrike(node.strike),
+      subscript: node.subscript,
+      superscript: node.superscript,
       highlight: node.highlight,
       bullet: bulletOptions,
     });

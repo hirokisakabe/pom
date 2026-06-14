@@ -32,6 +32,8 @@ export function renderTextNode(
           italic: run.italic ?? node.italic,
           underline: convertUnderline(run.underline ?? node.underline),
           strike: convertStrike(run.strike ?? node.strike),
+          subscript: run.subscript ?? node.subscript,
+          superscript: run.superscript ?? node.superscript,
           highlight: run.highlight ?? node.highlight,
           // glow / outline はノード単位指定のみ (run 単位はスコープ外)
           glow: convertGlow(node.glow),

@@ -25,6 +25,8 @@ export function renderTableNode(
         italic: cell.italic,
         underline: convertUnderline(cell.underline),
         strike: convertStrike(cell.strike),
+        subscript: cell.subscript,
+        superscript: cell.superscript,
         highlight: cell.highlight,
         align: cell.textAlign ?? "left",
         fill: cell.backgroundColor
@@ -45,6 +47,8 @@ export function renderTableNode(
             italic: run.italic ?? cell.italic,
             underline: convertUnderline(run.underline ?? cell.underline),
             strike: convertStrike(run.strike ?? cell.strike),
+            subscript: run.subscript ?? cell.subscript,
+            superscript: run.superscript ?? cell.superscript,
             highlight: run.highlight ?? cell.highlight,
             ...(run.href ? { hyperlink: { url: run.href } } : {}),
           },
