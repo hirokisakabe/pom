@@ -38,7 +38,7 @@
       <!-- カード B: OSS 採用 (推奨) -->
       <VStack grow="1" h="100%" padding="28" backgroundColor="$surface" borderRadius="16" border.color="$accent2" border.width="2" gap="16" shadow.type="outer" shadow.blur="20" shadow.offset="0" shadow.color="A78BFA">
         <HStack justifyContent="spaceBetween" alignItems="center" w="100%">
-          <Text fontSize="20" bold="true" color="$ink">B. OSS 採用 (Langfuse + アダプタ)</Text>
+          <Text fontSize="20" bold="true" color="$ink">B. OSS 採用 (Langfuse + 内製アダプタ)</Text>
           <HStack w="60" padding.top="4" padding.bottom="4" padding.left="10" padding.right="10" backgroundColor="$accent" borderRadius="999" justifyContent="center">
             <Text fontSize="9" bold="true" color="0B1220" letterSpacing="2">推奨</Text>
           </HStack>
