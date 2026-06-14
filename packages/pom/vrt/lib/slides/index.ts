@@ -4,6 +4,7 @@ export {
   page2ListXml,
   page36InlineFormattingXml,
   page40LetterSpacingXml,
+  page49SpanFontSizeXml,
 } from "./text.js";
 export { page3ImageXml, page3bImageSizingXml } from "./image.js";
 export { page4TableXml } from "./table.js";
