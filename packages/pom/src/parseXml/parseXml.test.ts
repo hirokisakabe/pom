@@ -739,6 +739,17 @@ describe("parseXml", () => {
       });
     });
 
+    it("ネストした Sub / Sup は内側の指定を優先して相互排他化する", () => {
+      const result = parseXml("<Text><Sub><Sup>x</Sup></Sub></Text>");
+      const runs = (result[0] as Record<string, unknown>).runs as Record<
+        string,
+        unknown
+      >[];
+      expect(runs[0].text).toBe("x");
+      expect(runs[0].superscript).toBe(true);
+      expect(runs[0].subscript).toBeUndefined();
+    });
+
     it("Text 全体に subscript / superscript 属性が指定できる", () => {
       const sup = parseXml('<Text superscript="true">注釈</Text>');
       expect(sup[0]).toMatchObject({

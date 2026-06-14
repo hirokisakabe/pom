@@ -1,13 +1,18 @@
 import type { PositionedNode, LiNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { pxToPt } from "../units.ts";
-import { convertUnderline, convertStrike } from "../textOptions.ts";
+import {
+  convertUnderline,
+  convertStrike,
+  resolveSubSup,
+} from "../textOptions.ts";
 import { getContentAreaIn } from "../utils/contentArea.ts";
 
 type UlPositionedNode = Extract<PositionedNode, { type: "ul" }>;
 type OlPositionedNode = Extract<PositionedNode, { type: "ol" }>;
 
 function resolveStyle(li: LiNode, parent: UlPositionedNode | OlPositionedNode) {
+  const subSup = resolveSubSup(li, parent);
   return {
     fontSize: li.fontSize ?? parent.fontSize ?? 24,
     color: li.color ?? parent.color,
@@ -15,8 +20,8 @@ function resolveStyle(li: LiNode, parent: UlPositionedNode | OlPositionedNode) {
     italic: li.italic ?? parent.italic,
     underline: li.underline ?? parent.underline,
     strike: li.strike ?? parent.strike,
-    subscript: li.subscript ?? parent.subscript,
-    superscript: li.superscript ?? parent.superscript,
+    subscript: subSup.subscript,
+    superscript: subSup.superscript,
     highlight: li.highlight ?? parent.highlight,
     fontFamily: li.fontFamily ?? parent.fontFamily ?? "Noto Sans JP",
   };
@@ -49,6 +54,7 @@ function buildListTextItems(
         const isLastRun = j === li.runs.length - 1;
         let text = run.text;
         if (isLastRun && !isLast) text += "\n";
+        const runSubSup = resolveSubSup(run, style);
         textItems.push({
           text,
           options: {
@@ -59,8 +65,8 @@ function buildListTextItems(
             italic: run.italic ?? style.italic,
             underline: convertUnderline(run.underline ?? style.underline),
             strike: convertStrike(run.strike ?? style.strike),
-            subscript: run.subscript ?? style.subscript,
-            superscript: run.superscript ?? style.superscript,
+            subscript: runSubSup.subscript,
+            superscript: runSubSup.superscript,
             highlight: run.highlight ?? style.highlight,
             bullet: j === 0 ? bullet : false,
             ...(run.href ? { hyperlink: { url: run.href } } : {}),

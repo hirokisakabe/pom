@@ -347,12 +347,15 @@ function extractTextRuns(
       (format) => format.tag === tag,
     );
     if (booleanFormat) {
-      runs.push(
-        ...extractTextRuns(innerChildren, {
-          ...inherited,
-          [booleanFormat.property]: true,
-        }),
-      );
+      const next: Partial<Omit<TextRun, "text">> = {
+        ...inherited,
+        [booleanFormat.property]: true,
+      };
+      // subscript と superscript は OOXML の baseline 値として相互排他
+      // (同時 true は描画結果が未定義になる)。後で立てた側を優先して反対側を解除する。
+      if (booleanFormat.property === "subscript") delete next.superscript;
+      if (booleanFormat.property === "superscript") delete next.subscript;
+      runs.push(...extractTextRuns(innerChildren, next));
     } else if (tag === INLINE_LINK_TAG) {
       // href なしの <A> は外側の href を引き継がない（リンク解除として扱う）
       const next = { ...inherited };

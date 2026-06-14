@@ -103,10 +103,16 @@ interface TextStyleProps {
   italic?: boolean;
   underline?: Underline;
   strike?: boolean;
-  subscript?: boolean;
-  superscript?: boolean;
   highlight?: string;
   fontFamily?: string;
+}
+
+// subscript / superscript は Text 系ノードのうち core が schema で受け付ける
+// ものだけに付ける (ProcessArrow など TextStyleProps を継承するが
+// sub/sup を受け付けないノードに型上だけ生やしてしまうのを防ぐため別 interface)。
+interface SubSupProps {
+  subscript?: boolean;
+  superscript?: boolean;
 }
 
 // ===== Slide =====
@@ -119,7 +125,7 @@ export interface SlideProps {
 export type ThemeProps = Record<string, string>;
 
 // ===== Text =====
-export interface TextProps extends BaseProps, TextStyleProps {
+export interface TextProps extends BaseProps, TextStyleProps, SubSupProps {
   children?: ReactNode;
   rotate?: number;
   textAlign?: TextAlign;
@@ -175,7 +181,7 @@ type BulletNumberType =
   | "romanUcParenR"
   | "romanUcPeriod";
 
-interface ListBaseProps extends BaseProps, TextStyleProps {
+interface ListBaseProps extends BaseProps, TextStyleProps, SubSupProps {
   children?: ReactNode;
   textAlign?: TextAlign;
   lineHeight?: number;
@@ -188,7 +194,7 @@ export interface OlProps extends ListBaseProps {
   numberStartAt?: number;
 }
 
-export interface LiProps extends TextStyleProps {
+export interface LiProps extends TextStyleProps, SubSupProps {
   children?: ReactNode;
 }
 
@@ -225,7 +231,7 @@ export interface LayerProps extends BaseProps {
 }
 
 // ===== Shape =====
-export interface ShapeProps extends BaseProps, TextStyleProps {
+export interface ShapeProps extends BaseProps, TextStyleProps, SubSupProps {
   shapeType: string;
   children?: ReactNode;
   text?: string;
@@ -425,7 +431,7 @@ export interface TrProps {
   height?: number;
 }
 
-interface CellBaseProps extends TextStyleProps {
+interface CellBaseProps extends TextStyleProps, SubSupProps {
   children?: ReactNode;
   textAlign?: TextAlign;
   backgroundColor?: string;

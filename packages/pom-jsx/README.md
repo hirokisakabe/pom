@@ -187,7 +187,7 @@ All pom node types are available as PascalCase components:
 
 ### Inline text formatting
 
-Use inside `Text` (or `Li`) for rich inline formatting:
+Use inside `Text`, `Li`, or `Td` for rich inline formatting:
 
 | Component | Effect        |
 | --------- | ------------- |

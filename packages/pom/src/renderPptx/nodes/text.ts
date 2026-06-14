@@ -6,6 +6,7 @@ import {
   convertStrike,
   convertGlow,
   convertOutline,
+  resolveSubSup,
 } from "../textOptions.ts";
 import { pxToPt } from "../units.ts";
 
@@ -22,6 +23,7 @@ export function renderTextNode(
     const fontFamily = node.fontFamily ?? "Noto Sans JP";
     const textItems = node.runs.map((run) => {
       const letterSpacingPx = run.letterSpacing ?? node.letterSpacing;
+      const subSup = resolveSubSup(run, node);
       return {
         text: run.text,
         options: {
@@ -32,8 +34,8 @@ export function renderTextNode(
           italic: run.italic ?? node.italic,
           underline: convertUnderline(run.underline ?? node.underline),
           strike: convertStrike(run.strike ?? node.strike),
-          subscript: run.subscript ?? node.subscript,
-          superscript: run.superscript ?? node.superscript,
+          subscript: subSup.subscript,
+          superscript: subSup.superscript,
           highlight: run.highlight ?? node.highlight,
           // glow / outline はノード単位指定のみ (run 単位はスコープ外)
           glow: convertGlow(node.glow),

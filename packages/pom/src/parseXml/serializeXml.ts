@@ -134,8 +134,9 @@ function serializeNode(node: POMNode, depth: number): string {
 /**
  * POMNode 配列を XML 文字列に変換する。
  *
- * parseXml の逆操作として機能する。runs（インライン装飾）は B/I/A/U/S/Mark/Span
- * タグとして child element に直列化されるため、テキストの装飾情報も保持される。
+ * parseXml の逆操作として機能する。runs（インライン装飾）は
+ * B/I/A/U/S/Sub/Sup/Mark/Span タグとして child element に直列化されるため、
+ * テキストの装飾情報も保持される。
  *
  * @example
  * ```typescript

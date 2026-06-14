@@ -1,7 +1,7 @@
 /**
  * parseXml / serializeXml が共有する XML child handling のルール定義。
  *
- * - インライン装飾タグ (B/I/A/U/S/Mark/Span) と TextRun property の対応
+ * - インライン装飾タグ (B/I/A/U/S/Sub/Sup/Mark/Span) と TextRun property の対応
  * - ノードごとの XML child element 受け入れルール (XmlChildRule)
  *
  * parse 側 (parseXml.ts) と serialize 側 (serializeXml.ts) の双方がこの
@@ -10,7 +10,7 @@
  * からは parseXml / serializeXml を import しない）。
  */
 
-// ===== インライン装飾 (B/I/A/U/S/Mark/Span) =====
+// ===== インライン装飾 (B/I/A/U/S/Sub/Sup/Mark/Span) =====
 
 /** Text / Shape / Li / Td 内のインライン装飾を表すテキスト run */
 export interface TextRun {
