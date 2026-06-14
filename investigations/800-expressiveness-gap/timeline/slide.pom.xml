@@ -1,0 +1,28 @@
+<Theme base="0B1220" surface="111B2E" ink="F1F5F9" muted="94A3B8" subtle="64748B" accent="38BDF8" accent2="A78BFA" />
+
+<Slide>
+  <VStack w="100%" h="max" padding="48" padding.left="64" padding.right="64" backgroundGradient="linear-gradient(135deg, #0B1220 0%, #1A1F3A 100%)" gap="28">
+
+    <!-- ヘッダ -->
+    <VStack gap="6">
+      <HStack gap="8" alignItems="center">
+        <Shape w="24" h="1" shapeType="rect" fill.color="$accent" />
+        <Text fontSize="10" bold="true" color="$accent" letterSpacing="3">SECTION 04 · ROADMAP</Text>
+      </HStack>
+      <Text fontSize="28" bold="true" color="$ink" letterSpacing="-1">Q4 マイルストーン</Text>
+    </VStack>
+
+    <!-- Timeline node を使う -->
+    <Timeline direction="horizontal" w="1152" h="360" dateColor="$accent" titleColor="$ink" descriptionColor="$muted">
+      <TimelineItem date="10 / Week 1" title="α 版リリース" description="社内 dogfood 開始。主要ユースケースの動作確認。" color="38BDF8" />
+      <TimelineItem date="10 / Week 4" title="β 招待プログラム" description="外部顧客 30 社へ招待。フィードバックループの確立。" color="6DC1F0" />
+      <TimelineItem date="11 / Week 3" title="価格モデル確定" description="使用量ベース vs. シート制を A/B テスト。" color="9099E8" />
+      <TimelineItem date="12 / Week 2" title="GA リリース" description="全機能解放 + ローンチイベント。媒体露出 3 件確保。" color="A78BFA" />
+    </Timeline>
+
+    <!-- フッタ -->
+    <HStack w="100%">
+      <Text fontSize="10" color="$subtle" letterSpacing="2">SOURCE: PRODUCT ROADMAP — FY2026 Q4</Text>
+    </HStack>
+  </VStack>
+</Slide>
