@@ -72,6 +72,8 @@ function serializeRun(run: TextRun): string {
   if (run.color) spanAttrs.push(`color="${escapeAttrValue(run.color)}"`);
   if (run.fontFamily)
     spanAttrs.push(`fontFamily="${escapeAttrValue(run.fontFamily)}"`);
+  if (run.fontSize !== undefined)
+    spanAttrs.push(`fontSize="${run.fontSize}"`);
   if (run.letterSpacing !== undefined)
     spanAttrs.push(`letterSpacing="${run.letterSpacing}"`);
   if (spanAttrs.length > 0) {

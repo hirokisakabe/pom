@@ -126,6 +126,16 @@ describe("serializeXml", () => {
       expect(parseXml(serialized)).toEqual(nodes);
     });
 
+    it("Span の fontSize を runs として往復変換する", () => {
+      const original = parseXml(
+        `<Slide><Text fontSize="52">¥84.2<Span fontSize="18">M</Span></Text></Slide>`,
+      );
+      const serialized = serializeXml(original);
+      expect(serialized).toContain('fontSize="18"');
+      const result = parseXml(serialized);
+      expect(result).toEqual(original);
+    });
+
     it("Span の letterSpacing を runs として往復変換する", () => {
       const original = parseXml(
         `<Slide><Text>通常 <Span letterSpacing="6">字間広め</Span></Text></Slide>`,

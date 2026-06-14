@@ -46,7 +46,7 @@ export function renderTableNode(
           return {
             text: run.text,
             options: {
-              fontSize: pxToPt(cell.fontSize ?? 18),
+              fontSize: pxToPt(run.fontSize ?? cell.fontSize ?? 18),
               fontFace: run.fontFamily ?? cellFontFace,
               color: run.color ?? cell.color,
               bold: run.bold ?? cell.bold,

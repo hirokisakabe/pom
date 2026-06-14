@@ -380,6 +380,9 @@ function extractTextRuns(
       if (spanAttrs.fontFamily && spanAttrs.fontFamily.trim()) {
         next.fontFamily = spanAttrs.fontFamily;
       }
+      if (spanAttrs.fontSize && spanAttrs.fontSize.trim()) {
+        next.fontSize = Number(spanAttrs.fontSize);
+      }
       if (spanAttrs.letterSpacing && spanAttrs.letterSpacing.trim()) {
         next.letterSpacing = Number(spanAttrs.letterSpacing);
       }

@@ -378,6 +378,7 @@ const textRunSchema = z.object({
   color: z.string().optional(),
   href: z.string().optional(),
   fontFamily: z.string().optional(),
+  fontSize: z.number().optional(),
   letterSpacing: z.number().optional(),
 });
 

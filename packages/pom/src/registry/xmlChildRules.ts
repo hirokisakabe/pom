@@ -25,6 +25,7 @@ export interface TextRun {
   color?: string;
   href?: string;
   fontFamily?: string;
+  fontSize?: number;
   letterSpacing?: number;
 }
 
@@ -59,7 +60,7 @@ export const INLINE_MARK_TAG = "Mark";
 /** Mark の color 属性省略時に適用される既定のハイライト色 */
 export const MARK_DEFAULT_HIGHLIGHT_COLOR = "FFFF00";
 
-/** 文字スタイルタグ。color / fontFamily / letterSpacing 属性 → TextRun の同名 property */
+/** 文字スタイルタグ。color / fontFamily / fontSize / letterSpacing 属性 → TextRun の同名 property */
 export const INLINE_SPAN_TAG = "Span";
 
 /** インライン装飾として許容されるタグの一覧（エラーメッセージの列挙順） */

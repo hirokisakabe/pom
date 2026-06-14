@@ -145,6 +145,35 @@ describe("calcGlyphCenteringShiftPx", () => {
 });
 
 describe("renderTextNode (runs 分岐)", () => {
+  it("run に fontSize 指定があれば run 単位で適用され、未指定なら親 Text の fontSize を継承する", () => {
+    const addText =
+      vi.fn<(items: { options: { fontSize?: number } }[]) => void>();
+    const ctx = { slide: { addText } } as unknown as RenderContext;
+
+    renderTextNode(
+      {
+        type: "text",
+        text: "¥84.2M",
+        fontSize: 52,
+        runs: [
+          { text: "¥84.2" },
+          { text: "M", fontSize: 18 },
+        ],
+        x: 0,
+        y: 0,
+        w: 100,
+        h: 50,
+      },
+      ctx,
+    );
+
+    expect(addText).toHaveBeenCalledTimes(1);
+    const textItems = addText.mock.calls[0][0];
+    expect(textItems).toHaveLength(2);
+    expect(textItems[0].options.fontSize).toBe(pxToPt(52));
+    expect(textItems[1].options.fontSize).toBe(pxToPt(18));
+  });
+
   it("runs ありの Text でノード単位の glow / outline が各 run に適用される", () => {
     const addText =
       vi.fn<

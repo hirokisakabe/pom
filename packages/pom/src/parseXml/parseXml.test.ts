@@ -935,6 +935,33 @@ describe("parseXml", () => {
       });
     });
 
+    it("Span タグの fontSize を run に変換する", () => {
+      const result = parseXml(
+        '<Text fontSize="52">¥84.2<Span fontSize="18">M</Span></Text>',
+      );
+      expect(result[0]).toMatchObject({
+        type: "text",
+        text: "¥84.2M",
+        fontSize: 52,
+        runs: [{ text: "¥84.2" }, { text: "M", fontSize: 18 }],
+      });
+    });
+
+    it("Span ネスト時に内側が fontSize 未指定なら親の値を継承する", () => {
+      const result = parseXml(
+        '<Text><Span fontSize="40">A<Span>B</Span>C</Span></Text>',
+      );
+      expect(result[0]).toMatchObject({
+        type: "text",
+        text: "ABC",
+        runs: [
+          { text: "A", fontSize: 40 },
+          { text: "B", fontSize: 40 },
+          { text: "C", fontSize: 40 },
+        ],
+      });
+    });
+
     it("Span ネスト時に内側が letterSpacing 未指定なら親の値を継承する", () => {
       const result = parseXml(
         '<Text><Span letterSpacing="6">A<Span>B</Span>C</Span></Text>',
