@@ -154,6 +154,7 @@ export interface SpanProps {
   color?: string;
   highlight?: string;
   fontFamily?: string;
+  fontSize?: number;
   letterSpacing?: number;
 }
 

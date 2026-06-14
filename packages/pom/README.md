@@ -91,7 +91,7 @@ Each slide must be wrapped in a `<Slide>` element. To produce multiple slides, l
 
 | Node         | Description                                                                                                                                                                                       |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Text         | Text with font styling, decoration (incl. subscript / superscript), rotation, letter spacing, glow / outline effects, inline bold/italic/underline/strike/sub/sup/highlight/color, and hyperlinks |
+| Text         | Text with font styling, decoration (incl. subscript / superscript), rotation, letter spacing, glow / outline effects, inline bold/italic/underline/strike/sub/sup/highlight/color/fontSize, and hyperlinks |
 | Ul           | Unordered (bullet) list with Li items                                                                                                                                                             |
 | Ol           | Ordered (numbered) list with Li items                                                                                                                                                             |
 | Image        | Images from file path, URL, or base64, with optional rotation                                                                                                                                     |

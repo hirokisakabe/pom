@@ -177,24 +177,24 @@ Beyond titles, the same effects work well as **decorative accents**:
 <Text fontSize="16">Normal <Span color="FF0000">red text</Span> normal</Text>
 <Text fontSize="16" fontFamily="Noto Sans JP">Default <Span fontFamily="Arial">Arial part</Span> default</Text>
 <Text fontSize="16">Normal <Span letterSpacing="6">spaced out</Span> normal</Text>
+<Text fontSize="52" bold="true" color="1D4ED8">¥84.2<Span fontSize="20">M</Span></Text>
 ```
 
-`<Span>` supports `color`, `fontFamily` (overrides the parent's `fontFamily` for that run), and `letterSpacing` (adjusts letter spacing for that run; effective inside `<Text>` only).
+`<Span>` supports `color`, `fontFamily` (overrides the parent's `fontFamily` for that run), `fontSize` (overrides the font size for that run, e.g. KPI "big number + small unit" composition), and `letterSpacing` (adjusts letter spacing for that run; effective inside `<Text>` only).
 
 `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, and `<Span>` also work inside `<Li>` and `<Td>`.
 
-**Number + small unit (KPI numerals):** `<Span>` does not yet support `fontSize`, so to render a big numeral with a smaller trailing unit (`84.2M`, `92%`), use an `HStack` with `alignItems="end"` so the baselines line up. Match `lineHeight="1"` on both to remove the extra leading from the larger glyph box.
+**Number + small unit (KPI numerals):** Use `<Span fontSize>` inside a single `<Text>` so the digit and unit share one baseline automatically. The parent's `bold` / `color` are inherited unless overridden on the Span.
 
 ```xml
-<HStack alignItems="end" gap="4">
-  <Text fontSize="56" bold="true" color="1D4ED8" lineHeight="1">84.2</Text>
-  <Text fontSize="24" bold="true" color="1D4ED8" lineHeight="1" margin.bottom="6">M</Text>
-</HStack>
+<Text fontSize="56" bold="true" color="1D4ED8">¥84.2<Span fontSize="24">M</Span></Text>
+<Text fontSize="56" bold="true" color="16A34A">118<Span fontSize="24">%</Span></Text>
+<Text fontSize="56" bold="true" color="0F172A"><Span fontSize="24">$</Span>2,480</Text>
 ```
 
-- Use `alignItems="end"` (not `center`) so the unit sits on the same baseline as the digit.
-- `margin.bottom` on the unit nudges it up the small remaining gap caused by font metrics.
-- For a leading symbol (`¥`, `$`), do the same with a leading `<Text>` and `alignItems="end"`.
+- Layout measurement uses the largest run `fontSize`, so the Text container is sized for the biggest glyph (no clipping).
+- For leading symbols (`¥`, `$`), put the `<Span>` at the start.
+- The previous HStack-based workaround (`alignItems="end"` + per-leaf `margin.bottom`) is no longer needed for this case.
 
 ### Ul (Bullet List)
 
