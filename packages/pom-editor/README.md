@@ -19,11 +19,13 @@
 
 ## Installation
 
-> Requires React 18+ and `@hirokisakabe/pom` as peer dependencies.
+> Requires React 18+
 
 ```bash
-npm install @hirokisakabe/pom-editor @hirokisakabe/pom react
+npm install @hirokisakabe/pom-editor react
 ```
+
+`@hirokisakabe/pom` is pulled in automatically as a regular dependency — no separate install needed.
 
 ## Quick Start
 

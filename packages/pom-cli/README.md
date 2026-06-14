@@ -16,7 +16,7 @@
 - **PPTX Build** — `pom build` converts `.pom.xml` / `.pom.md` to a `.pptx` file, with optional `--watch` mode for incremental rebuilds.
 - **PNG / SVG Render** — `pom render` rasterizes each slide to PNG (default) or SVG without LibreOffice, useful for slide-image previews in docs.
 - **Diagnostic Surfacing** — Layout, image, master, and auto-fit diagnostics from `buildPptx` fail the run on stderr with a non-zero exit (`pom build` / `pom render`), while `pom preview` keeps updating so issues can be fixed interactively.
-- **Bundled Fonts** — Carlito and Noto Sans CJK JP are bundled for consistent text measurement and SVG rendering across machines.
+- **Bundled Fonts** — Carlito and Noto Sans CJK JP are bundled for SVG / PNG rendering, so output looks the same on machines without those fonts installed.
 - **Configurable Output** — Choose port, target slides, output format, text rendering mode (`path` outlines vs native `<text>`), and verbose per-step timing.
 
 ## Installation
