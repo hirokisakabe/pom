@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Key Message</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1280px;
+        height: 720px;
+        overflow: hidden;
+        font-family: "Inter", "Noto Sans JP", system-ui, sans-serif;
+        color: #f1f5f9;
+        background: #0b1220;
+      }
+      .slide {
+        position: relative;
+        width: 1280px;
+        height: 720px;
+        background:
+          radial-gradient(
+            ellipse at top left,
+            rgba(56, 189, 248, 0.18),
+            transparent 55%
+          ),
+          radial-gradient(
+            ellipse at bottom right,
+            rgba(167, 139, 250, 0.18),
+            transparent 55%
+          ),
+          linear-gradient(135deg, #0b1220 0%, #1a1f3a 100%);
+        padding: 80px 120px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        justify-content: center;
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: #38bdf8;
+        font-weight: 700;
+      }
+      .quote-mark {
+        font-family: "Georgia", "Noto Serif JP", serif;
+        font-size: 180px;
+        line-height: 0.8;
+        background: linear-gradient(135deg, #38bdf8 0%, #a78bfa 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        position: absolute;
+        top: 80px;
+        left: 80px;
+      }
+      blockquote {
+        font-size: 38px;
+        font-weight: 500;
+        line-height: 1.45;
+        letter-spacing: -0.01em;
+        color: #f1f5f9;
+        max-width: 1040px;
+      }
+      blockquote strong {
+        background: linear-gradient(135deg, #38bdf8 0%, #a78bfa 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        font-weight: 700;
+      }
+      .attribution {
+        margin-top: 32px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+      .attribution .bar {
+        width: 4px;
+        height: 56px;
+        background: linear-gradient(180deg, #38bdf8, #a78bfa);
+        border-radius: 2px;
+      }
+      .attribution .body {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .attribution .who {
+        font-size: 15px;
+        font-weight: 600;
+        color: #f1f5f9;
+      }
+      .attribution .where {
+        font-size: 12px;
+        color: #94a3b8;
+        letter-spacing: 0.04em;
+      }
+      .footer-line {
+        position: absolute;
+        bottom: 56px;
+        left: 120px;
+        right: 120px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #64748b;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="slide">
+      <div class="quote-mark">“</div>
+      <div style="margin-top: 40px">
+        <span class="eyebrow">SECTION 05 · VOICE OF CUSTOMER</span>
+      </div>
+      <blockquote>
+        導入から 3 週間で、レビュー待ち時間が
+        <strong>平均 4.2 時間 → 22 分</strong> に短縮された。<br />
+        PR
+        を出すストレスが消えて、若手が自信を持って小さい変更を量産するようになった。
+      </blockquote>
+      <div class="attribution">
+        <div class="bar"></div>
+        <div class="body">
+          <span class="who">M. Tanaka, EM</span>
+          <span class="where">FinTech 系 Stripe 加盟店 · 開発者 80 名</span>
+        </div>
+      </div>
+      <div class="footer-line">
+        <span>Cosmo helps shipping happen — not just code</span>
+        <span>05 / 05</span>
+      </div>
+    </div>
+  </body>
+</html>

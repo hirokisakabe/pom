@@ -1,0 +1,130 @@
+<Theme base="0B1220" surface="111B2E" ink="F1F5F9" muted="94A3B8" subtle="64748B" accent="38BDF8" accent2="A78BFA" accentGreen="34D399" accentRed="F87171" surfaceAlt="1A2138" />
+
+<Slide>
+  <VStack w="100%" h="max" padding="48" backgroundGradient="linear-gradient(135deg, #0B1220 0%, #1A1F3A 100%)" gap="28">
+
+    <!-- ヘッダ -->
+    <VStack gap="6" alignItems="start">
+      <HStack gap="8" alignItems="center">
+        <Shape w="24" h="1" shapeType="rect" fill.color="$accent" />
+        <Text fontSize="10" bold="true" color="$accent" letterSpacing="3">SECTION 02 · PERFORMANCE</Text>
+      </HStack>
+      <Text fontSize="32" bold="true" color="$ink" letterSpacing="-1">Q3 主要指標 ハイライト</Text>
+    </VStack>
+
+    <!-- KPI 4 タイル (HStack で均等) -->
+    <HStack gap="20" alignItems="stretch" w="100%" h="448">
+
+      <!-- Tile 1: MRR -->
+      <VStack grow="1" h="100%" padding="24" backgroundColor="$surface" borderRadius="16" border.color="FFFFFF" border.width="1" gap="12">
+        <HStack gap="8" alignItems="center">
+          <Shape w="8" h="8" shapeType="ellipse" fill.color="$accent" />
+          <Text fontSize="11" bold="true" color="$muted" letterSpacing="3">MRR</Text>
+        </HStack>
+        <HStack gap="4" alignItems="end">
+          <Text fontSize="52" bold="true" color="$accent" letterSpacing="-2" lineHeight="1.05">¥84.2</Text>
+          <Text fontSize="18" bold="true" color="$muted" margin.bottom="8">M</Text>
+        </HStack>
+        <Shape grow="1" w="100%" shapeType="rect" fill.color="$surface" fill.transparency="1.0" line.color="$surface" line.width="0" />
+        <HStack gap="6" w="130" padding.top="4" padding.bottom="4" padding.left="10" padding.right="10" backgroundColor="$accentGreen" opacity="0.18" borderRadius="999" alignItems="center">
+          <Text fontSize="11" bold="true" color="$accentGreen">▲</Text>
+          <Text fontSize="11" bold="true" color="$accentGreen">+12.4% QoQ</Text>
+        </HStack>
+        <Chart w="100%" h="40" chartType="bar" showLegend="false" chartColors='["38BDF8"]'>
+          <ChartSeries name="trend">
+            <ChartDataPoint label="W1" value="30" />
+            <ChartDataPoint label="W2" value="45" />
+            <ChartDataPoint label="W3" value="55" />
+            <ChartDataPoint label="W4" value="70" />
+            <ChartDataPoint label="W5" value="80" />
+            <ChartDataPoint label="W6" value="100" />
+          </ChartSeries>
+        </Chart>
+      </VStack>
+
+      <!-- Tile 2: Active Users -->
+      <VStack grow="1" h="100%" padding="24" backgroundColor="$surface" borderRadius="16" border.color="FFFFFF" border.width="1" gap="12">
+        <HStack gap="8" alignItems="center">
+          <Shape w="8" h="8" shapeType="ellipse" fill.color="$accent2" />
+          <Text fontSize="11" bold="true" color="$muted" letterSpacing="3">ACTIVE USERS</Text>
+        </HStack>
+        <Text fontSize="48" bold="true" color="$accent2" letterSpacing="-2" lineHeight="1.05">23,418</Text>
+        <Shape grow="1" w="100%" shapeType="rect" fill.color="$surface" fill.transparency="1.0" line.color="$surface" line.width="0" />
+        <HStack gap="6" w="130" padding.top="4" padding.bottom="4" padding.left="10" padding.right="10" backgroundColor="$accentGreen" opacity="0.18" borderRadius="999" alignItems="center">
+          <Text fontSize="11" bold="true" color="$accentGreen">▲</Text>
+          <Text fontSize="11" bold="true" color="$accentGreen">+18.7% QoQ</Text>
+        </HStack>
+        <Chart w="100%" h="40" chartType="bar" showLegend="false" chartColors='["A78BFA"]'>
+          <ChartSeries name="trend">
+            <ChartDataPoint label="W1" value="35" />
+            <ChartDataPoint label="W2" value="50" />
+            <ChartDataPoint label="W3" value="60" />
+            <ChartDataPoint label="W4" value="80" />
+            <ChartDataPoint label="W5" value="90" />
+            <ChartDataPoint label="W6" value="100" />
+          </ChartSeries>
+        </Chart>
+      </VStack>
+
+      <!-- Tile 3: NRR -->
+      <VStack grow="1" h="100%" padding="24" backgroundColor="$surface" borderRadius="16" border.color="FFFFFF" border.width="1" gap="12">
+        <HStack gap="8" alignItems="center">
+          <Shape w="8" h="8" shapeType="ellipse" fill.color="$accentGreen" />
+          <Text fontSize="11" bold="true" color="$muted" letterSpacing="3">NRR</Text>
+        </HStack>
+        <HStack gap="4" alignItems="end">
+          <Text fontSize="52" bold="true" color="$accentGreen" letterSpacing="-2" lineHeight="1.05">118</Text>
+          <Text fontSize="18" bold="true" color="$muted" margin.bottom="8">%</Text>
+        </HStack>
+        <Shape grow="1" w="100%" shapeType="rect" fill.color="$surface" fill.transparency="1.0" line.color="$surface" line.width="0" />
+        <HStack gap="6" w="120" padding.top="4" padding.bottom="4" padding.left="10" padding.right="10" backgroundColor="$accentGreen" opacity="0.18" borderRadius="999" alignItems="center">
+          <Text fontSize="11" bold="true" color="$accentGreen">▲</Text>
+          <Text fontSize="11" bold="true" color="$accentGreen">+4pt QoQ</Text>
+        </HStack>
+        <Chart w="100%" h="40" chartType="bar" showLegend="false" chartColors='["34D399"]'>
+          <ChartSeries name="trend">
+            <ChartDataPoint label="W1" value="65" />
+            <ChartDataPoint label="W2" value="70" />
+            <ChartDataPoint label="W3" value="78" />
+            <ChartDataPoint label="W4" value="82" />
+            <ChartDataPoint label="W5" value="88" />
+            <ChartDataPoint label="W6" value="100" />
+          </ChartSeries>
+        </Chart>
+      </VStack>
+
+      <!-- Tile 4: Churn Rate -->
+      <VStack grow="1" h="100%" padding="24" backgroundColor="$surface" borderRadius="16" border.color="FFFFFF" border.width="1" gap="12">
+        <HStack gap="8" alignItems="center">
+          <Shape w="8" h="8" shapeType="ellipse" fill.color="$accentRed" />
+          <Text fontSize="11" bold="true" color="$muted" letterSpacing="3">CHURN RATE</Text>
+        </HStack>
+        <HStack gap="4" alignItems="end">
+          <Text fontSize="52" bold="true" color="$accentRed" letterSpacing="-2" lineHeight="1.05">2.1</Text>
+          <Text fontSize="18" bold="true" color="$muted" margin.bottom="8">%</Text>
+        </HStack>
+        <Shape grow="1" w="100%" shapeType="rect" fill.color="$surface" fill.transparency="1.0" line.color="$surface" line.width="0" />
+        <HStack gap="6" w="120" padding.top="4" padding.bottom="4" padding.left="10" padding.right="10" backgroundColor="$accentGreen" opacity="0.18" borderRadius="999" alignItems="center">
+          <Text fontSize="11" bold="true" color="$accentGreen">▼</Text>
+          <Text fontSize="11" bold="true" color="$accentGreen">-0.6pt QoQ</Text>
+        </HStack>
+        <Chart w="100%" h="40" chartType="bar" showLegend="false" chartColors='["F87171"]'>
+          <ChartSeries name="trend">
+            <ChartDataPoint label="W1" value="100" />
+            <ChartDataPoint label="W2" value="90" />
+            <ChartDataPoint label="W3" value="78" />
+            <ChartDataPoint label="W4" value="72" />
+            <ChartDataPoint label="W5" value="60" />
+            <ChartDataPoint label="W6" value="50" />
+          </ChartSeries>
+        </Chart>
+      </VStack>
+    </HStack>
+
+    <!-- フッタ -->
+    <HStack w="100%" justifyContent="spaceBetween" alignItems="center">
+      <Text fontSize="10" color="$subtle" letterSpacing="2">SOURCE: PRODUCTOPS DASHBOARD / FY2026 W37</Text>
+      <Text fontSize="10" color="$subtle" letterSpacing="2">02 / 05</Text>
+    </HStack>
+  </VStack>
+</Slide>

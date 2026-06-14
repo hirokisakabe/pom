@@ -1,0 +1,29 @@
+<Theme base="0B1220" surface="111B2E" ink="F1F5F9" muted="94A3B8" accent="38BDF8" accent2="A78BFA" subtle="64748B" />
+
+<Slide>
+  <VStack w="100%" h="max" padding="64" backgroundGradient="linear-gradient(135deg, #0B1220 0%, #1A1F3A 100%)" gap="0">
+
+    <!-- 上部: バッジ -->
+    <HStack w="260" h="32" gap="12" alignItems="center" padding="8" padding.left="16" padding.right="16" backgroundColor="$accent" opacity="0.18" borderRadius="999" border.color="$accent" border.width="1">
+      <Shape w="8" h="8" shapeType="ellipse" fill.color="$accent" />
+      <Text fontSize="11" bold="true" color="$accent" letterSpacing="3">FY2026 / Q3 REVIEW</Text>
+    </HStack>
+
+    <!-- スペーサー: 透明 Shape で push down (黒矩形回避のため line も透明) -->
+    <Shape grow="1" w="100%" shapeType="rect" fill.color="0B1220" fill.transparency="1.0" line.color="0B1220" line.width="0" />
+
+    <!-- アクセントバー -->
+    <Shape w="72" h="4" shapeType="rect" backgroundGradient="linear-gradient(90deg, #38BDF8, #A78BFA)" />
+
+    <!-- メインタイトル (2 行) -->
+    <Text w="1100" fontSize="72" bold="true" color="$ink" lineHeight="1.05" letterSpacing="-2" margin.top="24">Cosmo</Text>
+    <Text w="1100" fontSize="72" bold="true" color="$accent" lineHeight="1.05" letterSpacing="-2" glow.size="12" glow.opacity="0.45" glow.color="$accent" margin.top="8">Quarterly Review.</Text>
+
+    <!-- サブタイトル -->
+    <HStack w="900" h="24" gap="16" alignItems="center" margin.top="32">
+      <Text fontSize="14" color="$muted">Product · Growth · Roadmap</Text>
+      <Shape w="32" h="1" shapeType="rect" fill.color="$muted" />
+      <Text fontSize="14" color="$muted">2026-06-14 · Yamada T.</Text>
+    </HStack>
+  </VStack>
+</Slide>

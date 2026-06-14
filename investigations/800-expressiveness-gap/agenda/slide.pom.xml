@@ -1,0 +1,53 @@
+<Theme base="0B1220" surface="111B2E" ink="F1F5F9" muted="94A3B8" subtle="64748B" accent="38BDF8" accent2="A78BFA" />
+
+<Slide>
+  <HStack w="100%" h="max" padding="64" padding.left="96" padding.right="96" backgroundGradient="linear-gradient(135deg, #0B1220 0%, #1A1F3A 100%)" gap="64" alignItems="start">
+
+    <!-- 左カラム -->
+    <VStack grow="1" gap="20" padding.top="24">
+      <Text fontSize="10" bold="true" color="$accent" letterSpacing="4">SECTION 01</Text>
+      <Text fontSize="60" bold="true" color="$ink" letterSpacing="-2" lineHeight="1.05">本日の</Text>
+      <Text fontSize="60" bold="true" color="$accent" letterSpacing="-2" lineHeight="1.05">アジェンダ</Text>
+      <Text fontSize="13" color="$muted" lineHeight="1.6" margin.top="16">経営チーム向け Q3 レビュー。 5 セクション、10 分。</Text>
+    </VStack>
+
+    <!-- 右カラム: アジェンダリスト -->
+    <VStack grow="1.4" gap="0" alignItems="stretch">
+      <HStack gap="24" alignItems="center" padding.top="20" padding.bottom="20" borderTop.color="FFFFFF" borderTop.width="1">
+        <Text w="56" fontSize="22" bold="true" color="$accent">01</Text>
+        <VStack grow="1" gap="4">
+          <Text fontSize="20" bold="true" color="$ink">マーケット概況</Text>
+          <Text fontSize="12" color="$muted">競合環境とユーザー需要</Text>
+        </VStack>
+      </HStack>
+      <HStack gap="24" alignItems="center" padding.top="20" padding.bottom="20" borderTop.color="FFFFFF" borderTop.width="1">
+        <Text w="56" fontSize="22" bold="true" color="$accent">02</Text>
+        <VStack grow="1" gap="4">
+          <Text fontSize="20" bold="true" color="$ink">Q3 主要指標</Text>
+          <Text fontSize="12" color="$muted">MRR / Active Users / NRR / Churn</Text>
+        </VStack>
+      </HStack>
+      <HStack gap="24" alignItems="center" padding.top="20" padding.bottom="20" borderTop.color="FFFFFF" borderTop.width="1">
+        <Text w="56" fontSize="22" bold="true" color="$accent">03</Text>
+        <VStack grow="1" gap="4">
+          <Text fontSize="20" bold="true" color="$ink">プロダクト施策レビュー</Text>
+          <Text fontSize="12" color="$muted">出荷した機能 / 撤退した実験</Text>
+        </VStack>
+      </HStack>
+      <HStack gap="24" alignItems="center" padding.top="20" padding.bottom="20" borderTop.color="FFFFFF" borderTop.width="1">
+        <Text w="56" fontSize="22" bold="true" color="$accent">04</Text>
+        <VStack grow="1" gap="4">
+          <Text fontSize="20" bold="true" color="$ink">Q4 マイルストーン</Text>
+          <Text fontSize="12" color="$muted">4 つのマイルストーンと依存関係</Text>
+        </VStack>
+      </HStack>
+      <HStack gap="24" alignItems="center" padding.top="20" padding.bottom="20" borderTop.color="FFFFFF" borderTop.width="1" borderBottom.color="FFFFFF" borderBottom.width="1">
+        <Text w="56" fontSize="22" bold="true" color="$accent">05</Text>
+        <VStack grow="1" gap="4">
+          <Text fontSize="20" bold="true" color="$ink">意思決定したいこと</Text>
+          <Text fontSize="12" color="$muted">予算と採用ロードマップの承認</Text>
+        </VStack>
+      </HStack>
+    </VStack>
+  </HStack>
+</Slide>

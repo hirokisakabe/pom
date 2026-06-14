@@ -1,0 +1,31 @@
+<Theme base="0B1220" surface="111B2E" ink="F1F5F9" muted="94A3B8" subtle="64748B" accent="38BDF8" accent2="A78BFA" />
+
+<Slide>
+  <Layer w="1280" h="720" backgroundGradient="linear-gradient(135deg, #0B1220 0%, #1A1F3A 100%)">
+
+    <!-- 巨大な引用符 (装飾) -->
+    <Text x="80" y="60" w="220" h="220" fontSize="180" bold="true" color="$accent" lineHeight="0.8" glow.size="20" glow.opacity="0.4" glow.color="$accent2">"</Text>
+
+    <!-- セクションラベル -->
+    <HStack x="120" y="260" gap="8" alignItems="center" w="600" h="20">
+      <Shape w="24" h="1" shapeType="rect" fill.color="$accent" />
+      <Text fontSize="10" bold="true" color="$accent" letterSpacing="3">SECTION 05 · VOICE OF CUSTOMER</Text>
+    </HStack>
+
+    <!-- 引用本文 (Text 内 inline formatting で強調) -->
+    <Text x="120" y="300" w="1040" h="180" fontSize="34" color="$ink" lineHeight="1.45" letterSpacing="-1">導入から 3 週間で、レビュー待ち時間が <Span color="38BDF8" bold="true">平均 4.2 時間 → 22 分</Span> に短縮された。 PR を出すストレスが消えて、若手が自信を持って小さい変更を量産するようになった。</Text>
+
+    <!-- 出典 -->
+    <Shape x="120" y="510" w="4" h="56" shapeType="rect" backgroundGradient="linear-gradient(180deg, #38BDF8, #A78BFA)" />
+    <VStack x="148" y="510" w="600" h="56" gap="4" justifyContent="center">
+      <Text fontSize="15" bold="true" color="$ink">M. Tanaka, EM</Text>
+      <Text fontSize="12" color="$muted">FinTech 系 Stripe 加盟店 · 開発者 80 名</Text>
+    </VStack>
+
+    <!-- フッタ -->
+    <HStack x="120" y="650" w="1040" h="14" justifyContent="spaceBetween">
+      <Text fontSize="10" color="$subtle" letterSpacing="3">COSMO HELPS SHIPPING HAPPEN — NOT JUST CODE</Text>
+      <Text fontSize="10" color="$subtle" letterSpacing="3">05 / 05</Text>
+    </HStack>
+  </Layer>
+</Slide>
