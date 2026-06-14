@@ -39,6 +39,30 @@ vi.mock("../lib/honoClient", () => ({
   },
 }));
 
+// PomAstEditor を簡易なモックに差し替える (クライアントの parseXml に依存しないため)
+vi.mock("@hirokisakabe/pom-editor", () => ({
+  PomAstEditor: ({
+    xml,
+    onChange,
+  }: {
+    xml: string;
+    onChange: (xml: string) => void;
+  }) => (
+    <div>
+      <div data-testid="ast-editor">{xml}</div>
+      <button
+        data-testid="ast-editor-emit"
+        type="button"
+        onClick={() => {
+          onChange("<Text>from-ast</Text>");
+        }}
+      >
+        emit
+      </button>
+    </div>
+  ),
+}));
+
 import { AppLayout } from "./AppLayout";
 
 afterEach(() => {
@@ -61,6 +85,8 @@ function mockPreviewError(errors: { type: string; message: string }[]) {
 describe("AppLayout", () => {
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
+    mockPreviewPost.mockClear();
+    mockDownloadPptx.mockClear();
     mockPreviewSuccess([
       '<svg xmlns="http://www.w3.org/2000/svg"><text>Preview</text></svg>',
     ]);
@@ -95,6 +121,87 @@ describe("AppLayout", () => {
     it("Download ボタンが表示される", () => {
       render(<AppLayout />);
       expect(screen.getByText("Download")).toBeInTheDocument();
+    });
+
+    it("XML / AST モードトグルが表示される (初期は XML)", () => {
+      render(<AppLayout />);
+      const xmlRadio = screen.getByRole("radio", { name: "XML" });
+      const astRadio = screen.getByRole("radio", { name: "AST" });
+      expect(xmlRadio).toHaveAttribute("aria-checked", "true");
+      expect(astRadio).toHaveAttribute("aria-checked", "false");
+      expect(screen.getByTestId("xml-editor")).toBeInTheDocument();
+      expect(screen.queryByTestId("ast-editor")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("モード切替フロー", () => {
+    it("AST をクリックすると左ペインが PomAstEditor に切り替わる", async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      render(<AppLayout />);
+
+      await user.click(screen.getByRole("radio", { name: "AST" }));
+
+      expect(screen.getByTestId("ast-editor")).toBeInTheDocument();
+      expect(screen.queryByTestId("xml-editor")).not.toBeInTheDocument();
+      expect(screen.getByRole("radio", { name: "AST" })).toHaveAttribute(
+        "aria-checked",
+        "true",
+      );
+    });
+
+    it("モード切替時に xmlValue が保持される", async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      render(<AppLayout />);
+
+      const editor = screen.getByTestId<HTMLTextAreaElement>("xml-editor");
+      await user.clear(editor);
+      await user.type(editor, "<Text>persisted</Text>");
+
+      await user.click(screen.getByRole("radio", { name: "AST" }));
+      expect(screen.getByTestId("ast-editor")).toHaveTextContent(
+        "<Text>persisted</Text>",
+      );
+
+      await user.click(screen.getByRole("radio", { name: "XML" }));
+      expect(screen.getByTestId<HTMLTextAreaElement>("xml-editor").value).toBe(
+        "<Text>persisted</Text>",
+      );
+    });
+
+    it("AST モードで発火された onChange が xmlValue に反映され、プレビューも再生成される", async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      render(<AppLayout />);
+
+      // 初回 (デフォルトテンプレート) のプレビュー呼び出しを消化
+      await vi.advanceTimersByTimeAsync(600);
+      await waitFor(() => {
+        expect(mockPreviewPost).toHaveBeenCalled();
+      });
+      mockPreviewPost.mockClear();
+
+      await user.click(screen.getByRole("radio", { name: "AST" }));
+      await user.click(screen.getByTestId("ast-editor-emit"));
+
+      // AST の onChange が xmlValue を更新したことを確認
+      expect(screen.getByTestId("ast-editor")).toHaveTextContent(
+        "<Text>from-ast</Text>",
+      );
+
+      // 同じ xmlValue がプレビュー API にも流れる
+      await vi.advanceTimersByTimeAsync(600);
+      await waitFor(() => {
+        expect(mockPreviewPost).toHaveBeenCalled();
+      });
+      const lastCall = mockPreviewPost.mock.calls.at(-1) as
+        | [{ json: { xml: string } }, unknown]
+        | undefined;
+      expect(lastCall?.[0].json.xml).toBe("<Text>from-ast</Text>");
+
+      // XML モードに戻したときも値が共有されている
+      await user.click(screen.getByRole("radio", { name: "XML" }));
+      expect(screen.getByTestId<HTMLTextAreaElement>("xml-editor").value).toBe(
+        "<Text>from-ast</Text>",
+      );
     });
   });
 

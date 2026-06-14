@@ -8,6 +8,7 @@ import {
   ExternalLink,
   RefreshCw,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -26,6 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/playground/components/ui/dropdown-menu";
+import { cn } from "@/playground/lib/utils";
 
 import { downloadPptx } from "../lib/downloadPptx";
 import { honoClient } from "../lib/honoClient";
@@ -35,10 +37,18 @@ import type { StructuredError } from "./SlidePreview";
 import { SlidePreview } from "./SlidePreview";
 import { XmlEditor } from "./XmlEditor";
 
+type EditorMode = "xml" | "ast";
+
 const DEBOUNCE_MS = 500;
+
+const PomAstEditor = dynamic(
+  () => import("@hirokisakabe/pom-editor").then((m) => m.PomAstEditor),
+  { ssr: false },
+);
 
 export function AppLayout() {
   const [xmlValue, setXmlValue] = useState(DEFAULT_TEMPLATE.xml);
+  const [mode, setMode] = useState<EditorMode>("xml");
   const [svgs, setSvgs] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -172,6 +182,44 @@ export function AppLayout() {
       <header className="flex items-center justify-between border-b px-4 py-2">
         <span className="text-lg font-semibold">pom playground</span>
         <div className="flex items-center gap-2">
+          <div
+            role="radiogroup"
+            aria-label="Editor mode"
+            className="bg-muted/50 flex items-center rounded-md border p-0.5"
+          >
+            <button
+              type="button"
+              role="radio"
+              aria-checked={mode === "xml"}
+              className={cn(
+                "rounded-sm px-2 py-0.5 text-xs font-medium transition-colors",
+                mode === "xml"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+              onClick={() => {
+                setMode("xml");
+              }}
+            >
+              XML
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={mode === "ast"}
+              className={cn(
+                "rounded-sm px-2 py-0.5 text-xs font-medium transition-colors",
+                mode === "ast"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+              onClick={() => {
+                setMode("ast");
+              }}
+            >
+              AST
+            </button>
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md px-2 py-1 text-sm transition-colors">
@@ -249,14 +297,20 @@ export function AppLayout() {
       </header>
       <div className="grid min-h-0 flex-1 grid-cols-2 gap-4 p-4">
         <div className="min-h-0">
-          <XmlEditor
-            value={xmlValue}
-            onChange={setXmlValue}
-            errors={errors}
-            onViewReady={(view) => {
-              editorViewRef.current = view;
-            }}
-          />
+          {mode === "xml" ? (
+            <XmlEditor
+              value={xmlValue}
+              onChange={setXmlValue}
+              errors={errors}
+              onViewReady={(view) => {
+                editorViewRef.current = view;
+              }}
+            />
+          ) : (
+            <div className="border-border h-full min-h-0 overflow-hidden rounded-md border bg-white">
+              <PomAstEditor xml={xmlValue} onChange={setXmlValue} />
+            </div>
+          )}
         </div>
         <SlidePreview
           svgs={svgs}
@@ -264,7 +318,7 @@ export function AppLayout() {
           errors={errors}
           currentPage={currentPage}
           onPageChange={setCurrentPage}
-          onErrorClick={handleErrorClick}
+          onErrorClick={mode === "xml" ? handleErrorClick : undefined}
         />
       </div>
       <AlertDialog
