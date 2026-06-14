@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -203,15 +203,6 @@ export function AstTree({ ast, onChange }: AstTreeProps) {
   );
   const [invalidOverId, setInvalidOverId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (invalidOverId === null) return;
-    const previous = document.body.style.cursor;
-    document.body.style.cursor = "not-allowed";
-    return () => {
-      document.body.style.cursor = previous;
-    };
-  }, [invalidOverId]);
-
   function onDragOver({ active, over }: DragOverEvent) {
     if (!over || active.id === over.id) {
       setInvalidOverId(null);
@@ -250,48 +241,53 @@ export function AstTree({ ast, onChange }: AstTreeProps) {
   const rootIds = ast.map((n) => n.id);
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragOver={onDragOver}
-      onDragEnd={onDragEnd}
-      onDragCancel={onDragCancel}
-    >
-      <InvalidOverContext.Provider value={invalidOverId}>
-        <SortableContext items={rootIds} strategy={verticalListSortingStrategy}>
-          {ast.map((astNode, i) => (
-            <div key={astNode.id}>
-              {i > 0 && (
+    <div style={{ cursor: invalidOverId !== null ? "not-allowed" : undefined }}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragOver={onDragOver}
+        onDragEnd={onDragEnd}
+        onDragCancel={onDragCancel}
+      >
+        <InvalidOverContext.Provider value={invalidOverId}>
+          <SortableContext
+            items={rootIds}
+            strategy={verticalListSortingStrategy}
+          >
+            {ast.map((astNode, i) => (
+              <div key={astNode.id}>
+                {i > 0 && (
+                  <div
+                    style={{
+                      height: "1px",
+                      backgroundColor: "#e5e7eb",
+                      margin: "8px 0",
+                    }}
+                  />
+                )}
                 <div
                   style={{
-                    height: "1px",
-                    backgroundColor: "#e5e7eb",
-                    margin: "8px 0",
+                    fontSize: "11px",
+                    color: "#6b7280",
+                    padding: "2px 0 4px 0",
+                    fontWeight: 600,
+                    letterSpacing: "0.05em",
+                    textTransform: "uppercase",
                   }}
+                >
+                  Slide {i + 1}
+                </div>
+                <SortableItem
+                  astNode={astNode}
+                  depth={0}
+                  onChange={onChange}
+                  ast={ast}
                 />
-              )}
-              <div
-                style={{
-                  fontSize: "11px",
-                  color: "#6b7280",
-                  padding: "2px 0 4px 0",
-                  fontWeight: 600,
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Slide {i + 1}
               </div>
-              <SortableItem
-                astNode={astNode}
-                depth={0}
-                onChange={onChange}
-                ast={ast}
-              />
-            </div>
-          ))}
-        </SortableContext>
-      </InvalidOverContext.Provider>
-    </DndContext>
+            ))}
+          </SortableContext>
+        </InvalidOverContext.Provider>
+      </DndContext>
+    </div>
   );
 }
