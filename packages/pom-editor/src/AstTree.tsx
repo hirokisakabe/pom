@@ -1,7 +1,8 @@
-import React from "react";
+import React, { createContext, useContext, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
+  DragOverEvent,
   PointerSensor,
   useSensor,
   useSensors,
@@ -60,6 +61,8 @@ function nodeLabel(node: POMNode): string {
   return base;
 }
 
+const InvalidOverContext = createContext<string | null>(null);
+
 interface SortableItemProps {
   astNode: AstNode;
   depth: number;
@@ -68,6 +71,8 @@ interface SortableItemProps {
 }
 
 function SortableItem({ astNode, depth, onChange, ast }: SortableItemProps) {
+  const invalidOverId = useContext(InvalidOverContext);
+  const isInvalidOver = invalidOverId === astNode.id;
   const {
     attributes,
     listeners,
@@ -86,6 +91,12 @@ function SortableItem({ astNode, depth, onChange, ast }: SortableItemProps) {
     opacity: isDragging ? 0.4 : 1,
   };
 
+  const handleCursor = isInvalidOver
+    ? "not-allowed"
+    : isDragging
+      ? "grabbing"
+      : "grab";
+
   return (
     <div ref={setNodeRef} style={style}>
       <div
@@ -98,14 +109,17 @@ function SortableItem({ astNode, depth, onChange, ast }: SortableItemProps) {
           paddingBottom: "3px",
           borderRadius: "4px",
           userSelect: "none",
+          backgroundColor: isInvalidOver ? "#fee2e2" : undefined,
+          outline: isInvalidOver ? "1px solid #dc2626" : undefined,
+          cursor: isInvalidOver ? "not-allowed" : undefined,
         }}
       >
         <span
           {...listeners}
           {...attributes}
           style={{
-            cursor: isDragging ? "grabbing" : "grab",
-            color: "#9ca3af",
+            cursor: handleCursor,
+            color: isInvalidOver ? "#dc2626" : "#9ca3af",
             fontSize: "12px",
             lineHeight: 1,
             flexShrink: 0,
@@ -173,21 +187,43 @@ export interface AstTreeProps {
   onChange: (nodes: POMNode[]) => void;
 }
 
+function getParentId(data: unknown): string | null {
+  if (typeof data === "object" && data !== null && "parentId" in data) {
+    const value = data.parentId;
+    return typeof value === "string" ? value : null;
+  }
+  return null;
+}
+
 export function AstTree({ ast, onChange }: AstTreeProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 4 },
     }),
   );
+  const [invalidOverId, setInvalidOverId] = useState<string | null>(null);
+
+  function onDragOver({ active, over }: DragOverEvent) {
+    if (!over || active.id === over.id) {
+      setInvalidOverId(null);
+      return;
+    }
+    const activeParentId = getParentId(active.data.current);
+    const overParentId = getParentId(over.data.current);
+    if (activeParentId !== overParentId) {
+      setInvalidOverId(over.id as string);
+    } else {
+      setInvalidOverId(null);
+    }
+  }
 
   function onDragEnd({ active, over }: DragEndEvent) {
+    setInvalidOverId(null);
     if (!over || active.id === over.id) return;
 
-    const activeParentId = (active.data.current as { parentId: string })
-      .parentId;
-    const overParentId = (over.data.current as { parentId: string }).parentId;
-
-    if (activeParentId !== overParentId) return;
+    const activeParentId = getParentId(active.data.current);
+    const overParentId = getParentId(over.data.current);
+    if (activeParentId === null || activeParentId !== overParentId) return;
 
     const newAst = applyReorder(
       ast,
@@ -198,47 +234,60 @@ export function AstTree({ ast, onChange }: AstTreeProps) {
     onChange(rebuildNodes(newAst));
   }
 
+  function onDragCancel() {
+    setInvalidOverId(null);
+  }
+
   const rootIds = ast.map((n) => n.id);
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={onDragEnd}
-    >
-      <SortableContext items={rootIds} strategy={verticalListSortingStrategy}>
-        {ast.map((astNode, i) => (
-          <div key={astNode.id}>
-            {i > 0 && (
-              <div
-                style={{
-                  height: "1px",
-                  backgroundColor: "#e5e7eb",
-                  margin: "8px 0",
-                }}
-              />
-            )}
-            <div
-              style={{
-                fontSize: "11px",
-                color: "#6b7280",
-                padding: "2px 0 4px 0",
-                fontWeight: 600,
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-              }}
-            >
-              Slide {i + 1}
-            </div>
-            <SortableItem
-              astNode={astNode}
-              depth={0}
-              onChange={onChange}
-              ast={ast}
-            />
-          </div>
-        ))}
-      </SortableContext>
-    </DndContext>
+    <div style={{ cursor: invalidOverId !== null ? "not-allowed" : undefined }}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragOver={onDragOver}
+        onDragEnd={onDragEnd}
+        onDragCancel={onDragCancel}
+      >
+        <InvalidOverContext.Provider value={invalidOverId}>
+          <SortableContext
+            items={rootIds}
+            strategy={verticalListSortingStrategy}
+          >
+            {ast.map((astNode, i) => (
+              <div key={astNode.id}>
+                {i > 0 && (
+                  <div
+                    style={{
+                      height: "1px",
+                      backgroundColor: "#e5e7eb",
+                      margin: "8px 0",
+                    }}
+                  />
+                )}
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "#6b7280",
+                    padding: "2px 0 4px 0",
+                    fontWeight: 600,
+                    letterSpacing: "0.05em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Slide {i + 1}
+                </div>
+                <SortableItem
+                  astNode={astNode}
+                  depth={0}
+                  onChange={onChange}
+                  ast={ast}
+                />
+              </div>
+            ))}
+          </SortableContext>
+        </InvalidOverContext.Provider>
+      </DndContext>
+    </div>
   );
 }
