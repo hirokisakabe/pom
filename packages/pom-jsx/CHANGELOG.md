@@ -1,5 +1,11 @@
 # @hirokisakabe/pom-jsx
 
+## 0.4.0
+
+### Minor Changes
+
+- [#869](https://github.com/hirokisakabe/pom/pull/869) [`64edc50`](https://github.com/hirokisakabe/pom/commit/64edc508fe323b603af34b5b663602ccc1468709) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Text / Ul・Ol の Li / Shape / Table cell に `subscript` / `superscript` 属性を追加しました。インラインタグ `<Sub>` / `<Sup>` も追加し、`<Text>H<Sub>2</Sub>O</Text>` のように runs 単位で部分指定できます。`pom-jsx` でも対応する `subscript` / `superscript` props と `<Sub>` / `<Sup>` コンポーネントを追加しました。
+
 ## 0.3.0
 
 ### Minor Changes

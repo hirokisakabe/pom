@@ -1,5 +1,14 @@
 # @hirokisakabe/pom-editor
 
+## 0.2.6
+
+### Patch Changes
+
+- [#870](https://github.com/hirokisakabe/pom/pull/870) [`bef8223`](https://github.com/hirokisakabe/pom/commit/bef822347739f1c75a8b9cf6f3671491613e593a) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - 許可されない DnD 操作（異なる親への移動）に視覚的フィードバックを追加。ドラッグ中、不正な drop target にカーソルが乗ったとき該当行を赤くハイライトし、カーソルを `not-allowed` に切り替えるようにした。これまで silent に却下されていた状態を解消し、「ここには落とせない」ことが UI から判別できる。
+
+- Updated dependencies [[`6e3e2de`](https://github.com/hirokisakabe/pom/commit/6e3e2de686227b71d623ab0f23289436baf3aef6), [`64edc50`](https://github.com/hirokisakabe/pom/commit/64edc508fe323b603af34b5b663602ccc1468709)]:
+  - @hirokisakabe/pom@8.6.0
+
 ## 0.2.5
 
 ### Patch Changes

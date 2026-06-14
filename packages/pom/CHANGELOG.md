@@ -1,5 +1,15 @@
 # @hirokisakabe/pom
 
+## 8.6.0
+
+### Minor Changes
+
+- [#869](https://github.com/hirokisakabe/pom/pull/869) [`64edc50`](https://github.com/hirokisakabe/pom/commit/64edc508fe323b603af34b5b663602ccc1468709) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Text / Ul・Ol の Li / Shape / Table cell に `subscript` / `superscript` 属性を追加しました。インラインタグ `<Sub>` / `<Sup>` も追加し、`<Text>H<Sub>2</Sub>O</Text>` のように runs 単位で部分指定できます。`pom-jsx` でも対応する `subscript` / `superscript` props と `<Sub>` / `<Sup>` コンポーネントを追加しました。
+
+### Patch Changes
+
+- [#890](https://github.com/hirokisakabe/pom/pull/890) [`6e3e2de`](https://github.com/hirokisakabe/pom/commit/6e3e2de686227b71d623ab0f23289436baf3aef6) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - 属性レベル新機能 (Theme tokens / backgroundGradient / per-side border / text glow・outline / letterSpacing / leaf rotation / sub-sup / grow) と styling-guide.md の inline formatting / underline styles / highlight / shadow / opacity / layer overlay / combining styles について、`packages/pom/docs/images/attr-*.png` のビジュアル例を追加しました。`packages/pom/scripts/docs-images/` の生成基盤を `ATTRIBUTE_DEMOS` で属性デモ単位の XML サンプル (`sampleAttributes.ts`) を扱えるよう拡張し、`pnpm run docs:images:docker:update` と `pnpm run docs:images:vrt:docker` でノード画像と同じワークフローに乗せています。`nodes.md` / `styling-guide.md` から各画像を参照しています。
+
 ## 8.5.1
 
 ### Patch Changes
