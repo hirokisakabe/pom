@@ -659,7 +659,7 @@ A per-side border (`borderTop` etc.) cannot be combined with `borderRadius`. To 
 
 - The colored dot + matching uppercase label carries the category color without needing a top-edge stripe.
 - Keep the dot small (6–10 px) so it reads as a category indicator, not a bullet.
-- For a more prominent variant, use `Shape shapeType="ellipse"` with a `glow` halo, or thicken to a short horizontal bar (`shapeType="roundRect" w="24" h="3"`).
+- For a more prominent variant, thicken the dot to a short horizontal bar (`Shape shapeType="roundRect" w="24" h="3"` filled with the category color). `glow` is `Text`-only — do not apply it to `Shape`.
 
 ## Notes
 

@@ -61,7 +61,7 @@ XML を書き始める前に、デッキ全体のデザイントークン（配�
 | ダーク・テック           | `0F172A` | `1E293B` | `F1F5F9` | `94A3B8` | `38BDF8` | `A78BFA` |
 | フレッシュ               | `F6FBF9` | `FFFFFF` | `1A2E2A` | `5F7470` | `0D9488` | `84CC16` |
 
-`pom-theme.json` には `accent2` フィールドは無いので、デッキで accent2 を使うときは `<Theme>` で独自トークンとして宣言する（例: `<Theme accent="$colors.accent" accent2="3B82F6" ... />` のように pom-theme.json の `accent` を踏襲しつつ accent2 を追加する形）。pom-theme.json の `colors.charts[1]` を accent2 として転記してもよい。
+`pom-theme.json` には `accent2` フィールドは無いので、デッキで accent2 を使うときは `<Theme>` で独自トークンとして宣言する。`<Theme>` の属性値は 6 桁 hex のみ（`$tokenName` は色属性での **参照側** でのみ展開されるので、`<Theme>` の宣言側には書けない）。`pom-theme.json` がある場合は `colors.accent` の実 hex を読み取り、accent2 はそれに近い色相 / 明度違いを **手動で 1 色選んで** `<Theme accent="0052CC" accent2="3B82F6" ... />` のように hex を直接書く。`colors.charts[1]` は反対色や任意の調和色のこともあり、そのまま accent2 に流用すると `linear-gradient` が暴れる（blue → green 等）ため自動転記しない。
 
 **`linear-gradient(accent → accent2)` の代表的な使い所**:
 
@@ -939,7 +939,7 @@ A per-side border (`borderTop` etc.) cannot be combined with `borderRadius`. To 
 
 - The colored dot + matching uppercase label carries the category color without needing a top-edge stripe.
 - Keep the dot small (6–10 px) so it reads as a category indicator, not a bullet.
-- For a more prominent variant, use `Shape shapeType="ellipse"` with a `glow` halo, or thicken to a short horizontal bar (`shapeType="roundRect" w="24" h="3"`).
+- For a more prominent variant, thicken the dot to a short horizontal bar (`Shape shapeType="roundRect" w="24" h="3"` filled with the category color). `glow` is `Text`-only — do not apply it to `Shape`.
 
 ## Notes
 
