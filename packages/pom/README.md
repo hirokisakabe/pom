@@ -125,6 +125,16 @@ For detailed node documentation, see [Nodes](./docs/nodes.md).
     <ChartDataPoint label="Feb" value="45" />
   </ChartSeries>
 </Chart>
+
+<!-- Sparkline mode: hides legend / axes / margins for compact h=40 inline charts (bar / line / area) -->
+<Chart chartType="bar" w="200" h="40" sparkline="true" chartColors='["0088CC"]'>
+  <ChartSeries name="Sales">
+    <ChartDataPoint label="Q1" value="100" />
+    <ChartDataPoint label="Q2" value="200" />
+    <ChartDataPoint label="Q3" value="150" />
+    <ChartDataPoint label="Q4" value="300" />
+  </ChartSeries>
+</Chart>
 ```
 
 <img src="./docs/images/chart.png" alt="Chart example" width="600">
