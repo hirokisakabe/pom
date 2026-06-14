@@ -5,27 +5,44 @@ import { comparePng } from "../../vrt/lib/comparePng.js";
 import { pptxToPng } from "../../vrt/lib/pptxToPng.js";
 import {
   ACTUAL_DIR,
+  ATTRIBUTE_DEMOS,
   DIFF_DIR,
   IMAGES_DIR,
   NODE_TYPES,
-  OUTPUT_DIR,
-  type NodeType,
 } from "./config.js";
+import { sampleAttributes } from "./sampleAttributes.js";
 import { sampleNodes } from "./sampleNodes.js";
 
 const SLIDE_WIDTH = 1280;
 const SLIDE_HEIGHT = 720;
 
-async function generateNodeImage(
-  nodeType: NodeType,
+// sampleNodes はスライド内コンテンツのみを持つので <Slide>...</Slide> で包む。
+// sampleAttributes は <Theme> を含む可能性があるため文書全体を持ち、そのまま渡す。
+interface ImageEntry {
+  name: string;
+  xml: string;
+}
+
+const allEntries: ImageEntry[] = [
+  ...NODE_TYPES.map((nodeType) => ({
+    name: nodeType,
+    xml: `<Slide>${sampleNodes[nodeType]}</Slide>`,
+  })),
+  ...ATTRIBUTE_DEMOS.map((demo) => ({
+    name: demo,
+    xml: sampleAttributes[demo],
+  })),
+];
+
+async function generateImage(
+  entry: ImageEntry,
   outputDir: string,
 ): Promise<void> {
-  const sampleXml = sampleNodes[nodeType];
-  const tempPptxPath = path.join(outputDir, `${nodeType}.pptx`);
+  const tempPptxPath = path.join(outputDir, `${entry.name}.pptx`);
 
   // PPTXを生成
   const { pptx } = await buildPptx(
-    `<Slide>${sampleXml}</Slide>`,
+    entry.xml,
     { w: SLIDE_WIDTH, h: SLIDE_HEIGHT },
     { textMeasurement: "opentype" },
   );
@@ -37,12 +54,12 @@ async function generateNodeImage(
   fs.writeFileSync(tempPptxPath, Buffer.from(pptxBuffer as Uint8Array));
 
   // PPTX → PNG変換
-  await pptxToPng(tempPptxPath, outputDir, [nodeType]);
+  await pptxToPng(tempPptxPath, outputDir, [entry.name]);
 
   // 一時PPTXファイルを削除
   fs.unlinkSync(tempPptxPath);
 
-  console.log(`Generated: ${nodeType}.png`);
+  console.log(`Generated: ${entry.name}.png`);
 }
 
 async function runCheck(): Promise<void> {
@@ -53,8 +70,8 @@ async function runCheck(): Promise<void> {
   fs.mkdirSync(ACTUAL_DIR, { recursive: true });
   fs.mkdirSync(DIFF_DIR, { recursive: true });
 
-  for (const nodeType of NODE_TYPES) {
-    await generateNodeImage(nodeType, ACTUAL_DIR);
+  for (const entry of allEntries) {
+    await generateImage(entry, ACTUAL_DIR);
   }
 
   // 2. docs/images/*.png（ベースライン）と比較
@@ -63,33 +80,33 @@ async function runCheck(): Promise<void> {
   const failedImages: { name: string; diffPixels: number }[] = [];
 
   console.log("\nResults:");
-  for (const nodeType of NODE_TYPES) {
-    const actualPath = path.join(ACTUAL_DIR, `${nodeType}.png`);
-    const expectedPath = path.join(IMAGES_DIR, `${nodeType}.png`);
-    const diffPath = path.join(DIFF_DIR, `${nodeType}.png`);
+  for (const entry of allEntries) {
+    const actualPath = path.join(ACTUAL_DIR, `${entry.name}.png`);
+    const expectedPath = path.join(IMAGES_DIR, `${entry.name}.png`);
+    const diffPath = path.join(DIFF_DIR, `${entry.name}.png`);
 
     if (!fs.existsSync(expectedPath)) {
-      console.log(`  ? ${nodeType} (baseline not found)`);
-      failedImages.push({ name: nodeType, diffPixels: -1 });
+      console.log(`  ? ${entry.name} (baseline not found)`);
+      failedImages.push({ name: entry.name, diffPixels: -1 });
       continue;
     }
 
     const diffPixels = comparePng(actualPath, expectedPath, diffPath);
 
     if (diffPixels > 0) {
-      console.log(`  x ${nodeType} (${diffPixels} pixels differ)`);
-      failedImages.push({ name: nodeType, diffPixels });
+      console.log(`  x ${entry.name} (${diffPixels} pixels differ)`);
+      failedImages.push({ name: entry.name, diffPixels });
     } else {
       if (fs.existsSync(diffPath)) {
         fs.unlinkSync(diffPath);
       }
-      console.log(`  o ${nodeType}`);
+      console.log(`  o ${entry.name}`);
     }
   }
 
   if (failedImages.length > 0) {
     console.error(
-      `\nFAILED: ${failedImages.length} of ${NODE_TYPES.length} images differ.`,
+      `\nFAILED: ${failedImages.length} of ${allEntries.length} images differ.`,
     );
     console.error(`Diff images saved in: ${DIFF_DIR}`);
     console.error(
@@ -99,7 +116,7 @@ async function runCheck(): Promise<void> {
   }
 
   console.log(
-    `\nNo visual differences found. (${NODE_TYPES.length} images checked)`,
+    `\nNo visual differences found. (${allEntries.length} images checked)`,
   );
 }
 
@@ -110,8 +127,8 @@ async function runGenerate(): Promise<void> {
     fs.mkdirSync(IMAGES_DIR, { recursive: true });
   }
 
-  for (const nodeType of NODE_TYPES) {
-    await generateNodeImage(nodeType, IMAGES_DIR);
+  for (const entry of allEntries) {
+    await generateImage(entry, IMAGES_DIR);
   }
 
   console.log(`\nAll images generated in: ${IMAGES_DIR}`);
