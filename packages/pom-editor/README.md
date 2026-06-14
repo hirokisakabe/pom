@@ -1,14 +1,33 @@
-# @hirokisakabe/pom-editor
+<h1 align="center">pom-editor</h1>
+<p align="center">
+  Visual AST editor for <a href="https://www.npmjs.com/package/@hirokisakabe/pom">pom</a> — drag-and-drop reordering of slide node trees.
+</p>
 
-Visual AST editor for [pom](https://github.com/hirokisakabe/pom) — drag-and-drop reordering of slide node trees.
+<p align="center">
+  <a href="https://www.npmjs.com/package/@hirokisakabe/pom-editor"><img src="https://img.shields.io/npm/v/@hirokisakabe/pom-editor.svg" alt="npm version"></a>
+  <a href="https://github.com/hirokisakabe/pom/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@hirokisakabe/pom-editor.svg" alt="License"></a>
+</p>
 
-## Install
+---
+
+## Features
+
+- **Drag-and-Drop Reordering** — Sort sibling nodes within `VStack` / `HStack` / `Layer` containers, plus top-level slides, by dragging them in the AST tree.
+- **XML In / XML Out** — Accepts a pom XML string via `xml` and returns the updated XML via `onChange` after each reorder, so it drops into any editor / preview layout.
+- **AST-Aware Tree View** — Renders the parsed pom AST as a labeled tree so the structure of slides and nested containers is visible at a glance.
+- **Powered by `@dnd-kit`** — Built on `@dnd-kit/core` + `@dnd-kit/sortable` for accessible, keyboard-friendly drag interactions.
+
+## Installation
+
+> Requires React 18+
 
 ```bash
-npm install @hirokisakabe/pom-editor @hirokisakabe/pom react
+npm install @hirokisakabe/pom-editor react
 ```
 
-## Usage
+`@hirokisakabe/pom` is pulled in automatically as a regular dependency — no separate install needed.
+
+## Quick Start
 
 ```tsx
 import { PomAstEditor } from "@hirokisakabe/pom-editor";
@@ -49,11 +68,6 @@ function App() {
 | `onChange` | `(xml: string) => void` | Called with updated XML after each drag-and-drop reorder |
 
 Renders a tree of nodes from the parsed XML. Nodes within the same parent container (`VStack`, `HStack`, `Layer`) can be reordered by dragging. Top-level slides can also be reordered.
-
-## Requirements
-
-- React 18 or later
-- `@hirokisakabe/pom` (peer dependency resolved automatically as a workspace dependency; install separately in non-monorepo setups)
 
 ## License
 

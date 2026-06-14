@@ -1,14 +1,33 @@
-# @hirokisakabe/pom-md
+<h1 align="center">pom-md</h1>
+<p align="center">
+  Markdown wrapper for <a href="https://www.npmjs.com/package/@hirokisakabe/pom">pom</a> — write slides in Markdown with <code>pomxml</code> code fences.
+</p>
 
-Markdown wrapper for [pom](https://github.com/hirokisakabe/pom) — write slides in Markdown with `pomxml` code fences.
+<p align="center">
+  <a href="https://www.npmjs.com/package/@hirokisakabe/pom-md"><img src="https://img.shields.io/npm/v/@hirokisakabe/pom-md.svg" alt="npm version"></a>
+  <a href="https://github.com/hirokisakabe/pom/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@hirokisakabe/pom-md.svg" alt="License"></a>
+</p>
 
-## Install
+---
+
+## Features
+
+- **Markdown-First Authoring** — Write slide content as standard Markdown (headings, lists, paragraphs, tables, images). `parseMd()` converts it to pom XML.
+- **`pomxml` Code Fences** — Drop into raw pom XML inside a code fence to embed charts, flows, timelines, and any other pom node Markdown cannot express.
+- **Slide Separators** — `---` (horizontal rule) splits the document into successive slides, Marp-style.
+- **Frontmatter Configuration** — Set slide size (`16:9` / `4:3`), default background color, and master PPTX template path in a YAML frontmatter block.
+- **Per-Slide Directives** — Override settings on a single slide with Marp-style `<!-- backgroundColor: red -->` HTML comments.
+- **Composable with `buildPptx`** — `parseMd()` returns the XML string plus parsed metadata so you can hand it straight to `@hirokisakabe/pom`'s `buildPptx`.
+
+## Installation
+
+> Requires Node.js 18+
 
 ```bash
 npm install @hirokisakabe/pom-md @hirokisakabe/pom
 ```
 
-## Usage
+## Quick Start
 
 Create a `.pom.md` file:
 

@@ -27,6 +27,7 @@
 ## Table of Contents
 
 - [Features](#features)
+- [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Available Nodes](#available-nodes)
 - [Node Examples](#node-examples)
@@ -49,13 +50,15 @@
 - **Master Slide** — Define headers, footers, and page numbers once — applied to all slides automatically.
 - **Accurate Text Measurement** — Text width measured with opentype.js and bundled Noto Sans JP fonts for consistent layout.
 
-## Quick Start
+## Installation
 
 > Requires Node.js 18+
 
 ```bash
 npm install @hirokisakabe/pom
 ```
+
+## Quick Start
 
 ```typescript
 import { buildPptx } from "@hirokisakabe/pom";
