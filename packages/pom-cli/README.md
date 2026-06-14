@@ -1,8 +1,27 @@
-# @hirokisakabe/pom-cli
+<h1 align="center">pom-cli</h1>
+<p align="center">
+  CLI tool for <a href="https://www.npmjs.com/package/@hirokisakabe/pom">pom</a> — preview, build, and render presentations from pom XML / Markdown.
+</p>
 
-CLI tool for [pom](https://github.com/hirokisakabe/pom) — preview, build, and render presentations from pom XML / Markdown.
+<p align="center">
+  <a href="https://www.npmjs.com/package/@hirokisakabe/pom-cli"><img src="https://img.shields.io/npm/v/@hirokisakabe/pom-cli.svg" alt="npm version"></a>
+  <a href="https://github.com/hirokisakabe/pom/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@hirokisakabe/pom-cli.svg" alt="License"></a>
+</p>
+
+---
+
+## Features
+
+- **Live Preview Server** — `pom preview` opens a browser, watches the source file, and rebuilds + reloads on every save (handles editor atomic writes like Vim).
+- **PPTX Build** — `pom build` converts `.pom.xml` / `.pom.md` to a `.pptx` file, with optional `--watch` mode for incremental rebuilds.
+- **PNG / SVG Render** — `pom render` rasterizes each slide to PNG (default) or SVG without LibreOffice, useful for slide-image previews in docs.
+- **Diagnostic Surfacing** — Layout, image, master, and auto-fit diagnostics from `buildPptx` fail the run on stderr with a non-zero exit (`pom build` / `pom render`), while `pom preview` keeps updating so issues can be fixed interactively.
+- **Bundled Fonts** — Carlito and Noto Sans CJK JP are bundled for consistent text measurement and SVG rendering across machines.
+- **Configurable Output** — Choose port, target slides, output format, text rendering mode (`path` outlines vs native `<text>`), and verbose per-step timing.
 
 ## Installation
+
+> Requires Node.js 18+
 
 ```bash
 npm install -g @hirokisakabe/pom-cli
