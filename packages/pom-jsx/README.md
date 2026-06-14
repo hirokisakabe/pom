@@ -12,12 +12,18 @@
 
 `pom-jsx` lets you write [pom](https://www.npmjs.com/package/@hirokisakabe/pom) slide definitions in JSX/TSX instead of raw XML strings. It renders your JSX tree to the XML that `buildPptx` expects.
 
-## Requirements
+## Features
 
-- Node.js 18+
-- TypeScript with JSX support (`tsx` / `ts-node` / compiled `.tsx`)
+- **JSX/TSX Authoring** — Write pom slides as JSX/TSX. The tree is serialized to a pom XML string and passed to `buildPptx`.
+- **Typed Components** — Every pom node is exported as a PascalCase component with typed props, so attribute typos and missing required attributes surface at compile time.
+- **Inline Text Formatting** — `B` / `I` / `U` / `S` / `A` / `Span` / `Mark` work inside `Text` and `Li` for bold, italic, underline, strike, links, styled spans, and highlights.
+- **Fragment Support** — Standard JSX Fragments (`<>...</>`) render children without a wrapper, making multi-slide composition natural.
+- **Reusable Custom Components** — Compose recurring slide layouts as ordinary JSX function components.
+- **Smart Attribute Serialization** — Numbers pass through as-is, booleans serialize compactly (`<Text bold>`), and objects / arrays are JSON-stringified automatically.
 
 ## Installation
+
+> Requires Node.js 18+ and a TypeScript-with-JSX setup (`tsx` / `ts-node` / compiled `.tsx`).
 
 ```bash
 npm install @hirokisakabe/pom @hirokisakabe/pom-jsx
