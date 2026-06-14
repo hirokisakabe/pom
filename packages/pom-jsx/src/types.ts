@@ -103,6 +103,8 @@ interface TextStyleProps {
   italic?: boolean;
   underline?: Underline;
   strike?: boolean;
+  subscript?: boolean;
+  superscript?: boolean;
   highlight?: string;
   fontFamily?: string;
 }

@@ -23,6 +23,8 @@ import {
   Pyramid,
   B,
   I,
+  Sub,
+  Sup,
   Span,
 } from "./components.ts";
 import { parseXml } from "../../pom/src/parseXml/parseXml.ts";
@@ -343,6 +345,40 @@ describe("pom core との統合テスト", () => {
     assertParsable(xml);
     expect(xml).toContain("<B>太字</B>");
     expect(xml).toContain("<I>斜体</I>");
+  });
+
+  it("Text 全体の subscript / superscript 属性が parseXml でパースできる", () => {
+    const xml = renderToXml(
+      <Slide>
+        <Text superscript>注釈</Text>
+        <Text subscript>添字</Text>
+      </Slide>,
+    );
+    assertParsable(xml);
+    expect(xml).toContain('superscript="true"');
+    expect(xml).toContain('subscript="true"');
+  });
+
+  it("Sub / Sup インラインタグが parseXml でパースできる", () => {
+    const xml = renderToXml(
+      <Slide>
+        <Text>
+          H<Sub>2</Sub>O と x<Sup>2</Sup>
+        </Text>
+      </Slide>,
+    );
+    assertParsable(xml);
+    expect(xml).toContain("<Sub>2</Sub>");
+    expect(xml).toContain("<Sup>2</Sup>");
+    const nodes = parseXml(xml);
+    const textNode = nodes[0] as unknown as {
+      runs?: { text: string; subscript?: boolean; superscript?: boolean }[];
+    };
+    expect(textNode.runs).toBeDefined();
+    const sub = textNode.runs!.find((r) => r.subscript);
+    const sup = textNode.runs!.find((r) => r.superscript);
+    expect(sub?.text).toBe("2");
+    expect(sup?.text).toBe("2");
   });
 
   it("複雑なスライドが parseXml でパースできる", () => {

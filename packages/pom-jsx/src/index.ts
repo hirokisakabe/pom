@@ -32,6 +32,8 @@ export {
   I,
   U,
   S,
+  Sub,
+  Sup,
   A,
   Span,
   Mark,

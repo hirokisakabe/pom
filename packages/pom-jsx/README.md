@@ -195,6 +195,8 @@ Use inside `Text` (or `Li`) for rich inline formatting:
 | `I`       | Italic        |
 | `U`       | Underline     |
 | `S`       | Strikethrough |
+| `Sub`     | Subscript     |
+| `Sup`     | Superscript   |
 | `A`       | Hyperlink     |
 | `Span`    | Styled span   |
 | `Mark`    | Highlight     |

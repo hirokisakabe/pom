@@ -72,6 +72,8 @@ export const B = (props: InlineProps): PomJsxElement => el("B", props);
 export const I = (props: InlineProps): PomJsxElement => el("I", props);
 export const U = (props: InlineProps): PomJsxElement => el("U", props);
 export const S = (props: InlineProps): PomJsxElement => el("S", props);
+export const Sub = (props: InlineProps): PomJsxElement => el("Sub", props);
+export const Sup = (props: InlineProps): PomJsxElement => el("Sup", props);
 export const A = (props: AnchorProps): PomJsxElement => el("A", props);
 export const Span = (props: SpanProps): PomJsxElement => el("Span", props);
 export const Mark = (props: MarkProps): PomJsxElement => el("Mark", props);

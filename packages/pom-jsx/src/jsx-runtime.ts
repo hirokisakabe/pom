@@ -91,6 +91,8 @@ export namespace JSX {
     I: InlineProps;
     U: InlineProps;
     S: InlineProps;
+    Sub: InlineProps;
+    Sup: InlineProps;
     A: AnchorProps;
     Span: SpanProps;
     Mark: MarkProps;
