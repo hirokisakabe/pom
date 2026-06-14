@@ -450,6 +450,7 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     title: "string",
     chartColors: "json",
     radarStyle: "string",
+    sparkline: "boolean",
   },
   timeline: {
     ...BASE_RULES,
