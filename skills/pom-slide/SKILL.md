@@ -41,24 +41,34 @@ XML を書き始める前に、デッキ全体のデザイントークン（配�
 
 #### 配色パレット
 
-デッキごとに以下の 5 ロールの色を決める。アクセントは 1 色に絞り、使用面積はスライドの 1 割以下に抑える（見出し脇のバー、強調数字、アイコンなど）。
+デッキごとに以下の 6 ロールの色を決める。アクセントは accent と accent2 の 2 トーン併走で、使用面積はスライドの 1 割以下に抑える（見出し脇のバー、強調数字、アイコン、装飾アークなど）。`accent2` は `accent` と同じ色相をずらした、または明度を下げた近傍色を選ぶ。`linear-gradient(accent → accent2)` でグラデーション装飾に使うので、極端な反対色は避ける。
 
-| ロール  | 役割                                                                         |
-| ------- | ---------------------------------------------------------------------------- |
-| base    | スライド背景。真っ白 `FFFFFF` 固定にしない（オフホワイトやダークも検討する） |
-| surface | カード・パネルの背景                                                         |
-| ink     | 本文テキスト。純黒 `000000` は避ける                                         |
-| muted   | 補助テキスト・キャプション                                                   |
-| accent  | 強調 1 色。多用しない                                                        |
+| ロール  | 役割                                                                                       |
+| ------- | ------------------------------------------------------------------------------------------ |
+| base    | スライド背景。真っ白 `FFFFFF` 固定にしない（オフホワイトやダークも検討する）               |
+| surface | カード・パネルの背景                                                                       |
+| ink     | 本文テキスト。純黒 `000000` は避ける                                                       |
+| muted   | 補助テキスト・キャプション                                                                 |
+| accent  | 強調 1 色。多用しない。アクセントバー / 強調数字 / アイコン                                |
+| accent2 | accent と組み合わせる近傍色。`linear-gradient(accent → accent2)` で装飾バー / カード縁取り |
 
 プリセット例（そのまま使ってよいが、テーマに合わせて調整する）:
 
-| トーン                   | base     | surface  | ink      | muted    | accent   |
-| ------------------------ | -------- | -------- | -------- | -------- | -------- |
-| コーポレート             | `F8F9FB` | `FFFFFF` | `1F2937` | `6B7280` | `1E3A8A` |
-| ウォーム・エディトリアル | `FAF6F0` | `FFFFFF` | `292524` | `78716C` | `C2410C` |
-| ダーク・テック           | `0F172A` | `1E293B` | `F1F5F9` | `94A3B8` | `38BDF8` |
-| フレッシュ               | `F6FBF9` | `FFFFFF` | `1A2E2A` | `5F7470` | `0D9488` |
+| トーン                   | base     | surface  | ink      | muted    | accent   | accent2  |
+| ------------------------ | -------- | -------- | -------- | -------- | -------- | -------- |
+| コーポレート             | `F8F9FB` | `FFFFFF` | `1F2937` | `6B7280` | `1E3A8A` | `3B82F6` |
+| ウォーム・エディトリアル | `FAF6F0` | `FFFFFF` | `292524` | `78716C` | `C2410C` | `F59E0B` |
+| ダーク・テック           | `0F172A` | `1E293B` | `F1F5F9` | `94A3B8` | `38BDF8` | `A78BFA` |
+| フレッシュ               | `F6FBF9` | `FFFFFF` | `1A2E2A` | `5F7470` | `0D9488` | `84CC16` |
+
+`pom-theme.json` には `accent2` フィールドは無いので、デッキで accent2 を使うときは `<Theme>` で独自トークンとして宣言する。`<Theme>` の属性値は 6 桁 hex のみ（`$tokenName` は色属性での **参照側** でのみ展開されるので、`<Theme>` の宣言側には書けない）。`pom-theme.json` がある場合は `colors.accent` の実 hex を読み取り、accent2 はそれに近い色相 / 明度違いを **手動で 1 色選んで** `<Theme accent="0052CC" accent2="3B82F6" ... />` のように hex を直接書く。`colors.charts[1]` は反対色や任意の調和色のこともあり、そのまま accent2 に流用すると `linear-gradient` が暴れる（blue → green 等）ため自動転記しない。
+
+**`linear-gradient(accent → accent2)` の代表的な使い所**:
+
+- **表紙アクセントバー** — タイトル直下の細い帯を `Shape backgroundGradient="linear-gradient(90deg, $accent, $accent2)"` で塗る
+- **セクション分割線** — `Shape shapeType="rect" h="3"` を横いっぱいに置き、同じグラデーションで塗る
+- **カードボーダー** — カードの上端や左端だけ細 `Shape` を `Layer` で重ね、グラデーションで縁取る
+- **装飾アーク** — `Layer` 内の `Shape shapeType="ellipse"` をスライド外にはみ出させ、グラデーションで塗って柔らかい背景装飾にする
 
 #### タイポグラフィスケール
 
@@ -103,30 +113,32 @@ XML を書き始める前に、デッキ全体のデザイントークン（配�
 
 **縦方向の揃え**: アクセントバー・番号・アイコンなど高さの異なる要素をテキストと HStack で並べるときは `alignItems="center"` を基本にする。`Text` のレイアウトボックスは `fontSize × lineHeight` の高さを持つが、グリフは行ボックス内で上下中央に描画されるため、`center` で揃えると隣接要素も視覚的にテキストの中央に揃う。文字の baseline と合わせたいときは `end` を使う。
 
-代表例（パレット: コーポレート）:
+代表例（パレット: コーポレート）。デッキの先頭に必ず `<Theme>` を置き、`$accent` / `$accent2` / `$base` ... をデッキ全体から参照する。色 hex を各ノードに散らさない:
 
 ```xml
+<Theme base="F8F9FB" surface="FFFFFF" ink="1F2937" muted="6B7280" accent="1E3A8A" accent2="3B82F6" />
+
 <!-- 表紙 -->
 <Slide>
-  <VStack w="100%" h="max" padding="64" backgroundColor="F8F9FB" justifyContent="center" gap="24">
-    <Shape shapeType="rect" w="56" h="6" fill.color="1E3A8A" />
-    <Text fontSize="52" bold="true" color="1F2937">プレゼンタイトル</Text>
-    <Text fontSize="16" color="6B7280">サブタイトル — 2026-06-10 / 発表者名</Text>
+  <VStack w="100%" h="max" padding="64" backgroundColor="$base" justifyContent="center" gap="24">
+    <Shape shapeType="rect" w="56" h="6" backgroundGradient="linear-gradient(90deg, $accent, $accent2)" />
+    <Text fontSize="52" bold="true" color="$ink">プレゼンタイトル</Text>
+    <Text fontSize="16" color="$muted">サブタイトル — 2026-06-10 / 発表者名</Text>
   </VStack>
 </Slide>
 
 <!-- アジェンダ -->
 <Slide>
-  <VStack w="100%" h="max" padding="64" backgroundColor="F8F9FB" gap="32">
-    <Text fontSize="32" bold="true" color="1F2937">アジェンダ</Text>
+  <VStack w="100%" h="max" padding="64" backgroundColor="$base" gap="32">
+    <Text fontSize="32" bold="true" color="$ink">アジェンダ</Text>
     <VStack gap="16">
       <HStack gap="16" alignItems="center">
-        <Text fontSize="20" bold="true" color="1E3A8A">01</Text>
-        <Text fontSize="16" color="1F2937">背景と課題</Text>
+        <Text fontSize="20" bold="true" color="$accent">01</Text>
+        <Text fontSize="16" color="$ink">背景と課題</Text>
       </HStack>
       <HStack gap="16" alignItems="center">
-        <Text fontSize="20" bold="true" color="1E3A8A">02</Text>
-        <Text fontSize="16" color="1F2937">提案内容</Text>
+        <Text fontSize="20" bold="true" color="$accent">02</Text>
+        <Text fontSize="16" color="$ink">提案内容</Text>
       </HStack>
     </VStack>
   </VStack>
@@ -134,19 +146,19 @@ XML を書き始める前に、デッキ全体のデザイントークン（配�
 
 <!-- 比較 -->
 <Slide>
-  <VStack w="100%" h="max" padding="48" backgroundColor="F8F9FB" gap="24" alignItems="stretch">
-    <Text fontSize="28" bold="true" color="1F2937">プラン比較</Text>
+  <VStack w="100%" h="max" padding="48" backgroundColor="$base" gap="24" alignItems="stretch">
+    <Text fontSize="28" bold="true" color="$ink">プラン比較</Text>
     <HStack gap="24" alignItems="stretch">
-      <VStack w="50%" padding="24" backgroundColor="FFFFFF" borderRadius="8" gap="16">
-        <Text fontSize="18" bold="true" color="1E3A8A">プラン A</Text>
-        <Ul fontSize="14" color="1F2937">
+      <VStack w="50%" padding="24" backgroundColor="$surface" borderRadius="8" gap="16">
+        <Text fontSize="18" bold="true" color="$accent">プラン A</Text>
+        <Ul fontSize="14" color="$ink">
           <Li>特徴 1</Li>
           <Li>特徴 2</Li>
         </Ul>
       </VStack>
-      <VStack w="50%" padding="24" backgroundColor="FFFFFF" borderRadius="8" gap="16">
-        <Text fontSize="18" bold="true" color="1E3A8A">プラン B</Text>
-        <Ul fontSize="14" color="1F2937">
+      <VStack w="50%" padding="24" backgroundColor="$surface" borderRadius="8" gap="16">
+        <Text fontSize="18" bold="true" color="$accent">プラン B</Text>
+        <Ul fontSize="14" color="$ink">
           <Li>特徴 1</Li>
           <Li>特徴 2</Li>
         </Ul>
@@ -157,10 +169,107 @@ XML を書き始める前に、デッキ全体のデザイントークン（配�
 
 <!-- 本編スライド共通の見出し（アクセントバー + タイトル）。glyph は行ボックス内中央配置なので center が自然に揃う -->
 <HStack gap="16" alignItems="center">
-  <Shape shapeType="rect" w="6" h="32" fill.color="1E3A8A" />
-  <Text fontSize="32" bold="true" color="1F2937">スライドタイトル</Text>
+  <Shape shapeType="rect" w="6" h="32" fill.color="$accent" />
+  <Text fontSize="32" bold="true" color="$ink">スライドタイトル</Text>
 </HStack>
 ```
+
+**`<Theme>` ヘッダから始めるメリット**: hex 値の散らばりを 1 箇所にまとめられるため、トーン変更がヘッダ書き換えだけで全スライドに波及する。AI 自身もデッキ後半で同じ色を再現する負担が消える。代表例のとおり、`backgroundColor` / `color` / `fill.color` / `backgroundGradient` 内の hex はすべて `$tokenName` 参照に置き換える。
+
+#### 装飾要素の置き方（`Layer` を背景レイヤとして使う）
+
+スライドの密度を上げず装飾度だけ上げたいときは、`Layer` を「コンテンツの背後に置く装飾だけのレイヤ」として使う。Slide 直下を `Layer` にし、その中で
+
+1. **装飾要素を絶対座標で先に配置**（薄い色 / グラデーション / `Shape ellipse` のアーク / 細 `Shape rect` のバー）
+2. **その上に通常の `VStack` をフルサイズで重ね、本文を組む**
+
+…の 2 段構成にする。装飾はスライド外にはみ出してよく、四隅を「半分だけ」覗かせるのが視覚的に効く。
+
+```xml
+<Slide>
+  <Layer w="1280" h="720">
+    <!-- 装飾レイヤ: グラデーション円アーク + 細バー + コーナー装飾 -->
+    <Shape shapeType="ellipse" x="-200" y="-200" w="520" h="520"
+           backgroundGradient="linear-gradient(135deg, $accent, $accent2)" opacity="0.18" line.width="0" />
+    <Shape shapeType="rect" x="980" y="540" w="320" h="200"
+           backgroundGradient="linear-gradient(45deg, $accent2, $accent)" opacity="0.10" line.width="0" />
+    <Shape shapeType="rect" x="64" y="56" w="56" h="4"
+           backgroundGradient="linear-gradient(90deg, $accent, $accent2)" line.width="0" />
+
+    <!-- コンテンツレイヤ: スライド全面に VStack を置く -->
+    <VStack x="0" y="0" w="1280" h="720" padding="64" justifyContent="center" gap="24">
+      <Text fontSize="11" bold="true" color="$accent" letterSpacing="2">SECTION 01 · OVERVIEW</Text>
+      <Text fontSize="52" bold="true" color="$ink">プレゼンタイトル</Text>
+      <Text fontSize="16" color="$muted">サブタイトル — 2026-06-10 / 発表者名</Text>
+    </VStack>
+  </Layer>
+</Slide>
+```
+
+使い分けのコツ:
+
+- **装飾アーク**: `Shape shapeType="ellipse"` をスライド外にはみ出させ `opacity="0.10〜0.25"` で塗る。`accent` のソフトな滲み代わりになる
+- **グラデーションバー**: 細い `Shape rect` を `backgroundGradient="linear-gradient(90deg, $accent, $accent2)"` で塗る。表紙のアクセント帯 / セクション分割 / カード上端の縁取りに使える
+- **コーナー装飾**: 右下や右上に小さい `Shape rect` / `Layer` 内の三角形を仕込むと、画面全体に「設計された感じ」が出る
+- 装飾レイヤは `opacity` を低めに（`0.08〜0.20`）。文字に被っても可読性が落ちないことを優先する
+- 装飾と本文の重なりは `Layer` の中なので NODE_OVERLAP は出ない。安心して被せてよい
+
+#### ヘッダブロックを 5 スライド以上で再利用する
+
+デッキ全体で視覚言語を揃えるには、本編スライドの上部に同じ構造の **共通ヘッダブロック**（`eyebrow` + `h1`）を置く。eyebrow は `SECTION 0X · TOPIC` のような letterSpacing 付きの小文字アクセント、h1 は title サイズの ink 色。eyebrow の番号と章タイトルだけスライドごとに差し替え、構造・サイズ・色・余白は同一にする。
+
+```xml
+<!-- 02 / 課題 -->
+<Slide>
+  <VStack w="100%" h="max" padding="64" backgroundColor="$base" gap="32" alignItems="stretch">
+    <VStack gap="8">
+      <Text fontSize="11" bold="true" color="$accent" letterSpacing="2">SECTION 02 · CHALLENGE</Text>
+      <Text fontSize="32" bold="true" color="$ink">現状の 3 つの課題</Text>
+    </VStack>
+    <Ul fontSize="16" color="$ink" lineHeight="1.6">
+      <Li>属人化したオペレーション</Li>
+      <Li>データの分断</Li>
+      <Li>意思決定の遅延</Li>
+    </Ul>
+  </VStack>
+</Slide>
+
+<!-- 03 / 提案 -->
+<Slide>
+  <VStack w="100%" h="max" padding="64" backgroundColor="$base" gap="32" alignItems="stretch">
+    <VStack gap="8">
+      <Text fontSize="11" bold="true" color="$accent" letterSpacing="2">SECTION 03 · PROPOSAL</Text>
+      <Text fontSize="32" bold="true" color="$ink">統合プラットフォームの導入</Text>
+    </VStack>
+    <Text fontSize="16" color="$ink" lineHeight="1.6">3 つの課題に一括で対処する単一基盤を提案する。</Text>
+  </VStack>
+</Slide>
+
+<!-- 04 / 体制、05 / 効果、06 / リスク — 同じヘッダ構造を使い回す -->
+```
+
+ヘッダ再利用のチェックポイント:
+
+- eyebrow の `fontSize` / `letterSpacing` / `color` は 5 スライドで完全同一にする
+- h1 の `fontSize` / `color` も同一。スライドごとに 28 / 32 を揺らさない
+- VStack の `gap` (eyebrow と h1 の縦距離) と外周 `padding` も統一する
+- eyebrow の文言は `SECTION 0X · {大文字 1 語}` か `0X · {章タイトル}` のどちらかに固定し、書き分けない
+- 章番号（`01` `02` ...）は **A9 回避策** として常に `01.` や `#01` のように非数字を 1 文字混ぜる。`pom render` 経由の PNG では純数字の leading 0 が消える（"01" → "1"）ことがあるため
+
+#### 制約と回避（PPTX 原理限界）
+
+CSS / HTML で出来ても PPTX 仕様にない表現がいくつかある。次のいずれも **代替表現で十分実用に耐える**ので、無理に再現しようとせず以下のレシピに置き換える:
+
+| HTML / CSS でやりがちな表現                   | 不可な理由                                             | 代替レシピ                                                                                                                                                                                                                                   |
+| --------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `backdrop-filter: blur(10px)` (ガラス調)      | PPTX に blur フィルタは無い                            | **半透明 surface + drop shadow** で擬似ガラスを作る。`VStack backgroundColor="$surface" opacity="0.7" border.color="FFFFFF" border.width="1" borderRadius="16" shadow.type="outer" shadow.blur="16" shadow.offset="4" shadow.color="0F172A"` |
+| `box-shadow: 0 0 60px ...`（外側拡散グロー）  | pptxgenjs の shadow は内側 / 外側オフセット系          | **`shadow.type="outer"` + 大きい `blur`** で近似。`shadow.type="outer" shadow.blur="40" shadow.offset="0" shadow.color="$accent"`。HTML の柔らかい滲みとは違うが、装飾としては成立する                                                       |
+| 任意 TTF をウェブから読み込む                 | PPTX は同梱フォントしか確実にレンダリングできない      | `pom-theme.json` の `typography.fontFamily` で **環境にあるシステムフォント**（`"Carlito"` / `"Noto Sans CJK JP"` / `"Noto Sans JP"` など）を指定する。デッキ単位で `<Theme>` を切り替えるのではなく `pom-theme.json` で固定する             |
+| `background-clip: text`（文字グラデーション） | OOXML の text fill にグラデは取れるが pptxgenjs 未対応 | 文字自体は単色のまま、**直後に細グラデーションバー**を置く / **`glow` を `$accent` で軽くかける** ことで装飾感を出す                                                                                                                         |
+| `radial-gradient` 背景                        | 現状 `backgroundGradient` は `linear-` のみ            | `Layer` 内に大きな `Shape shapeType="ellipse"` を `opacity="0.10〜0.25"` で重ねる（上述「装飾要素の置き方」参照）                                                                                                                            |
+| `mask-image` / 任意 SVG マスク                | PPTX は shape geometry でのみ近似可能                  | 装飾を弱める方向で再設計するか、複雑なマスクは `Image` ノードで PNG 書き出しを使う                                                                                                                                                           |
+
+これらは `pom-slide` で「無理に再現しようとして崩れる」より「最初から代替レシピで組む」方が結果が綺麗になる。
 
 ### 3. pom XML の生成
 
@@ -316,9 +425,25 @@ Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
 
 **Text effects (glow / outline):** `glow` adds a glow around the characters (`size` in px, `opacity` 0-1, `color` hex; defaults: 8 / 0.75 / FFFFFF). `outline` draws a border along the character edges (`size` in px, `color` hex; defaults: 1 / FFFFFF). Both export as native PowerPoint text effects (editable, not rasterized) and are useful for keeping titles legible on top of background images. They apply per text node; with inline formatting the node-level effect applies to all runs.
 
+Beyond titles, the same effects work well as **decorative accents**:
+
+- **Oversized quotation marks** — make a large `"` or `「` glow in the accent color and place it behind a quote block (use `Layer` + absolute coordinates).
+- **Headline numerals** — give big KPI digits a subtle accent glow so they pop above the rest of the slide without changing color.
+- **Outlined display titles on photos** — pair `outline` with a low-opacity `glow` of the same dark color to keep light-on-photo titles legible.
+
 ```xml
+<!-- Generic title effects -->
 <Text fontSize="40" bold="true" color="FFFFFF" glow.size="8" glow.opacity="0.5" glow.color="1D4ED8">Glowing title</Text>
 <Text fontSize="40" bold="true" color="FFFFFF" outline.size="2" outline.color="0F172A">Outlined title</Text>
+
+<!-- Decorative oversized quotation mark behind a pull-quote -->
+<Layer w="600" h="240">
+  <Text x="0" y="-30" fontSize="180" bold="true" color="38BDF8" glow.size="16" glow.opacity="0.4" glow.color="38BDF8">"</Text>
+  <Text x="80" y="80" w="500" fontSize="22" color="0F172A">真の差別化は機能ではなく、誰がどう使うかだ。</Text>
+</Layer>
+
+<!-- Highlighted KPI numeral -->
+<Text fontSize="56" bold="true" color="1D4ED8" glow.size="6" glow.opacity="0.35" glow.color="1D4ED8">84.2</Text>
 ```
 
 **Inline formatting:** Use `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, and `<Span>` child elements for partial bold/italic/underline/strikethrough/subscript/superscript/highlight/color and hyperlinks:
@@ -337,6 +462,19 @@ Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
 `<Span>` supports `color`, `fontFamily` (overrides the parent's `fontFamily` for that run), and `letterSpacing` (adjusts letter spacing for that run; effective inside `<Text>` only).
 
 `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, and `<Span>` also work inside `<Li>` and `<Td>`.
+
+**Number + small unit (KPI numerals):** `<Span>` does not yet support `fontSize`, so to render a big numeral with a smaller trailing unit (`84.2M`, `92%`), use an `HStack` with `alignItems="end"` so the baselines line up. Match `lineHeight="1"` on both to remove the extra leading from the larger glyph box.
+
+```xml
+<HStack alignItems="end" gap="4">
+  <Text fontSize="56" bold="true" color="1D4ED8" lineHeight="1">84.2</Text>
+  <Text fontSize="24" bold="true" color="1D4ED8" lineHeight="1" margin.bottom="6">M</Text>
+</HStack>
+```
+
+- Use `alignItems="end"` (not `center`) so the unit sits on the same baseline as the digit.
+- `margin.bottom` on the unit nudges it up the small remaining gap caused by font metrics.
+- For a leading symbol (`¥`, `$`), do the same with a leading `<Text>` and `alignItems="end"`.
 
 ### Ul (Bullet List)
 
@@ -767,6 +905,41 @@ When the same property is specified via both attributes (JSON string) and child 
   </VStack>
 </Slide>
 ```
+
+### KPI Tile with Dot Indicator (color-coded category)
+
+A per-side border (`borderTop` etc.) cannot be combined with `borderRadius`. To color-code a rounded KPI tile by category, replace the top-edge accent bar with a small filled circle (`Shape shapeType="ellipse"`) placed next to a short uppercase label. The result is just as recognizable and works with `borderRadius`.
+
+```xml
+<HStack gap="20" alignItems="stretch">
+  <VStack grow="1" padding="20" backgroundColor="FFFFFF" borderRadius="16" border.color="E2E8F0" border.width="1" gap="12">
+    <HStack gap="8" alignItems="center">
+      <Shape shapeType="ellipse" w="8" h="8" fill.color="1D4ED8" line.width="0" />
+      <Text fontSize="11" bold="true" color="1D4ED8" letterSpacing="1">MRR</Text>
+    </HStack>
+    <HStack alignItems="end" gap="4">
+      <Text fontSize="44" bold="true" color="0F172A" lineHeight="1">84.2</Text>
+      <Text fontSize="18" bold="true" color="0F172A" lineHeight="1" margin.bottom="4">M</Text>
+    </HStack>
+    <Text fontSize="11" color="64748B">QoQ +4.1%</Text>
+  </VStack>
+  <VStack grow="1" padding="20" backgroundColor="FFFFFF" borderRadius="16" border.color="E2E8F0" border.width="1" gap="12">
+    <HStack gap="8" alignItems="center">
+      <Shape shapeType="ellipse" w="8" h="8" fill.color="16A34A" line.width="0" />
+      <Text fontSize="11" bold="true" color="16A34A" letterSpacing="1">NRR</Text>
+    </HStack>
+    <HStack alignItems="end" gap="4">
+      <Text fontSize="44" bold="true" color="0F172A" lineHeight="1">118</Text>
+      <Text fontSize="18" bold="true" color="0F172A" lineHeight="1" margin.bottom="4">%</Text>
+    </HStack>
+    <Text fontSize="11" color="64748B">QoQ +2.0pt</Text>
+  </VStack>
+</HStack>
+```
+
+- The colored dot + matching uppercase label carries the category color without needing a top-edge stripe.
+- Keep the dot small (6–10 px) so it reads as a category indicator, not a bullet.
+- For a more prominent variant, thicken the dot to a short horizontal bar (`Shape shapeType="roundRect" w="24" h="3"` filled with the category color). `glow` is `Text`-only — do not apply it to `Shape`.
 
 ## Notes
 
