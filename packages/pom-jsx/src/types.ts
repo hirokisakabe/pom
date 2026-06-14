@@ -257,6 +257,7 @@ export interface ChartProps extends BaseProps {
   title?: string;
   chartColors?: string[];
   radarStyle?: "standard" | "marker" | "filled";
+  sparkline?: boolean;
 }
 
 // ===== Timeline =====

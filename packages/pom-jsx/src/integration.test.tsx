@@ -251,6 +251,28 @@ describe("pom core との統合テスト", () => {
     expect(xml).toContain('chartType="bar"');
   });
 
+  it("Chart sparkline モードが parseXml でパースできる", () => {
+    const xml = renderToXml(
+      <Slide>
+        <Chart
+          chartType="bar"
+          data={[
+            {
+              name: "売上",
+              labels: ["Q1", "Q2", "Q3", "Q4"],
+              values: [100, 200, 150, 300],
+            },
+          ]}
+          sparkline
+          w={200}
+          h={40}
+        />
+      </Slide>,
+    );
+    assertParsable(xml);
+    expect(xml).toContain('sparkline="true"');
+  });
+
   it("Shape が parseXml でパースできる", () => {
     const xml = renderToXml(
       <Slide>
