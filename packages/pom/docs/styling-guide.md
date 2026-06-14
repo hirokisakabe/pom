@@ -16,6 +16,8 @@ Colors are specified as **6-digit hex without the `#` prefix** (e.g., `FF0000`, 
 
 Declare a color palette once at the top level with a `<Theme>` element and reference each token from any color attribute as `$tokenName`. This keeps the palette in one place instead of repeating hex values on every node.
 
+![Theme tokens example](./images/attr-theme-tokens.png)
+
 ```xml
 <Theme surface="0F172A" accent="38BDF8" textMain="F8FAFC" textMuted="94A3B8" />
 <Slide>
@@ -112,6 +114,8 @@ For `Text` (and the text inside `Shape`), `lineHeight` is reflected in both the 
 
 Use `<B>`, `<I>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` child elements to apply bold, italic, underline, strikethrough, highlight, or color to part of the text:
 
+![Inline formatting example](./images/attr-inline-formatting.png)
+
 ```xml
 <Text fontSize="16">Normal <B>bold part</B> normal</Text>
 <Text fontSize="16">Normal <I>italic part</I> normal</Text>
@@ -136,6 +140,8 @@ This also works inside `<Li>` and `<Td>`:
 
 ### Underline
 
+![Underline styles example](./images/attr-underline-styles.png)
+
 Simple underline:
 
 ```xml
@@ -156,6 +162,8 @@ See the Text section in [Nodes](./nodes.md) for all available underline styles.
 
 Apply a background highlight to text:
 
+![Highlight example](./images/attr-highlight.png)
+
 ```xml
 <Text highlight="FFFF00">Yellow highlighted text</Text>
 <Text highlight="90EE90">Green highlighted text</Text>
@@ -164,6 +172,8 @@ Apply a background highlight to text:
 ### Text Effects (glow / outline)
 
 `glow` adds a glow halo around the characters; `outline` draws a border along the character edges. Both are exported as native PowerPoint text effects (editable, not rasterized) and are useful for keeping titles legible on top of background images.
+
+![Text effects example](./images/attr-text-effects.png)
 
 ```xml
 <Text fontSize="40" bold="true" color="FFFFFF" glow.size="8" glow.opacity="0.5" glow.color="1D4ED8">Glowing title</Text>
@@ -198,6 +208,22 @@ All nodes support `backgroundColor`:
 ```xml
 <Text backgroundColor="F8F9FA" padding="16">Content on a light gray background</Text>
 ```
+
+### Background Gradient
+
+Apply a CSS-like `linear-gradient()` as the background with `backgroundGradient`. Exported as a native PowerPoint gradient fill (editable in PowerPoint, not rasterized). Takes precedence over `backgroundColor` and works on the slide root for full-slide gradient backgrounds.
+
+![Background gradient example](./images/attr-background-gradient.png)
+
+```xml
+<VStack backgroundGradient="linear-gradient(135deg, #1E40AF 0%, #0EA5E9 100%)" w="600" h="300" padding="32">
+  <Text fontSize="24" color="FFFFFF" bold="true">Gradient background</Text>
+</VStack>
+<VStack backgroundGradient="linear-gradient(to right, #16A34A 0%, #DBEAFE 100%)" w="600" h="200" padding="32" />
+<VStack backgroundGradient="linear-gradient(45deg, #7C3AED 0%, #EC4899 50%, #F97316 100%)" w="600" h="200" padding="32" />
+```
+
+The angle accepts `<n>deg` (0 = bottom-to-top, clockwise) or `to <direction>` keywords (`to right`, `to bottom left`, ...) and defaults to `180deg` (top-to-bottom). Two or more hex color stops are required; stop positions (`%`) are optional and distributed evenly when omitted.
 
 ### Background Image
 
@@ -248,6 +274,8 @@ Round corners with `borderRadius`:
 
 Style each edge independently with `borderTop` / `borderRight` / `borderBottom` / `borderLeft`. Each uses the same fields as `border` (`color` / `width` / `dashType`).
 
+![Per-side border example](./images/attr-per-side-border.png)
+
 ```xml
 <Text borderLeft.color="1D4ED8" borderLeft.width="6" padding.left="16">Accent bar</Text>
 <Text borderBottom.color="333333" borderBottom.width="3">Underlined heading</Text>
@@ -259,6 +287,8 @@ Style each edge independently with `borderTop` / `borderRight` / `borderBottom` 
 ## Shadow
 
 Add drop shadows to any node (except Line):
+
+![Shadow example](./images/attr-shadow.png)
 
 ```xml
 <VStack shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000000" shadow.opacity="0.3" padding="16">
@@ -281,6 +311,8 @@ Add drop shadows to any node (except Line):
 
 Control background transparency with `opacity` (0 = fully transparent, 1 = fully opaque):
 
+![Opacity example](./images/attr-opacity.png)
+
 ```xml
 <Text backgroundColor="1D4ED8" opacity="0.5" padding="16">Semi-transparent blue background</Text>
 ```
@@ -288,6 +320,8 @@ Control background transparency with `opacity` (0 = fully transparent, 1 = fully
 ## Rotation
 
 `Text`, `Shape`, `Image`, and `Icon` accept `rotate` as a number of degrees clockwise. Rotation is applied only when rendering to PowerPoint; yoga layout uses the unrotated bounding box, so the rotated node does not change sibling placement or the parent's size.
+
+![Rotation example](./images/attr-rotation.png)
 
 ```xml
 <Text rotate="12">Rotated label</Text>
@@ -301,6 +335,8 @@ Control background transparency with `opacity` (0 = fully transparent, 1 = fully
 ### Overlay Pattern with Layer
 
 Combine `opacity` with Layer for overlay effects:
+
+![Layer overlay example](./images/attr-layer-overlay.png)
 
 ```xml
 <Layer w="800" h="400">
@@ -342,6 +378,8 @@ Shape nodes use `fill` for background and `line` for outline (separate from the 
 ## Combining Styles
 
 A practical example combining multiple styling techniques:
+
+![Combining styles example](./images/attr-combining-styles.png)
 
 ```xml
 <VStack w="max" h="max" padding="48" gap="24" backgroundColor="F8F9FA">
