@@ -31,7 +31,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
     "knip": "knip",
