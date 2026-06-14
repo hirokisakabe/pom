@@ -1487,6 +1487,18 @@ describe("parseXml", () => {
       expect((result[0] as Record<string, unknown>).showTitle).toBe(false);
     });
 
+    it("Chart の sparkline を boolean に変換する", () => {
+      const data = JSON.stringify([{ labels: ["A"], values: [1] }]);
+      const trueResult = parseXml(
+        `<Chart chartType="bar" data='${data}' sparkline="true" />`,
+      );
+      const falseResult = parseXml(
+        `<Chart chartType="bar" data='${data}' sparkline="false" />`,
+      );
+      expect((trueResult[0] as Record<string, unknown>).sparkline).toBe(true);
+      expect((falseResult[0] as Record<string, unknown>).sparkline).toBe(false);
+    });
+
     it("不正な JSON 属性値でエラーをスローする", () => {
       expect(() =>
         parseXml('<Chart chartType="bar" data="not-json" />'),

@@ -14,7 +14,13 @@ export function renderChartNode(
     values: d.values,
   }));
 
-  const isSparkline = node.sparkline === true;
+  // sparkline モードは bar / line / area のみ対応。pie / doughnut / radar は
+  // 元々凡例 / 軸の概念が異なるため sparkline=true でも通常描画にフォールバックする。
+  const isSparkline =
+    node.sparkline === true &&
+    (node.chartType === "bar" ||
+      node.chartType === "line" ||
+      node.chartType === "area");
 
   const chartOptions: Record<string, unknown> = {
     ...getContentAreaIn(node),
