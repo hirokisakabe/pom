@@ -110,7 +110,7 @@ async function runCheck(): Promise<void> {
     );
     console.error(`Diff images saved in: ${DIFF_DIR}`);
     console.error(
-      "Run 'npm run docs:images:docker' to update docs/images/*.png",
+      "Run 'pnpm run docs:images:docker:update' to update docs/images/*.png",
     );
     process.exit(1);
   }
