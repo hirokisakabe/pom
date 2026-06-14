@@ -708,14 +708,28 @@ Connector between two nodes referenced by `id`. Draws a straight line between th
 </Chart>
 ```
 
-| Attribute     | Type / Values                                          |
-| ------------- | ------------------------------------------------------ |
-| `chartType`   | `bar` / `line` / `pie` / `area` / `doughnut` / `radar` |
-| `showLegend`  | boolean                                                |
-| `showTitle`   | boolean                                                |
-| `title`       | string                                                 |
-| `chartColors` | JSON array `'["hex1","hex2"]'`                         |
-| `radarStyle`  | `standard` / `marker` / `filled` (radar only)          |
+| Attribute     | Type / Values                                                                                                |
+| ------------- | ------------------------------------------------------------------------------------------------------------ |
+| `chartType`   | `bar` / `line` / `pie` / `area` / `doughnut` / `radar`                                                       |
+| `showLegend`  | boolean                                                                                                      |
+| `showTitle`   | boolean                                                                                                      |
+| `title`       | string                                                                                                       |
+| `chartColors` | JSON array `'["hex1","hex2"]'`                                                                               |
+| `radarStyle`  | `standard` / `marker` / `filled` (radar only)                                                                |
+| `sparkline`   | boolean — hides legend / axes / gridlines / margins for compact display (`bar` / `line` / `area`, e.g. h=40) |
+
+**Sparkline example** (KPI tile に inline 表示する用途):
+
+```xml
+<Chart chartType="bar" w="200" h="40" sparkline="true" chartColors='["0088CC"]'>
+  <ChartSeries name="Sales">
+    <ChartDataPoint label="Q1" value="100" />
+    <ChartDataPoint label="Q2" value="200" />
+    <ChartDataPoint label="Q3" value="150" />
+    <ChartDataPoint label="Q4" value="300" />
+  </ChartSeries>
+</Chart>
+```
 
 ### Timeline
 
