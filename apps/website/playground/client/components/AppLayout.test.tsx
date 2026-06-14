@@ -39,6 +39,13 @@ vi.mock("../lib/honoClient", () => ({
   },
 }));
 
+// PomAstEditor を簡易なモックに差し替える (クライアントの parseXml に依存しないため)
+vi.mock("@hirokisakabe/pom-editor", () => ({
+  PomAstEditor: ({ xml }: { xml: string; onChange: (xml: string) => void }) => (
+    <div data-testid="ast-editor">{xml}</div>
+  ),
+}));
+
 import { AppLayout } from "./AppLayout";
 
 afterEach(() => {
@@ -95,6 +102,51 @@ describe("AppLayout", () => {
     it("Download ボタンが表示される", () => {
       render(<AppLayout />);
       expect(screen.getByText("Download")).toBeInTheDocument();
+    });
+
+    it("XML / AST モードトグルが表示される (初期は XML)", () => {
+      render(<AppLayout />);
+      const xmlRadio = screen.getByRole("radio", { name: "XML" });
+      const astRadio = screen.getByRole("radio", { name: "AST" });
+      expect(xmlRadio).toHaveAttribute("aria-checked", "true");
+      expect(astRadio).toHaveAttribute("aria-checked", "false");
+      expect(screen.getByTestId("xml-editor")).toBeInTheDocument();
+      expect(screen.queryByTestId("ast-editor")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("モード切替フロー", () => {
+    it("AST をクリックすると左ペインが PomAstEditor に切り替わる", async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      render(<AppLayout />);
+
+      await user.click(screen.getByRole("radio", { name: "AST" }));
+
+      expect(screen.getByTestId("ast-editor")).toBeInTheDocument();
+      expect(screen.queryByTestId("xml-editor")).not.toBeInTheDocument();
+      expect(screen.getByRole("radio", { name: "AST" })).toHaveAttribute(
+        "aria-checked",
+        "true",
+      );
+    });
+
+    it("モード切替時に xmlValue が保持される", async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      render(<AppLayout />);
+
+      const editor = screen.getByTestId<HTMLTextAreaElement>("xml-editor");
+      await user.clear(editor);
+      await user.type(editor, "<Text>persisted</Text>");
+
+      await user.click(screen.getByRole("radio", { name: "AST" }));
+      expect(screen.getByTestId("ast-editor")).toHaveTextContent(
+        "<Text>persisted</Text>",
+      );
+
+      await user.click(screen.getByRole("radio", { name: "XML" }));
+      expect(
+        screen.getByTestId<HTMLTextAreaElement>("xml-editor").value,
+      ).toBe("<Text>persisted</Text>");
     });
   });
 
