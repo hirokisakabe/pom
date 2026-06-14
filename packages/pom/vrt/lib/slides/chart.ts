@@ -73,6 +73,58 @@ export const page6ChartXml = `
 `;
 
 // ============================================================
+// Page 48: Chart Sparkline Mode
+// テスト対象: sparkline=true で凡例 / 軸 / マージンが消えること
+// ============================================================
+export const page48ChartSparklineXml = `
+<VStack w="100%" h="max" padding="48" gap="16" alignItems="stretch" backgroundColor="${palette.background}">
+  <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 48: Chart Sparkline Mode</Text>
+  <VStack gap="12" alignItems="stretch">
+    <HStack gap="16" alignItems="center" padding="12" backgroundColor="FFFFFF" border='{"color":"${palette.border}","width":1}'>
+      <Text fontSize="14" bold="true" w="120">Bar sparkline</Text>
+      <Chart chartType="bar" w="200" h="40" sparkline="true" chartColors='["${palette.blue}"]'>
+        <ChartSeries name="Sales">
+          <ChartDataPoint label="Q1" value="100" />
+          <ChartDataPoint label="Q2" value="200" />
+          <ChartDataPoint label="Q3" value="150" />
+          <ChartDataPoint label="Q4" value="300" />
+        </ChartSeries>
+      </Chart>
+      <Text fontSize="12" color="${palette.charcoal}">凡例 / 軸 / 余白すべて非表示</Text>
+    </HStack>
+    <HStack gap="16" alignItems="center" padding="12" backgroundColor="FFFFFF" border='{"color":"${palette.border}","width":1}'>
+      <Text fontSize="14" bold="true" w="120">Line sparkline</Text>
+      <Chart chartType="line" w="200" h="40" sparkline="true" chartColors='["${palette.accent}"]'>
+        <ChartSeries name="Revenue">
+          <ChartDataPoint label="Jan" value="50" />
+          <ChartDataPoint label="Feb" value="80" />
+          <ChartDataPoint label="Mar" value="60" />
+          <ChartDataPoint label="Apr" value="120" />
+          <ChartDataPoint label="May" value="100" />
+          <ChartDataPoint label="Jun" value="150" />
+        </ChartSeries>
+      </Chart>
+      <Text fontSize="12" color="${palette.charcoal}">凡例 / 軸 / 余白すべて非表示</Text>
+    </HStack>
+    <HStack gap="16" alignItems="center" padding="12" backgroundColor="FFFFFF" border='{"color":"${palette.border}","width":1}'>
+      <Text fontSize="14" bold="true" w="120">Area sparkline</Text>
+      <Chart chartType="area" w="200" h="40" sparkline="true" chartColors='["${palette.blue}"]'>
+        <ChartSeries name="Trend">
+          <ChartDataPoint label="1" value="30" />
+          <ChartDataPoint label="2" value="50" />
+          <ChartDataPoint label="3" value="40" />
+          <ChartDataPoint label="4" value="70" />
+          <ChartDataPoint label="5" value="60" />
+          <ChartDataPoint label="6" value="90" />
+        </ChartSeries>
+      </Chart>
+      <Text fontSize="12" color="${palette.charcoal}">凡例 / 軸 / 余白すべて非表示</Text>
+    </HStack>
+  </VStack>
+</VStack>
+`;
+
+// ============================================================
 // Page 10: Additional Chart Types Test
 // テスト対象: area, doughnut, radar
 // ============================================================
