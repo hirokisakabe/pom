@@ -139,6 +139,64 @@ describe("reduceFontSize", () => {
     expect(node.rows[0].cells[0].fontSize).toBe(11);
   });
 
+  it("Text / Li / Td 内の <Span fontSize> による run 単位 fontSize も縮小する", () => {
+    const node: POMNode = {
+      type: "vstack",
+      children: [
+        {
+          type: "text",
+          text: "AB",
+          fontSize: 50,
+          runs: [
+            { text: "A" },
+            { text: "B", fontSize: 20 },
+          ],
+        },
+        {
+          type: "ul",
+          fontSize: 16,
+          items: [
+            {
+              text: "AB",
+              runs: [
+                { text: "A" },
+                { text: "B", fontSize: 12 },
+              ],
+            },
+          ],
+        },
+        {
+          type: "table",
+          columns: [{}],
+          rows: [
+            {
+              cells: [
+                {
+                  text: "AB",
+                  fontSize: 18,
+                  runs: [
+                    { text: "A" },
+                    { text: "B", fontSize: 10 },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const result = reduceFontSize(node, 0.8);
+    expect(result.changed).toBe(true);
+    const [text, ul, table] = node.children;
+    if (text.type !== "text" || ul.type !== "ul" || table.type !== "table") {
+      throw new Error("unexpected node types");
+    }
+    expect(text.fontSize).toBe(40);
+    expect(text.runs?.[1].fontSize).toBe(16);
+    expect(ul.items[0].runs?.[1].fontSize).toBe(10);
+    expect(table.rows[0].cells[0].runs?.[1].fontSize).toBe(10);
+  });
+
   it("fontSize が未設定のノードは no-target を返す", () => {
     const node: POMNode = { type: "text", text: "hello" };
     const result = reduceFontSize(node, 0.8);

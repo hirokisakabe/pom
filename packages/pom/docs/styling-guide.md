@@ -112,7 +112,7 @@ For `Text` (and the text inside `Shape`), `lineHeight` is reflected in both the 
 
 ### Inline Formatting
 
-Use `<B>`, `<I>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` child elements to apply bold, italic, underline, strikethrough, highlight, or color to part of the text:
+Use `<B>`, `<I>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` child elements to apply bold, italic, underline, strikethrough, highlight, color, or per-run `fontSize` to part of the text:
 
 ![Inline formatting example](./images/attr-inline-formatting.png)
 
@@ -127,7 +127,10 @@ Use `<B>`, `<I>`, `<U>`, `<S>`, `<Mark>`, and `<Span>` child elements to apply b
 <Text fontSize="16"><B><U>Bold underline (nested)</U></B></Text>
 <Text fontSize="16">Normal <Span color="FF0000">red part</Span> normal</Text>
 <Text fontSize="16"><B><Span color="1D4ED8">bold blue</Span></B></Text>
+<Text fontSize="52" bold="true" color="1D4ED8">¥84.2<Span fontSize="20">M</Span></Text>
 ```
+
+`<Span fontSize>` is handy for KPI-style "big number + small unit" composition (`¥84.2M`, `118%`) within a single `<Text>` — the digit and unit share one baseline automatically without needing the older `HStack` + `alignItems="end"` workaround. Layout measurement uses the largest run-level `fontSize` so the Text container is sized for the biggest glyph.
 
 This also works inside `<Li>` and `<Td>`:
 

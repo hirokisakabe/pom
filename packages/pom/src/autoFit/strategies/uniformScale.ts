@@ -21,6 +21,19 @@ export function uniformScale(
   let changed = false;
   let sawTarget = false;
 
+  const scaleRunFontSizes = (runs: { fontSize?: number }[] | undefined) => {
+    if (!runs) return;
+    for (const run of runs) {
+      if (run.fontSize === undefined) continue;
+      sawTarget = true;
+      const newVal = scaleNumber(run.fontSize, ratio, 8);
+      if (newVal !== run.fontSize) {
+        run.fontSize = newVal;
+        changed = true;
+      }
+    }
+  };
+
   walkPOMTree(node, (n) => {
     // fontSize
     if ("fontSize" in n && typeof n.fontSize === "number") {
@@ -30,6 +43,12 @@ export function uniformScale(
         (n as { fontSize: number }).fontSize = newVal;
         changed = true;
       }
+    }
+
+    // text の <Span fontSize> による run 単位上書きも一緒にスケーリング
+    // (shape は runs フィールドを持たない)
+    if (n.type === "text") {
+      scaleRunFontSizes(n.runs);
     }
 
     // gap (vstack/hstack)
@@ -74,7 +93,7 @@ export function uniformScale(
       }
     }
 
-    // ul/ol items fontSize
+    // ul/ol items fontSize と Li 内 <Span fontSize> も一緒にスケーリング
     if (n.type === "ul" || n.type === "ol") {
       for (const item of n.items) {
         if (item.fontSize !== undefined) {
@@ -85,6 +104,7 @@ export function uniformScale(
             changed = true;
           }
         }
+        scaleRunFontSizes(item.runs);
       }
     }
 
@@ -98,7 +118,7 @@ export function uniformScale(
       }
     }
 
-    // table cells fontSize
+    // table cells fontSize と Td 内 <Span fontSize> も一緒にスケーリング
     if (n.type === "table") {
       for (const row of n.rows) {
         for (const cell of row.cells) {
@@ -110,6 +130,7 @@ export function uniformScale(
               changed = true;
             }
           }
+          scaleRunFontSizes(cell.runs);
         }
       }
     }
