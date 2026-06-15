@@ -220,17 +220,20 @@ function renderPerSideBorders(
  * borderRadius と辺ごと border の併用時に、角部の円弧と直線セグメントを
  * 含む custGeom path を辺ごとに描画する。
  *
- * 各 4 つの角はちょうど 1 辺が「所有」して円弧を描く。水平辺 (top/bottom)
- * が指定されていれば、隣接する 2 つの角は水平辺が引き取る。それ以外は
- * 垂直辺 (left/right) が引き取る。これにより以下が実現する:
- * - 単一の borderTop + borderRadius (KPI タイル想定): 上 2 つの角丸が
- *   borderTop の色で連続描画される
- * - borderTop + borderBottom + borderRadius: 上下それぞれが自分側の
- *   角を引き取り、両水平辺が角丸ごと描かれる
- * - borderLeft のみ + borderRadius: 左 2 つの角丸が borderLeft の色で描かれる
+ * 角弧は水平辺 (top / bottom) のみが所有する設計にしている。
+ * - `borderTop` + `borderRadius` (KPI タイル想定): 上 2 つの角丸が borderTop
+ *   の色で連続描画される
+ * - `borderBottom` + `borderRadius`: 下 2 つの角丸が borderBottom の色で描画
+ * - `borderLeft` のみ + `borderRadius` (アクセントバー想定): 角弧は描画されず、
+ *   左辺は角丸の内側で直線として始終する。背景 roundRect の角丸はそのまま
+ *   見えるので「左辺ストレート + 残りはニュートラルな角丸」のすっきりした
+ *   見た目になる
+ * - 4 辺すべて + `borderRadius`: top/bottom が上下 2 角を所有、left/right は
+ *   角弧を持たず直線セグメントのみ
  *
- * 角を所有しない辺は、角丸の内側 (radius 内側の端点) から直線セグメントを
- * 開始する。
+ * CSS の `border-left + border-radius` は左辺が角に沿って巻き込む形になるが、
+ * pom のアクセントバー / ヘッダ罫線ユースケースには「角を引き取らない」方が
+ * 素直なので、そちらを採用している。
  */
 function renderPerSideBorderPaths(
   node: PositionedNode,
@@ -241,22 +244,10 @@ function renderPerSideBorderPaths(
   const r = effectiveBorderRadius(node.borderRadius, w, h);
 
   const ownership: Record<BorderCorner, BorderSide | null> = {
-    topLeft: perSideBorders.top ? "top" : perSideBorders.left ? "left" : null,
-    topRight: perSideBorders.top
-      ? "top"
-      : perSideBorders.right
-        ? "right"
-        : null,
-    bottomRight: perSideBorders.bottom
-      ? "bottom"
-      : perSideBorders.right
-        ? "right"
-        : null,
-    bottomLeft: perSideBorders.bottom
-      ? "bottom"
-      : perSideBorders.left
-        ? "left"
-        : null,
+    topLeft: perSideBorders.top ? "top" : null,
+    topRight: perSideBorders.top ? "top" : null,
+    bottomRight: perSideBorders.bottom ? "bottom" : null,
+    bottomLeft: perSideBorders.bottom ? "bottom" : null,
   };
 
   for (const side of BORDER_SIDES) {
