@@ -1,14 +1,14 @@
 import { palette } from "./palette.js";
 
 // ============================================================
-// Page 50: Text Gradient Test
+// Page 51: Text Gradient Test
 // テスト対象: textGradient - 角度、方向キーワード、3 色以上、
 //             位置省略、Span / B 等 inline run 上書き、
 //             暗色背景上での明色グラデーション、Theme トークン参照
 // ============================================================
-export const page50TextGradientXml = `
+export const page51TextGradientXml = `
 <VStack w="100%" h="max" padding="48" gap="20" alignItems="stretch" backgroundColor="${palette.background}">
-  <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 50: Text Gradient Test</Text>
+  <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 51: Text Gradient Test</Text>
   <VStack padding="16" backgroundColor="FFFFFF" border.color="${palette.border}" border.width="1" gap="12">
     <Text fontSize="14" bold="true">angle variations:</Text>
     <HStack gap="16" alignItems="center">

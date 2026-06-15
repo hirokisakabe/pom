@@ -1173,21 +1173,14 @@ function convertPomNode(
     );
   }
   // Children for container nodes
-  else if (
-    def.childPolicy.kind === "pom-children" &&
-    childElements.length > 0
-  ) {
+  else if (def.childPolicy.kind === "pom-children") {
     const convertedChildren = childElements
       .map((child) => convertElement(child, errors, theme))
       .filter((child): child is Record<string, unknown> => child !== null);
     result.children = convertedChildren;
   }
   // Leaf nodes that shouldn't have child elements
-  else if (
-    def.childPolicy.kind !== "pom-children" &&
-    !childRule &&
-    childElements.length > 0
-  ) {
+  else if (!childRule && childElements.length > 0) {
     errors.push(
       `<${tagName}>: Unexpected child elements. <${tagName}> does not accept child elements`,
     );

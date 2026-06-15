@@ -6,6 +6,7 @@ export {
   page40LetterSpacingXml,
   page49SpanFontSizeXml,
 } from "./text.js";
+export { page50EmptyContainerSpacerXml } from "./emptyContainerSpacer.js";
 export { page3ImageXml, page3bImageSizingXml } from "./image.js";
 export { page4TableXml } from "./table.js";
 export { page5ShapeXml } from "./shape.js";
@@ -53,7 +54,7 @@ export {
 } from "./customFont.js";
 export { page39ArrowXml } from "./arrow.js";
 export { page41GradientXml } from "./gradient.js";
-export { page50TextGradientXml } from "./textGradient.js";
+export { page51TextGradientXml } from "./textGradient.js";
 export { page42FlexGrowXml } from "./flexGrow.js";
 export { page43DarkThemeXml, vrtThemeXml } from "./darkTheme.js";
 export { page44PerSideBorderXml } from "./perSideBorder.js";
