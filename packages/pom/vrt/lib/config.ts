@@ -63,6 +63,7 @@ export const PAGE_NAMES = [
   "47-sub-superscript",
   "48-chart-sparkline",
   "49-span-fontsize",
+  "50-shape-icon-effects",
 ] as const;
 
 export const THRESHOLD = 0.1;

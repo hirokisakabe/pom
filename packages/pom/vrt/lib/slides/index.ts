@@ -59,3 +59,4 @@ export { page44PerSideBorderXml } from "./perSideBorder.js";
 export { page45TextEffectsXml } from "./textEffects.js";
 export { page46RotateXml } from "./rotate.js";
 export { page47SubSuperscriptXml } from "./subSuperscript.js";
+export { page50ShapeIconEffectsXml } from "./shapeIconEffects.js";
