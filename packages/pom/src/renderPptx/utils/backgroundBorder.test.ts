@@ -71,13 +71,66 @@ describe("renderBackgroundAndBorder の辺ごと border", () => {
     expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
   });
 
-  it("borderRadius と併用した場合は辺ごとの指定を無視して一律 border で描画する", async () => {
+  it("borderRadius と併用した場合は辺ごとに custGeom path として描画され、辺ごとの色が反映される", async () => {
     const xml = `<Slide><VStack w="100%" h="max">
-      <Text w="200" h="100" borderRadius="8" border.color="000000" borderLeft.color="FF0000">test</Text>
+      <Text w="200" h="100" borderRadius="8" borderTop.color="FF0000" borderTop.width="4">test</Text>
     </VStack></Slide>`;
     const slideXml = await buildSlideXml(xml);
 
-    expect(countLineShapes(slideXml)).toBe(0);
-    expect(slideXml).not.toContain('<a:srgbClr val="FF0000"/>');
+    // borderTop のみなので custGeom shape は 1 個。直線セグメント (a:lnTo)
+    // と両端の円弧 (a:arcTo) が含まれる
+    expect(slideXml.match(/<a:custGeom>/g) ?? []).toHaveLength(1);
+    expect(slideXml).toMatch(/<a:arcTo /);
+    expect(slideXml).toMatch(/<a:lnTo>/);
+    expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
+  });
+
+  it("borderRadius + 背景色 + 辺ごと border の併用では roundRect 背景と custGeom path が共存する", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text w="200" h="100" backgroundColor="EFEFEF" borderRadius="8" borderTop.color="FF0000" borderTop.width="4">test</Text>
+    </VStack></Slide>`;
+    const slideXml = await buildSlideXml(xml);
+
+    expect(slideXml).toContain('<a:prstGeom prst="roundRect">');
+    expect(slideXml.match(/<a:custGeom>/g) ?? []).toHaveLength(1);
+    expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
+    expect(slideXml).toContain('<a:srgbClr val="EFEFEF"/>');
+  });
+
+  it("borderRadius + 4 辺全部の指定では 4 個の custGeom path が描画される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text w="200" h="100" borderRadius="8"
+        borderTop.color="FF0000" borderTop.width="3"
+        borderRight.color="00FF00" borderRight.width="3"
+        borderBottom.color="0000FF" borderBottom.width="3"
+        borderLeft.color="FFFF00" borderLeft.width="3">test</Text>
+    </VStack></Slide>`;
+    const slideXml = await buildSlideXml(xml);
+
+    expect(slideXml.match(/<a:custGeom>/g) ?? []).toHaveLength(4);
+    expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
+    expect(slideXml).toContain('<a:srgbClr val="00FF00"/>');
+    expect(slideXml).toContain('<a:srgbClr val="0000FF"/>');
+    expect(slideXml).toContain('<a:srgbClr val="FFFF00"/>');
+  });
+
+  it("borderRadius が無い場合は従来通り line shape が使われる (radius 無し経路の後方互換)", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text w="200" h="100" borderTop.color="FF0000" borderTop.width="4">test</Text>
+    </VStack></Slide>`;
+    const slideXml = await buildSlideXml(xml);
+
+    expect(countLineShapes(slideXml)).toBe(1);
+    expect(slideXml).not.toContain("<a:custGeom>");
+  });
+
+  it("borderRadius と一律 border のみの組み合わせは従来通り roundRect 1 個で描画する (後方互換)", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text w="200" h="100" borderRadius="8" border.color="123456" border.width="2">test</Text>
+    </VStack></Slide>`;
+    const slideXml = await buildSlideXml(xml);
+
+    expect(slideXml).toContain('<a:prstGeom prst="roundRect">');
+    expect(slideXml).not.toContain("<a:custGeom>");
   });
 });
