@@ -294,7 +294,7 @@ Style each edge independently with `borderTop` / `borderRight` / `borderBottom` 
 ```
 
 - Per-side values merge field-by-field with the uniform `border` (per-side takes precedence) — `border.color="E5E7EB" border.width="1" borderLeft.width="6"` is a thin frame with a thick left accent.
-- Per-side borders **cannot be combined with `borderRadius`**. When both are specified, the per-side values are ignored and the uniform `border` style is used, and a `PER_SIDE_BORDER_WITH_RADIUS` diagnostic is emitted at build time.
+- Per-side borders can be combined with `borderRadius`. Each rounded corner is drawn in the color of the adjacent horizontal side (`top` / `bottom`) when one is present; otherwise the adjacent vertical side (`left` / `right`) draws the arc. So `borderTop` + `borderRadius` paints both upper-corner arcs in the `borderTop` color — the typical KPI tile top-accent treatment.
 
 ## Shadow
 

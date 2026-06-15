@@ -86,7 +86,7 @@ Layout attributes that all nodes can have.
 
 - `backgroundImage`: `src` accepts a URL or local file path. `sizing` controls how the image fits: `"cover"` (default) fills the area, `"contain"` fits within the area.
 - `border`: Can be combined with `color`, `width`, and `dashType` (`"solid"` / `"dash"` / `"dashDot"` / `"lgDash"` / `"lgDashDot"` / `"lgDashDotDot"` / `"sysDash"` / `"sysDot"`).
-- `borderTop` / `borderRight` / `borderBottom` / `borderLeft`: Per-side borders with the same fields as `border` (`color` / `width` / `dashType`). Useful for accent bars (`borderLeft.width="6"`) or underlined headings (`borderBottom.width="3"`). When combined with `border`, each side merges field-by-field with the per-side value taking precedence. Cannot be combined with `borderRadius` — the per-side values are ignored with a diagnostics warning and the uniform `border` is used instead.
+- `borderTop` / `borderRight` / `borderBottom` / `borderLeft`: Per-side borders with the same fields as `border` (`color` / `width` / `dashType`). Useful for accent bars (`borderLeft.width="6"`) or underlined headings (`borderBottom.width="3"`). When combined with `border`, each side merges field-by-field with the per-side value taking precedence. Combinable with `borderRadius`: each rounded corner is drawn in the color of the adjacent horizontal side (`top` / `bottom`) when one is present; otherwise the adjacent vertical side (`left` / `right`) draws the arc. So `borderTop` + `borderRadius` paints both upper-corner arcs in the `borderTop` color — the typical KPI tile top-accent treatment.
 
   ![Per-side border example](./images/attr-per-side-border.png)
 
