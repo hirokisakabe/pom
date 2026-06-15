@@ -6,6 +6,7 @@ export {
   page40LetterSpacingXml,
   page49SpanFontSizeXml,
 } from "./text.js";
+export { page50EmptyContainerSpacerXml } from "./emptyContainerSpacer.js";
 export { page3ImageXml, page3bImageSizingXml } from "./image.js";
 export { page4TableXml } from "./table.js";
 export { page5ShapeXml } from "./shape.js";
