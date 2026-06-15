@@ -128,6 +128,7 @@ export type ThemeProps = Record<string, string>;
 export interface TextProps extends BaseProps, TextStyleProps, SubSupProps {
   children?: ReactNode;
   rotate?: number;
+  textGradient?: string;
   textAlign?: TextAlign;
   lineHeight?: number;
   letterSpacing?: number;

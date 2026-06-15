@@ -42,7 +42,7 @@ A pom XML document may declare a single `<Theme>` element at the top level. Each
 
 - Token names must start with a letter and may contain letters, digits, `_`, and `-`. Values are 6-digit hex colors (`#` prefix optional).
 - At most one `<Theme>` per document; it applies to all slides regardless of position. Child elements are not allowed.
-- `$tokenName` references are resolved in color attributes (attributes ending in `Color`/`Colors`, `color` keys inside object/JSON attributes, `highlight`) and inside `backgroundGradient` strings. Other attributes and text content are never substituted.
+- `$tokenName` references are resolved in color attributes (attributes ending in `Color`/`Colors`, `color` keys inside object/JSON attributes, `highlight`) and inside `backgroundGradient` / `textGradient` strings. Other attributes and text content are never substituted.
 - References are resolved by `parseXml`, so the returned `POMNode` tree contains plain hex values and the `<Theme>` element itself does not become a node (it is not preserved by `serializeXml`).
 - Referencing an unknown token (or using `$token` without a `<Theme>`) throws a `ParseXmlError` with a "did you mean" suggestion.
 
@@ -125,6 +125,7 @@ A node for displaying text.
 | ------------------------- | ---------------------------------------------------------- |
 | `fontSize`                | number (default: 24)                                       |
 | `color`                   | hex (text color)                                           |
+| `textGradient`            | `linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)`         |
 | `textAlign`               | `left` / `center` / `right`                                |
 | `bold` `italic` `strike`  | `true` / `false`                                           |
 | `subscript` `superscript` | `true` / `false`                                           |
@@ -136,6 +137,12 @@ A node for displaying text.
 | `glow`                    | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"`     |
 | `outline`                 | `outline.size="2" outline.color="0088CC"`                  |
 | `rotate`                  | number (degrees clockwise, render-only)                    |
+
+`textGradient` accepts the same `linear-gradient(...)` syntax as `backgroundGradient` (angle + 2 or more hex color stops, optional `%` positions). Exported as a native PowerPoint gradient text fill (editable, not rasterized) and takes precedence over `color`. Applied at the `<Text>` node level — all runs (`<Span>`, `<B>`, etc.) inside are painted with the same gradient, overriding any per-run `color`. Note: in browser environments use `pptx.write()` — `pptx.writeFile()` falls back to plain pptxgenjs output without the gradient post-processing.
+
+```xml
+<Text fontSize="64" bold="true" textGradient="linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)">Gradient title</Text>
+```
 
 **Inline Formatting:**
 
