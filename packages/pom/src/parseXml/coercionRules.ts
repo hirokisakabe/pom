@@ -464,6 +464,10 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     dateColor: "string",
     titleColor: "string",
     descriptionColor: "string",
+    connectorColor: "string",
+    connectorGradient: "string",
+    useColorForDate: "boolean",
+    fontFamily: "string",
   },
   matrix: {
     ...BASE_RULES,
@@ -581,6 +585,7 @@ export const CHILD_ELEMENT_COERCION_MAP: Record<
     title: "string",
     description: "string",
     color: "string",
+    dateColor: "string",
   },
   MatrixAxes: {
     x: "string",
