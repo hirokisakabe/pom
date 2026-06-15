@@ -12,10 +12,11 @@
 
 ## Features
 
-- **Drag-and-Drop Reordering** — Sort sibling nodes within `VStack` / `HStack` / `Layer` containers, plus top-level slides, by dragging them in the AST tree.
-- **XML In / XML Out** — Accepts a pom XML string via `xml` and returns the updated XML via `onChange` after each reorder, so it drops into any editor / preview layout.
+- **Drag-and-Drop Structure Editing** — Reorder siblings, move nodes between `VStack` / `HStack` / `Layer` containers, pull container children up to the root, or nest a container inside another — all by dragging in the AST tree.
+- **Distinct "between" vs "inside" Drop Targets** — Dropping on the gap before/after a row inserts as a sibling; dropping on a container body itself nests the node inside.
+- **XML In / XML Out** — Accepts a pom XML string via `xml` and returns the updated XML via `onChange` after each edit, so it drops into any editor / preview layout.
 - **AST-Aware Tree View** — Renders the parsed pom AST as a labeled tree so the structure of slides and nested containers is visible at a glance.
-- **Powered by `@dnd-kit`** — Built on `@dnd-kit/core` + `@dnd-kit/sortable` for accessible, keyboard-friendly drag interactions.
+- **Powered by `@dnd-kit/core`** — Accessible, keyboard-friendly drag interactions.
 
 ## Installation
 
@@ -67,7 +68,12 @@ function App() {
 | `xml`      | `string`                | pom XML string (one or more `<Slide>` elements)          |
 | `onChange` | `(xml: string) => void` | Called with updated XML after each drag-and-drop reorder |
 
-Renders a tree of nodes from the parsed XML. Nodes within the same parent container (`VStack`, `HStack`, `Layer`) can be reordered by dragging. Top-level slides can also be reordered.
+Renders a tree of nodes from the parsed XML. Each row supports two drop targets:
+
+- A thin gap between rows — drop here to insert as a **sibling** at that position (works across parents, so a node can be moved to any container or pulled up to the root).
+- The container row body itself — drop here to nest the dragged node as the **last child of that container** (`VStack` / `HStack` / `Layer` only). Drops on non-container bodies are ignored.
+
+Top-level slides can be reordered via the root-level gaps. Cycle-forming drops (e.g. moving a container into its own descendant) are silently rejected.
 
 ## License
 

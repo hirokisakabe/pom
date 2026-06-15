@@ -4,19 +4,22 @@ import {
   DragEndEvent,
   DragOverEvent,
   PointerSensor,
+  useDraggable,
+  useDroppable,
   useSensor,
   useSensors,
   closestCenter,
+  pointerWithin,
 } from "@dnd-kit/core";
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import type { CollisionDetection } from "@dnd-kit/core";
 import type { AstNode } from "./ast.ts";
 import type { POMNode } from "@hirokisakabe/pom/clientApi";
-import { applyReorder, rebuildNodes } from "./ast.ts";
+import {
+  applyMoveInside,
+  applyMoveToGap,
+  isContainerType,
+  rebuildNodes,
+} from "./ast.ts";
 
 const NODE_LABELS: Record<string, string> = {
   text: "Text",
@@ -61,45 +64,91 @@ function nodeLabel(node: POMNode): string {
   return base;
 }
 
-const InvalidOverContext = createContext<string | null>(null);
+const OverIdContext = createContext<string | null>(null);
+const ActiveIdContext = createContext<string | null>(null);
 
-interface SortableItemProps {
-  astNode: AstNode;
-  depth: number;
-  onChange: (nodes: POMNode[]) => void;
-  ast: AstNode[];
+const GAP_PREFIX = "gap:";
+const INSIDE_PREFIX = "inside:";
+
+function gapId(parentId: string, index: number): string {
+  return `${GAP_PREFIX}${parentId}:${index}`;
 }
 
-function SortableItem({ astNode, depth, onChange, ast }: SortableItemProps) {
-  const invalidOverId = useContext(InvalidOverContext);
-  const isInvalidOver = invalidOverId === astNode.id;
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: astNode.id,
-    data: { parentId: astNode.parentId },
-  });
+function insideId(nodeId: string): string {
+  return `${INSIDE_PREFIX}${nodeId}`;
+}
 
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-  };
+function parseGapId(id: string): { parentId: string; index: number } | null {
+  if (!id.startsWith(GAP_PREFIX)) return null;
+  const rest = id.slice(GAP_PREFIX.length);
+  const sep = rest.lastIndexOf(":");
+  if (sep === -1) return null;
+  const parentId = rest.slice(0, sep);
+  const index = Number.parseInt(rest.slice(sep + 1), 10);
+  if (Number.isNaN(index)) return null;
+  return { parentId, index };
+}
 
-  const handleCursor = isInvalidOver
-    ? "not-allowed"
-    : isDragging
-      ? "grabbing"
-      : "grab";
+function parseInsideId(id: string): string | null {
+  if (!id.startsWith(INSIDE_PREFIX)) return null;
+  return id.slice(INSIDE_PREFIX.length);
+}
+
+interface GapStripProps {
+  parentId: string;
+  index: number;
+  depth: number;
+}
+
+function GapStrip({ parentId, index, depth }: GapStripProps) {
+  const id = gapId(parentId, index);
+  const { setNodeRef } = useDroppable({ id });
+  const overId = useContext(OverIdContext);
+  const isOver = overId === id;
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div
+      ref={setNodeRef}
+      data-testid={id}
+      style={{
+        height: isOver ? "6px" : "4px",
+        marginLeft: `${depth * 16}px`,
+        backgroundColor: isOver ? "#3b82f6" : "transparent",
+        borderRadius: "2px",
+      }}
+    />
+  );
+}
+
+interface RowProps {
+  astNode: AstNode;
+  depth: number;
+}
+
+function Row({ astNode, depth }: RowProps) {
+  const isContainer = isContainerType(astNode.node.type);
+  const overId = useContext(OverIdContext);
+  const activeId = useContext(ActiveIdContext);
+
+  const drag = useDraggable({ id: astNode.id });
+  const isDragging = activeId === astNode.id;
+
+  const inside = useDroppable({
+    id: insideId(astNode.id),
+    disabled: !isContainer || isDragging,
+  });
+
+  const setBodyRef = (el: HTMLElement | null) => {
+    inside.setNodeRef(el);
+    drag.setNodeRef(el);
+  };
+
+  const isInsideOver = isContainer && overId === insideId(astNode.id);
+
+  return (
+    <div>
       <div
+        ref={setBodyRef}
         style={{
           display: "flex",
           alignItems: "center",
@@ -109,17 +158,18 @@ function SortableItem({ astNode, depth, onChange, ast }: SortableItemProps) {
           paddingBottom: "3px",
           borderRadius: "4px",
           userSelect: "none",
-          backgroundColor: isInvalidOver ? "#fee2e2" : undefined,
-          outline: isInvalidOver ? "1px solid #dc2626" : undefined,
-          cursor: isInvalidOver ? "not-allowed" : undefined,
+          opacity: isDragging ? 0.4 : 1,
+          backgroundColor: isInsideOver ? "#dbeafe" : undefined,
+          outline: isInsideOver ? "1px solid #2563eb" : undefined,
+          transition: "background-color 50ms",
         }}
       >
         <span
-          {...listeners}
-          {...attributes}
+          {...drag.listeners}
+          {...drag.attributes}
           style={{
-            cursor: handleCursor,
-            color: isInvalidOver ? "#dc2626" : "#9ca3af",
+            cursor: isDragging ? "grabbing" : "grab",
+            color: "#9ca3af",
             fontSize: "12px",
             lineHeight: 1,
             flexShrink: 0,
@@ -141,44 +191,34 @@ function SortableItem({ astNode, depth, onChange, ast }: SortableItemProps) {
           {nodeLabel(astNode.node)}
         </span>
       </div>
-      {astNode.children && astNode.children.length > 0 && (
-        <SortableChildrenList
-          children={astNode.children}
+      {astNode.children && (
+        <ChildList
+          parentId={astNode.id}
+          nodes={astNode.children}
           depth={depth + 1}
-          onChange={onChange}
-          ast={ast}
         />
       )}
     </div>
   );
 }
 
-interface SortableChildrenListProps {
-  children: AstNode[];
+interface ChildListProps {
+  parentId: string;
+  nodes: AstNode[];
   depth: number;
-  onChange: (nodes: POMNode[]) => void;
-  ast: AstNode[];
 }
 
-function SortableChildrenList({
-  children,
-  depth,
-  onChange,
-  ast,
-}: SortableChildrenListProps) {
-  const ids = children.map((c) => c.id);
+function ChildList({ parentId, nodes, depth }: ChildListProps) {
   return (
-    <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-      {children.map((child) => (
-        <SortableItem
-          key={child.id}
-          astNode={child}
-          depth={depth}
-          onChange={onChange}
-          ast={ast}
-        />
+    <>
+      <GapStrip parentId={parentId} index={0} depth={depth} />
+      {nodes.map((child, i) => (
+        <React.Fragment key={child.id}>
+          <Row astNode={child} depth={depth} />
+          <GapStrip parentId={parentId} index={i + 1} depth={depth} />
+        </React.Fragment>
       ))}
-    </SortableContext>
+    </>
   );
 }
 
@@ -187,13 +227,10 @@ export interface AstTreeProps {
   onChange: (nodes: POMNode[]) => void;
 }
 
-function getParentId(data: unknown): string | null {
-  if (typeof data === "object" && data !== null && "parentId" in data) {
-    const value = data.parentId;
-    return typeof value === "string" ? value : null;
-  }
-  return null;
-}
+const collisionDetection: CollisionDetection = (args) => {
+  const within = pointerWithin(args);
+  return within.length > 0 ? within : closestCenter(args);
+};
 
 export function AstTree({ ast, onChange }: AstTreeProps) {
   const sensors = useSensors(
@@ -201,61 +238,58 @@ export function AstTree({ ast, onChange }: AstTreeProps) {
       activationConstraint: { distance: 4 },
     }),
   );
-  const [invalidOverId, setInvalidOverId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  function onDragOver({ active, over }: DragOverEvent) {
-    if (!over || active.id === over.id) {
-      setInvalidOverId(null);
+  function onDragStart(event: { active: { id: string | number } }) {
+    setActiveId(String(event.active.id));
+  }
+
+  function onDragOver({ over }: DragOverEvent) {
+    setOverId(over ? String(over.id) : null);
+  }
+
+  function applyDrop(activeId: string, overId: string): void {
+    const gap = parseGapId(overId);
+    if (gap) {
+      const newAst = applyMoveToGap(ast, activeId, gap.parentId, gap.index);
+      if (newAst !== ast) onChange(rebuildNodes(newAst));
       return;
     }
-    const activeParentId = getParentId(active.data.current);
-    const overParentId = getParentId(over.data.current);
-    if (activeParentId !== overParentId) {
-      setInvalidOverId(over.id as string);
-    } else {
-      setInvalidOverId(null);
+    const insideTarget = parseInsideId(overId);
+    if (insideTarget !== null) {
+      const newAst = applyMoveInside(ast, activeId, insideTarget);
+      if (newAst !== ast) onChange(rebuildNodes(newAst));
     }
   }
 
   function onDragEnd({ active, over }: DragEndEvent) {
-    setInvalidOverId(null);
-    if (!over || active.id === over.id) return;
-
-    const activeParentId = getParentId(active.data.current);
-    const overParentId = getParentId(over.data.current);
-    if (activeParentId === null || activeParentId !== overParentId) return;
-
-    const newAst = applyReorder(
-      ast,
-      active.id as string,
-      over.id as string,
-      activeParentId,
-    );
-    onChange(rebuildNodes(newAst));
+    setOverId(null);
+    setActiveId(null);
+    if (!over) return;
+    applyDrop(String(active.id), String(over.id));
   }
 
   function onDragCancel() {
-    setInvalidOverId(null);
+    setOverId(null);
+    setActiveId(null);
   }
 
-  const rootIds = ast.map((n) => n.id);
-
   return (
-    <div style={{ cursor: invalidOverId !== null ? "not-allowed" : undefined }}>
+    <div>
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={collisionDetection}
+        onDragStart={onDragStart}
         onDragOver={onDragOver}
         onDragEnd={onDragEnd}
         onDragCancel={onDragCancel}
       >
-        <InvalidOverContext.Provider value={invalidOverId}>
-          <SortableContext
-            items={rootIds}
-            strategy={verticalListSortingStrategy}
-          >
+        <ActiveIdContext.Provider value={activeId}>
+          <OverIdContext.Provider value={overId}>
+            <GapStrip parentId="root" index={0} depth={0} />
             {ast.map((astNode, i) => (
-              <div key={astNode.id}>
+              <React.Fragment key={astNode.id}>
                 {i > 0 && (
                   <div
                     style={{
@@ -277,16 +311,12 @@ export function AstTree({ ast, onChange }: AstTreeProps) {
                 >
                   Slide {i + 1}
                 </div>
-                <SortableItem
-                  astNode={astNode}
-                  depth={0}
-                  onChange={onChange}
-                  ast={ast}
-                />
-              </div>
+                <Row astNode={astNode} depth={0} />
+                <GapStrip parentId="root" index={i + 1} depth={0} />
+              </React.Fragment>
             ))}
-          </SortableContext>
-        </InvalidOverContext.Provider>
+          </OverIdContext.Provider>
+        </ActiveIdContext.Provider>
       </DndContext>
     </div>
   );

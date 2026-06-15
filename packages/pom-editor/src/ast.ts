@@ -1,5 +1,4 @@
 import type { POMNode } from "@hirokisakabe/pom/clientApi";
-import { arrayMove } from "@dnd-kit/sortable";
 
 export interface AstNode {
   id: string;
@@ -9,6 +8,10 @@ export interface AstNode {
 }
 
 const CONTAINER_TYPES = new Set(["vstack", "hstack", "layer"]);
+
+export function isContainerType(type: string): boolean {
+  return CONTAINER_TYPES.has(type);
+}
 
 export function buildAst(
   nodes: POMNode[],
@@ -51,53 +54,132 @@ function findNode(astNodes: AstNode[], id: string): AstNode | null {
   return null;
 }
 
-function reorderInParent(
+function isDescendantOrSelf(node: AstNode, id: string): boolean {
+  if (node.id === id) return true;
+  if (!node.children) return false;
+  return node.children.some((c) => isDescendantOrSelf(c, id));
+}
+
+function removeById(
+  astNodes: AstNode[],
+  id: string,
+): { newAst: AstNode[]; removed: AstNode } | null {
+  for (let i = 0; i < astNodes.length; i++) {
+    const current = astNodes[i];
+    if (current.id === id) {
+      return {
+        newAst: [...astNodes.slice(0, i), ...astNodes.slice(i + 1)],
+        removed: current,
+      };
+    }
+    if (current.children) {
+      const result = removeById(current.children, id);
+      if (result) {
+        return {
+          newAst: [
+            ...astNodes.slice(0, i),
+            { ...current, children: result.newAst },
+            ...astNodes.slice(i + 1),
+          ],
+          removed: result.removed,
+        };
+      }
+    }
+  }
+  return null;
+}
+
+function insertAt(
   astNodes: AstNode[],
   parentId: string,
-  oldIndex: number,
-  newIndex: number,
+  index: number,
+  insertion: AstNode,
 ): AstNode[] {
-  return astNodes.map((astNode) => {
-    if (astNode.id === parentId && astNode.children) {
+  if (parentId === "root") {
+    const node = { ...insertion, parentId: "root" };
+    return [...astNodes.slice(0, index), node, ...astNodes.slice(index)];
+  }
+  return astNodes.map((n) => {
+    if (n.id === parentId) {
+      const children = n.children ?? [];
+      const node = { ...insertion, parentId };
       return {
-        ...astNode,
-        children: arrayMove(astNode.children, oldIndex, newIndex),
+        ...n,
+        children: [...children.slice(0, index), node, ...children.slice(index)],
       };
     }
-    if (astNode.children) {
+    if (n.children) {
       return {
-        ...astNode,
-        children: reorderInParent(
-          astNode.children,
-          parentId,
-          oldIndex,
-          newIndex,
-        ),
+        ...n,
+        children: insertAt(n.children, parentId, index, insertion),
       };
     }
-    return astNode;
+    return n;
   });
 }
 
-export function applyReorder(
+function siblingsOf(ast: AstNode[], parentId: string): AstNode[] | null {
+  if (parentId === "root") return ast;
+  const parent = findNode(ast, parentId);
+  return parent?.children ?? null;
+}
+
+export function applyMoveToGap(
   ast: AstNode[],
   activeId: string,
-  overId: string,
-  activeParentId: string,
+  newParentId: string,
+  newIndex: number,
 ): AstNode[] {
-  if (activeParentId === "root") {
-    const oldIndex = ast.findIndex((c) => c.id === activeId);
-    const newIndex = ast.findIndex((c) => c.id === overId);
-    if (oldIndex === -1 || newIndex === -1) return ast;
-    return arrayMove(ast, oldIndex, newIndex);
+  const active = findNode(ast, activeId);
+  if (!active) return ast;
+  if (newParentId !== "root" && isDescendantOrSelf(active, newParentId))
+    return ast;
+
+  let adjustedIndex = newIndex;
+  if (active.parentId === newParentId) {
+    const siblings = siblingsOf(ast, newParentId);
+    if (siblings) {
+      const activeIndex = siblings.findIndex((c) => c.id === activeId);
+      if (activeIndex !== -1 && activeIndex < newIndex) {
+        adjustedIndex = newIndex - 1;
+      }
+    }
   }
 
-  const parent = findNode(ast, activeParentId);
-  if (!parent?.children) return ast;
+  const removeResult = removeById(ast, activeId);
+  if (!removeResult) return ast;
 
-  const oldIndex = parent.children.findIndex((c) => c.id === activeId);
-  const newIndex = parent.children.findIndex((c) => c.id === overId);
-  if (oldIndex === -1 || newIndex === -1) return ast;
+  return insertAt(
+    removeResult.newAst,
+    newParentId,
+    adjustedIndex,
+    removeResult.removed,
+  );
+}
 
-  return reorderInParent(ast, activeParentId, oldIndex, newIndex);
+export function applyMoveInside(
+  ast: AstNode[],
+  activeId: string,
+  containerId: string,
+): AstNode[] {
+  const active = findNode(ast, activeId);
+  if (!active) return ast;
+  if (isDescendantOrSelf(active, containerId)) return ast;
+
+  const container = findNode(ast, containerId);
+  if (!container) return ast;
+  if (!isContainerType(container.node.type)) return ast;
+
+  const removeResult = removeById(ast, activeId);
+  if (!removeResult) return ast;
+
+  const containerAfterRemove = findNode(removeResult.newAst, containerId);
+  const insertIndex = containerAfterRemove?.children?.length ?? 0;
+
+  return insertAt(
+    removeResult.newAst,
+    containerId,
+    insertIndex,
+    removeResult.removed,
+  );
 }
