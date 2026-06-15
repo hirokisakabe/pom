@@ -1,3 +1,3 @@
 {
-  "ignoreCommand": "if git rev-parse --verify HEAD^2 >/dev/null 2>&1; then base=$(git merge-base HEAD^1 HEAD^2) && git diff --quiet \"$base\" HEAD^2 -- ./ ../../packages/pom/docs/; else git diff --quiet HEAD^ HEAD -- ./ ../../packages/pom/docs/; fi"
+  "ignoreCommand": "P=\"./ ../../packages/pom/docs/ ../../packages/pom-editor/\"; if git rev-parse --verify HEAD^2 >/dev/null 2>&1; then b=$(git merge-base HEAD^1 HEAD^2) && git diff --quiet \"$b\" HEAD^2 -- $P; else git diff --quiet HEAD^ HEAD -- $P; fi"
 }
