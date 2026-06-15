@@ -64,7 +64,8 @@ export const PAGE_NAMES = [
   "48-chart-sparkline",
   "49-span-fontsize",
   "50-empty-container-spacer",
-  "51-text-gradient",
+  "51-shape-icon-effects",
+  "52-text-gradient",
 ] as const;
 
 export const THRESHOLD = 0.1;

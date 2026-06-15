@@ -338,8 +338,26 @@ A node for drawing shapes. Different representations are possible with or withou
 | `text`          | string (text inside the shape)                                                                                                      |
 | `fill`          | `fill.color="hex" fill.transparency="0.5"`                                                                                          |
 | `line`          | `line.color="hex" line.width="2" line.dashType="dash"`                                                                              |
+| `outline`       | `outline.size="2" outline.color="0088CC"` (alias for `line` with the same syntax as Text outline; takes precedence over `line`)     |
+| `glow`          | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"` — native shape glow (editable in PowerPoint, not rasterized)                 |
 | `rotate`        | number (degrees clockwise, render-only)                                                                                             |
 | Text attributes | `fontSize` `color` `textAlign` `bold` `italic` `underline` `strike` `subscript` `superscript` `highlight` `fontFamily` `lineHeight` |
+
+**Shape Effects (glow / outline):**
+
+`glow` adds a glow effect around the shape edge, and `outline` is a Text-style alias for `line` (the underlying border). Both produce native PowerPoint shape effects that remain editable; nothing is rasterized.
+
+```xml
+<!-- Glowing badge dot -->
+<Shape shapeType="ellipse" w="20" h="20" fill.color="3B82F6" glow.size="12" glow.opacity="0.7" glow.color="3B82F6" />
+<!-- Outlined pill (outline overrides line if both are specified) -->
+<Shape shapeType="roundRect" w="160" h="40" outline.size="3" outline.color="1D4ED8" />
+```
+
+- `glow.size`: glow radius in px (converted to EMU on output, default: 8). `glow.opacity`: 0–1 (default: 0.75). `glow.color`: hex (default: `FFFFFF`).
+- `outline.size`: outline width in px (converted to pt on output, default: 1). `outline.color`: hex (default: `FFFFFF`).
+- When both `line` and `outline` are specified, `outline` overrides `line.color` / `line.width`; `line.dashType` is still carried over.
+- Note: LibreOffice may not render shape glow reliably; open the PPTX in PowerPoint to verify.
 
 **Common Shape Types:**
 
@@ -971,14 +989,27 @@ A node for displaying icons from the Lucide icon library. Icons are rendered as 
 <Icon name="cpu" variant="circle-filled" bgColor="#E8F0FE" color="#1D4ED8" />
 ```
 
-| Attribute | Values                                                                      |
-| --------- | --------------------------------------------------------------------------- |
-| `name`    | icon name (required)                                                        |
-| `size`    | number (default: 24, in px)                                                 |
-| `color`   | hex color (default: `#000000`)                                              |
-| `variant` | `circle-filled`, `circle-outlined`, `square-filled`, `square-outlined`      |
-| `bgColor` | hex color for the background shape (default: `#E0E0E0` when variant is set) |
-| `rotate`  | number (degrees clockwise, render-only)                                     |
+| Attribute | Values                                                                                                                             |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `name`    | icon name (required)                                                                                                               |
+| `size`    | number (default: 24, in px)                                                                                                        |
+| `color`   | hex color (default: `#000000`)                                                                                                     |
+| `variant` | `circle-filled`, `circle-outlined`, `square-filled`, `square-outlined`                                                             |
+| `bgColor` | hex color for the background shape (default: `#E0E0E0` when variant is set)                                                        |
+| `glow`    | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"` — applied to the background shape (variant required, ignored on bare icons) |
+| `outline` | `outline.size="2" outline.color="0088CC"` — applied to the background shape (variant required, overrides the variant default line) |
+| `rotate`  | number (degrees clockwise, render-only)                                                                                            |
+
+**Icon Effects (glow / outline):**
+
+`glow` and `outline` are applied to the background shape created by `variant`. They are not applied to the PNG icon glyph itself (the glyph is rasterized and PowerPoint native effects cannot be added afterwards), so both are no-ops when `variant` is not set. Typical use is glowing badge dots, timeline markers, and outlined chips.
+
+```xml
+<!-- Glowing badge dot -->
+<Icon name="star" size="16" variant="circle-filled" bgColor="3B82F6" glow.size="10" glow.color="3B82F6" />
+<!-- Outlined badge -->
+<Icon name="info" size="18" variant="circle-outlined" color="1D4ED8" outline.size="2" outline.color="1D4ED8" />
+```
 
 All [Lucide icons](https://lucide.dev/icons/) are available. Below are common examples:
 

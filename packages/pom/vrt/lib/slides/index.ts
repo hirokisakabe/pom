@@ -54,10 +54,11 @@ export {
 } from "./customFont.js";
 export { page39ArrowXml } from "./arrow.js";
 export { page41GradientXml } from "./gradient.js";
-export { page51TextGradientXml } from "./textGradient.js";
+export { page52TextGradientXml } from "./textGradient.js";
 export { page42FlexGrowXml } from "./flexGrow.js";
 export { page43DarkThemeXml, vrtThemeXml } from "./darkTheme.js";
 export { page44PerSideBorderXml } from "./perSideBorder.js";
 export { page45TextEffectsXml } from "./textEffects.js";
 export { page46RotateXml } from "./rotate.js";
 export { page47SubSuperscriptXml } from "./subSuperscript.js";
+export { page51ShapeIconEffectsXml } from "./shapeIconEffects.js";

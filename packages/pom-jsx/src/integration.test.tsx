@@ -94,6 +94,32 @@ describe("pom core との統合テスト", () => {
     expect(xml).toContain(`outline='{"size":2,"color":"0088CC"}'`);
   });
 
+  it("glow / outline 付きの Shape / Icon が parseXml でパースできる", () => {
+    const xml = renderToXml(
+      <Slide>
+        <Shape
+          shapeType="ellipse"
+          w={48}
+          h={48}
+          fill={{ color: "3B82F6" }}
+          glow={{ size: 12, opacity: 0.7, color: "3B82F6" }}
+          outline={{ size: 2, color: "FFFFFF" }}
+        />
+        <Icon
+          name="star"
+          size={16}
+          variant="circle-filled"
+          bgColor="3B82F6"
+          glow={{ size: 10, color: "3B82F6" }}
+        />
+      </Slide>,
+    );
+    assertParsable(xml);
+    expect(xml).toContain(`glow='{"size":12,"opacity":0.7,"color":"3B82F6"}'`);
+    expect(xml).toContain(`outline='{"size":2,"color":"FFFFFF"}'`);
+    expect(xml).toContain(`glow='{"size":10,"color":"3B82F6"}'`);
+  });
+
   it("rotate 付きの leaf ノードが parseXml でパースできる", () => {
     const xml = renderToXml(
       <Slide>

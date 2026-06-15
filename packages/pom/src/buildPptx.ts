@@ -8,6 +8,7 @@ import type { Diagnostic } from "./diagnostics.ts";
 import { DiagnosticsError } from "./diagnostics.ts";
 import { parseMasterPptx } from "./parseMasterPptx.ts";
 import { parseXml } from "./parseXml/parseXml.ts";
+import { patchPptxWriteForGlowEffects } from "./renderPptx/glowEffects.ts";
 import { patchPptxWriteForGradientFills } from "./renderPptx/gradientFills.ts";
 import { renderPptx } from "./renderPptx/renderPptx.ts";
 import { freeYogaTree } from "./shared/freeYogaTree.ts";
@@ -88,6 +89,10 @@ export async function buildPptx(
 
   // backgroundGradient / textGradient 使用時は write/writeFile に gradFill 置換の後処理を仕込む
   patchPptxWriteForGradientFills(pptx, ctx.gradientFills);
+
+  // Shape / Icon の glow 指定がある場合は write/writeFile に effectLst 挿入の
+  // 後処理を仕込む (gradientFills の patch 後にチェーンする)
+  patchPptxWriteForGlowEffects(pptx, ctx.glowEffects);
 
   const diagnostics = ctx.diagnostics.items;
 

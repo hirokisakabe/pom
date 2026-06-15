@@ -52,7 +52,8 @@ import {
   page48ChartSparklineXml,
   page49SpanFontSizeXml,
   page50EmptyContainerSpacerXml,
-  page51TextGradientXml,
+  page51ShapeIconEffectsXml,
+  page52TextGradientXml,
   vrtThemeXml,
 } from "./slides/index.js";
 
@@ -109,7 +110,8 @@ export async function generatePptx(outputPath: string): Promise<void> {
     page48ChartSparklineXml,
     page49SpanFontSizeXml,
     page50EmptyContainerSpacerXml,
-    page51TextGradientXml,
+    page51ShapeIconEffectsXml,
+    page52TextGradientXml,
   ]
     .map((pageXml) => `<Slide>${pageXml}</Slide>`)
     .join("\n");
