@@ -164,6 +164,37 @@ describe("parseRadialGradient", () => {
     ).toMatchObject({ centerX: 50, centerY: 0 });
   });
 
+  it("center を含む 2 トークン位置 (center right / left center 等) を受け付ける", () => {
+    // center は X/Y どちらにも割り当て可能なため、片側がキーワードで埋まっていれば
+    // center は未確定軸 (50%) に割り当てられる
+    expect(
+      parseRadialGradient(
+        "radial-gradient(circle at center right, #FF0000, #0000FF)",
+      ),
+    ).toMatchObject({ centerX: 100, centerY: 50 });
+    expect(
+      parseRadialGradient(
+        "radial-gradient(circle at left center, #FF0000, #0000FF)",
+      ),
+    ).toMatchObject({ centerX: 0, centerY: 50 });
+    expect(
+      parseRadialGradient(
+        "radial-gradient(circle at center top, #FF0000, #0000FF)",
+      ),
+    ).toMatchObject({ centerX: 50, centerY: 0 });
+    expect(
+      parseRadialGradient(
+        "radial-gradient(circle at bottom center, #FF0000, #0000FF)",
+      ),
+    ).toMatchObject({ centerX: 50, centerY: 100 });
+    // center center も valid (両軸とも 50%)
+    expect(
+      parseRadialGradient(
+        "radial-gradient(circle at center center, #FF0000, #0000FF)",
+      ),
+    ).toMatchObject({ centerX: 50, centerY: 50 });
+  });
+
   it("at <position> で % 位置を指定できる", () => {
     expect(
       parseRadialGradient(
@@ -226,6 +257,29 @@ describe("parseRadialGradient", () => {
     ).toBeNull();
     expect(
       parseRadialGradient("radial-gradient(circle at, #FF0000, #0000FF)"),
+    ).toBeNull();
+  });
+
+  it("shape / size の重複指定は null を返す (silently normalize しない)", () => {
+    expect(
+      parseRadialGradient("radial-gradient(circle ellipse, #FF0000, #0000FF)"),
+    ).toBeNull();
+    expect(
+      parseRadialGradient(
+        "radial-gradient(closest-side farthest-corner, #FF0000, #0000FF)",
+      ),
+    ).toBeNull();
+    expect(
+      parseRadialGradient("radial-gradient(ellipse circle, #FF0000, #0000FF)"),
+    ).toBeNull();
+  });
+
+  it("center center center のような 3 個以上の center 連続は null", () => {
+    // 2 トークン以下しか受け付けないため
+    expect(
+      parseRadialGradient(
+        "radial-gradient(circle at center center center, #FF0000, #0000FF)",
+      ),
     ).toBeNull();
   });
 });

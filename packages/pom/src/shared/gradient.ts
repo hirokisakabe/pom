@@ -222,9 +222,11 @@ function parsePosition(tokens: string[]): { x: number; y: number } | null {
     if (pct) return { x: Number(pct[1]), y: 50 };
     return null;
   }
-  // 2 tokens.
+  // 2 tokens. center は X/Y どちらにも割り当て可能なため一旦保留し、
+  // 残りトークン処理後に未確定の軸へ振り分ける (CSS の `<position>` 2-value 構文に従う)。
   let x: number | null = null;
   let y: number | null = null;
+  let centerCount = 0;
   for (const raw of tokens) {
     const t = raw.toLowerCase();
     const pct = /^(-?\d+(?:\.\d+)?)%$/.exec(t);
@@ -246,12 +248,17 @@ function parsePosition(tokens: string[]): { x: number; y: number } | null {
       continue;
     }
     if (t === "center") {
-      if (x === null) x = 50;
-      else if (y === null) y = 50;
-      else return null;
+      centerCount++;
       continue;
     }
     return null;
+  }
+  // center を未確定軸に割り当てる。両方未確定なら 1 つ目 center で X=50、
+  // 2 つ目 center で Y=50 になる。
+  for (let i = 0; i < centerCount; i++) {
+    if (x === null) x = 50;
+    else if (y === null) y = 50;
+    else return null;
   }
   return { x: x ?? 50, y: y ?? 50 };
 }
@@ -294,11 +301,17 @@ export function parseRadialGradient(value: string): RadialGradient | null {
       atIdx >= 0 ? firstLowerTokens.slice(0, atIdx) : firstLowerTokens;
     const positionTokens = atIdx >= 0 ? firstTokens.slice(atIdx + 1) : [];
 
+    let shapeSeen = false;
+    let sizeSeen = false;
     for (const token of shapeSizeTokens) {
       if (SHAPE_KEYWORDS.has(token)) {
+        if (shapeSeen) return null;
         shape = token as RadialGradientShape;
+        shapeSeen = true;
       } else if (SIZE_KEYWORDS.has(token)) {
+        if (sizeSeen) return null;
         size = token as RadialGradientSize;
+        sizeSeen = true;
       } else {
         return null;
       }
