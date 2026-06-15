@@ -15,19 +15,25 @@ export function renderIconNode(
     const bgColor = node.bgColor ?? "#E0E0E0";
     const colorValue = bgColor.replace(/^#/, "");
 
-    // outline 指定時は背景図形の line を上書きする。
-    // 未指定時は variant のデフォルト (outlined variant は colorValue / 1.5pt) を維持。
+    // 背景図形の line のデフォルト: outlined variant は colorValue / 1.5pt、
+    // filled variant は undefined (枠線なし)。
+    const variantDefaultLine = isFilled
+      ? undefined
+      : { color: colorValue, width: 1.5 };
+    // outline 指定時は variant のデフォルト line とフィールド単位でマージする。
+    // outline 側で省略された属性は variant default の値を引き継ぐので、例えば
+    // outlined variant に `outline.color` だけ指定すると、太さは 1.5pt のまま
+    // 色だけ outline で上書きされる。
     const outlineLine = node.outline
       ? {
-          color: node.outline.color,
+          color:
+            node.outline.color ?? variantDefaultLine?.color ?? "FFFFFF",
           width:
             node.outline.size !== undefined
               ? pxToPt(node.outline.size)
-              : undefined,
+              : variantDefaultLine?.width ?? 1,
         }
-      : isFilled
-        ? undefined
-        : { color: colorValue, width: 1.5 };
+      : variantDefaultLine;
 
     const glowMarker = node.glow
       ? ctx.buildContext.glowEffects.register(node.glow)

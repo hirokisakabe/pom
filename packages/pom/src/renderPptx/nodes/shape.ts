@@ -12,9 +12,11 @@ type ShapePositionedNode = Extract<PositionedNode, { type: "shape" }>;
  * 既存 `line` 属性 (`line.color` / `line.width` / `line.dashType`) を
  * 1 つの BorderStyle にマージする。
  *
- * outline が指定された場合はそれを基準とし、line に dashType の指定があれば
- * 引き継ぐ。色・幅は outline が優先される (両方指定された場合の意図として、
- * 後から追加された outline を最新指定とみなす)。
+ * フィールド単位のマージで、`outline` の指定があるフィールドは `line` を
+ * 上書きするが、`outline` 側で省略されたフィールドは `line` の値を引き継ぎ、
+ * `line` にも値が無い場合は Text outline と同じ既定値 (`width: 1pt 相当` /
+ * `color: FFFFFF`) を採用する。`dashType` は `outline` に対応フィールドが
+ * 無いため `line.dashType` をそのまま使う。
  */
 function resolveShapeLine(
   line: BorderStyle | undefined,
@@ -22,8 +24,8 @@ function resolveShapeLine(
 ): BorderStyle | undefined {
   if (!outline) return line;
   return {
-    color: outline.color,
-    width: outline.size,
+    color: outline.color ?? line?.color ?? "FFFFFF",
+    width: outline.size ?? line?.width ?? 1,
     dashType: line?.dashType,
   };
 }

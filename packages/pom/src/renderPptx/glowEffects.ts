@@ -79,40 +79,55 @@ export class GlowEffectRegistry {
 }
 
 /**
- * DrawingML の `<a:effectLst><a:glow>...</a:glow></a:effectLst>` 要素を構築する
+ * DrawingML の `<a:glow>` 要素を構築する (effectLst で囲まない、内側だけ)
  *
  * - rad (光彩半径): px → EMU
  * - alpha (透明度): 0-1 → 1/1000 % (0-100000)
  */
-function buildGlowEffectXml(entry: RegisteredGlow): string {
+function buildGlowXml(entry: RegisteredGlow): string {
   const rad = Math.round(pxToEmu(entry.sizePx));
   const alpha = Math.round(entry.opacity * 100000);
-  return `<a:effectLst><a:glow rad="${rad}"><a:srgbClr val="${entry.color}"><a:alpha val="${alpha}"/></a:srgbClr></a:glow></a:effectLst>`;
+  return `<a:glow rad="${rad}"><a:srgbClr val="${entry.color}"><a:alpha val="${alpha}"/></a:srgbClr></a:glow>`;
 }
 
 /**
  * 1 つの slide XML を受け取り、登録された glow を該当 shape に適用した XML を返す
  *
- * `<p:cNvPr ... name="pom-glow:N"/>` を含む `<p:sp>` ブロックを正規表現で検出し、
- * そのブロック内の最初の `</p:spPr>` の直前に effectLst を挿入する。
- * shape (`<p:sp>`) と picture (`<p:pic>`) の双方の cNvPr が対象となる
- * (現状は Shape のみだが Icon variant の背景 shape にも適用される)。
+ * `<p:cNvPr ... name="pom-glow:N">` を含む `<p:sp>` ブロックを正規表現で検出し、
+ * 以下のいずれかで `<a:glow>` を挿入する:
+ *
+ * 1. 既に `<a:effectLst>...</a:effectLst>` が存在する場合
+ *    (= pptxgenjs が shape の `shadow` 等で同要素を生成済み):
+ *    その `effectLst` 内側の末尾 (`</a:effectLst>` の直前) に `<a:glow>` を追加する。
+ *    OOXML スキーマ上 `<p:spPr>` 内の `<a:effectLst>` は最大 1 個までで、二重に
+ *    並べると不正になるため。
+ * 2. 既存 `effectLst` が無い場合:
+ *    `</p:spPr>` の直前に新規 `<a:effectLst><a:glow/></a:effectLst>` を挿入する。
+ *
+ * pptxgenjs は cNvPr を `<p:cNvPr.../>` (self-closing) と
+ * `<p:cNvPr...></p:cNvPr>` (open+close) のどちらの形式でも出力し得るため、
+ * cNvPr の閉じ形式に依存せず name 属性のあとから lazy に進める。
  */
 function applyGlowToXml(xml: string, registry: GlowEffectRegistry): string {
   let result = xml;
   for (const entry of registry.entries) {
-    const effectXml = buildGlowEffectXml(entry);
-    // cNvPr の name 属性で marker shape を見つけ、その shape ブロック内の
-    // 最初に出現する </p:spPr> の直前に effectLst を挿入する。
-    // pptxgenjs は cNvPr を `<p:cNvPr.../>` (self-closing) と
-    // `<p:cNvPr...></p:cNvPr>` (open+close) のどちらの形式でも出力し得るため、
-    // cNvPr の閉じ形式に依存せず name 属性のあとから lazy に進める。
+    const glowXml = buildGlowXml(entry);
     const re = new RegExp(
       `(<p:cNvPr[^>]*name="${entry.marker}"[\\s\\S]*?)(</p:spPr>)`,
       "g",
     );
     result = result.replace(re, (_match, prefix, suffix) => {
-      return `${prefix as string}${effectXml}${suffix as string}`;
+      const block = prefix as string;
+      // shape ブロック内に既存の effectLst があるかを `</a:effectLst>` の有無で判定する。
+      // 別 shape の effectLst を誤って書き換えないよう、検索範囲は prefix
+      // (= 該当 cNvPr 〜 直後の </p:spPr> の手前まで) に限定している。
+      const closingIdx = block.lastIndexOf("</a:effectLst>");
+      if (closingIdx >= 0) {
+        const before = block.substring(0, closingIdx);
+        const after = block.substring(closingIdx);
+        return `${before}${glowXml}${after}${suffix as string}`;
+      }
+      return `${block}<a:effectLst>${glowXml}</a:effectLst>${suffix as string}`;
     });
   }
   return result;

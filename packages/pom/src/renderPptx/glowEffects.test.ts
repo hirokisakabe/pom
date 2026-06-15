@@ -174,6 +174,77 @@ describe("buildPptx with Shape glow", () => {
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain("<a:gradFill");
-    expect(slideXml).toContain("<a:effectLst><a:glow");
+    expect(slideXml).toContain("<a:glow");
+  });
+
+  it("shadow と glow を併用した shape で effectLst が 1 つに統合される", async () => {
+    // pptxgenjs は shadow 指定時に <a:spPr> 配下に <a:effectLst><a:outerShdw/></a:effectLst>
+    // を出力する。glow を追加する際に新たな <a:effectLst> を別途並べると
+    // OOXML として不正になるため、既存 effectLst の内側に <a:glow> を追加する。
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Shape shapeType="rect" w="100" h="100" fill.color="FF0000"
+        shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000000"
+        glow.size="8" glow.color="00FF00"/>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.write({
+      outputType: "uint8array",
+    })) as Uint8Array;
+    const slideXml = await readSlideXml(buffer);
+
+    // 該当 shape の <p:spPr> に effectLst は 1 つだけ存在し、その中に
+    // outerShdw と glow の両方が含まれる
+    const spStart = slideXml.indexOf('name="pom-glow:0"');
+    expect(spStart).toBeGreaterThanOrEqual(0);
+    const spEnd = slideXml.indexOf("</p:sp>", spStart);
+    const spBlock = slideXml.substring(spStart, spEnd);
+    expect(spBlock.match(/<a:effectLst[^>]*>/g)).toHaveLength(1);
+    expect(spBlock).toContain("<a:outerShdw");
+    expect(spBlock).toContain("<a:glow");
+  });
+
+  it("Shape の outline.color のみ指定時、line.width は既存値 (なければ default) を保持する", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Shape shapeType="rect" w="100" h="100" line.width="2" outline.color="AABBCC"/>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.write({
+      outputType: "uint8array",
+    })) as Uint8Array;
+    const slideXml = await readSlideXml(buffer);
+
+    // outline.color で AABBCC、line.width=2px → 1.5pt → 19050 EMU
+    expect(slideXml).toContain('<a:srgbClr val="AABBCC"/>');
+    expect(slideXml).toMatch(/<a:ln[^>]*w="19050"/);
+  });
+
+  it("Shape の outline.size のみ指定時、line.color は既存値を保持する", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Shape shapeType="rect" w="100" h="100" line.color="112233" outline.size="4"/>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.write({
+      outputType: "uint8array",
+    })) as Uint8Array;
+    const slideXml = await readSlideXml(buffer);
+
+    // outline.size=4px → 3pt → 38100 EMU、line.color の 112233 を維持
+    expect(slideXml).toContain('<a:srgbClr val="112233"/>');
+    expect(slideXml).toMatch(/<a:ln[^>]*w="38100"/);
+  });
+
+  it("Icon outlined variant + outline.color のみ指定時、variant 既定の 1.5pt 太さを保持する", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Icon name="star" color="111111" variant="circle-outlined" outline.color="AABBCC"/>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.write({
+      outputType: "uint8array",
+    })) as Uint8Array;
+    const slideXml = await readSlideXml(buffer);
+
+    // outline.color で AABBCC、太さは variant default の 1.5pt → 19050 EMU を維持
+    expect(slideXml).toContain('<a:srgbClr val="AABBCC"/>');
+    expect(slideXml).toMatch(/<a:ln[^>]*w="19050"/);
   });
 });
