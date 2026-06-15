@@ -55,7 +55,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.2",
-    "jsdom": "^28.0.1",
+    "jsdom": "^29.1.1",
     "react": "^19",
     "react-dom": "^19",
     "vitest": "^4.1.8"
