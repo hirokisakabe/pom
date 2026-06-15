@@ -242,7 +242,11 @@ function renderPerSideBorderPaths(
 
   const ownership: Record<BorderCorner, BorderSide | null> = {
     topLeft: perSideBorders.top ? "top" : perSideBorders.left ? "left" : null,
-    topRight: perSideBorders.top ? "top" : perSideBorders.right ? "right" : null,
+    topRight: perSideBorders.top
+      ? "top"
+      : perSideBorders.right
+        ? "right"
+        : null,
     bottomRight: perSideBorders.bottom
       ? "bottom"
       : perSideBorders.right
