@@ -1,4 +1,4 @@
-import type { PositionedNode } from "../../types.ts";
+import type { BorderStyle, PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { pxToPt } from "../units.ts";
 import { convertUnderline, convertStrike } from "../textOptions.ts";
@@ -7,10 +7,38 @@ import { convertBorderLine, convertShadow } from "../utils/visualStyle.ts";
 
 type ShapePositionedNode = Extract<PositionedNode, { type: "shape" }>;
 
+/**
+ * outline (Text と同じ書式の `outline.size` / `outline.color`) と
+ * 既存 `line` 属性 (`line.color` / `line.width` / `line.dashType`) を
+ * 1 つの BorderStyle にマージする。
+ *
+ * フィールド単位のマージで、`outline` の指定があるフィールドは `line` を
+ * 上書きするが、`outline` 側で省略されたフィールドは `line` の値を引き継ぎ、
+ * `line` にも値が無い場合は Text outline と同じ既定値 (`width: 1pt 相当` /
+ * `color: FFFFFF`) を採用する。`dashType` は `outline` に対応フィールドが
+ * 無いため `line.dashType` をそのまま使う。
+ */
+function resolveShapeLine(
+  line: BorderStyle | undefined,
+  outline: { size?: number; color?: string } | undefined,
+): BorderStyle | undefined {
+  if (!outline) return line;
+  return {
+    color: outline.color ?? line?.color ?? "FFFFFF",
+    width: outline.size ?? line?.width ?? 1,
+    dashType: line?.dashType,
+  };
+}
+
 export function renderShapeNode(
   node: ShapePositionedNode,
   ctx: RenderContext,
 ): void {
+  const lineSpec = resolveShapeLine(node.line, node.outline);
+  const glowMarker = node.glow
+    ? ctx.buildContext.glowEffects.register(node.glow)
+    : undefined;
+
   const shapeOptions = {
     ...getContentAreaIn(node),
     fill: node.fill
@@ -19,9 +47,10 @@ export function renderShapeNode(
           transparency: node.fill.transparency,
         }
       : undefined,
-    line: node.line ? convertBorderLine(node.line) : undefined,
+    line: lineSpec ? convertBorderLine(lineSpec) : undefined,
     shadow: convertShadow(node.shadow),
     rotate: node.rotate,
+    objectName: glowMarker,
   };
 
   if (node.text) {

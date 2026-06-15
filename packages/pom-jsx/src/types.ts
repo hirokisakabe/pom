@@ -239,6 +239,8 @@ export interface ShapeProps extends BaseProps, TextStyleProps, SubSupProps {
   rotate?: number;
   fill?: FillStyle;
   line?: BorderStyle;
+  glow?: TextGlow;
+  outline?: TextOutline;
   textAlign?: TextAlign;
   lineHeight?: number;
 }
@@ -413,6 +415,8 @@ export interface IconProps extends BaseProps {
     | "square-filled"
     | "square-outlined";
   bgColor?: string;
+  glow?: TextGlow;
+  outline?: TextOutline;
 }
 
 // ===== Svg =====

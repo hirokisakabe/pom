@@ -273,6 +273,10 @@ Displays an icon from the Lucide icon library (1,900+ icons available).
 | `rotate`  | number (degrees clockwise, render-only)                                |
 | `variant` | `circle-filled`, `circle-outlined`, `square-filled`, `square-outlined`   |
 | `bgColor` | hex color for background shape (`#` prefix optional, default: `#E0E0E0`) |
+| `glow`    | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"` — applied to the variant background shape (no-op without `variant`) |
+| `outline` | `outline.size="2" outline.color="0088CC"` — applied to the variant background shape; overrides the variant default line |
+
+**Icon effects (glow / outline):** Both apply only to the background shape produced by `variant`; they cannot adorn the PNG icon glyph itself (it is rasterized). Use the same defaults as Text glow / outline. Typical use is glowing badge dots and outlined chips paired with an icon glyph (`Icon name="star" size="16" variant="circle-filled" bgColor="3B82F6" glow.size="10" glow.color="3B82F6"`).
 
 ### Svg
 
@@ -328,10 +332,14 @@ For the full icon list, see https://lucide.dev/icons/ (use the icon name in keba
 | `text`          | string (text inside shape)                                                                                |
 | `fill`          | `fill.color="hex" fill.transparency="0.5"`                                                                |
 | `line`          | `line.color="hex" line.width="2" line.dashType="dash"`                                                    |
+| `outline`       | `outline.size="2" outline.color="0088CC"` — Text-style alias for `line`; overrides `line.color`/`line.width` when both are set, `line.dashType` is preserved |
+| `glow`          | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"` — native shape glow (editable in PowerPoint, not rasterized) |
 | `rotate`        | number (degrees clockwise, render-only)                                                                   |
 | Text attributes | `fontSize` `color` `textAlign` `bold` `italic` `underline` `strike` `subscript` `superscript` `highlight` `fontFamily` `lineHeight` |
 
 `fill`, `line`, and other style objects also allow mixing shorthand + dot notation on the same node (dot notation overrides specific keys).
+
+**Shape effects (glow / outline):** `glow` adds a glow around the shape edge (`size` in px → converted to EMU, `opacity` 0-1, `color` hex; defaults: 8 / 0.75 / FFFFFF). `outline` is a Text-style alias for `line`; both produce native PowerPoint effects that stay editable. Typical use is glowing badge dots (`Shape shapeType="ellipse" w="20" h="20" fill.color="3B82F6" glow.size="12" glow.color="3B82F6"`), accent-glow KPI plates, and timeline markers. Do **not** wrap the shape with `Layer` purely to overlay a soft glow — `glow` on the shape itself is more compact and editable.
 
 **Full shapeType list:**
 
@@ -683,7 +691,7 @@ A per-side border (`borderTop` etc.) cannot be combined with `borderRadius`. To 
 
 - The colored dot + matching uppercase label carries the category color without needing a top-edge stripe.
 - Keep the dot small (6–10 px) so it reads as a category indicator, not a bullet.
-- For a more prominent variant, thicken the dot to a short horizontal bar (`Shape shapeType="roundRect" w="24" h="3"` filled with the category color). `glow` is `Text`-only — do not apply it to `Shape`.
+- For a more prominent variant, thicken the dot to a short horizontal bar (`Shape shapeType="roundRect" w="24" h="3"` filled with the category color). To make the dot pop on dark backgrounds, attach a small `glow` to the `Shape` itself (`glow.size="10" glow.opacity="0.7" glow.color="<category color>"`) — it stays editable in PowerPoint as a native shape effect.
 
 ## Notes
 

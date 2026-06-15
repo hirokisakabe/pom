@@ -96,7 +96,7 @@ Each slide must be wrapped in a `<Slide>` element. To produce multiple slides, l
 | Ol           | Ordered (numbered) list with Li items                                                                                                                                                                      |
 | Image        | Images from file path, URL, or base64, with optional rotation                                                                                                                                              |
 | Table        | Tables with customizable columns and rows                                                                                                                                                                  |
-| Shape        | PowerPoint shapes (roundRect, ellipse, etc.) with optional rotation                                                                                                                                        |
+| Shape        | PowerPoint shapes (roundRect, ellipse, etc.) with optional rotation, native glow, and outline effects                                                                                                      |
 | Chart        | Charts (bar, line, pie, area, doughnut, radar)                                                                                                                                                             |
 | Timeline     | Timeline / roadmap visualizations                                                                                                                                                                          |
 | Matrix       | 2x2 positioning maps                                                                                                                                                                                       |
@@ -109,7 +109,7 @@ Each slide must be wrapped in a `<Slide>` element. To produce multiple slides, l
 | Layer        | Absolute-positioned overlay container                                                                                                                                                                      |
 | VStack       | Vertical stack layout                                                                                                                                                                                      |
 | HStack       | Horizontal stack layout                                                                                                                                                                                    |
-| Icon         | Lucide icons with optional rotation                                                                                                                                                                        |
+| Icon         | Lucide icons with optional rotation; variant background supports native glow / outline effects                                                                                                             |
 | Svg          | Inline SVG graphics                                                                                                                                                                                        |
 
 For detailed node documentation, see [Nodes](./docs/nodes.md).
