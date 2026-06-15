@@ -9,8 +9,8 @@
       <Text fontSize="11" bold="true" color="$accent" letterSpacing="3">FY2026 / Q3 REVIEW</Text>
     </HStack>
 
-    <!-- スペーサー: 透明 Shape で push down (黒矩形回避のため line も透明) -->
-    <Shape grow="1" w="100%" shapeType="rect" fill.color="0B1220" fill.transparency="1.0" line.color="0B1220" line.width="0" />
+    <!-- スペーサー: 空の VStack で push down (#884) -->
+    <VStack grow="1" />
 
     <!-- アクセントバー -->
     <Shape w="72" h="4" shapeType="rect" backgroundGradient="linear-gradient(90deg, #38BDF8, #A78BFA)" />

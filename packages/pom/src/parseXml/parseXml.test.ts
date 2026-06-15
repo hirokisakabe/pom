@@ -366,6 +366,40 @@ describe("parseXml", () => {
       ]);
     });
 
+    it("空の VStack で children を空配列として扱う", () => {
+      const result = parseXml('<VStack grow="1" />');
+      expect(result).toEqual([
+        {
+          type: "vstack",
+          grow: 1,
+          children: [],
+        },
+      ]);
+    });
+
+    it("空の HStack で children を空配列として扱う", () => {
+      const result = parseXml('<HStack grow="1" />');
+      expect(result).toEqual([
+        {
+          type: "hstack",
+          grow: 1,
+          children: [],
+        },
+      ]);
+    });
+
+    it("空の Layer で children を空配列として扱う", () => {
+      const result = parseXml('<Layer w="100" h="100" />');
+      expect(result).toEqual([
+        {
+          type: "layer",
+          w: 100,
+          h: 100,
+          children: [],
+        },
+      ]);
+    });
+
     it("Layer で children を配列として変換する", () => {
       const xml = `
         <Layer w="800" h="600">
