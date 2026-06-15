@@ -127,7 +127,7 @@ describe("buildPptx with Shape glow", () => {
     })) as Uint8Array;
     const slideXml = await readSlideXml(buffer);
 
-    expect(slideXml).toContain('<a:effectLst><a:glow');
+    expect(slideXml).toContain("<a:effectLst><a:glow");
     expect(slideXml).toContain('name="pom-glow:0"');
   });
 
@@ -141,7 +141,7 @@ describe("buildPptx with Shape glow", () => {
     })) as Uint8Array;
     const slideXml = await readSlideXml(buffer);
 
-    expect(slideXml).toContain('<a:effectLst><a:glow');
+    expect(slideXml).toContain("<a:effectLst><a:glow");
     expect(slideXml).toContain('name="pom-glow:0"');
     expect(slideXml).toContain('<a:srgbClr val="00AAFF"/>');
   });

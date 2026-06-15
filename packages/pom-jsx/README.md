@@ -175,7 +175,7 @@ All pom node types are available as PascalCase components:
 | `Ol`           | Ordered list                                                                                                                                      |
 | `Li`           | List item                                                                                                                                         |
 | `Image`        | Image from path, URL, or base64, with optional rotation                                                                                           |
-| `Shape`        | PowerPoint shape (rect, ellipse, roundRect, ...) with optional rotation                                                                           |
+| `Shape`        | PowerPoint shape (rect, ellipse, roundRect, ...) with optional rotation, native `glow`, and `outline` effects                                     |
 | `Chart`        | Chart (bar, line, pie, area, doughnut, radar); `sparkline` prop hides legend / axes / margins for compact `bar` / `line` / `area` (e.g. `h={40}`) |
 | `Timeline`     | Timeline / roadmap visualization                                                                                                                  |
 | `Matrix`       | 2×2 positioning map                                                                                                                               |
@@ -184,7 +184,7 @@ All pom node types are available as PascalCase components:
 | `ProcessArrow` | Chevron-style process diagram                                                                                                                     |
 | `Pyramid`      | Pyramid diagram                                                                                                                                   |
 | `Line`         | Horizontal/vertical line                                                                                                                          |
-| `Icon`         | Lucide icon with optional rotation                                                                                                                |
+| `Icon`         | Lucide icon with optional rotation; variant background supports native `glow` / `outline` effects                                                 |
 | `Svg`          | Inline SVG                                                                                                                                        |
 | `Table`        | Table                                                                                                                                             |
 | `Tr`           | Table row                                                                                                                                         |
