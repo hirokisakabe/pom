@@ -565,16 +565,16 @@ A node for creating timeline/roadmap visualizations. Supports horizontal and ver
 </Timeline>
 ```
 
-| Attribute           | Values                                                                                                |
-| ------------------- | ----------------------------------------------------------------------------------------------------- |
-| `direction`         | `horizontal` / `vertical`                                                                             |
-| `dateColor`         | hex (date text color, default: `64748B`)                                                              |
-| `titleColor`        | hex (title text color, default: `1E293B`)                                                             |
-| `descriptionColor`  | hex (description text color, default: `64748B`)                                                       |
-| `connectorColor`    | hex (axis line color, default: `E2E8F0`)                                                              |
-| `connectorGradient` | `linear-gradient(<angle>deg, <color> <pos>%, ...)` — applies a linear gradient to the connector line  |
-| `useColorForDate`   | `true` / `false` — when `true`, each item's `date` text uses that item's `color` (default: `false`)   |
-| `fontFamily`        | font family name applied to all text (date / title / description). default: `Noto Sans JP`            |
+| Attribute           | Values                                                                                               |
+| ------------------- | ---------------------------------------------------------------------------------------------------- |
+| `direction`         | `horizontal` / `vertical`                                                                            |
+| `dateColor`         | hex (date text color, default: `64748B`)                                                             |
+| `titleColor`        | hex (title text color, default: `1E293B`)                                                            |
+| `descriptionColor`  | hex (description text color, default: `64748B`)                                                      |
+| `connectorColor`    | hex (axis line color, default: `E2E8F0`)                                                             |
+| `connectorGradient` | `linear-gradient(<angle>deg, <color> <pos>%, ...)` — applies a linear gradient to the connector line |
+| `useColorForDate`   | `true` / `false` — when `true`, each item's `date` text uses that item's `color` (default: `false`)  |
+| `fontFamily`        | font family name applied to all text (date / title / description). default: `Noto Sans JP`           |
 
 `<TimelineItem>`: `date` (required) `title` (required) `description` `color` `dateColor`
 

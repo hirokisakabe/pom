@@ -288,9 +288,7 @@ describe("renderTimelineNode", () => {
 
   it("connectorColor 未指定なら従来通り E2E8F0 が使われる", async () => {
     const { objects } = await renderPage(
-      vstackPage([
-        { type: "timeline", x: 0, y: 0, w: 800, h: 400, items },
-      ]),
+      vstackPage([{ type: "timeline", x: 0, y: 0, w: 800, h: 400, items }]),
     );
     const line = objects.find((o) => o.shape === "line");
     expect(line?.options).toMatchObject({ line: { color: "E2E8F0" } });
@@ -397,9 +395,7 @@ describe("renderTimelineNode", () => {
 
   it("fontFamily 未指定なら従来通り Noto Sans JP が使われる", async () => {
     const { objects } = await renderPage(
-      vstackPage([
-        { type: "timeline", x: 0, y: 0, w: 800, h: 400, items },
-      ]),
+      vstackPage([{ type: "timeline", x: 0, y: 0, w: 800, h: 400, items }]),
     );
     const text = objects.find((o) => Array.isArray(o.text));
     expect(text?.options.fontFace).toBe("Noto Sans JP");

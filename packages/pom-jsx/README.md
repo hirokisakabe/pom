@@ -163,33 +163,33 @@ import { renderToXml } from "@hirokisakabe/pom-jsx";
 
 All pom node types are available as PascalCase components:
 
-| Component      | Description                                                                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Slide`        | Slide wrapper (required top-level element)                                                                                                        |
-| `Theme`        | Top-level design token declaration — each prop declares a color token referenced as `$name` from color attributes                                 |
-| `Text`         | Text with font styling, inline formatting, optional rotation, and `textGradient` for native gradient text fills                                   |
-| `VStack`       | Vertical stack layout                                                                                                                             |
-| `HStack`       | Horizontal stack layout                                                                                                                           |
-| `Layer`        | Absolute-positioned overlay container                                                                                                             |
-| `Ul`           | Unordered list                                                                                                                                    |
-| `Ol`           | Ordered list                                                                                                                                      |
-| `Li`           | List item                                                                                                                                         |
-| `Image`        | Image from path, URL, or base64, with optional rotation                                                                                           |
-| `Shape`        | PowerPoint shape (rect, ellipse, roundRect, ...) with optional rotation, native `glow`, and `outline` effects                                     |
-| `Chart`        | Chart (bar, line, pie, area, doughnut, radar); `sparkline` prop hides legend / axes / margins for compact `bar` / `line` / `area` (e.g. `h={40}`) |
-| `Timeline`     | Timeline / roadmap visualization. Props: `direction`, `items`, `dateColor`, `titleColor`, `descriptionColor`, `connectorColor`, `connectorGradient`, `useColorForDate`, `fontFamily`. `TimelineItem` accepts per-item `dateColor`.       |
-| `Matrix`       | 2×2 positioning map                                                                                                                               |
-| `Tree`         | Organization chart or decision tree                                                                                                               |
-| `Flow`         | Flowchart with nodes and edges                                                                                                                    |
-| `ProcessArrow` | Chevron-style process diagram                                                                                                                     |
-| `Pyramid`      | Pyramid diagram                                                                                                                                   |
-| `Line`         | Horizontal/vertical line                                                                                                                          |
-| `Icon`         | Lucide icon with optional rotation; variant background supports native `glow` / `outline` effects                                                 |
-| `Svg`          | Inline SVG                                                                                                                                        |
-| `Table`        | Table                                                                                                                                             |
-| `Tr`           | Table row                                                                                                                                         |
-| `Td`           | Table data cell                                                                                                                                   |
-| `Th`           | Table header cell                                                                                                                                 |
+| Component      | Description                                                                                                                                                                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Slide`        | Slide wrapper (required top-level element)                                                                                                                                                                                         |
+| `Theme`        | Top-level design token declaration — each prop declares a color token referenced as `$name` from color attributes                                                                                                                  |
+| `Text`         | Text with font styling, inline formatting, optional rotation, and `textGradient` for native gradient text fills                                                                                                                    |
+| `VStack`       | Vertical stack layout                                                                                                                                                                                                              |
+| `HStack`       | Horizontal stack layout                                                                                                                                                                                                            |
+| `Layer`        | Absolute-positioned overlay container                                                                                                                                                                                              |
+| `Ul`           | Unordered list                                                                                                                                                                                                                     |
+| `Ol`           | Ordered list                                                                                                                                                                                                                       |
+| `Li`           | List item                                                                                                                                                                                                                          |
+| `Image`        | Image from path, URL, or base64, with optional rotation                                                                                                                                                                            |
+| `Shape`        | PowerPoint shape (rect, ellipse, roundRect, ...) with optional rotation, native `glow`, and `outline` effects                                                                                                                      |
+| `Chart`        | Chart (bar, line, pie, area, doughnut, radar); `sparkline` prop hides legend / axes / margins for compact `bar` / `line` / `area` (e.g. `h={40}`)                                                                                  |
+| `Timeline`     | Timeline / roadmap visualization. Props: `direction`, `items`, `dateColor`, `titleColor`, `descriptionColor`, `connectorColor`, `connectorGradient`, `useColorForDate`, `fontFamily`. `TimelineItem` accepts per-item `dateColor`. |
+| `Matrix`       | 2×2 positioning map                                                                                                                                                                                                                |
+| `Tree`         | Organization chart or decision tree                                                                                                                                                                                                |
+| `Flow`         | Flowchart with nodes and edges                                                                                                                                                                                                     |
+| `ProcessArrow` | Chevron-style process diagram                                                                                                                                                                                                      |
+| `Pyramid`      | Pyramid diagram                                                                                                                                                                                                                    |
+| `Line`         | Horizontal/vertical line                                                                                                                                                                                                           |
+| `Icon`         | Lucide icon with optional rotation; variant background supports native `glow` / `outline` effects                                                                                                                                  |
+| `Svg`          | Inline SVG                                                                                                                                                                                                                         |
+| `Table`        | Table                                                                                                                                                                                                                              |
+| `Tr`           | Table row                                                                                                                                                                                                                          |
+| `Td`           | Table data cell                                                                                                                                                                                                                    |
+| `Th`           | Table header cell                                                                                                                                                                                                                  |
 
 ### Inline text formatting
 
