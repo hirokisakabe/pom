@@ -60,7 +60,7 @@ Layout attributes that all nodes can have.
 | `minH` `maxH`                                         | number                                                                     | Min/Max height                                                  |
 | `padding`                                             | number / `padding.top="8" padding.bottom="8"`                              | Padding                                                         |
 | `backgroundColor`                                     | hex                                                                        | Background color (e.g., `F8F9FA`)                               |
-| `backgroundGradient`                                  | `linear-gradient(135deg, #667EEA 0%, #764BA2 100%)`                        | Linear gradient background                                      |
+| `backgroundGradient`                                  | `linear-gradient(135deg, #667EEA 0%, #764BA2 100%)` or `radial-gradient(circle at center, #1D4ED8 0%, #38BDF8 100%)` | Linear / radial gradient background |
 | `backgroundImage`                                     | `backgroundImage.src="url" backgroundImage.sizing="cover"`                 | Background image                                                |
 | `border`                                              | `border.color="333" border.width="1"`                                      | Border                                                          |
 | `borderTop` `borderRight` `borderBottom` `borderLeft` | `borderLeft.color="1D4ED8" borderLeft.width="6"`                           | Per-side border (overrides `border` for that side)              |
@@ -80,7 +80,11 @@ Layout attributes that all nodes can have.
 
   ![grow example](./images/attr-grow.png)
 
-- `backgroundGradient`: CSS-like `linear-gradient()` syntax. The angle accepts `<n>deg` (0 = bottom-to-top, clockwise) or `to <direction>` keywords (`to right`, `to bottom left`, ...) and defaults to `180deg` (top-to-bottom). Two or more hex color stops are required; stop positions (`%`) are optional and distributed evenly when omitted. Exported as a native PowerPoint gradient fill (editable, not rasterized). Takes precedence over `backgroundColor`. When set on the root node of a slide, it is applied as the slide background. Note: in browser environments use `pptx.write()` — `pptx.writeFile()` falls back to plain pptxgenjs output without the gradient post-processing.
+- `backgroundGradient`: CSS-like `linear-gradient()` or `radial-gradient()` syntax. Exported as a native PowerPoint gradient fill (editable, not rasterized). Takes precedence over `backgroundColor`. When set on the root node of a slide, it is applied as the slide background. Note: in browser environments use `pptx.write()` — `pptx.writeFile()` falls back to plain pptxgenjs output without the gradient post-processing.
+
+  - **`linear-gradient(<angle>?, <stop>, <stop>, ...)`** — Angle accepts `<n>deg` (0 = bottom-to-top, clockwise) or `to <direction>` keywords (`to right`, `to bottom left`, ...) and defaults to `180deg` (top-to-bottom).
+  - **`radial-gradient(<shape>? <size>? at <position>?, <stop>, <stop>, ...)`** — Shape accepts `circle` / `ellipse` (default `ellipse`). Size accepts `closest-side` / `closest-corner` / `farthest-side` / `farthest-corner` (default `farthest-corner`). Position accepts `at center` / `at top right` / `at 25% 75%` etc. (default `center`). Note: PowerPoint's radial gradient fill follows the container aspect ratio and does not visually distinguish `circle` vs. `ellipse` or the size keyword — they are accepted as syntax but render the same `farthest-corner` ellipse on output. Only the center position changes the rendered result.
+  - Two or more hex color stops are required for both forms. Stop positions (`%`) are optional and distributed evenly when omitted.
 
   ![backgroundGradient example](./images/attr-background-gradient.png)
 
