@@ -66,7 +66,8 @@ export const PAGE_NAMES = [
   "50-empty-container-spacer",
   "51-shape-icon-effects",
   "52-text-gradient",
-  "53-timeline-customization",
+  "53-radial-gradient",
+  "54-timeline-customization",
 ] as const;
 
 export const THRESHOLD = 0.1;

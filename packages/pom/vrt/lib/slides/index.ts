@@ -22,7 +22,7 @@ export {
 } from "./layout.js";
 export { page8CommonXml } from "./common.js";
 export { page9TimelineXml } from "./timeline.js";
-export { page53TimelineCustomizationXml } from "./timelineCustomization.js";
+export { page54TimelineCustomizationXml } from "./timelineCustomization.js";
 export { page11MatrixXml } from "./matrix.js";
 export { page12TreeXml } from "./tree.js";
 export { page13FlowXml } from "./flow.js";
@@ -56,6 +56,7 @@ export {
 export { page39ArrowXml } from "./arrow.js";
 export { page41GradientXml } from "./gradient.js";
 export { page52TextGradientXml } from "./textGradient.js";
+export { page53RadialGradientXml } from "./radialGradient.js";
 export { page42FlexGrowXml } from "./flexGrow.js";
 export { page43DarkThemeXml, vrtThemeXml } from "./darkTheme.js";
 export { page44PerSideBorderXml } from "./perSideBorder.js";

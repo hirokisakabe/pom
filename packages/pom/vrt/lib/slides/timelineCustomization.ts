@@ -1,13 +1,13 @@
 import { palette } from "./palette.js";
 
 // ============================================================
-// Page 53: Timeline Customization Test
+// Page 54: Timeline Customization Test
 // テスト対象: connectorColor / connectorGradient /
 //   per-item dateColor / useColorForDate / fontFamily 継承
 // ============================================================
-export const page53TimelineCustomizationXml = `
+export const page54TimelineCustomizationXml = `
 <VStack w="100%" h="max" padding="32" gap="12" alignItems="stretch" backgroundColor="${palette.background}">
-  <Text fontSize="24" color="${palette.charcoal}" bold="true">Page 53: Timeline Customization</Text>
+  <Text fontSize="24" color="${palette.charcoal}" bold="true">Page 54: Timeline Customization</Text>
 
   <VStack padding="12" backgroundColor="FFFFFF" border='{"color":"${palette.border}","width":1}' gap="6">
     <Text fontSize="12" bold="true">connectorColor (solid):</Text>

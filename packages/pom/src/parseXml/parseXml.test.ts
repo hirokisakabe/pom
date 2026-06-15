@@ -1165,6 +1165,20 @@ describe("parseXml", () => {
       );
     });
 
+    it("radial-gradient 内の $name 参照を解決する", () => {
+      const result = parseXmlRaw(`
+        <Theme g1="667EEA" g2="764BA2" />
+        <Slide>
+          <VStack backgroundGradient="radial-gradient(circle at center, $g1 0%, $g2 100%)">
+            <Text>Hello</Text>
+          </VStack>
+        </Slide>
+      `);
+      expect((result[0] as Record<string, unknown>).backgroundGradient).toBe(
+        "radial-gradient(circle at center, #667EEA 0%, #764BA2 100%)",
+      );
+    });
+
     it("textGradient 内の $name 参照を解決する", () => {
       const result = parseXmlRaw(`
         <Theme g1="38BDF8" g2="A78BFA" />

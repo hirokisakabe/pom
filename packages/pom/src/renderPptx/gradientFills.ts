@@ -14,8 +14,8 @@
  * スライド XML 全体をパーサーで往復させると無関係な要素の表現が変わり得るため、
  * 意図的に文字列置換を採用している。
  */
-import type { LinearGradient } from "../shared/gradient.ts";
-import { parseLinearGradient } from "../shared/gradient.ts";
+import type { Gradient } from "../shared/gradient.ts";
+import { parseGradient, parseLinearGradient } from "../shared/gradient.ts";
 
 type PptxGenJSInstance = import("pptxgenjs").default;
 type WriteProps = NonNullable<Parameters<PptxGenJSInstance["write"]>[0]>;
@@ -34,7 +34,7 @@ async function loadJSZip(): Promise<typeof import("jszip")> {
 interface RegisteredGradientFill {
   /** マーカー色 (6桁大文字 HEX、# なし) */
   marker: string;
-  gradient: LinearGradient;
+  gradient: Gradient;
   /** 0-1。指定時は各カラーストップに alpha として反映する */
   opacity?: number;
 }
@@ -60,7 +60,7 @@ export class GradientFillRegistry {
   }
 
   /** グラデーションを登録し、対応するマーカー色を返す */
-  register(gradient: LinearGradient, opacity?: number): string {
+  register(gradient: Gradient, opacity?: number): string {
     const specKey = JSON.stringify({ gradient, opacity });
     const existing = this.markerBySpec.get(specKey);
     if (existing) return existing;
@@ -88,6 +88,7 @@ export class GradientFillRegistry {
 
 /**
  * backgroundGradient 属性値をパースしてレジストリに登録し、マーカー色を返す。
+ * linear-gradient / radial-gradient の両方に対応。
  * パースできない場合 (スキーマ検証済みのため通常発生しない) は undefined を返す。
  */
 export function registerBackgroundGradient(
@@ -95,7 +96,7 @@ export function registerBackgroundGradient(
   opacity: number | undefined,
   registry: GradientFillRegistry,
 ): string | undefined {
-  const gradient = parseLinearGradient(value);
+  const gradient = parseGradient(value);
   if (!gradient) return undefined;
   return registry.register(gradient, opacity);
 }
@@ -106,29 +107,36 @@ export function registerBackgroundGradient(
  * `<a:rPr><a:solidFill><a:srgbClr val="マーカー色"/></a:solidFill></a:rPr>` が
  * 後処理で gradFill に置換され、PowerPoint 上ネイティブの文字グラデーションとして
  * 表示・編集可能になる。
+ *
+ * textGradient は radial-gradient を受け付けない (linear-gradient のみ)。
  * パースできない場合 (スキーマ検証済みのため通常発生しない) は undefined を返す。
  */
 export function registerTextGradient(
   value: string,
   registry: GradientFillRegistry,
 ): string | undefined {
-  const gradient = parseLinearGradient(value);
-  if (!gradient) return undefined;
-  return registry.register(gradient);
+  const linear = parseLinearGradient(value);
+  if (!linear) return undefined;
+  return registry.register({ kind: "linear", value: linear });
 }
 
 /**
- * LinearGradient を DrawingML の `<a:gradFill>` 要素に変換する
+ * Gradient を DrawingML の `<a:gradFill>` 要素に変換する
  *
  * - カラーストップ位置: % → 1/1000 % (0-100000)
- * - 角度: CSS 基準 (0deg = 上向き) → DrawingML 基準 (0 = 右向き、1/60000 度)
+ * - 角度 (linear): CSS 基準 (0deg = 上向き) → DrawingML 基準 (0 = 右向き、1/60000 度)
+ * - 中心位置 (radial): CSS 風 % → DrawingML `<a:fillToRect l/t/r/b>` (1/1000 %)。
+ *   fillToRect は焦点を表す矩形で、中心位置 (cx, cy) に対し
+ *   l=cx*1000 / t=cy*1000 / r=(100-cx)*1000 / b=(100-cy)*1000 とする。
+ *   PowerPoint の radial fill は path="circle" 1 種類で、shape (circle / ellipse) や
+ *   size キーワードを描画上区別しない。要素の縦横比に応じて自動で楕円状になる。
  */
-function buildGradFillXml(gradient: LinearGradient, opacity?: number): string {
+function buildGradFillXml(gradient: Gradient, opacity?: number): string {
   const alphaXml =
     opacity !== undefined
       ? `<a:alpha val="${Math.round(opacity * 100000)}"/>`
       : "";
-  const gsXml = gradient.stops
+  const gsXml = gradient.value.stops
     .map((stop) => {
       const pos = Math.round(stop.position * 1000);
       const srgbClr = alphaXml
@@ -137,9 +145,19 @@ function buildGradFillXml(gradient: LinearGradient, opacity?: number): string {
       return `<a:gs pos="${pos}">${srgbClr}</a:gs>`;
     })
     .join("");
-  const dmlAngle = (((gradient.angle - 90) % 360) + 360) % 360;
-  const ang = Math.round(dmlAngle * 60000);
-  return `<a:gradFill flip="none" rotWithShape="1"><a:gsLst>${gsXml}</a:gsLst><a:lin ang="${ang}" scaled="0"/></a:gradFill>`;
+
+  if (gradient.kind === "linear") {
+    const dmlAngle = (((gradient.value.angle - 90) % 360) + 360) % 360;
+    const ang = Math.round(dmlAngle * 60000);
+    return `<a:gradFill flip="none" rotWithShape="1"><a:gsLst>${gsXml}</a:gsLst><a:lin ang="${ang}" scaled="0"/></a:gradFill>`;
+  }
+
+  const { centerX, centerY } = gradient.value;
+  const l = Math.round(centerX * 1000);
+  const t = Math.round(centerY * 1000);
+  const r = Math.round((100 - centerX) * 1000);
+  const b = Math.round((100 - centerY) * 1000);
+  return `<a:gradFill flip="none" rotWithShape="1"><a:gsLst>${gsXml}</a:gsLst><a:path path="circle"><a:fillToRect l="${l}" t="${t}" r="${r}" b="${b}"/></a:path></a:gradFill>`;
 }
 
 /**
