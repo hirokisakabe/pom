@@ -579,6 +579,7 @@ A node for creating timeline/roadmap visualizations. Supports horizontal and ver
 `<TimelineItem>`: `date` (required) `title` (required) `description` `color` `dateColor`
 
 - `dateColor` (per-item) overrides both `Timeline.dateColor` and `useColorForDate`.
+- `fontFamily` changes the rendered font face only. Internal layout measurement still assumes the default label sizes (the bundled Noto Sans JP metrics), so very wide / very tall fonts may overflow within the same `w` / `h`. Pick a larger `w` / `h` if labels clip.
 
 **Usage Examples:**
 

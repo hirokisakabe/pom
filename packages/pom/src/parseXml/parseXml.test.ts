@@ -1842,6 +1842,36 @@ describe("parseXml", () => {
           "Unknown child element <Unknown> inside <Timeline>. Expected: <TimelineItem>",
         );
       });
+
+      it("connectorColor / connectorGradient / useColorForDate / fontFamily 属性を変換する", () => {
+        const xml = `
+          <Timeline connectorColor="1D4ED8" connectorGradient="linear-gradient(90deg, #1D4ED8 0%, #DC2626 100%)" useColorForDate="true" fontFamily="Arial">
+            <TimelineItem date="Q1" title="Phase 1" />
+          </Timeline>
+        `;
+        const result = parseXml(xml);
+        const node = result[0] as Record<string, unknown>;
+        expect(node.connectorColor).toBe("1D4ED8");
+        expect(node.connectorGradient).toBe(
+          "linear-gradient(90deg, #1D4ED8 0%, #DC2626 100%)",
+        );
+        expect(node.useColorForDate).toBe(true);
+        expect(node.fontFamily).toBe("Arial");
+      });
+
+      it("TimelineItem の dateColor 属性を変換する", () => {
+        const xml = `
+          <Timeline>
+            <TimelineItem date="Q1" title="Default" />
+            <TimelineItem date="Q2" title="Override" dateColor="DC2626" />
+          </Timeline>
+        `;
+        const result = parseXml(xml);
+        const node = result[0] as Record<string, unknown>;
+        const items = node.items as { dateColor?: string }[];
+        expect(items[0].dateColor).toBeUndefined();
+        expect(items[1].dateColor).toBe("DC2626");
+      });
     });
 
     // ----- Matrix -----

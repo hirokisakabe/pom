@@ -177,7 +177,7 @@ All pom node types are available as PascalCase components:
 | `Image`        | Image from path, URL, or base64, with optional rotation                                                                                           |
 | `Shape`        | PowerPoint shape (rect, ellipse, roundRect, ...) with optional rotation, native `glow`, and `outline` effects                                     |
 | `Chart`        | Chart (bar, line, pie, area, doughnut, radar); `sparkline` prop hides legend / axes / margins for compact `bar` / `line` / `area` (e.g. `h={40}`) |
-| `Timeline`     | Timeline / roadmap visualization                                                                                                                  |
+| `Timeline`     | Timeline / roadmap visualization. Props: `direction`, `items`, `dateColor`, `titleColor`, `descriptionColor`, `connectorColor`, `connectorGradient`, `useColorForDate`, `fontFamily`. `TimelineItem` accepts per-item `dateColor`.       |
 | `Matrix`       | 2×2 positioning map                                                                                                                               |
 | `Tree`         | Organization chart or decision tree                                                                                                               |
 | `Flow`         | Flowchart with nodes and edges                                                                                                                    |
