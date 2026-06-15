@@ -1180,11 +1180,7 @@ function convertPomNode(
     result.children = convertedChildren;
   }
   // Leaf nodes that shouldn't have child elements
-  else if (
-    def.childPolicy.kind !== "pom-children" &&
-    !childRule &&
-    childElements.length > 0
-  ) {
+  else if (!childRule && childElements.length > 0) {
     errors.push(
       `<${tagName}>: Unexpected child elements. <${tagName}> does not accept child elements`,
     );
