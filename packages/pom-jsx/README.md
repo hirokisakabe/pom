@@ -167,7 +167,7 @@ All pom node types are available as PascalCase components:
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Slide`        | Slide wrapper (required top-level element)                                                                                                        |
 | `Theme`        | Top-level design token declaration — each prop declares a color token referenced as `$name` from color attributes                                 |
-| `Text`         | Text with font styling, inline formatting, and optional rotation                                                                                  |
+| `Text`         | Text with font styling, inline formatting, optional rotation, and `textGradient` for native gradient text fills                                   |
 | `VStack`       | Vertical stack layout                                                                                                                             |
 | `HStack`       | Horizontal stack layout                                                                                                                           |
 | `Layer`        | Absolute-positioned overlay container                                                                                                             |

@@ -86,7 +86,7 @@ export async function buildPptx(
 
   const pptx = await renderPptx(positionedPages, slideSize, ctx, master);
 
-  // backgroundGradient 使用時は write/writeFile に gradFill 置換の後処理を仕込む
+  // backgroundGradient / textGradient 使用時は write/writeFile に gradFill 置換の後処理を仕込む
   patchPptxWriteForGradientFills(pptx, ctx.gradientFills);
 
   const diagnostics = ctx.diagnostics.items;

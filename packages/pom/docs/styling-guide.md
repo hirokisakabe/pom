@@ -31,7 +31,7 @@ Declare a color palette once at the top level with a `<Theme>` element and refer
 ```
 
 - At most one `<Theme>` per document; it applies to all slides regardless of position.
-- `$tokenName` references are resolved in color attributes (any attribute ending in `Color` / `Colors`, `color` keys inside object/JSON attributes, `highlight`) and inside `backgroundGradient` strings.
+- `$tokenName` references are resolved in color attributes (any attribute ending in `Color` / `Colors`, `color` keys inside object/JSON attributes, `highlight`) and inside `backgroundGradient` / `textGradient` strings.
 - Composite nodes (`Timeline`, `Matrix`, `Tree`, `Flow`) expose dedicated text-color attributes (e.g. `dateColor` / `titleColor` / `axisLabelColor` / `textColor` / `connectorStyle.labelColor`) so the whole deck — including labels on charts and diagrams — can be retinted from a single `<Theme>`.
 - Token names start with a letter and may contain letters, digits, `_`, and `-`. Values are 6-digit hex (`#` prefix optional). Referencing an unknown token throws a `ParseXmlError` with a "did you mean" suggestion.
 
@@ -227,6 +227,15 @@ Apply a CSS-like `linear-gradient()` as the background with `backgroundGradient`
 ```
 
 The angle accepts `<n>deg` (0 = bottom-to-top, clockwise) or `to <direction>` keywords (`to right`, `to bottom left`, ...) and defaults to `180deg` (top-to-bottom). Two or more hex color stops are required; stop positions (`%`) are optional and distributed evenly when omitted.
+
+### Text Gradient
+
+Paint the characters themselves with a `linear-gradient()` via `textGradient` on `<Text>`. Same syntax as `backgroundGradient` (angle + 2 or more hex color stops). Exported as a native PowerPoint gradient text fill (editable in PowerPoint, not rasterized). Takes precedence over `color`, and overrides per-run colors inside inline tags (`<Span color="...">` etc.) so the whole text reads with one gradient. Useful for cover titles, KPI numerals, and pull quotes. Note: in browser environments use `pptx.write()` — `pptx.writeFile()` falls back to plain pptxgenjs output without the gradient post-processing.
+
+```xml
+<Text fontSize="64" bold="true" textGradient="linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)">Gradient title</Text>
+<Text fontSize="56" bold="true" textGradient="linear-gradient(135deg, #F472B6, #FB923C)">¥84.2M</Text>
+```
 
 ### Background Image
 
