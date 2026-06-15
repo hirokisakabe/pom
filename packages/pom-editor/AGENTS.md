@@ -12,7 +12,7 @@ pnpm --filter @hirokisakabe/pom-editor run knip        # Detect unused code
 pnpm --filter @hirokisakabe/pom-editor run test:run    # Run tests (vitest + jsdom)
 ```
 
-React 18+ is a peer dependency. DnD is powered by `@dnd-kit/core` + `@dnd-kit/sortable`.
+React 18+ is a peer dependency. DnD is powered by `@dnd-kit/core` (`useDraggable` / `useDroppable`); the editor exposes per-row gap droppables (`gap:<parentId>:<index>`) for sibling insertion and per-container body droppables (`inside:<id>`) for nesting.
 
 ## Release Flow
 
