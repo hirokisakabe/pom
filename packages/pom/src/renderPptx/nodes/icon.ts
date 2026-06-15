@@ -26,12 +26,11 @@ export function renderIconNode(
     // 色だけ outline で上書きされる。
     const outlineLine = node.outline
       ? {
-          color:
-            node.outline.color ?? variantDefaultLine?.color ?? "FFFFFF",
+          color: node.outline.color ?? variantDefaultLine?.color ?? "FFFFFF",
           width:
             node.outline.size !== undefined
               ? pxToPt(node.outline.size)
-              : variantDefaultLine?.width ?? 1,
+              : (variantDefaultLine?.width ?? 1),
         }
       : variantDefaultLine;
 
