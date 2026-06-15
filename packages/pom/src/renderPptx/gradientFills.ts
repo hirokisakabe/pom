@@ -101,6 +101,23 @@ export function registerBackgroundGradient(
 }
 
 /**
+ * textGradient 属性値をパースしてレジストリに登録し、マーカー色を返す。
+ * 戻り値のマーカー色を text run の color に渡すと、pptxgenjs が出力する
+ * `<a:rPr><a:solidFill><a:srgbClr val="マーカー色"/></a:solidFill></a:rPr>` が
+ * 後処理で gradFill に置換され、PowerPoint 上ネイティブの文字グラデーションとして
+ * 表示・編集可能になる。
+ * パースできない場合 (スキーマ検証済みのため通常発生しない) は undefined を返す。
+ */
+export function registerTextGradient(
+  value: string,
+  registry: GradientFillRegistry,
+): string | undefined {
+  const gradient = parseLinearGradient(value);
+  if (!gradient) return undefined;
+  return registry.register(gradient);
+}
+
+/**
  * LinearGradient を DrawingML の `<a:gradFill>` 要素に変換する
  *
  * - カラーストップ位置: % → 1/1000 % (0-100000)

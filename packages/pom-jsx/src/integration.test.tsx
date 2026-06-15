@@ -136,6 +136,24 @@ describe("pom core との統合テスト", () => {
     expect(xml).toContain('rotate="45"');
   });
 
+  it("textGradient 付きの Text が parseXml でパースできる", () => {
+    const xml = renderToXml(
+      <Slide>
+        <Text
+          fontSize={48}
+          bold
+          textGradient="linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)"
+        >
+          Gradient title
+        </Text>
+      </Slide>,
+    );
+    assertParsable(xml);
+    expect(xml).toContain(
+      'textGradient="linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)"',
+    );
+  });
+
   it("Theme トークン宣言と $name 参照が parseXml で解決できる", () => {
     const xml = renderToXml(
       <>

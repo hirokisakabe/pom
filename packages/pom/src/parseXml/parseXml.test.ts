@@ -1165,6 +1165,19 @@ describe("parseXml", () => {
       );
     });
 
+    it("textGradient 内の $name 参照を解決する", () => {
+      const result = parseXmlRaw(`
+        <Theme g1="38BDF8" g2="A78BFA" />
+        <Slide>
+          <Text textGradient="linear-gradient(90deg, $g1 0%, $g2 100%)">Hello</Text>
+        </Slide>
+      `);
+      // result[0] is the Text node
+      expect((result[0] as Record<string, unknown>).textGradient).toBe(
+        "linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)",
+      );
+    });
+
     it("Icon の color 参照は # 正規化と両立する", () => {
       const result = parseXmlRaw(`
         <Theme accent="1D4ED8" />

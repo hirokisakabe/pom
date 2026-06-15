@@ -8,6 +8,7 @@ import {
   convertOutline,
   resolveSubSup,
 } from "../textOptions.ts";
+import { registerTextGradient } from "../gradientFills.ts";
 import { pxToPt } from "../units.ts";
 
 type TextPositionedNode = Extract<PositionedNode, { type: "text" }>;
@@ -17,6 +18,13 @@ export function renderTextNode(
   ctx: RenderContext,
 ): void {
   const textOptions = createTextOptions(node);
+
+  // textGradient はマーカー色で text run color に適用し、
+  // 出力時の後処理で gradFill に置換される (gradientFills.ts 参照)。
+  // node 単位の指定として全 run の color を上書きする (run 単位指定はスコープ外)。
+  const textGradientMarker = node.textGradient
+    ? registerTextGradient(node.textGradient, ctx.buildContext.gradientFills)
+    : undefined;
 
   if (node.runs && node.runs.length > 0) {
     const fontSizePx = node.fontSize ?? 24;
@@ -30,7 +38,7 @@ export function renderTextNode(
         options: {
           fontSize: pxToPt(runFontSizePx),
           fontFace: run.fontFamily ?? fontFamily,
-          color: run.color ?? node.color,
+          color: textGradientMarker ?? run.color ?? node.color,
           bold: run.bold ?? node.bold,
           italic: run.italic ?? node.italic,
           underline: convertUnderline(run.underline ?? node.underline),
@@ -59,6 +67,9 @@ export function renderTextNode(
       lineSpacing: textOptions.lineSpacing,
     });
   } else {
-    ctx.slide.addText(node.text ?? "", textOptions);
+    ctx.slide.addText(node.text ?? "", {
+      ...textOptions,
+      color: textGradientMarker ?? textOptions.color,
+    });
   }
 }

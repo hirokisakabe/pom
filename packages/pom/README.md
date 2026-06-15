@@ -44,7 +44,7 @@
 - **Rich Nodes** — 20 built-in node types: charts, flowcharts, tables, timelines, org trees, and more.
 - **Design Tokens** — Declare a color palette once with a top-level `<Theme>` element and reference tokens as `$name` from any color attribute. See [Nodes — Top-Level `<Theme>`](./docs/nodes.md#top-level-theme-design-tokens).
 - **Schema-validated** — XML input is validated with Zod schemas at runtime with clear error messages.
-- **PowerPoint Native** — Generates real editable PowerPoint shapes — not images. Recipients can modify everything. Linear gradient backgrounds (`backgroundGradient="linear-gradient(135deg, #667EEA 0%, #764BA2 100%)"`) are exported as native gradient fills.
+- **PowerPoint Native** — Generates real editable PowerPoint shapes — not images. Recipients can modify everything. Linear gradient backgrounds (`backgroundGradient="linear-gradient(135deg, #667EEA 0%, #764BA2 100%)"`) and text fills (`textGradient="linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)"` on `<Text>`) are exported as native gradient fills.
 - **Leaf Rotation** — `Text`, `Shape`, `Image`, and `Icon` support `rotate` in clockwise degrees at render time without affecting flex layout.
 - **Pixel Units** — Intuitive pixel-based sizing (internally converted to inches at 96 DPI).
 - **Master Slide** — Define headers, footers, and page numbers once — applied to all slides automatically.

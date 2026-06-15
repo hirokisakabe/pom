@@ -914,7 +914,7 @@ const THEME_TOKEN_NAME_PATTERN = /^[A-Za-z][A-Za-z0-9_-]*$/;
 const THEME_TOKEN_VALUE_PATTERN = /^[0-9A-Fa-f]{6}$/;
 // 値全体が "$name"（"#" プレフィックスは任意）のときトークン参照とみなす
 const TOKEN_REF_PATTERN = /^(#?)\$([A-Za-z][A-Za-z0-9_-]*)$/;
-// backgroundGradient 文字列中に現れる "$name" 参照
+// backgroundGradient / textGradient 文字列中に現れる "$name" 参照
 const TOKEN_REF_IN_GRADIENT_PATTERN = /#?\$([A-Za-z][A-Za-z0-9_-]*)/g;
 
 function parseThemeElement(
@@ -989,7 +989,7 @@ function resolveThemeTokensDeep(
   errors: string[],
 ): unknown {
   if (typeof value === "string") {
-    if (key === "backgroundGradient") {
+    if (key === "backgroundGradient" || key === "textGradient") {
       return value.replace(
         TOKEN_REF_IN_GRADIENT_PATTERN,
         (matched, name: string) => {

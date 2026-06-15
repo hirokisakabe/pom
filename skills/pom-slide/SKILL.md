@@ -329,7 +329,7 @@ Declare a color palette once at the top level and reference each token from any 
 
 - Each `<Theme>` attribute declares a token: the attribute name is the token name (letters, digits, `_`, `-`; must start with a letter), the value is a 6-digit hex color (`#` prefix optional).
 - At most one `<Theme>` per document; it applies to all slides regardless of position. Child elements are not allowed.
-- `$tokenName` references are resolved in color attributes (attributes ending in `Color`/`Colors`, `color` keys in object/JSON attributes, `highlight`) and inside `backgroundGradient` strings. Other attributes and text content are never substituted.
+- `$tokenName` references are resolved in color attributes (attributes ending in `Color`/`Colors`, `color` keys in object/JSON attributes, `highlight`) and inside `backgroundGradient` / `textGradient` strings. Other attributes and text content are never substituted.
 - Referencing an unknown token (or using `$token` without a `<Theme>`) is a validation error with a "did you mean" suggestion.
 
 ## Common Attributes (All Nodes)
@@ -419,6 +419,7 @@ Positions children using absolute coordinates. Children require `x` and `y`. Sou
 | ------------------------------------------ | ---------------------------------------------------------- |
 | `fontSize`                                 | number (default: 24)                                       |
 | `color`                                    | hex (text color)                                           |
+| `textGradient`                             | `linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)` (native PPTX gradient text fill; overrides `color`; applies to all runs) |
 | `textAlign`                                | `left` / `center` / `right`                                |
 | `bold` `italic` `strike`                   | `true` / `false`                                           |
 | `subscript` `superscript`                  | `true` / `false`                                           |
@@ -432,6 +433,12 @@ Positions children using absolute coordinates. Children require `x` and `y`. Sou
 | `rotate`                                   | number (degrees clockwise, render-only)                    |
 
 Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
+
+`textGradient` accepts the same syntax as `backgroundGradient` (angle in `<n>deg` or `to <direction>`, 2+ hex stops with optional `%` positions). Useful for cover-page titles, KPI numerals, and pull quotes. Exported as a native PowerPoint gradient text fill (editable, not rasterized).
+
+```xml
+<Text fontSize="64" bold="true" textGradient="linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)">Gradient title</Text>
+```
 
 **Text effects (glow / outline):** `glow` adds a glow around the characters (`size` in px, `opacity` 0-1, `color` hex; defaults: 8 / 0.75 / FFFFFF). `outline` draws a border along the character edges (`size` in px, `color` hex; defaults: 1 / FFFFFF). Both export as native PowerPoint text effects (editable, not rasterized) and are useful for keeping titles legible on top of background images. They apply per text node; with inline formatting the node-level effect applies to all runs.
 

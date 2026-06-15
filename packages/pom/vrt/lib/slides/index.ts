@@ -54,6 +54,7 @@ export {
 } from "./customFont.js";
 export { page39ArrowXml } from "./arrow.js";
 export { page41GradientXml } from "./gradient.js";
+export { page52TextGradientXml } from "./textGradient.js";
 export { page42FlexGrowXml } from "./flexGrow.js";
 export { page43DarkThemeXml, vrtThemeXml } from "./darkTheme.js";
 export { page44PerSideBorderXml } from "./perSideBorder.js";
