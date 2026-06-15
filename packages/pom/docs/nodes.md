@@ -422,6 +422,16 @@ Arranges child elements **vertically**.
 
 > **Note:** Child elements of VStack have `flexShrink=1` by default (same as CSS Flexbox), so percentage-based heights combined with `gap` will shrink automatically to fit within the parent.
 
+> **Tip:** An empty `<VStack />` renders nothing and can be used as a transparent spacer. Combined with `grow="1"`, it works like CSS `<div style="flex:1"></div>` to push siblings apart.
+>
+> ```xml
+> <VStack h="300">
+>   <Text>Top</Text>
+>   <VStack grow="1" />
+>   <Text>Bottom</Text>
+> </VStack>
+> ```
+
 ### 8. HStack
 
 Arranges child elements **horizontally**.
@@ -443,6 +453,16 @@ Arranges child elements **horizontally**.
 | `flexWrap`       | `nowrap` / `wrap` / `wrapReverse`                                           |
 
 > **Note:** Child elements of HStack have `flexShrink=1` by default (same as CSS Flexbox), so percentage-based widths combined with `gap` will shrink automatically to fit within the parent.
+
+> **Tip:** An empty `<HStack />` renders nothing and can be used as a transparent spacer. Combined with `grow="1"`, it works like CSS `<div style="flex:1"></div>` to push siblings apart.
+>
+> ```xml
+> <HStack w="600">
+>   <Text>Left</Text>
+>   <HStack grow="1" />
+>   <Text>Right</Text>
+> </HStack>
+> ```
 
 ### 9. Chart
 

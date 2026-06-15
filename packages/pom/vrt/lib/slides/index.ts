@@ -6,6 +6,7 @@ export {
   page40LetterSpacingXml,
   page49SpanFontSizeXml,
 } from "./text.js";
+export { page50EmptyContainerSpacerXml } from "./emptyContainerSpacer.js";
 export { page3ImageXml, page3bImageSizingXml } from "./image.js";
 export { page4TableXml } from "./table.js";
 export { page5ShapeXml } from "./shape.js";
@@ -59,4 +60,4 @@ export { page44PerSideBorderXml } from "./perSideBorder.js";
 export { page45TextEffectsXml } from "./textEffects.js";
 export { page46RotateXml } from "./rotate.js";
 export { page47SubSuperscriptXml } from "./subSuperscript.js";
-export { page50ShapeIconEffectsXml } from "./shapeIconEffects.js";
+export { page51ShapeIconEffectsXml } from "./shapeIconEffects.js";

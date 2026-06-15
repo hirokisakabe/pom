@@ -1,12 +1,12 @@
 import { palette } from "./palette.js";
 
 // ============================================================
-// Page 50: Shape / Icon Effects Test (glow / outline)
+// Page 51: Shape / Icon Effects Test (glow / outline)
 // テスト対象: Shape glow / outline, Icon glow / outline (variant 時の背景図形)
 // ============================================================
-export const page50ShapeIconEffectsXml = `
+export const page51ShapeIconEffectsXml = `
 <VStack w="100%" h="max" padding="48" gap="20" alignItems="stretch" backgroundColor="${palette.background}">
-  <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 50: Shape / Icon Effects Test (glow / outline)</Text>
+  <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 51: Shape / Icon Effects Test (glow / outline)</Text>
   <!-- Shape glow variations -->
   <VStack padding="16" backgroundColor="${palette.navy}" gap="12">
     <Text fontSize="14" bold="true" color="FFFFFF">Shape glow:</Text>
