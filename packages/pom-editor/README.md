@@ -16,7 +16,7 @@
 - **Distinct "between" vs "inside" Drop Targets** — Dropping on the gap before/after a row inserts as a sibling; dropping on a container body itself nests the node inside.
 - **XML In / XML Out** — Accepts a pom XML string via `xml` and returns the updated XML via `onChange` after each edit, so it drops into any editor / preview layout.
 - **AST-Aware Tree View** — Renders the parsed pom AST as a labeled tree so the structure of slides and nested containers is visible at a glance.
-- **Powered by `@dnd-kit/core`** — Accessible, keyboard-friendly drag interactions.
+- **Powered by `@dnd-kit/core`** — Built on `@dnd-kit/core`'s `PointerSensor` for pointer-driven drag interactions.
 
 ## Installation
 

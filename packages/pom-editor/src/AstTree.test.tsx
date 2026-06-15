@@ -230,6 +230,27 @@ describe("AstTree DnD — inside drops (container nesting)", () => {
 
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  it("non-container を親にする gap drop は構造防御として拒否される", () => {
+    const onChange = vi.fn();
+    render(<AstTree ast={makeAst()} onChange={onChange} />);
+
+    // gap:1:0 — would make Text "A" (id 1) act as the parent for the moved
+    // node. The UI never renders this gap (leaves have no child list), but
+    // applyMoveToGap must still reject it defensively if a stale id reaches it.
+    capturedHandlers.onDragEnd?.(dragTo("2", "gap:1:0"));
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("存在しない parentId への gap drop は拒否される", () => {
+    const onChange = vi.fn();
+    render(<AstTree ast={makeAst()} onChange={onChange} />);
+
+    capturedHandlers.onDragEnd?.(dragTo("1", "gap:999:0"));
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });
 
 describe("AstTree DnD — visual feedback distinguishes inside vs between", () => {

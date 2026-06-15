@@ -8,10 +8,8 @@ import {
   useDroppable,
   useSensor,
   useSensors,
-  closestCenter,
   pointerWithin,
 } from "@dnd-kit/core";
-import type { CollisionDetection } from "@dnd-kit/core";
 import type { AstNode } from "./ast.ts";
 import type { POMNode } from "@hirokisakabe/pom/clientApi";
 import {
@@ -104,14 +102,16 @@ function GapStrip({ parentId, index, depth }: GapStripProps) {
   const id = gapId(parentId, index);
   const { setNodeRef } = useDroppable({ id });
   const overId = useContext(OverIdContext);
+  const activeId = useContext(ActiveIdContext);
   const isOver = overId === id;
+  const isDragging = activeId !== null;
 
   return (
     <div
       ref={setNodeRef}
       data-testid={id}
       style={{
-        height: isOver ? "6px" : "4px",
+        height: isOver ? "10px" : isDragging ? "8px" : "2px",
         marginLeft: `${depth * 16}px`,
         backgroundColor: isOver ? "#3b82f6" : "transparent",
         borderRadius: "2px",
@@ -227,11 +227,6 @@ export interface AstTreeProps {
   onChange: (nodes: POMNode[]) => void;
 }
 
-const collisionDetection: CollisionDetection = (args) => {
-  const within = pointerWithin(args);
-  return within.length > 0 ? within : closestCenter(args);
-};
-
 export function AstTree({ ast, onChange }: AstTreeProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -279,7 +274,7 @@ export function AstTree({ ast, onChange }: AstTreeProps) {
     <div>
       <DndContext
         sensors={sensors}
-        collisionDetection={collisionDetection}
+        collisionDetection={pointerWithin}
         onDragStart={onDragStart}
         onDragOver={onDragOver}
         onDragEnd={onDragEnd}

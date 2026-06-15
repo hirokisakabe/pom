@@ -132,8 +132,13 @@ export function applyMoveToGap(
 ): AstNode[] {
   const active = findNode(ast, activeId);
   if (!active) return ast;
-  if (newParentId !== "root" && isDescendantOrSelf(active, newParentId))
-    return ast;
+
+  if (newParentId !== "root") {
+    const newParent = findNode(ast, newParentId);
+    if (!newParent) return ast;
+    if (!isContainerType(newParent.node.type)) return ast;
+    if (isDescendantOrSelf(active, newParentId)) return ast;
+  }
 
   let adjustedIndex = newIndex;
   if (active.parentId === newParentId) {
