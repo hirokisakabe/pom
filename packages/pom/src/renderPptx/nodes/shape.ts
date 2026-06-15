@@ -1,4 +1,4 @@
-import type { PositionedNode } from "../../types.ts";
+import type { BorderStyle, PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { pxToPt } from "../units.ts";
 import { convertUnderline, convertStrike } from "../textOptions.ts";
@@ -7,10 +7,36 @@ import { convertBorderLine, convertShadow } from "../utils/visualStyle.ts";
 
 type ShapePositionedNode = Extract<PositionedNode, { type: "shape" }>;
 
+/**
+ * outline (Text と同じ書式の `outline.size` / `outline.color`) と
+ * 既存 `line` 属性 (`line.color` / `line.width` / `line.dashType`) を
+ * 1 つの BorderStyle にマージする。
+ *
+ * outline が指定された場合はそれを基準とし、line に dashType の指定があれば
+ * 引き継ぐ。色・幅は outline が優先される (両方指定された場合の意図として、
+ * 後から追加された outline を最新指定とみなす)。
+ */
+function resolveShapeLine(
+  line: BorderStyle | undefined,
+  outline: { size?: number; color?: string } | undefined,
+): BorderStyle | undefined {
+  if (!outline) return line;
+  return {
+    color: outline.color,
+    width: outline.size,
+    dashType: line?.dashType,
+  };
+}
+
 export function renderShapeNode(
   node: ShapePositionedNode,
   ctx: RenderContext,
 ): void {
+  const lineSpec = resolveShapeLine(node.line, node.outline);
+  const glowMarker = node.glow
+    ? ctx.buildContext.glowEffects.register(node.glow)
+    : undefined;
+
   const shapeOptions = {
     ...getContentAreaIn(node),
     fill: node.fill
@@ -19,9 +45,10 @@ export function renderShapeNode(
           transparency: node.fill.transparency,
         }
       : undefined,
-    line: node.line ? convertBorderLine(node.line) : undefined,
+    line: lineSpec ? convertBorderLine(lineSpec) : undefined,
     shadow: convertShadow(node.shadow),
     rotate: node.rotate,
+    objectName: glowMarker,
   };
 
   if (node.text) {

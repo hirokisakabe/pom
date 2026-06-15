@@ -419,6 +419,8 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     color: "string",
     variant: "string",
     bgColor: "string",
+    glow: TEXT_GLOW_RULE,
+    outline: TEXT_OUTLINE_RULE,
     rotate: "number",
   },
   svg: {
@@ -439,6 +441,8 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     rotate: "number",
     fill: FILL_STYLE_RULE,
     line: BORDER_STYLE_RULE,
+    glow: TEXT_GLOW_RULE,
+    outline: TEXT_OUTLINE_RULE,
     ...TEXT_STYLE_RULES,
   },
   chart: {

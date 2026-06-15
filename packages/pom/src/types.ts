@@ -494,6 +494,10 @@ export const iconNodeSchema = basePOMNodeSchema.extend({
   color: iconColorSchema,
   variant: iconVariantSchema,
   bgColor: iconColorSchema,
+  // glow / outline は variant 指定時の背景図形にのみ適用される
+  // (PNG ベースのアイコン本体には適用されない)
+  glow: textGlowSchema.optional(),
+  outline: textOutlineSchema.optional(),
   rotate: z.number().optional(),
 });
 
@@ -552,6 +556,8 @@ export const shapeNodeSchema = basePOMNodeSchema.extend({
   rotate: z.number().optional(),
   fill: fillStyleSchema.optional(),
   line: borderStyleSchema.optional(),
+  glow: textGlowSchema.optional(),
+  outline: textOutlineSchema.optional(),
   fontSize: z.number().optional(),
   color: z.string().optional(),
   textAlign: z.enum(["left", "center", "right"]).optional(),
