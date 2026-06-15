@@ -1173,10 +1173,7 @@ function convertPomNode(
     );
   }
   // Children for container nodes
-  else if (
-    def.childPolicy.kind === "pom-children" &&
-    childElements.length > 0
-  ) {
+  else if (def.childPolicy.kind === "pom-children") {
     const convertedChildren = childElements
       .map((child) => convertElement(child, errors, theme))
       .filter((child): child is Record<string, unknown> => child !== null);
