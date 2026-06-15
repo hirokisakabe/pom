@@ -102,10 +102,13 @@ function applyGlowToXml(xml: string, registry: GlowEffectRegistry): string {
   let result = xml;
   for (const entry of registry.entries) {
     const effectXml = buildGlowEffectXml(entry);
-    // cNvPr の name 属性から始まる任意の sp/pic ブロックを最短一致で探し、
+    // cNvPr の name 属性で marker shape を見つけ、その shape ブロック内の
     // 最初に出現する </p:spPr> の直前に effectLst を挿入する。
+    // pptxgenjs は cNvPr を `<p:cNvPr.../>` (self-closing) と
+    // `<p:cNvPr...></p:cNvPr>` (open+close) のどちらの形式でも出力し得るため、
+    // cNvPr の閉じ形式に依存せず name 属性のあとから lazy に進める。
     const re = new RegExp(
-      `(<p:cNvPr[^>]*name="${entry.marker}"[^>]*/>[\\s\\S]*?)(</p:spPr>)`,
+      `(<p:cNvPr[^>]*name="${entry.marker}"[\\s\\S]*?)(</p:spPr>)`,
       "g",
     );
     result = result.replace(re, (_match, prefix, suffix) => {

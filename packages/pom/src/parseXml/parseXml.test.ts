@@ -1330,6 +1330,24 @@ describe("parseXml", () => {
       expect(node.outline).toEqual({ size: 2, color: "0088CC" });
     });
 
+    it("Shape の glow / outline をドット記法で変換する", () => {
+      const result = parseXml(
+        '<Shape shapeType="ellipse" glow.size="12" glow.opacity="0.6" glow.color="FF00FF" outline.size="3" outline.color="0088CC"/>',
+      );
+      const node = result[0] as Record<string, unknown>;
+      expect(node.glow).toEqual({ size: 12, opacity: 0.6, color: "FF00FF" });
+      expect(node.outline).toEqual({ size: 3, color: "0088CC" });
+    });
+
+    it("Icon の glow / outline をドット記法で変換する", () => {
+      const result = parseXml(
+        '<Icon name="star" variant="circle-filled" glow.size="8" glow.color="FFCC00" outline.size="2" outline.color="333333"/>',
+      );
+      const node = result[0] as Record<string, unknown>;
+      expect(node.glow).toEqual({ size: 8, color: "FFCC00" });
+      expect(node.outline).toEqual({ size: 2, color: "333333" });
+    });
+
     it("ドット記法で fill 属性を変換する", () => {
       const result = parseXml(
         '<Shape shapeType="rect" fill.color="1D4ED8" fill.transparency="0.5" />',
