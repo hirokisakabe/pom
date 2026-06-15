@@ -390,6 +390,7 @@ export const NODE_COERCION_MAP: Record<string, Record<string, CoercionRule>> = {
     text: "string",
     rotate: "number",
     ...TEXT_STYLE_RULES,
+    textGradient: "string",
     letterSpacing: "number",
     glow: TEXT_GLOW_RULE,
     outline: TEXT_OUTLINE_RULE,

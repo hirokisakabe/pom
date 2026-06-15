@@ -390,6 +390,7 @@ export const textNodeSchema = basePOMNodeSchema.extend({
   rotate: z.number().optional(),
   fontSize: z.number().optional(),
   color: z.string().optional(),
+  textGradient: backgroundGradientSchema.optional(),
   textAlign: z.enum(["left", "center", "right"]).optional(),
   bold: z.boolean().optional(),
   italic: z.boolean().optional(),

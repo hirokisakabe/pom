@@ -174,3 +174,94 @@ describe("buildPptx with backgroundGradient", () => {
     );
   });
 });
+
+describe("buildPptx with textGradient", () => {
+  it("Text の textGradient が text run の gradFill として出力される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text fontSize="32" textGradient="linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)">Hello</Text>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.write({
+      outputType: "uint8array",
+    })) as Uint8Array;
+    const slideXml = await readSlideXml(buffer);
+
+    // text run 内に gradFill が描画される (a:rPr 配下)
+    expect(slideXml).toMatch(/<a:rPr[^>]*><a:gradFill/);
+    expect(slideXml).toContain(
+      '<a:gradFill flip="none" rotWithShape="1"><a:gsLst>' +
+        '<a:gs pos="0"><a:srgbClr val="38BDF8"/></a:gs>' +
+        '<a:gs pos="100000"><a:srgbClr val="A78BFA"/></a:gs>' +
+        '</a:gsLst><a:lin ang="0" scaled="0"/></a:gradFill>',
+    );
+  });
+
+  it("textGradient 指定時は node の color よりも gradient が優先される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text fontSize="24" color="FF0000" textGradient="linear-gradient(#0000FF, #00FF00)">x</Text>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.write({
+      outputType: "uint8array",
+    })) as Uint8Array;
+    const slideXml = await readSlideXml(buffer);
+
+    // gradient のカラーストップが出力される
+    expect(slideXml).toContain('<a:srgbClr val="0000FF"/>');
+    expect(slideXml).toContain('<a:srgbClr val="00FF00"/>');
+    // 元の color (FF0000) は単色塗りとしては残らない
+    expect(slideXml).not.toContain(
+      '<a:solidFill><a:srgbClr val="FF0000"/></a:solidFill>',
+    );
+  });
+
+  it("textGradient は runs (Span) の color も含め全 run に適用される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text fontSize="24" textGradient="linear-gradient(90deg, #11998E, #38EF7D)">A<Span color="FF0000">B</Span>C</Text>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.write({
+      outputType: "uint8array",
+    })) as Uint8Array;
+    const slideXml = await readSlideXml(buffer);
+
+    // 3 つの text run 全てが gradient で塗られる
+    const gradFillCount = (slideXml.match(/<a:gradFill/g) ?? []).length;
+    expect(gradFillCount).toBeGreaterThanOrEqual(3);
+    // Span の color (FF0000) は単色塗りとしては残らない
+    expect(slideXml).not.toContain(
+      '<a:solidFill><a:srgbClr val="FF0000"/></a:solidFill>',
+    );
+  });
+
+  it("textGradient と backgroundGradient が同 Text 上で併用できる", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text w="240" h="80" fontSize="24"
+            backgroundGradient="linear-gradient(90deg, #0F172A, #1E293B)"
+            textGradient="linear-gradient(90deg, #38BDF8, #A78BFA)">Hi</Text>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.write({
+      outputType: "uint8array",
+    })) as Uint8Array;
+    const slideXml = await readSlideXml(buffer);
+
+    // それぞれのカラーストップが出力される
+    expect(slideXml).toContain('<a:srgbClr val="0F172A"/>');
+    expect(slideXml).toContain('<a:srgbClr val="1E293B"/>');
+    expect(slideXml).toContain('<a:srgbClr val="38BDF8"/>');
+    expect(slideXml).toContain('<a:srgbClr val="A78BFA"/>');
+    // gradFill が 2 つ以上 (背景 + 文字) 描画される
+    const gradFillCount = (slideXml.match(/<a:gradFill/g) ?? []).length;
+    expect(gradFillCount).toBeGreaterThanOrEqual(2);
+  });
+
+  it("不正な textGradient 構文は ParseXmlError になる", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text textGradient="linear-gradient(broken)">x</Text>
+    </VStack></Slide>`;
+    await expect(buildPptx(xml, { w: 1280, h: 720 })).rejects.toThrow(
+      ParseXmlError,
+    );
+  });
+});
