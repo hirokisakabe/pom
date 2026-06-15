@@ -5,6 +5,7 @@ import path from "path";
 import { describe, expect, it } from "vitest";
 import { buildPptx } from "../buildPptx.ts";
 import { ParseXmlError } from "../parseXml/parseXml.ts";
+import type { Gradient } from "../shared/gradient.ts";
 import { GradientFillRegistry } from "./gradientFills.ts";
 
 async function readSlideXml(buffer: Uint8Array): Promise<string> {
@@ -13,7 +14,7 @@ async function readSlideXml(buffer: Uint8Array): Promise<string> {
 }
 
 describe("GradientFillRegistry", () => {
-  const gradient = {
+  const gradient: Gradient = {
     kind: "linear",
     value: {
       angle: 90,
@@ -22,7 +23,7 @@ describe("GradientFillRegistry", () => {
         { color: "0000FF", position: 100 },
       ],
     },
-  } as const;
+  };
 
   it("同一スペックには同じマーカーを返し、異なるスペックには別マーカーを返す", () => {
     const registry = new GradientFillRegistry();
@@ -289,7 +290,9 @@ describe("buildPptx with backgroundGradient", () => {
       const slideXml = await readSlideXml(buffer);
 
       expect(slideXml.match(/<a:gradFill/g)).toHaveLength(2);
-      expect(slideXml).toMatch(/<a:gradFill[^>]*>[^<]*<a:gsLst>[^<]*<a:gs[^>]*><a:srgbClr val="FF0000"\/><\/a:gs>[\s\S]*?<a:lin/);
+      expect(slideXml).toMatch(
+        /<a:gradFill[^>]*>[^<]*<a:gsLst>[^<]*<a:gs[^>]*><a:srgbClr val="FF0000"\/><\/a:gs>[\s\S]*?<a:lin/,
+      );
       expect(slideXml).toContain('<a:path path="circle">');
       expect(slideXml).toContain('<a:srgbClr val="112233"/>');
     });

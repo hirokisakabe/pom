@@ -285,18 +285,14 @@ export function parseRadialGradient(value: string): RadialGradient | null {
 
   // prelude 判定: shape / size / "at" のいずれかキーワードが含まれていれば prelude として扱う。
   const hasPreludeKeyword = firstLowerTokens.some(
-    (t) =>
-      SHAPE_KEYWORDS.has(t) ||
-      SIZE_KEYWORDS.has(t) ||
-      t === "at",
+    (t) => SHAPE_KEYWORDS.has(t) || SIZE_KEYWORDS.has(t) || t === "at",
   );
 
   if (hasPreludeKeyword) {
     const atIdx = firstLowerTokens.indexOf("at");
     const shapeSizeTokens =
       atIdx >= 0 ? firstLowerTokens.slice(0, atIdx) : firstLowerTokens;
-    const positionTokens =
-      atIdx >= 0 ? firstTokens.slice(atIdx + 1) : [];
+    const positionTokens = atIdx >= 0 ? firstTokens.slice(atIdx + 1) : [];
 
     for (const token of shapeSizeTokens) {
       if (SHAPE_KEYWORDS.has(token)) {

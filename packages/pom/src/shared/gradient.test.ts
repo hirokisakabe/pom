@@ -106,9 +106,7 @@ describe("parseLinearGradient", () => {
 
 describe("parseRadialGradient", () => {
   it("カラーストップのみ (省略時 default) で parse できる", () => {
-    expect(
-      parseRadialGradient("radial-gradient(#FF0000, #0000FF)"),
-    ).toEqual({
+    expect(parseRadialGradient("radial-gradient(#FF0000, #0000FF)")).toEqual({
       shape: "ellipse",
       size: "farthest-corner",
       centerX: 50,
@@ -159,14 +157,10 @@ describe("parseRadialGradient", () => {
       ),
     ).toMatchObject({ centerX: 0, centerY: 100 });
     expect(
-      parseRadialGradient(
-        "radial-gradient(ellipse at left, #FF0000, #0000FF)",
-      ),
+      parseRadialGradient("radial-gradient(ellipse at left, #FF0000, #0000FF)"),
     ).toMatchObject({ centerX: 0, centerY: 50 });
     expect(
-      parseRadialGradient(
-        "radial-gradient(ellipse at top, #FF0000, #0000FF)",
-      ),
+      parseRadialGradient("radial-gradient(ellipse at top, #FF0000, #0000FF)"),
     ).toMatchObject({ centerX: 50, centerY: 0 });
   });
 
@@ -200,9 +194,8 @@ describe("parseRadialGradient", () => {
 
   it("位置省略時は均等配置になる", () => {
     expect(
-      parseRadialGradient(
-        "radial-gradient(circle, #FF0000, #00FF00, #0000FF)",
-      )?.stops,
+      parseRadialGradient("radial-gradient(circle, #FF0000, #00FF00, #0000FF)")
+        ?.stops,
     ).toEqual([
       { color: "FF0000", position: 0 },
       { color: "00FF00", position: 50 },
@@ -211,12 +204,12 @@ describe("parseRadialGradient", () => {
   });
 
   it("3桁 HEX と # なし HEX を 6桁大文字に正規化する", () => {
-    expect(
-      parseRadialGradient("radial-gradient(#f00, abcdef)")?.stops,
-    ).toEqual([
-      { color: "FF0000", position: 0 },
-      { color: "ABCDEF", position: 100 },
-    ]);
+    expect(parseRadialGradient("radial-gradient(#f00, abcdef)")?.stops).toEqual(
+      [
+        { color: "FF0000", position: 0 },
+        { color: "ABCDEF", position: 100 },
+      ],
+    );
   });
 
   it("不正な構文には null を返す", () => {
@@ -232,18 +225,14 @@ describe("parseRadialGradient", () => {
       ),
     ).toBeNull();
     expect(
-      parseRadialGradient(
-        "radial-gradient(circle at, #FF0000, #0000FF)",
-      ),
+      parseRadialGradient("radial-gradient(circle at, #FF0000, #0000FF)"),
     ).toBeNull();
   });
 });
 
 describe("parseGradient", () => {
   it("linear-gradient を kind=linear で返す", () => {
-    const result = parseGradient(
-      "linear-gradient(45deg, #FF0000, #0000FF)",
-    );
+    const result = parseGradient("linear-gradient(45deg, #FF0000, #0000FF)");
     expect(result?.kind).toBe("linear");
     expect(result?.kind === "linear" ? result.value.angle : null).toBe(45);
   });
@@ -253,9 +242,9 @@ describe("parseGradient", () => {
       "radial-gradient(circle at center, #FF0000, #0000FF)",
     );
     expect(result?.kind).toBe("radial");
-    expect(
-      result?.kind === "radial" ? result.value.shape : null,
-    ).toBe("circle");
+    expect(result?.kind === "radial" ? result.value.shape : null).toBe(
+      "circle",
+    );
   });
 
   it("どちらにも該当しなければ null", () => {

@@ -336,7 +336,7 @@ const textGradientSchema = z
   .string()
   .refine((value) => parseLinearGradient(value) !== null, {
     message:
-      'Invalid textGradient syntax. Expected: linear-gradient(<angle>deg, <color> <position>%, ...). radial-gradient is not supported on textGradient.',
+      "Invalid textGradient syntax. Expected: linear-gradient(<angle>deg, <color> <position>%, ...). radial-gradient is not supported on textGradient.",
   });
 
 // ===== Base Node =====

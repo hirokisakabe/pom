@@ -136,9 +136,7 @@ function buildGradFillXml(gradient: Gradient, opacity?: number): string {
     opacity !== undefined
       ? `<a:alpha val="${Math.round(opacity * 100000)}"/>`
       : "";
-  const stops =
-    gradient.kind === "linear" ? gradient.value.stops : gradient.value.stops;
-  const gsXml = stops
+  const gsXml = gradient.value.stops
     .map((stop) => {
       const pos = Math.round(stop.position * 1000);
       const srgbClr = alphaXml
