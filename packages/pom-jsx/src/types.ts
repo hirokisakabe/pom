@@ -270,6 +270,7 @@ export interface TimelineItem {
   title: string;
   description?: string;
   color?: string;
+  dateColor?: string;
 }
 
 export interface TimelineProps extends BaseProps {
@@ -278,6 +279,10 @@ export interface TimelineProps extends BaseProps {
   dateColor?: string;
   titleColor?: string;
   descriptionColor?: string;
+  connectorColor?: string;
+  connectorGradient?: string;
+  useColorForDate?: boolean;
+  fontFamily?: string;
 }
 
 // ===== Matrix =====

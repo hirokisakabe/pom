@@ -55,7 +55,8 @@ import {
   page51ShapeIconEffectsXml,
   page52TextGradientXml,
   page53RadialGradientXml,
-  page54PerSideBorderRadiusXml,
+  page54TimelineCustomizationXml,
+  page55PerSideBorderRadiusXml,
   vrtThemeXml,
 } from "./slides/index.js";
 
@@ -115,7 +116,8 @@ export async function generatePptx(outputPath: string): Promise<void> {
     page51ShapeIconEffectsXml,
     page52TextGradientXml,
     page53RadialGradientXml,
-    page54PerSideBorderRadiusXml,
+    page54TimelineCustomizationXml,
+    page55PerSideBorderRadiusXml,
   ]
     .map((pageXml) => `<Slide>${pageXml}</Slide>`)
     .join("\n");

@@ -22,6 +22,7 @@ export {
 } from "./layout.js";
 export { page8CommonXml } from "./common.js";
 export { page9TimelineXml } from "./timeline.js";
+export { page54TimelineCustomizationXml } from "./timelineCustomization.js";
 export { page11MatrixXml } from "./matrix.js";
 export { page12TreeXml } from "./tree.js";
 export { page13FlowXml } from "./flow.js";
@@ -63,4 +64,4 @@ export { page45TextEffectsXml } from "./textEffects.js";
 export { page46RotateXml } from "./rotate.js";
 export { page47SubSuperscriptXml } from "./subSuperscript.js";
 export { page51ShapeIconEffectsXml } from "./shapeIconEffects.js";
-export { page54PerSideBorderRadiusXml } from "./perSideBorderRadius.js";
+export { page55PerSideBorderRadiusXml } from "./perSideBorderRadius.js";

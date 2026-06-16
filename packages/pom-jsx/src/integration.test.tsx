@@ -359,6 +359,35 @@ describe("pom core との統合テスト", () => {
     expect(xml).toContain('direction="horizontal"');
   });
 
+  it("Timeline のカスタマイズ props (connectorColor / connectorGradient / useColorForDate / fontFamily / per-item dateColor) が parseXml でパースできる", () => {
+    const xml = renderToXml(
+      <Slide>
+        <Timeline
+          direction="horizontal"
+          connectorColor="1D4ED8"
+          connectorGradient="linear-gradient(90deg, #1D4ED8 0%, #DC2626 100%)"
+          useColorForDate={true}
+          fontFamily="Arial"
+          items={[
+            { date: "2024-01", title: "Default", color: "1D4ED8" },
+            {
+              date: "2024-06",
+              title: "Override",
+              color: "16A34A",
+              dateColor: "DC2626",
+            },
+          ]}
+          w="max"
+          h={200}
+        />
+      </Slide>,
+    );
+    assertParsable(xml);
+    expect(xml).toContain('connectorColor="1D4ED8"');
+    expect(xml).toContain('useColorForDate="true"');
+    expect(xml).toContain('fontFamily="Arial"');
+  });
+
   it("Matrix が parseXml でパースできる", () => {
     const xml = renderToXml(
       <Slide>

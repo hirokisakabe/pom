@@ -5,6 +5,7 @@ import { pxToIn, pxToPt } from "../units.ts";
 import { measureTimeline } from "../../calcYogaLayout/measureCompositeNodes.ts";
 import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
 import { withContentBounds } from "../utils/contentArea.ts";
+import { registerBackgroundGradient } from "../gradientFills.ts";
 
 type TimelinePositionedNode = Extract<PositionedNode, { type: "timeline" }>;
 
@@ -12,6 +13,17 @@ type TimelineTextColors = {
   date: string;
   title: string;
   description: string;
+};
+
+type TimelineRenderOptions = {
+  defaultColor: string;
+  nodeRadius: number;
+  lineWidth: number;
+  scaleFactor: number;
+  textColors: TimelineTextColors;
+  connectorLineColor: string;
+  fontFace: string;
+  useColorForDate: boolean;
 };
 
 export function renderTimelineNode(
@@ -34,6 +46,22 @@ export function renderTimelineNode(
     description: stripHash(node.descriptionColor) ?? "64748B",
   };
 
+  // 軸線色を解決する。connectorGradient が指定されていれば gradient registry に
+  // 登録してマーカー色を採用する (後処理で gradFill に置換される)。
+  // connectorColor が指定されていればそれを採用、未指定ならデフォルトの E2E8F0。
+  const connectorGradientMarker = node.connectorGradient
+    ? registerBackgroundGradient(
+        node.connectorGradient,
+        node.opacity,
+        ctx.buildContext.gradientFills,
+      )
+    : undefined;
+  const connectorLineColor =
+    connectorGradientMarker ?? stripHash(node.connectorColor) ?? "E2E8F0";
+
+  const fontFace = node.fontFamily ?? "Noto Sans JP";
+  const useColorForDate = node.useColorForDate ?? false;
+
   // スケール係数を計算（コンテンツ領域基準）
   const { content, scaleFactor } = resolveScaledContentArea(
     node,
@@ -47,41 +75,53 @@ export function renderTimelineNode(
   // コンテンツ領域を使用するための仮想ノードを作成
   const contentNode = withContentBounds(node, content);
 
+  const options: TimelineRenderOptions = {
+    defaultColor,
+    nodeRadius,
+    lineWidth,
+    scaleFactor,
+    textColors,
+    connectorLineColor,
+    fontFace,
+    useColorForDate,
+  };
+
   if (direction === "horizontal") {
-    renderHorizontalTimeline(
-      contentNode,
-      ctx,
-      items,
-      defaultColor,
-      nodeRadius,
-      lineWidth,
-      scaleFactor,
-      textColors,
-    );
+    renderHorizontalTimeline(contentNode, ctx, items, options);
   } else {
-    renderVerticalTimeline(
-      contentNode,
-      ctx,
-      items,
-      defaultColor,
-      nodeRadius,
-      lineWidth,
-      scaleFactor,
-      textColors,
-    );
+    renderVerticalTimeline(contentNode, ctx, items, options);
   }
+}
+
+function resolveItemDateColor(
+  item: TimelinePositionedNode["items"][number],
+  options: TimelineRenderOptions,
+): string {
+  // 優先順位: item.dateColor > (useColorForDate && item.color) > Timeline.dateColor
+  const perItemDateColor = stripHash(item.dateColor);
+  if (perItemDateColor) return perItemDateColor;
+  if (options.useColorForDate && item.color) {
+    const inherited = stripHash(item.color);
+    if (inherited) return inherited;
+  }
+  return options.textColors.date;
 }
 
 function renderHorizontalTimeline(
   node: TimelinePositionedNode,
   ctx: RenderContext,
   items: TimelinePositionedNode["items"],
-  defaultColor: string,
-  nodeRadius: number,
-  lineWidth: number,
-  scaleFactor: number,
-  textColors: TimelineTextColors,
+  options: TimelineRenderOptions,
 ): void {
+  const {
+    defaultColor,
+    nodeRadius,
+    lineWidth,
+    scaleFactor,
+    textColors,
+    connectorLineColor,
+    fontFace,
+  } = options;
   const itemCount = items.length;
   const lineY = node.y + node.h / 2;
   const labelW = 120 * scaleFactor;
@@ -97,7 +137,7 @@ function renderHorizontalTimeline(
     y: pxToIn(lineY),
     w: pxToIn(lineLength),
     h: 0,
-    line: { color: "E2E8F0", width: pxToPt(lineWidth) },
+    line: { color: connectorLineColor, width: pxToPt(lineWidth) },
   });
   const dateLabelH = 24 * scaleFactor;
   const titleLabelH = 24 * scaleFactor;
@@ -112,6 +152,7 @@ function renderHorizontalTimeline(
     const cx = startX + lineLength * progress;
     const cy = lineY;
     const color = item.color ?? defaultColor;
+    const dateColor = resolveItemDateColor(item, options);
 
     // ノード（円）を描画
     ctx.slide.addShape(ctx.pptx.ShapeType.ellipse, {
@@ -130,8 +171,8 @@ function renderHorizontalTimeline(
       w: pxToIn(labelW),
       h: pxToIn(dateLabelH),
       fontSize: pxToPt(12 * scaleFactor),
-      fontFace: "Noto Sans JP",
-      color: textColors.date,
+      fontFace,
+      color: dateColor,
       align: "center",
       valign: "bottom",
     });
@@ -143,7 +184,7 @@ function renderHorizontalTimeline(
       w: pxToIn(labelW),
       h: pxToIn(titleLabelH),
       fontSize: pxToPt(14 * scaleFactor),
-      fontFace: "Noto Sans JP",
+      fontFace,
       color: textColors.title,
       bold: true,
       align: "center",
@@ -158,7 +199,7 @@ function renderHorizontalTimeline(
         w: pxToIn(labelW),
         h: pxToIn(descLabelH),
         fontSize: pxToPt(11 * scaleFactor),
-        fontFace: "Noto Sans JP",
+        fontFace,
         color: textColors.description,
         align: "center",
         valign: "top",
@@ -171,12 +212,17 @@ function renderVerticalTimeline(
   node: TimelinePositionedNode,
   ctx: RenderContext,
   items: TimelinePositionedNode["items"],
-  defaultColor: string,
-  nodeRadius: number,
-  lineWidth: number,
-  scaleFactor: number,
-  textColors: TimelineTextColors,
+  options: TimelineRenderOptions,
 ): void {
+  const {
+    defaultColor,
+    nodeRadius,
+    lineWidth,
+    scaleFactor,
+    textColors,
+    connectorLineColor,
+    fontFace,
+  } = options;
   const itemCount = items.length;
   const lineX = node.x + 40 * scaleFactor;
   const startY = node.y + nodeRadius;
@@ -189,7 +235,7 @@ function renderVerticalTimeline(
     y: pxToIn(startY),
     w: 0,
     h: pxToIn(lineLength),
-    line: { color: "E2E8F0", width: pxToPt(lineWidth) },
+    line: { color: connectorLineColor, width: pxToPt(lineWidth) },
   });
 
   const labelGap = 16 * scaleFactor;
@@ -206,6 +252,7 @@ function renderVerticalTimeline(
     const cx = lineX;
     const cy = startY + lineLength * progress;
     const color = item.color ?? defaultColor;
+    const dateColor = resolveItemDateColor(item, options);
 
     // ノード（円）を描画
     ctx.slide.addShape(ctx.pptx.ShapeType.ellipse, {
@@ -224,8 +271,8 @@ function renderVerticalTimeline(
       w: pxToIn(dateLabelW),
       h: pxToIn(dateLabelH),
       fontSize: pxToPt(12 * scaleFactor),
-      fontFace: "Noto Sans JP",
-      color: textColors.date,
+      fontFace,
+      color: dateColor,
       align: "left",
       valign: "bottom",
     });
@@ -237,7 +284,7 @@ function renderVerticalTimeline(
       w: pxToIn(titleLabelW),
       h: pxToIn(titleLabelH),
       fontSize: pxToPt(14 * scaleFactor),
-      fontFace: "Noto Sans JP",
+      fontFace,
       color: textColors.title,
       bold: true,
       align: "left",
@@ -252,7 +299,7 @@ function renderVerticalTimeline(
         w: pxToIn(descLabelW),
         h: pxToIn(descLabelH),
         fontSize: pxToPt(11 * scaleFactor),
-        fontFace: "Noto Sans JP",
+        fontFace,
         color: textColors.description,
         align: "left",
         valign: "top",
