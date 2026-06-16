@@ -37,11 +37,11 @@ rm -f pom-theme.json
 
 ## 両 agent で確認するメモ
 
-| 項目 | Claude Code | Codex CLI |
-| --- | --- | --- |
-| 起動方法 | 自然言語のほか `/pom-theme` slash command でも triggered する想定 | 自然言語のみ |
-| `WebFetch` の使用 | URL / 画像が無い指示なので `WebFetch` は走らないはず | 同上 |
-| 派生色のロジック | SKILL.md の Step 3 導出ルールに従う | 同上 |
+| 項目              | Claude Code                                                       | Codex CLI    |
+| ----------------- | ----------------------------------------------------------------- | ------------ |
+| 起動方法          | 自然言語のほか `/pom-theme` slash command でも triggered する想定 | 自然言語のみ |
+| `WebFetch` の使用 | URL / 画像が無い指示なので `WebFetch` は走らないはず              | 同上         |
+| 派生色のロジック  | SKILL.md の Step 3 導出ルールに従う                               | 同上         |
 
 ## 失敗時のヒント
 

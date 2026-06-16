@@ -38,12 +38,12 @@ rm -f pom-theme.json slides.pom.xml
 
 ## 両 agent で確認するメモ
 
-| 項目 | Claude Code | Codex CLI |
-| --- | --- | --- |
-| 起動方法 | 自然言語のほか、`/pom-slide` slash command でも triggered する想定 | 自然言語のみ。slash command は無い |
-| skill 読み込み | session 開始時のみ。SKILL.md 編集後は **再起動必須** | 同様にセッション再起動が安全 |
-| tool 呼び出し粒度 | `Write` / `Read` / `Bash` を細かく分けて呼ぶ傾向 | tool 呼び出しの粒度が異なる場合あり（要観察） |
-| プレビュー起動 | Bash を別ターミナルで起動する案内になりやすい | 同様 |
+| 項目              | Claude Code                                                        | Codex CLI                                     |
+| ----------------- | ------------------------------------------------------------------ | --------------------------------------------- |
+| 起動方法          | 自然言語のほか、`/pom-slide` slash command でも triggered する想定 | 自然言語のみ。slash command は無い            |
+| skill 読み込み    | session 開始時のみ。SKILL.md 編集後は **再起動必須**               | 同様にセッション再起動が安全                  |
+| tool 呼び出し粒度 | `Write` / `Read` / `Bash` を細かく分けて呼ぶ傾向                   | tool 呼び出しの粒度が異なる場合あり（要観察） |
+| プレビュー起動    | Bash を別ターミナルで起動する案内になりやすい                      | 同様                                          |
 
 ## 失敗時のヒント
 

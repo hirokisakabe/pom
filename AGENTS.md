@@ -105,6 +105,7 @@ Skills (`pom-slide`, `pom-theme`) have **no release workflow**. They are distrib
 適用条件: `skills/pom-slide/SKILL.md` または `skills/pom-theme/SKILL.md` を編集する場合。
 
 開発中に Claude Code / Codex CLI **両方** で
+
 1. skill として triggered されるか
 2. 想定通りに動作するか（pom XML 生成・テーマ適用・preview 起動まで）
 

@@ -34,11 +34,11 @@ pnpm dlx @hirokisakabe/pom-cli --version || echo "pom-cli not available — fixt
 
 ## 両 agent で確認するメモ
 
-| 項目 | Claude Code | Codex CLI |
-| --- | --- | --- |
-| Bash の long-running 実行 | `run_in_background: true` で起動できる | shell 経由で `&` background 起動が必要な場合あり |
-| preview の URL 提示 | text 出力で案内 | 同上 |
-| pom-cli 未インストール時 | `Bash` 実行時にエラーになり、agent がインストール手順を提示する想定 | 同上。CLI が無くてもプロンプト経路自体は完走するか確認 |
+| 項目                      | Claude Code                                                         | Codex CLI                                              |
+| ------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------ |
+| Bash の long-running 実行 | `run_in_background: true` で起動できる                              | shell 経由で `&` background 起動が必要な場合あり       |
+| preview の URL 提示       | text 出力で案内                                                     | 同上                                                   |
+| pom-cli 未インストール時  | `Bash` 実行時にエラーになり、agent がインストール手順を提示する想定 | 同上。CLI が無くてもプロンプト経路自体は完走するか確認 |
 
 ## 失敗時のヒント
 
