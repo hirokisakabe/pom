@@ -1,14 +1,14 @@
 import { palette } from "./palette.js";
 
 // ============================================================
-// Page 53: Per-Side Border × borderRadius Test
+// Page 54: Per-Side Border × borderRadius Test
 // テスト対象: borderTop / borderRight / borderBottom / borderLeft と
 // borderRadius の併用 (#881)
-// 角部の円弧が辺ごとの色で連続描画されることを確認する
+// 角弧は水平辺 (top / bottom) のみが所有することを確認する
 // ============================================================
-export const page53PerSideBorderRadiusXml = `
+export const page54PerSideBorderRadiusXml = `
 <VStack w="100%" h="max" padding="48" gap="20" alignItems="stretch" backgroundColor="${palette.background}">
-  <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 53: Per-Side Border × borderRadius</Text>
+  <Text fontSize="28" color="${palette.charcoal}" bold="true">Page 54: Per-Side Border × borderRadius</Text>
   <!-- KPI タイル想定: borderTop + borderRadius + 背景色 -->
   <VStack padding="16" backgroundColor="FFFFFF" border='{"color":"${palette.border}","width":1}' borderRadius="8" gap="8">
     <Text fontSize="14" bold="true">borderTop + borderRadius (KPI tile)</Text>

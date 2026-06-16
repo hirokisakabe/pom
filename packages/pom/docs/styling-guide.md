@@ -214,7 +214,7 @@ All nodes support `backgroundColor`:
 
 ### Background Gradient
 
-Apply a CSS-like `linear-gradient()` as the background with `backgroundGradient`. Exported as a native PowerPoint gradient fill (editable in PowerPoint, not rasterized). Takes precedence over `backgroundColor` and works on the slide root for full-slide gradient backgrounds.
+Apply a CSS-like `linear-gradient()` or `radial-gradient()` as the background with `backgroundGradient`. Exported as a native PowerPoint gradient fill (editable in PowerPoint, not rasterized). Takes precedence over `backgroundColor` and works on the slide root for full-slide gradient backgrounds.
 
 ![Background gradient example](./images/attr-background-gradient.png)
 
@@ -224,9 +224,15 @@ Apply a CSS-like `linear-gradient()` as the background with `backgroundGradient`
 </VStack>
 <VStack backgroundGradient="linear-gradient(to right, #16A34A 0%, #DBEAFE 100%)" w="600" h="200" padding="32" />
 <VStack backgroundGradient="linear-gradient(45deg, #7C3AED 0%, #EC4899 50%, #F97316 100%)" w="600" h="200" padding="32" />
+<VStack backgroundGradient="radial-gradient(circle at center, #1D4ED8 0%, #38BDF8 100%)" w="600" h="300" padding="32">
+  <Text fontSize="24" color="FFFFFF" bold="true">Radial blob</Text>
+</VStack>
+<VStack backgroundGradient="radial-gradient(circle at top right, #7C3AED 0%, #0F172A 70%)" w="600" h="300" padding="32" />
 ```
 
-The angle accepts `<n>deg` (0 = bottom-to-top, clockwise) or `to <direction>` keywords (`to right`, `to bottom left`, ...) and defaults to `180deg` (top-to-bottom). Two or more hex color stops are required; stop positions (`%`) are optional and distributed evenly when omitted.
+- **linear-gradient**: angle accepts `<n>deg` (0 = bottom-to-top, clockwise) or `to <direction>` keywords (`to right`, `to bottom left`, ...) and defaults to `180deg` (top-to-bottom).
+- **radial-gradient**: optional `<shape>` (`circle` / `ellipse`, default `ellipse`) + optional `<size>` (`closest-side` / `closest-corner` / `farthest-side` / `farthest-corner`, default `farthest-corner`) + optional `at <position>` (`at center` / `at top right` / `at 25% 75%` etc., default `center`). PowerPoint's radial fill follows the container aspect ratio and does not visually distinguish `circle` vs. `ellipse` or the size keyword — they are accepted as syntax but render the same `farthest-corner` ellipse on output. Only the center position changes the rendered result.
+- Both forms require two or more hex color stops; stop positions (`%`) are optional and distributed evenly when omitted.
 
 ### Text Gradient
 
