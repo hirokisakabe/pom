@@ -1,5 +1,26 @@
 # @hirokisakabe/pom
 
+## 8.9.0
+
+### Minor Changes
+
+- [#911](https://github.com/hirokisakabe/pom/pull/911) [`433193e`](https://github.com/hirokisakabe/pom/commit/433193e1e3d3ef6342e4ffbda1278ae706b08add) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - `backgroundGradient` 属性で CSS の `radial-gradient(<shape>? <size>? at <position>?, <stops>)` 構文をサポート。pptxgenjs は radial fill を未サポートのため、既存 `linear-gradient` と同様に出力 PPTX の slide XML を後処理で書き換え、DrawingML ネイティブの `<a:gradFill>` + `<a:path path="circle">` + `<a:fillToRect>` を生成する。
+
+  - 形状 (`circle` / `ellipse`、省略時 `ellipse`) と size キーワード (`closest-side` / `closest-corner` / `farthest-side` / `farthest-corner`、省略時 `farthest-corner`) は構文として受け付けるが、PowerPoint の radial fill は `path="circle"` 1 種類で shape / size を描画上区別しない。要素の縦横比に応じた `farthest-corner` 相当の楕円扱いで出力される。
+  - 中心位置は `at <position>` (キーワード / `%`) で指定可能。`fillToRect` の `l` / `t` / `r` / `b` に変換される。省略時は `at center`。
+  - `textGradient` は radial を受け付けない (linear-gradient のみ)。
+  - 既存の `linear-gradient` 構文の出力 XML は変化しない (後方互換)。
+
+- [#910](https://github.com/hirokisakabe/pom/pull/910) [`cc5aaa8`](https://github.com/hirokisakabe/pom/commit/cc5aaa86d60fbded6c9d0136bafdf7043a06a698) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - `<Timeline>` ノードのカスタマイズ範囲を拡張しました。
+
+  - `connectorColor`: 軸線色をハードコードの `E2E8F0` から変更可能になりました
+  - `connectorGradient`: `backgroundGradient` と同じ `linear-gradient(...)` 構文で軸線にリニアグラデーションを適用できます
+  - `useColorForDate`: `true` を指定すると各 `<TimelineItem>` の `color` が `date` テキスト色として連動します
+  - `<TimelineItem dateColor>`: per-item で `date` 色を上書きできます。`Timeline.dateColor` / `useColorForDate` よりも優先されます
+  - `fontFamily`: `Noto Sans JP` ハードコードを解除し、Timeline 全体のフォントファミリを指定できるようになりました (未指定時は従来通り `Noto Sans JP`)
+
+  既存 Timeline の出力は変化しません (後方互換)。`pom-jsx` 側にも対応する props を追加しました。
+
 ## 8.8.0
 
 ### Minor Changes
