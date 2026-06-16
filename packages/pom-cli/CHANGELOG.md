@@ -1,5 +1,12 @@
 # @hirokisakabe/pom-cli
 
+## 0.6.6
+
+### Patch Changes
+
+- Updated dependencies [[`433193e`](https://github.com/hirokisakabe/pom/commit/433193e1e3d3ef6342e4ffbda1278ae706b08add), [`cc5aaa8`](https://github.com/hirokisakabe/pom/commit/cc5aaa86d60fbded6c9d0136bafdf7043a06a698)]:
+  - @hirokisakabe/pom@8.9.0
+
 ## 0.6.5
 
 ### Patch Changes

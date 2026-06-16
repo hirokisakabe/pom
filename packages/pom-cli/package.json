@@ -1,6 +1,6 @@
 {
   "name": "@hirokisakabe/pom-cli",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "description": "CLI tool for pom — preview, build, and render presentations",
   "type": "module",
   "bin": {
