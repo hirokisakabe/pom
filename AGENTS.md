@@ -99,3 +99,46 @@ Skills (`pom-slide`, `pom-theme`) have **no release workflow**. They are distrib
 - **No git tags / GitHub Releases** for skills. The former `release-skill.yml` (`gh skill publish` with per-skill tags) was removed.
 - **Validation**: `ci-skills.yml` runs `gh skill publish --dry-run` as an agentskills.io spec-compliance check on PRs touching `skills/**`.
 - `metadata.version` in SKILL.md frontmatter is informational only; bumping it triggers nothing.
+
+## Skill 開発時の動作確認 (`skills/**`)
+
+適用条件: `skills/pom-slide/SKILL.md` または `skills/pom-theme/SKILL.md` を編集する場合。
+
+開発中に Claude Code / Codex CLI **両方** で
+1. skill として triggered されるか
+2. 想定通りに動作するか（pom XML 生成・テーマ適用・preview 起動まで）
+
+を確認するための手順。Windows は symlink 制約のため対象外。
+
+### 1. symlink 配置
+
+repo ルートで以下を実行する。`skills/<name>/` を Claude Code (`.claude/skills/`) と Codex CLI (`.agents/skills/`) 双方の探索パスに symlink で繋ぎ直す。
+
+```bash
+pnpm run dev:link-skills
+```
+
+- 既存の通常ファイル / ディレクトリ / 古い symlink があっても安全に上書きする（冪等）。
+- `.claude/*` と `.agents/` は `.gitignore` 除外なのでチーム影響なし。
+
+### 2. Claude Code / Codex CLI を再起動
+
+**Claude Code は session 開始時にしか skill を読まない**（hot-reload なし）。SKILL.md を編集した直後は必ず agent を再起動する。Codex CLI も同様にセッション再起動が安全。
+
+Codex CLI は `.agents/skills/` を **cwd から root に向かって上向きに探索** し、symlink も追従する（[Codex Agent Skills 公式](https://developers.openai.com/codex/skills)）。ユーザースコープは `~/.agents/skills/`。
+
+### 3. 動作確認用 fixture を走らせる
+
+`skills/pom-slide/dev-fixtures/` 配下の Markdown プロンプト集に従い、両 agent で fixture を 1 件ずつ確認する。
+
+- 各 fixture に「入力プロンプト」と「期待される挙動チェックリスト」が含まれる
+- プロンプト本体は agent 非依存。agent 固有の差分は fixture 内の「両 agent で確認するメモ」に併記
+- カバーシナリオ: pom-slide テーマなし / pom-theme.json 有り / pom-cli preview / pom-theme triggered
+
+詳細は [`skills/pom-slide/dev-fixtures/README.md`](skills/pom-slide/dev-fixtures/README.md) を参照。
+
+### スコープ外
+
+- 動作確認の **自動テスト化**（CI 上で triggered 判定を再現する仕組み）は重実装のため別 issue 化対象。
+- Cursor / OpenCode 等の他 agent は配布側（`npx skills add`）では対応済みだが、開発時 fixture は当面 Claude Code / Codex CLI に絞る。
+- Windows は symlink 制約により非対応。
