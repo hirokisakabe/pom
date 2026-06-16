@@ -25,7 +25,7 @@ pnpm run dev:link-skills
 | ------------------------------------------------------------ | ---------------------------------------------------------------------------- |
 | [`01-pom-slide-minimal.md`](./01-pom-slide-minimal.md)       | `pom-slide` が triggered され、テーマなしで pom XML を生成できる最小ケース   |
 | [`02-pom-slide-with-theme.md`](./02-pom-slide-with-theme.md) | `pom-theme.json` が存在するときにブランド配色・フォントが適用されるケース    |
-| [`03-pom-slide-preview.md`](./03-pom-slide-preview.md)       | 生成後に `pom-cli preview` が起動する経路                                    |
+| [`03-pom-slide-preview.md`](./03-pom-slide-preview.md)       | 生成後に `pom preview`（pom-cli のバイナリ）が起動する経路                   |
 | [`04-pom-theme-minimal.md`](./04-pom-theme-minimal.md)       | `pom-theme` skill が triggered され、`pom-theme.json` が生成される最小ケース |
 
 ### 2. 各 fixture を Claude Code と Codex CLI それぞれで走らせる

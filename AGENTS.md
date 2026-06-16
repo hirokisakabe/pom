@@ -107,7 +107,7 @@ Skills (`pom-slide`, `pom-theme`) have **no release workflow**. They are distrib
 開発中に Claude Code / Codex CLI **両方** で
 
 1. skill として triggered されるか
-2. 想定通りに動作するか（pom XML 生成・テーマ適用・preview 起動まで）
+2. 想定通りに動作するか（pom XML 生成・テーマ適用・`pom preview` 起動まで）
 
 を確認するための手順。Windows は symlink 制約のため対象外。
 
