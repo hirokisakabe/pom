@@ -267,6 +267,139 @@ describe("renderTimelineNode", () => {
     const ellipse = objects.find((o) => o.shape === "ellipse");
     expect(ellipse?.options).toMatchObject({ w: pxToIn(12), h: pxToIn(12) });
   });
+
+  it("connectorColor を指定すると軸線にその色が使われる", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "timeline",
+          x: 0,
+          y: 0,
+          w: 800,
+          h: 400,
+          items,
+          connectorColor: "1D4ED8",
+        },
+      ]),
+    );
+    const line = objects.find((o) => o.shape === "line");
+    expect(line?.options).toMatchObject({ line: { color: "1D4ED8" } });
+  });
+
+  it("connectorColor 未指定なら従来通り E2E8F0 が使われる", async () => {
+    const { objects } = await renderPage(
+      vstackPage([{ type: "timeline", x: 0, y: 0, w: 800, h: 400, items }]),
+    );
+    const line = objects.find((o) => o.shape === "line");
+    expect(line?.options).toMatchObject({ line: { color: "E2E8F0" } });
+  });
+
+  it("connectorGradient を指定するとマーカー色が registry に登録され軸線に使われる", async () => {
+    const { objects, buildContext } = await renderPage(
+      vstackPage([
+        {
+          type: "timeline",
+          x: 0,
+          y: 0,
+          w: 800,
+          h: 400,
+          items,
+          connectorGradient: "linear-gradient(90deg, #1D4ED8 0%, #DC2626 100%)",
+        },
+      ]),
+    );
+    const marker = buildContext.gradientFills.entries[0]?.marker;
+    expect(marker).toBeDefined();
+    const line = objects.find((o) => o.shape === "line");
+    expect(line?.options).toMatchObject({ line: { color: marker } });
+  });
+
+  it("useColorForDate=true なら各 item.color が date テキスト色になる", async () => {
+    const colored = [
+      { date: "D1", title: "T1", color: "1D4ED8" },
+      { date: "D2", title: "T2", color: "16A34A" },
+    ];
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "timeline",
+          x: 0,
+          y: 0,
+          w: 800,
+          h: 400,
+          items: colored,
+          useColorForDate: true,
+        },
+      ]),
+    );
+    const findText = (label: string) =>
+      objects.find(
+        (o) =>
+          Array.isArray(o.text) &&
+          (o.text as { text: string }[]).some((r) => r.text === label),
+      );
+    expect(findText("D1")?.options.color).toBe("1D4ED8");
+    expect(findText("D2")?.options.color).toBe("16A34A");
+  });
+
+  it("TimelineItem.dateColor は Timeline.dateColor / useColorForDate より優先される", async () => {
+    const colored = [
+      { date: "D1", title: "T1", color: "1D4ED8" },
+      { date: "D2", title: "T2", color: "16A34A", dateColor: "DC2626" },
+    ];
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "timeline",
+          x: 0,
+          y: 0,
+          w: 800,
+          h: 400,
+          items: colored,
+          dateColor: "111827",
+          useColorForDate: true,
+        },
+      ]),
+    );
+    const findText = (label: string) =>
+      objects.find(
+        (o) =>
+          Array.isArray(o.text) &&
+          (o.text as { text: string }[]).some((r) => r.text === label),
+      );
+    // D1: useColorForDate により item.color (1D4ED8)、D2: per-item dateColor が最優先
+    expect(findText("D1")?.options.color).toBe("1D4ED8");
+    expect(findText("D2")?.options.color).toBe("DC2626");
+  });
+
+  it("fontFamily を指定すると全テキストの fontFace に反映される", async () => {
+    const { objects } = await renderPage(
+      vstackPage([
+        {
+          type: "timeline",
+          x: 0,
+          y: 0,
+          w: 800,
+          h: 400,
+          items: [{ date: "D1", title: "T1", description: "Desc" }],
+          fontFamily: "Arial",
+        },
+      ]),
+    );
+    const texts = objects.filter((o) => Array.isArray(o.text));
+    expect(texts.length).toBeGreaterThanOrEqual(3);
+    for (const t of texts) {
+      expect(t.options.fontFace).toBe("Arial");
+    }
+  });
+
+  it("fontFamily 未指定なら従来通り Noto Sans JP が使われる", async () => {
+    const { objects } = await renderPage(
+      vstackPage([{ type: "timeline", x: 0, y: 0, w: 800, h: 400, items }]),
+    );
+    const text = objects.find((o) => Array.isArray(o.text));
+    expect(text?.options.fontFace).toBe("Noto Sans JP");
+  });
 });
 
 describe("renderPyramidNode", () => {

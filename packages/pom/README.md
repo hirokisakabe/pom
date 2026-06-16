@@ -199,6 +199,18 @@ For detailed node documentation, see [Nodes](./docs/nodes.md).
 </Timeline>
 ```
 
+`connectorColor` / `connectorGradient` customize the axis line. `useColorForDate` makes each item's date inherit its `color`, and `TimelineItem.dateColor` overrides per item. `fontFamily` swaps the default `Noto Sans JP` for any other family.
+
+```xml
+<Timeline direction="horizontal" w="100%" h="120"
+          connectorGradient="linear-gradient(90deg, #1D4ED8 0%, #DC2626 100%)"
+          useColorForDate="true" fontFamily="Arial">
+  <TimelineItem date="Start" title="Begin" color="1D4ED8" />
+  <TimelineItem date="Mid" title="Middle" color="9333EA" dateColor="111827" />
+  <TimelineItem date="End" title="Finish" color="DC2626" />
+</Timeline>
+```
+
 <img src="./docs/images/timeline.png" alt="Timeline example" width="600">
 
 ### ProcessArrow

@@ -630,6 +630,7 @@ const timelineItemSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
   color: z.string().optional(),
+  dateColor: z.string().optional(),
 });
 
 export const timelineNodeSchema = basePOMNodeSchema.extend({
@@ -639,6 +640,10 @@ export const timelineNodeSchema = basePOMNodeSchema.extend({
   dateColor: z.string().optional(),
   titleColor: z.string().optional(),
   descriptionColor: z.string().optional(),
+  connectorColor: z.string().optional(),
+  connectorGradient: backgroundGradientSchema.optional(),
+  useColorForDate: z.boolean().optional(),
+  fontFamily: z.string().optional(),
 });
 
 export type TimelineNode = z.infer<typeof timelineNodeSchema>;

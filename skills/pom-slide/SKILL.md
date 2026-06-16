@@ -765,14 +765,21 @@ Connector between two nodes referenced by `id`. Draws a straight line between th
 </Timeline>
 ```
 
-| Attribute          | Values                                          |
-| ------------------ | ----------------------------------------------- |
-| `direction`        | `horizontal` / `vertical`                       |
-| `dateColor`        | hex (date text color, default: `64748B`)        |
-| `titleColor`       | hex (title text color, default: `1E293B`)       |
-| `descriptionColor` | hex (description text color, default: `64748B`) |
+| Attribute           | Values                                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| `direction`         | `horizontal` / `vertical`                                                                             |
+| `dateColor`         | hex (date text color, default: `64748B`)                                                              |
+| `titleColor`        | hex (title text color, default: `1E293B`)                                                             |
+| `descriptionColor`  | hex (description text color, default: `64748B`)                                                       |
+| `connectorColor`    | hex (axis line color, default: `E2E8F0`)                                                              |
+| `connectorGradient` | `linear-gradient(<angle>deg, <color> <pos>%, ...)` — applies a linear gradient to the connector line  |
+| `useColorForDate`   | `true` / `false` — when `true`, each item's `date` text uses that item's `color` (default: `false`)   |
+| `fontFamily`        | font family name applied to all text (date / title / description). default: `Noto Sans JP`            |
 
-`<TimelineItem>`: `date` (required) `title` (required) `description` `color`
+`<TimelineItem>`: `date` (required) `title` (required) `description` `color` `dateColor`
+
+- `dateColor` (per-item) overrides both `Timeline.dateColor` and `useColorForDate`.
+- `fontFamily` changes the rendered font face only. Internal layout measurement still assumes the default label sizes (the bundled Noto Sans JP metrics), so very wide / very tall fonts may overflow within the same `w` / `h`. Pick a larger `w` / `h` if labels clip.
 
 ### Matrix
 
