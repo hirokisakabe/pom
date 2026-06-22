@@ -75,17 +75,17 @@
   },
   "devDependencies": {
     "@size-limit/file": "^12.1.0",
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.0",
     "@types/opentype.js": "^1.3.10",
     "@types/pngjs": "6.0.5",
     "@vitest/coverage-v8": "^4.1.9",
     "@vitest/ui": "^4.1.9",
     "dependency-cruiser": "^17.4.3",
-    "lucide-static": "^1.18.0",
+    "lucide-static": "^1.21.0",
     "pixelmatch": "7.2.0",
     "pngjs": "7.0.0",
     "size-limit": "^12.1.0",
-    "tsdown": "^0.22.2",
+    "tsdown": "^0.22.3",
     "tsx": "4.22.4"
   },
   "dependencies": {
