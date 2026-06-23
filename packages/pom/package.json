@@ -90,7 +90,7 @@
   },
   "dependencies": {
     "@resvg/resvg-wasm": "^2.6.2",
-    "fast-xml-parser": "^5.8.0",
+    "fast-xml-parser": "^5.9.3",
     "image-size": "2.0.2",
     "jszip": "^3.10.1",
     "opentype.js": "^2.0.0",
