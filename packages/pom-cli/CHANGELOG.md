@@ -1,5 +1,16 @@
 # @hirokisakabe/pom-cli
 
+## 0.8.0
+
+### Minor Changes
+
+- [#928](https://github.com/hirokisakabe/pom/pull/928) [`429c1bc`](https://github.com/hirokisakabe/pom/commit/429c1bc84241bf2a76762247f512dd4520050e1d) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - PPTX から PowerPoint theme の配色を `ThemeTokens[]` JSON として抽出する `pom theme extract <pptx>` サブコマンドを追加しました。
+
+### Patch Changes
+
+- Updated dependencies [[`f748519`](https://github.com/hirokisakabe/pom/commit/f74851911968de692df8e64f8d1de865f41f5207), [`2fa8c77`](https://github.com/hirokisakabe/pom/commit/2fa8c77d1ff9511e585f79fba8f2e6a990885998)]:
+  - @hirokisakabe/pom@9.1.0
+
 ## 0.7.0
 
 ### Minor Changes
