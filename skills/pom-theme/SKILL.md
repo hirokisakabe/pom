@@ -84,12 +84,17 @@ metadata:
 色の抽出は `@hirokisakabe/pom` の `extractThemeTokensFromPptx()`（[#906](https://github.com/hirokisakabe/pom/issues/906)）を `pom-cli` 経由で呼び出す。`<a:clrScheme>` の手読みは行わない。
 
 ```bash
-command -v pom >/dev/null 2>&1 && pom theme extract <input.pptx>
+if command -v pom >/dev/null 2>&1; then
+  pom theme extract <input.pptx>
+else
+  echo "pom-cli not installed" >&2
+fi
 ```
 
 - `pom`（pom-cli）が無い場合はブランドカラー直接指定での再実行を案内し、この手順をスキップする（`npm install -g @hirokisakabe/pom-cli` でインストール可能）。
-- 出力は `ThemeTokens`（`text` / `background` / `primary` / `secondary` / `accent3`〜`accent6`）の JSON 配列。スライドマスターごとに、配下の表示 layout 数だけ同じ値が繰り返される。通常は先頭要素を採用すればよい。マスターが複数あり値が異なる場合は候補としてユーザーに提示する。
-- コマンドが失敗する（`theme1.xml` が存在しない等）場合はエラー内容を報告し、ブランドカラー直接指定での再実行を案内する。
+- 出力は `ThemeTokens`（`text` / `background` / `primary` / `secondary` / `accent3`〜`accent6`）の JSON 配列で、各値は `#` 付き 6 桁大文字 hex（例: `#4472C4`）。スライドマスターごとに、配下の表示 layout 数だけ同じ値が繰り返される。通常は先頭要素を採用すればよい。マスターが複数あり値が異なる場合は候補としてユーザーに提示する。`pom-theme.json` の `colors.*` は `#` なし表記（冒頭「テーマファイル形式」参照）なので、取り込み時に `#` を外す。
+- コマンド自体が失敗する（PPTX が壊れている・ファイルが存在しない等）場合はエラー内容を報告し、ブランドカラー直接指定での再実行を案内する。
+- `theme1.xml` が読めない・`<a:clrScheme>` を含まない場合はエラーにならず、Office 標準のフォールバック配色（`primary: #4472C4` / `secondary: #ED7D31` / `accent3: #A5A5A5` / `accent4: #FFC000` / `accent5: #5B9BD5` / `accent6: #70AD47`）が返る。出力がこの値と一致する場合は theme 未検出を疑い、ユーザーに確認する。マスターが 1 つも解決できない場合は出力が空配列 `[]` になるため、その場合もブランドカラー直接指定を案内する。
 
 `ThemeTokens` のフィールドを以下の対応でテーマのロールに取り込む:
 
