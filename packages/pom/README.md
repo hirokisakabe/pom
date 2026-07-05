@@ -87,6 +87,29 @@ Each slide must be wrapped in a `<Slide>` element. To produce multiple slides, l
 </Slide>
 ```
 
+To reuse colors from an existing `.pptx` template, extract PowerPoint theme colors as pom design tokens:
+
+```typescript
+import { readFile } from "node:fs/promises";
+import { extractThemeTokensFromPptx } from "@hirokisakabe/pom";
+
+const pptxBytes = await readFile("template.pptx");
+const themeTokens = await extractThemeTokensFromPptx(pptxBytes);
+
+// One ThemeTokens object is returned for each visible slide layout under each slide master.
+console.log(themeTokens[0]);
+// {
+//   text: "#000000",
+//   background: "#FFFFFF",
+//   primary: "#4472C4",
+//   secondary: "#ED7D31",
+//   accent3: "#A5A5A5",
+//   accent4: "#FFC000",
+//   accent5: "#5B9BD5",
+//   accent6: "#70AD47"
+// }
+```
+
 ## Available Nodes
 
 | Node         | Description                                                                                                                                                                                                |
