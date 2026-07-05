@@ -3,6 +3,7 @@ export type { BuildPptxResult, TextMeasurementMode } from "./buildPptx.ts";
 export { DiagnosticsError } from "./diagnostics.ts";
 export type { Diagnostic, DiagnosticCode } from "./diagnostics.ts";
 export { extractThemeTokensFromPptx } from "./extractThemeTokensFromPptx.ts";
+export { extractSlideMastersAsPptx } from "./extractSlideMastersAsPptx.ts";
 export { parseXml, ParseXmlError } from "./parseXml/parseXml.ts";
 export { serializeXml } from "./parseXml/serializeXml.ts";
 export type {
