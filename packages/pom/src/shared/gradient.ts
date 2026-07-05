@@ -37,10 +37,7 @@ export interface LinearGradient {
 
 export type RadialGradientShape = "circle" | "ellipse";
 export type RadialGradientSize =
-  | "closest-side"
-  | "closest-corner"
-  | "farthest-side"
-  | "farthest-corner";
+  "closest-side" | "closest-corner" | "farthest-side" | "farthest-corner";
 
 export interface RadialGradient {
   shape: RadialGradientShape;

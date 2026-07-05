@@ -7,8 +7,7 @@ export type AutoFitSkipReason =
 
 /** AutoFit strategy の適用結果 */
 export type AutoFitStrategyResult =
-  | { changed: true }
-  | { changed: false; reason: AutoFitSkipReason };
+  { changed: true } | { changed: false; reason: AutoFitSkipReason };
 
 /**
  * strategy 内部で集計した「変更有無」「調整対象の有無」から共通 result を組み立てる。

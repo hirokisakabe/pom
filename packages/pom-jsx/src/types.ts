@@ -1,19 +1,12 @@
 import type { PomJsxElement } from "./jsx-runtime.ts";
 
 export type ReactNode =
-  | PomJsxElement
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | ReactNode[];
+  PomJsxElement | string | number | boolean | null | undefined | ReactNode[];
 
 // ===== Shared primitive types =====
 type Length = number | "max" | `${number}%`;
 type PaddingValue =
-  | number
-  | { top?: number; right?: number; bottom?: number; left?: number };
+  number | { top?: number; right?: number; bottom?: number; left?: number };
 type BorderDash =
   | "solid"
   | "dash"
@@ -38,12 +31,7 @@ type TextOutline = { size?: number; color?: string };
 type AlignItems = "start" | "center" | "end" | "stretch";
 type AlignSelf = "auto" | "start" | "center" | "end" | "stretch";
 type JustifyContent =
-  | "start"
-  | "center"
-  | "end"
-  | "spaceBetween"
-  | "spaceAround"
-  | "spaceEvenly";
+  "start" | "center" | "end" | "spaceBetween" | "spaceAround" | "spaceEvenly";
 type FlexWrap = "nowrap" | "wrap" | "wrapReverse";
 type TextAlign = "left" | "center" | "right";
 type UnderlineStyle =
@@ -416,10 +404,7 @@ export interface IconProps extends BaseProps {
   color?: string;
   rotate?: number;
   variant?:
-    | "circle-filled"
-    | "circle-outlined"
-    | "square-filled"
-    | "square-outlined";
+    "circle-filled" | "circle-outlined" | "square-filled" | "square-outlined";
   bgColor?: string;
   glow?: TextGlow;
   outline?: TextOutline;

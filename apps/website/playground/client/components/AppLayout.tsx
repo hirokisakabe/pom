@@ -93,8 +93,7 @@ export function AppLayout() {
       );
 
       const data = (await res.json()) as
-        | { svgs: string[] }
-        | { errors: StructuredError[] };
+        { svgs: string[] } | { errors: StructuredError[] };
 
       if ("errors" in data) {
         setErrors(data.errors);
