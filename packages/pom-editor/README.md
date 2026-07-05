@@ -20,7 +20,7 @@
 
 ## Installation
 
-> Requires React 18+
+> Requires Node.js 22+ and React 18+
 
 ```bash
 npm install @hirokisakabe/pom-editor react

@@ -4,7 +4,7 @@ VS Code extension for live preview of `.pom.md` and `.pom.xml` files. It convert
 
 ## Requirements
 
-- VS Code 1.85 or later
+- VS Code 1.101 or later (Node.js 22 extension host)
 
 ## Install
 

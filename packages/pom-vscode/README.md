@@ -24,7 +24,7 @@
 
 ## Installation
 
-> Requires VS Code 1.85+
+> Requires VS Code 1.101+ (Node.js 22 extension host)
 
 Search for **pom** in the VS Code Extensions view, or install from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=hirokisakabe.pom-vscode).
 
