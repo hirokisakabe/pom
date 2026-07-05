@@ -193,8 +193,7 @@ describe("AppLayout", () => {
         expect(mockPreviewPost).toHaveBeenCalled();
       });
       const lastCall = mockPreviewPost.mock.calls.at(-1) as
-        | [{ json: { xml: string } }, unknown]
-        | undefined;
+        [{ json: { xml: string } }, unknown] | undefined;
       expect(lastCall?.[0].json.xml).toBe("<Text>from-ast</Text>");
 
       // XML モードに戻したときも値が共有されている

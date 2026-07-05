@@ -154,8 +154,7 @@ describe("buildPptx SlideMaster margin", () => {
 
   async function getMasterMargin(
     margin:
-      | number
-      | { top?: number; right?: number; bottom?: number; left?: number },
+      number | { top?: number; right?: number; bottom?: number; left?: number },
   ): Promise<unknown> {
     const { pptx } = await buildPptx(xml, slideSize, {
       master: { title: "M1", margin },

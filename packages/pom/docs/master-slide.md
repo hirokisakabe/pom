@@ -92,22 +92,15 @@ const { pptx } = await buildPptx(
 type SlideMasterOptions = {
   title?: string; // Master slide name (auto-generated if omitted)
   background?:
-    | { color: string }
-    | { path: string }
-    | { data: string }
-    | { image: string };
+    { color: string } | { path: string } | { data: string } | { image: string };
   margin?:
-    | number
-    | { top?: number; right?: number; bottom?: number; left?: number };
+    number | { top?: number; right?: number; bottom?: number; left?: number };
   objects?: MasterObject[]; // Static objects (absolute coordinates in px)
   slideNumber?: SlideNumberOptions; // Page number using pptxgenjs built-in feature
 };
 
 type MasterObject =
-  | MasterTextObject
-  | MasterImageObject
-  | MasterRectObject
-  | MasterLineObject;
+  MasterTextObject | MasterImageObject | MasterRectObject | MasterLineObject;
 
 type MasterTextObject = {
   type: "text";

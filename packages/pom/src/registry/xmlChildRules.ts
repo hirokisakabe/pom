@@ -36,12 +36,7 @@ export interface TextRun {
 export const INLINE_BOOLEAN_FORMATS: readonly {
   readonly tag: string;
   readonly property:
-    | "bold"
-    | "italic"
-    | "underline"
-    | "strike"
-    | "subscript"
-    | "superscript";
+    "bold" | "italic" | "underline" | "strike" | "subscript" | "superscript";
 }[] = [
   { tag: "B", property: "bold" },
   { tag: "I", property: "italic" },
@@ -113,9 +108,7 @@ export interface NodeSpecificChildRule {
 }
 
 export type XmlChildRule =
-  | InlineRunsChildRule
-  | RepeatedChildRule
-  | NodeSpecificChildRule;
+  InlineRunsChildRule | RepeatedChildRule | NodeSpecificChildRule;
 
 /**
  * unknown child エラーメッセージ用に期待タグ一覧を整形する。
