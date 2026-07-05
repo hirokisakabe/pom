@@ -1,6 +1,6 @@
 {
   "name": "@hirokisakabe/pom-md",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Markdown wrapper for pom — write slides in Markdown with pomxml code fences.",
   "type": "module",
   "main": "./dist/index.js",
