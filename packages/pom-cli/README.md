@@ -113,6 +113,8 @@ pom render slides.pom.md -o ./images
 
 The images are written to the output directory as `slide-01.png`, `slide-02.png`, ... The directory is created if it does not exist. The rendering pipeline is the same as the preview server, so the images match what you see in `pom preview`.
 
+> **LibreOffice fallback caveat:** Current `pom render` uses `pptx-glimpse` directly and does not require LibreOffice. If you are using an older `pom-cli` / `pptx-glimpse` version or a fallback workflow that converts PPTX through LibreOffice before PNG output, pure numeric text with leading zeros (for example `01` / `001`) may be displayed without those zeros in the PNG (`01` -> `1`). The generated PPTX keeps the original text (`<a:t>01</a:t>`), so it displays as intended when opened in PowerPoint. For decorative numbering that must survive both paths, mix in one non-numeric character such as `01.` or `#01`.
+
 To output SVG instead of PNG:
 
 ```bash
