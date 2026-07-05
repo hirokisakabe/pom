@@ -26,6 +26,14 @@ function makePngSlides(count: number) {
   }));
 }
 
+function makePngReport(count: number) {
+  return { slides: makePngSlides(count) };
+}
+
+function makeSvgReport(slides: { slideNumber: number; svg: string }[]) {
+  return { slides };
+}
+
 describe("runRender", () => {
   let tmpDir: string;
   let inputFile: string;
@@ -47,7 +55,7 @@ describe("runRender", () => {
   });
 
   it("各スライドを slide-NN.png として出力ディレクトリに保存する", async () => {
-    convertPptxToPngMock.mockResolvedValue(makePngSlides(3) as never);
+    convertPptxToPngMock.mockResolvedValue(makePngReport(3) as never);
 
     await runRender(inputFile, outputDir);
 
@@ -64,7 +72,7 @@ describe("runRender", () => {
   // 再発防止: a0a1d8c — ゼロ埋め桁数を最大スライド番号に合わせて動的化し、
   // 100 枚超のデッキでもファイル名の辞書順とスライド順が一致するようにする
   it("100 枚超のデッキではゼロ埋めを 3 桁に広げ、辞書順がスライド順と一致する", async () => {
-    convertPptxToPngMock.mockResolvedValue(makePngSlides(120) as never);
+    convertPptxToPngMock.mockResolvedValue(makePngReport(120) as never);
 
     await runRender(inputFile, outputDir);
 
@@ -76,9 +84,9 @@ describe("runRender", () => {
   });
 
   it("format=svg では convertPptxToSvg を使い .svg として保存する", async () => {
-    convertPptxToSvgMock.mockResolvedValue([
-      { slideNumber: 1, svg: "<svg/>" },
-    ] as never);
+    convertPptxToSvgMock.mockResolvedValue(
+      makeSvgReport([{ slideNumber: 1, svg: "<svg/>" }]) as never,
+    );
 
     await runRender(inputFile, outputDir, { format: "svg" });
 
@@ -88,9 +96,9 @@ describe("runRender", () => {
   });
 
   it("textOutput 指定は convertPptxToSvg にそのまま渡される", async () => {
-    convertPptxToSvgMock.mockResolvedValue([
-      { slideNumber: 1, svg: "<svg/>" },
-    ] as never);
+    convertPptxToSvgMock.mockResolvedValue(
+      makeSvgReport([{ slideNumber: 1, svg: "<svg/>" }]) as never,
+    );
 
     await runRender(inputFile, outputDir, {
       format: "svg",
@@ -104,9 +112,9 @@ describe("runRender", () => {
   });
 
   it("textOutput 未指定では convertPptxToSvg にキー自体を渡さない", async () => {
-    convertPptxToSvgMock.mockResolvedValue([
-      { slideNumber: 1, svg: "<svg/>" },
-    ] as never);
+    convertPptxToSvgMock.mockResolvedValue(
+      makeSvgReport([{ slideNumber: 1, svg: "<svg/>" }]) as never,
+    );
 
     await runRender(inputFile, outputDir, { format: "svg" });
 
@@ -115,7 +123,7 @@ describe("runRender", () => {
   });
 
   it("slides 指定に存在しない番号があれば警告する", async () => {
-    convertPptxToPngMock.mockResolvedValue(makePngSlides(1) as never);
+    convertPptxToPngMock.mockResolvedValue(makePngReport(1) as never);
 
     await runRender(inputFile, outputDir, { slides: [1, 5] });
 
@@ -125,7 +133,7 @@ describe("runRender", () => {
   });
 
   it("スライドが 1 枚も出力されなかった場合はエラーを投げる", async () => {
-    convertPptxToPngMock.mockResolvedValue([] as never);
+    convertPptxToPngMock.mockResolvedValue({ slides: [] } as never);
 
     await expect(runRender(inputFile, outputDir)).rejects.toThrow(
       "No slides were rendered",

@@ -76,7 +76,7 @@ async function generateSvgs(
   const t2 = Date.now();
   // インライン SVG なのでネイティブ <text> + サブセットフォント埋め込みが使える。
   // ブラウザのテキスト描画 (ヒンティング等) が効き、テキスト選択も可能になる
-  const slides = await convertPptxToSvg(buffer, {
+  const { slides } = await convertPptxToSvg(buffer, {
     width: slideWidth,
     fontDirs,
     fontMapping: EXTRA_FONT_MAPPING,
@@ -85,7 +85,7 @@ async function generateSvgs(
   });
   log(`Converting to SVG... done (${Date.now() - t2}ms)`);
 
-  const svgs = slides.map((s: { svg: string }) => s.svg);
+  const svgs = slides.map((s) => s.svg);
 
   return { type: "success", svgs, slideWidth };
 }

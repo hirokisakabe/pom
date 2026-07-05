@@ -44,6 +44,10 @@ function mdResult(
   };
 }
 
+function svgReport(slides: { svg: string }[]) {
+  return { slides };
+}
+
 describe("generatePreviewSvg", () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -59,9 +63,11 @@ describe("generatePreviewSvg", () => {
       },
       diagnostics: [],
     } as never);
-    mockConvertPptxToSvg.mockResolvedValue([
-      { svg: '<svg width="1280" height="720">slide1</svg>' },
-    ] as never);
+    mockConvertPptxToSvg.mockResolvedValue(
+      svgReport([
+        { svg: '<svg width="1280" height="720">slide1</svg>' },
+      ]) as never,
+    );
 
     const result = await generatePreviewSvg("# Title", []);
     expect(result.type).toBe("success");
@@ -81,7 +87,9 @@ describe("generatePreviewSvg", () => {
       },
       diagnostics: [],
     } as never);
-    mockConvertPptxToSvg.mockResolvedValue([{ svg: "<svg></svg>" }] as never);
+    mockConvertPptxToSvg.mockResolvedValue(
+      svgReport([{ svg: "<svg></svg>" }]) as never,
+    );
 
     await generatePreviewSvg("# Test", ["/path/to/fonts"]);
 
@@ -111,10 +119,9 @@ describe("generatePreviewSvg", () => {
       },
       diagnostics: [],
     } as never);
-    mockConvertPptxToSvg.mockResolvedValue([
-      { svg: "<svg>s1</svg>" },
-      { svg: "<svg>s2</svg>" },
-    ] as never);
+    mockConvertPptxToSvg.mockResolvedValue(
+      svgReport([{ svg: "<svg>s1</svg>" }, { svg: "<svg>s2</svg>" }]) as never,
+    );
 
     const result = await generatePreviewSvg("md", []);
     expect(result.type).toBe("success");
@@ -176,7 +183,9 @@ describe("generatePreviewSvg", () => {
       },
       diagnostics: [],
     } as never);
-    mockConvertPptxToSvg.mockResolvedValue([{ svg: "<svg></svg>" }] as never);
+    mockConvertPptxToSvg.mockResolvedValue(
+      svgReport([{ svg: "<svg></svg>" }]) as never,
+    );
 
     await generatePreviewSvg("<Text>Direct XML</Text>", [], "xml");
 
@@ -222,7 +231,9 @@ describe("generatePreviewSvg", () => {
       },
       diagnostics: diags,
     } as never);
-    mockConvertPptxToSvg.mockResolvedValue([{ svg: "<svg></svg>" }] as never);
+    mockConvertPptxToSvg.mockResolvedValue(
+      svgReport([{ svg: "<svg></svg>" }]) as never,
+    );
 
     const result = await generatePreviewSvg("md", []);
     expect(result.type).toBe("success");
@@ -241,7 +252,9 @@ describe("generatePreviewSvg", () => {
       },
       diagnostics: [],
     } as never);
-    mockConvertPptxToSvg.mockResolvedValue([{ svg: "<svg></svg>" }] as never);
+    mockConvertPptxToSvg.mockResolvedValue(
+      svgReport([{ svg: "<svg></svg>" }]) as never,
+    );
 
     const result = await generatePreviewSvg("md", []);
     expect(result.type).toBe("success");
@@ -280,7 +293,9 @@ describe("generatePreviewSvg", () => {
       },
       diagnostics: [],
     } as never);
-    mockConvertPptxToSvg.mockResolvedValue([{ svg: "<svg></svg>" }] as never);
+    mockConvertPptxToSvg.mockResolvedValue(
+      svgReport([{ svg: "<svg></svg>" }]) as never,
+    );
 
     const result = await generatePreviewSvg("# Test", []);
 

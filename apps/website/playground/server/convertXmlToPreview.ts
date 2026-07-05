@@ -14,6 +14,6 @@ export async function convertXmlToPreview(
   if (!(buffer instanceof Uint8Array)) {
     throw new Error("Unexpected output type from pptx.write");
   }
-  const slides = await convertPptxToSvg(buffer, { width: SLIDE_WIDTH });
+  const { slides } = await convertPptxToSvg(buffer, { width: SLIDE_WIDTH });
   return { svgs: slides.map((s) => s.svg) };
 }

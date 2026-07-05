@@ -87,12 +87,12 @@ export async function generatePreviewSvg(
       throw new Error("Unexpected output type from pptx.write");
     }
 
-    const slides = await convertPptxToSvg(buffer, {
+    const { slides } = await convertPptxToSvg(buffer, {
       width: slideWidth,
       fontDirs,
       fontMapping: EXTRA_FONT_MAPPING,
     });
-    const svgs = slides.map((s: { svg: string }) => s.svg);
+    const svgs = slides.map((s) => s.svg);
 
     return { type: "success", svgs, diagnostics, slideWidth };
   } catch (err: unknown) {
