@@ -1,5 +1,19 @@
 # @hirokisakabe/pom-cli
 
+## 0.7.0
+
+### Minor Changes
+
+- [#924](https://github.com/hirokisakabe/pom/pull/924) [`d4b2b24`](https://github.com/hirokisakabe/pom/commit/d4b2b24119a02cb71077ccd17eb4a9457d2c71c0) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Node.js のサポート範囲を 22 以降に引き上げました。`@pptx-glimpse/document` 消費に備えて、pom 関連 package と VS Code extension の engines を Node 22 に揃えています。VS Code extension は Node.js 22 extension host を前提にするため、最小 VS Code バージョンも 1.101 に引き上げています。
+
+### Patch Changes
+
+- [#921](https://github.com/hirokisakabe/pom/pull/921) [`2d71f01`](https://github.com/hirokisakabe/pom/commit/2d71f012b24e4e2c9f6abe5f8be9a76d8b898f60) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - LibreOffice fallback path で純数字テキストの先頭 0 が PNG 上で欠落する場合があることを README に注記しました。
+
+- Updated dependencies [[`d4b2b24`](https://github.com/hirokisakabe/pom/commit/d4b2b24119a02cb71077ccd17eb4a9457d2c71c0)]:
+  - @hirokisakabe/pom@9.0.0
+  - @hirokisakabe/pom-md@4.0.0
+
 ## 0.6.6
 
 ### Patch Changes
