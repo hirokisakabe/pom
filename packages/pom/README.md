@@ -110,6 +110,20 @@ console.log(themeTokens[0]);
 // }
 ```
 
+To build a preview deck of every layout in an existing `.pptx` template (e.g. for a "pick a layout" UI), convert it into a PPTX containing one blank slide per visible slide layout:
+
+```typescript
+import { readFile } from "node:fs/promises";
+import { extractSlideMastersAsPptx } from "@hirokisakabe/pom";
+
+const pptxBytes = await readFile("template.pptx");
+const layoutDeck = await extractSlideMastersAsPptx(pptxBytes);
+// layoutDeck: ArrayBuffer — one blank slide per visible slide layout, grouped by
+// slide master in presentation order. Hidden layouts (`show="0"` / `"false"`) are
+// excluded. The slide order matches extractThemeTokensFromPptx's output order, so
+// the two can be zipped together to pair each slide with its theme.
+```
+
 ## Available Nodes
 
 | Node         | Description                                                                                                                                                                                                |

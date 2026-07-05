@@ -65,6 +65,7 @@ Existing PPTX reading and structural round-trip work should treat `@pptx-glimpse
 - `TextMeasurementMode` (`"opentype"` | `"fallback"` | `"auto"`), `SlideMasterOptions`
 - `extractThemeTokensFromPptx(buffer)` — PPTX bytes → `ThemeTokens[]` (`slideMaster` 配下の表示 layout 順に、text / background / primary / secondary / accent3..6 を 6 桁大文字 hex で返す)
 - `ThemeTokens`, `FALLBACK_THEME_TOKENS`
+- `extractSlideMastersAsPptx(buffer)` — PPTX bytes → PPTX bytes (`Promise<ArrayBuffer>`)。各 slideMaster 配下の表示 layout ごとに空白スライド 1 枚だけを持つ PPTX に変換する。列挙順は `extractThemeTokensFromPptx` と同一なので、両者の出力配列を zip してスライドとテーマをペアにできる
 - `parseXml(xml)` — XML string → `POMNode[]` (PascalCase tags, Zod-validated attributes). トップレベル `<Theme>` でデザイントークン（配色）を宣言でき、色属性の `$name` 参照は parse 時に解決される（`<Theme>` 自体はノードにならない）
 - `serializeXml(nodes)` — `POMNode[]` → XML string (inverse of parseXml; 解決済みの `<Theme>` は保持されない)
 - `POMNode` — Input node union type (Text, Ul, Ol, Image, Table, Shape, Chart, Timeline, Matrix, Tree, Flow, ProcessArrow, Pyramid, Line, Arrow, Layer, VStack, HStack, Icon, Svg)
