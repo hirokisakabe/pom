@@ -25,6 +25,8 @@ type ThemeColor =
 interface FixtureMaster {
   colors: Partial<Record<string, ThemeColor>>;
   layoutShows: Array<string | undefined>;
+  colorMap?: Partial<Record<string, string>>;
+  usedBySlide?: boolean;
 }
 
 const DEFAULT_COLORS: Record<string, ThemeColor> = {
@@ -108,14 +110,21 @@ function emptyShapeTreeXml(): string {
 </p:spTree>`;
 }
 
-function presentationXml(slideCount: number): string {
+function presentationXml(slideCount: number, masterCount: number): string {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-  <p:sldMasterIdLst/>
+  <p:sldMasterIdLst>
+${Array.from(
+  { length: masterCount },
+  (_, index) =>
+    `    <p:sldMasterId id="${2147483648 + index}" r:id="rIdMaster${index + 1}"/>`,
+).join("\n")}
+  </p:sldMasterIdLst>
   <p:sldIdLst>
 ${Array.from(
   { length: slideCount },
-  (_, index) => `    <p:sldId id="${256 + index}" r:id="rId${index + 1}"/>`,
+  (_, index) =>
+    `    <p:sldId id="${256 + index}" r:id="rIdSlide${index + 1}"/>`,
 ).join("\n")}
   </p:sldIdLst>
   <p:sldSz cx="9144000" cy="5143500"/>
@@ -137,11 +146,33 @@ function layoutXml(show: string | undefined): string {
 </p:sldLayout>`;
 }
 
-function masterXml(layoutIds: string[]): string {
+function masterXml(
+  layoutIds: string[],
+  colorMapOverrides: Partial<Record<string, string>> = {},
+): string {
+  const colorMap = {
+    bg1: "lt1",
+    tx1: "dk1",
+    bg2: "lt2",
+    tx2: "dk2",
+    accent1: "accent1",
+    accent2: "accent2",
+    accent3: "accent3",
+    accent4: "accent4",
+    accent5: "accent5",
+    accent6: "accent6",
+    hlink: "hlink",
+    folHlink: "folHlink",
+    ...colorMapOverrides,
+  };
+  const colorMapAttributes = Object.entries(colorMap)
+    .map(([name, value]) => `${name}="${value}"`)
+    .join(" ");
+
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <p:sldMaster xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
   <p:cSld>${emptyShapeTreeXml()}</p:cSld>
-  <p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/>
+  <p:clrMap ${colorMapAttributes}/>
   <p:sldLayoutIdLst>
 ${layoutIds
   .map((id, index) => `    <p:sldLayoutId id="${index + 1}" r:id="${id}"/>`)
@@ -201,7 +232,10 @@ async function createPptxFixture(
   masters: FixtureMaster[],
 ): Promise<Uint8Array> {
   const zip = new JSZip();
-  const slideCount = masters.length;
+  const usedMasterEntries = masters
+    .map((master, index) => ({ master, index }))
+    .filter(({ master }) => master.usedBySlide !== false);
+  const slideCount = usedMasterEntries.length;
   const layoutCount = masters.reduce(
     (sum, master) => sum + master.layoutShows.length,
     0,
@@ -221,19 +255,25 @@ async function createPptxFixture(
       { id: "rId1", type: OFFICE_REL, target: "ppt/presentation.xml" },
     ]),
   );
-  zip.file("ppt/presentation.xml", presentationXml(slideCount));
+  zip.file("ppt/presentation.xml", presentationXml(slideCount, masters.length));
   zip.file(
     "ppt/_rels/presentation.xml.rels",
-    relationshipsXml(
-      masters.map((_, index) => ({
-        id: `rId${index + 1}`,
+    relationshipsXml([
+      ...usedMasterEntries.map((_, slideIndex) => ({
+        id: `rIdSlide${slideIndex + 1}`,
         type: SLIDE_REL,
-        target: `slides/slide${index + 1}.xml`,
+        target: `slides/slide${slideIndex + 1}.xml`,
       })),
-    ),
+      ...masters.map((_, index) => ({
+        id: `rIdMaster${index + 1}`,
+        type: SLIDE_MASTER_REL,
+        target: `slideMasters/slideMaster${index + 1}.xml`,
+      })),
+    ]),
   );
 
   let layoutIndex = 1;
+  let slideIndex = 1;
   masters.forEach((master, masterIndex) => {
     const masterNumber = masterIndex + 1;
     const firstLayoutIndex = layoutIndex;
@@ -241,17 +281,20 @@ async function createPptxFixture(
       (_, index) => `rIdLayout${index + 1}`,
     );
 
-    zip.file(`ppt/slides/slide${masterNumber}.xml`, slideXml());
-    zip.file(
-      `ppt/slides/_rels/slide${masterNumber}.xml.rels`,
-      relationshipsXml([
-        {
-          id: "rId1",
-          type: SLIDE_LAYOUT_REL,
-          target: `../slideLayouts/slideLayout${firstLayoutIndex}.xml`,
-        },
-      ]),
-    );
+    if (master.usedBySlide !== false) {
+      zip.file(`ppt/slides/slide${slideIndex}.xml`, slideXml());
+      zip.file(
+        `ppt/slides/_rels/slide${slideIndex}.xml.rels`,
+        relationshipsXml([
+          {
+            id: "rId1",
+            type: SLIDE_LAYOUT_REL,
+            target: `../slideLayouts/slideLayout${firstLayoutIndex}.xml`,
+          },
+        ]),
+      );
+      slideIndex += 1;
+    }
 
     master.layoutShows.forEach((show) => {
       zip.file(
@@ -273,7 +316,7 @@ async function createPptxFixture(
 
     zip.file(
       `ppt/slideMasters/slideMaster${masterNumber}.xml`,
-      masterXml(layoutRelIds),
+      masterXml(layoutRelIds, master.colorMap),
     );
     zip.file(
       `ppt/slideMasters/_rels/slideMaster${masterNumber}.xml.rels`,
@@ -328,6 +371,28 @@ describe("extractThemeTokensFromPptx", () => {
     ]);
   });
 
+  it("slideMaster の clrMap で text / background の scheme slot を解決する", async () => {
+    const buffer = await createPptxFixture([
+      {
+        layoutShows: [undefined],
+        colorMap: {
+          tx1: "lt1",
+          bg1: "dk1",
+        },
+        colors: {
+          dk1: "000000",
+          lt1: "ffffff",
+        },
+      },
+    ]);
+
+    const [tokens] = await extractThemeTokensFromPptx(buffer);
+    expect(tokens).toMatchObject({
+      text: "#FFFFFF",
+      background: "#000000",
+    });
+  });
+
   it("slideMaster 配下の表示 layout 数だけ tokens を繰り返し hidden layout を除外する", async () => {
     const buffer = await createPptxFixture([
       {
@@ -363,6 +428,26 @@ describe("extractThemeTokensFromPptx", () => {
     const tokens = await extractThemeTokensFromPptx(buffer);
     expect(tokens.map((token) => token.primary)).toEqual([
       "#111111",
+      "#111111",
+      "#222222",
+    ]);
+  });
+
+  it("presentation の master list にある未使用 slideMaster も抽出する", async () => {
+    const buffer = await createPptxFixture([
+      {
+        layoutShows: [undefined],
+        colors: { accent1: "111111" },
+      },
+      {
+        usedBySlide: false,
+        layoutShows: [undefined],
+        colors: { accent1: "222222" },
+      },
+    ]);
+
+    const tokens = await extractThemeTokensFromPptx(buffer);
+    expect(tokens.map((token) => token.primary)).toEqual([
       "#111111",
       "#222222",
     ]);
