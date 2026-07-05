@@ -56,6 +56,8 @@ apps/
 
 PPTX generation pipeline: **calcYogaLayout** → **toPositioned** → **renderPptx**. Additionally, **autoFit** adjusts slides when content overflows.
 
+Existing PPTX reading and structural round-trip work should treat `@pptx-glimpse/document` as the first candidate dependency (#895 option 2: pom → `@pptx-glimpse/document` one-way dependency). If typed model coverage is insufficient, prefer its `packageGraph.rawParts` OOXML escape hatch before adding new ZIP/XML handling in pom.
+
 ### Public API (`@hirokisakabe/pom`)
 
 - `buildPptx(xml, slideSize, options?)` — XML string → PPTX

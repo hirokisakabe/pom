@@ -27,7 +27,7 @@
   "license": "MIT",
   "author": "Hiroki Sakabe",
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "scripts": {
     "build": "tsc && node -e \"require('fs').chmodSync('dist/cli.js', '755')\"",
