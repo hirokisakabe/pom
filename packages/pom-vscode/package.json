@@ -12,7 +12,7 @@
     "directory": "packages/pom-vscode"
   },
   "engines": {
-    "node": ">=20",
+    "node": ">=22",
     "vscode": "^1.85.0"
   },
   "icon": "icon.png",

@@ -23,7 +23,7 @@
 
 ## Installation
 
-> Requires Node.js 18+ and a TypeScript-with-JSX setup (`tsx` / `ts-node` / compiled `.tsx`).
+> Requires Node.js 22+ and a TypeScript-with-JSX setup (`tsx` / `ts-node` / compiled `.tsx`).
 
 ```bash
 npm install @hirokisakabe/pom @hirokisakabe/pom-jsx
