@@ -39,20 +39,20 @@ metadata:
 }
 ```
 
-| フィールド | 内容 |
-| --- | --- |
-| `name` | テーマ名（kebab-case） |
-| `tone` | トーンの言語表現（pom-slide のトーン選択に対応。例: コーポレート / ダーク・テック / ウォーム・エディトリアル） |
-| `colors.base` | スライド背景色（6 桁 hex、`#` なし） |
-| `colors.surface` | カード・パネルの背景色 |
-| `colors.ink` | 本文テキスト色 |
-| `colors.muted` | 補助テキスト・キャプション色 |
-| `colors.accent` | 強調 1 色 |
-| `colors.charts` | グラフ用の配列（`Chart` の `chartColors` に使う。accent を先頭に 3〜5 色） |
-| `typography.fontFamily` | 本文フォント名 |
-| `typography.headingFontFamily` | 見出しフォント名（省略時は `fontFamily` と同じ） |
-| `slideMaster` | `@hirokisakabe/pom` の `SlideMasterOptions` と同形。`buildPptx(xml, size, { master })` にそのまま渡せる。`background` / `margin` / `objects` / `slideNumber` / `title` を指定可能 |
-| `source` | テーマの出自の記録。`type` は `brandColor` / `masterPptx` / `website` / `image`。`masterPptx` 由来の場合は相対パスを `source.masterPptx` に記録する |
+| フィールド                     | 内容                                                                                                                                                                              |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                         | テーマ名（kebab-case）                                                                                                                                                            |
+| `tone`                         | トーンの言語表現（pom-slide のトーン選択に対応。例: コーポレート / ダーク・テック / ウォーム・エディトリアル）                                                                    |
+| `colors.base`                  | スライド背景色（6 桁 hex、`#` なし）                                                                                                                                              |
+| `colors.surface`               | カード・パネルの背景色                                                                                                                                                            |
+| `colors.ink`                   | 本文テキスト色                                                                                                                                                                    |
+| `colors.muted`                 | 補助テキスト・キャプション色                                                                                                                                                      |
+| `colors.accent`                | 強調 1 色                                                                                                                                                                         |
+| `colors.charts`                | グラフ用の配列（`Chart` の `chartColors` に使う。accent を先頭に 3〜5 色）                                                                                                        |
+| `typography.fontFamily`        | 本文フォント名                                                                                                                                                                    |
+| `typography.headingFontFamily` | 見出しフォント名（省略時は `fontFamily` と同じ）                                                                                                                                  |
+| `slideMaster`                  | `@hirokisakabe/pom` の `SlideMasterOptions` と同形。`buildPptx(xml, size, { master })` にそのまま渡せる。`background` / `margin` / `objects` / `slideNumber` / `title` を指定可能 |
+| `source`                       | テーマの出自の記録。`type` は `brandColor` / `masterPptx` / `website` / `image`。`masterPptx` 由来の場合は相対パスを `source.masterPptx` に記録する                               |
 
 > **フォントについて**: `fontFamily` はテーマに記録されるが、pom のテキスト計測は標準フォントベースのため、特殊なブランドフォントでは行幅の計測がずれることがある（フォント計測の拡張は pom 本体の今後の対応範囲）。日本語デッキでは `Noto Sans JP` を推奨。
 
@@ -81,34 +81,50 @@ metadata:
 
 #### b. 既存 PPTX マスターの読み込み
 
-PPTX は zip アーカイブなので、`unzip -p` でテーマ XML を直接読み取れる。
+色の抽出は `@hirokisakabe/pom` の `extractThemeTokensFromPptx()`（[#906](https://github.com/hirokisakabe/pom/issues/906)）を `pom-cli` 経由で呼び出す。`<a:clrScheme>` の手読みは行わない。
 
 ```bash
-# カラースキームとフォントスキーム
-unzip -p <input.pptx> ppt/theme/theme1.xml
+if command -v pom >/dev/null 2>&1; then
+  pom theme extract <input.pptx>
+else
+  echo "pom-cli not installed" >&2
+fi
+```
 
-# マスターの背景定義（p:bg 要素）
+- `pom`（pom-cli）が無い場合はブランドカラー直接指定での再実行を案内し、この手順をスキップする（`npm install -g @hirokisakabe/pom-cli` でインストール可能）。
+- 出力は `ThemeTokens`（`text` / `background` / `primary` / `secondary` / `accent3`〜`accent6`）の JSON 配列で、各値は `#` 付き 6 桁大文字 hex（例: `#4472C4`）。スライドマスターごとに、配下の表示 layout 数だけ同じ値が繰り返される。通常は先頭要素を採用すればよい。マスターが複数あり値が異なる場合は候補としてユーザーに提示する。`pom-theme.json` の `colors.*` は `#` なし表記（冒頭「テーマファイル形式」参照）なので、取り込み時に `#` を外す。
+- コマンド自体が失敗する（PPTX が壊れている・ファイルが存在しない等）場合はエラー内容を報告し、ブランドカラー直接指定での再実行を案内する。
+- `theme1.xml` が読めない・`<a:clrScheme>` を含まない場合はエラーにならず、Office 標準のフォールバック配色（`primary: #4472C4` / `secondary: #ED7D31` / `accent3: #A5A5A5` / `accent4: #FFC000` / `accent5: #5B9BD5` / `accent6: #70AD47`）が返る。出力がこの値と一致する場合は theme 未検出を疑い、ユーザーに確認する。マスターが 1 つも解決できない場合は出力が空配列 `[]` になるため、その場合もブランドカラー直接指定を案内する。
+
+`ThemeTokens` のフィールドを以下の対応でテーマのロールに取り込む:
+
+| `ThemeTokens` フィールド          | 元 XML 対応                                                           | テーマのロール                                                                      |
+| --------------------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `background`                      | `<a:lt1>`（背景 1、`<a:sysClr>` の場合は `lastClr` を含めて解決済み） | base の候補。純白 `FFFFFF` の場合は Step 3 でオフホワイトへの調整を検討             |
+| `text`                            | `<a:dk1>`（テキスト 1、同上）                                         | ink の候補。純黒 `000000` の場合は Step 3 で調整                                    |
+| `primary`                         | `<a:accent1>`                                                         | accent                                                                              |
+| `secondary`, `accent3`〜`accent6` | `<a:accent2>`〜`<a:accent6>`                                          | `colors.charts`（`primary` を先頭に、`secondary` → `accent3` → ... の順で 3〜5 色） |
+
+`surface` / `muted` に相当するロールは `extractThemeTokensFromPptx()` の戻り値に含まれない（`<a:lt2>` / `<a:dk2>` は API のスコープ外）ため、Step 3 の導出ルールで `base` / `ink` から都度算出する。
+
+**フォント（`<a:fontScheme>`）について**: `extractThemeTokensFromPptx()` は色のみを扱い、フォント抽出は #906 のスコープ外。当面は従来どおり手読みする（programmatic 化は必要になれば別 issue で対応する）。
+
+```bash
+unzip -p <input.pptx> ppt/theme/theme1.xml
+```
+
+| theme1.xml                      | テーマのロール                                                                                |
+| ------------------------------- | --------------------------------------------------------------------------------------------- |
+| `<a:fontScheme>` の `minorFont` | `typography.fontFamily`（日本語デッキでは `<a:ea>` の typeface を優先、無ければ `<a:latin>`） |
+| `<a:fontScheme>` の `majorFont` | `typography.headingFontFamily`                                                                |
+
+**マスターの背景オーバーライド（`<p:bg>`）について**: `extractThemeTokensFromPptx()` はテーマの配色スキームのみを返し、スライドマスター個別の背景オーバーライドは対象外なので、これも従来どおり手読みする。
+
+```bash
 unzip -p <input.pptx> ppt/slideMasters/slideMaster1.xml
 ```
 
-`theme1.xml` の `<a:clrScheme>` から色を、`<a:fontScheme>` からフォントを以下の対応で取り込む:
-
-| theme1.xml | テーマのロール |
-| --- | --- |
-| `<a:lt1>`（背景 1） | base の候補。純白 `FFFFFF` の場合は Step 3 でオフホワイトへの調整を検討 |
-| `<a:lt2>`（背景 2） | surface の候補 |
-| `<a:dk1>`（テキスト 1） | ink の候補。純黒 `000000` の場合は Step 3 で調整 |
-| `<a:dk2>`（テキスト 2） | muted 導出の参考 |
-| `<a:accent1>` | accent |
-| `<a:accent1>`〜`<a:accent6>` | `colors.charts`（上から順に 3〜5 色） |
-| `<a:fontScheme>` の `minorFont` | `typography.fontFamily`（日本語デッキでは `<a:ea>` の typeface を優先、無ければ `<a:latin>`） |
-| `<a:fontScheme>` の `majorFont` | `typography.headingFontFamily` |
-
-色値は `<a:srgbClr val="..."/>` から取る。`<a:sysClr>`（`windowText` → `000000`、`window` → `FFFFFF`）の場合は `lastClr` 属性の値を使う。
-
-`slideMaster1.xml` の `<p:bg>` に単色背景（`<a:solidFill>`）があれば base および `slideMaster.background.color` に反映する。画像背景の場合は `slideMaster.background` には取り込まず、完了報告でその旨を伝える（画像背景の移植は対象外）。
-
-`theme1.xml` が存在しない・読み取れない場合はエラー内容を報告し、ブランドカラー直接指定での再実行を案内する。
+`<p:bg>` に単色背景（`<a:solidFill>`）があれば base および `slideMaster.background.color` に反映する。画像背景の場合は `slideMaster.background` には取り込まず、完了報告でその旨を伝える（画像背景の移植は対象外）。
 
 #### c. Web サイト / 画像からの抽出
 
@@ -119,7 +135,7 @@ unzip -p <input.pptx> ppt/slideMasters/slideMaster1.xml
 
 ### 3. 5 ロールパレットの導出
 
-主ブランドカラーを accent に据え、残りのロールを導出する。PPTX マスター由来で全ロールが揃っている場合も、以下の品質基準（純白・純黒回避、コントラスト）を満たすよう微調整する。
+主ブランドカラーを accent に据え、残りのロールを導出する。PPTX マスター由来で base / ink / accent が判明している場合も、以下の品質基準（純白・純黒回避、コントラスト）を満たすよう微調整する。
 
 **ライト基調**:
 
@@ -143,11 +159,11 @@ unzip -p <input.pptx> ppt/slideMasters/slideMaster1.xml
 
 WCAG の相対輝度に基づくコントラスト比で以下を確認し、満たさない場合は明度を調整して再確認する:
 
-| 組み合わせ | 最低基準 |
-| --- | --- |
-| ink / base | 7:1 以上（最低でも 4.5:1） |
-| ink / surface | 4.5:1 以上 |
-| muted / base | 3:1 以上 |
+| 組み合わせ    | 最低基準                                          |
+| ------------- | ------------------------------------------------- |
+| ink / base    | 7:1 以上（最低でも 4.5:1）                        |
+| ink / surface | 4.5:1 以上                                        |
+| muted / base  | 3:1 以上                                          |
 | accent / base | 3:1 以上（accent をテキストや細いバーに使うため） |
 
 コントラスト比は `(L1 + 0.05) / (L2 + 0.05)`（L は相対輝度、L1 ≧ L2）。厳密な計算が難しい場合は `python3` ワンライナーで算出する:
