@@ -81,34 +81,45 @@ metadata:
 
 #### b. 既存 PPTX マスターの読み込み
 
-PPTX は zip アーカイブなので、`unzip -p` でテーマ XML を直接読み取れる。
+色の抽出は `@hirokisakabe/pom` の `extractThemeTokensFromPptx()`（[#906](https://github.com/hirokisakabe/pom/issues/906)）を `pom-cli` 経由で呼び出す。`<a:clrScheme>` の手読みは行わない。
 
 ```bash
-# カラースキームとフォントスキーム
-unzip -p <input.pptx> ppt/theme/theme1.xml
-
-# マスターの背景定義（p:bg 要素）
-unzip -p <input.pptx> ppt/slideMasters/slideMaster1.xml
+command -v pom >/dev/null 2>&1 && pom theme extract <input.pptx>
 ```
 
-`theme1.xml` の `<a:clrScheme>` から色を、`<a:fontScheme>` からフォントを以下の対応で取り込む:
+- `pom`（pom-cli）が無い場合はブランドカラー直接指定での再実行を案内し、この手順をスキップする（`npm install -g @hirokisakabe/pom-cli` でインストール可能）。
+- 出力は `ThemeTokens`（`text` / `background` / `primary` / `secondary` / `accent3`〜`accent6`）の JSON 配列。スライドマスターごとに、配下の表示 layout 数だけ同じ値が繰り返される。通常は先頭要素を採用すればよい。マスターが複数あり値が異なる場合は候補としてユーザーに提示する。
+- コマンドが失敗する（`theme1.xml` が存在しない等）場合はエラー内容を報告し、ブランドカラー直接指定での再実行を案内する。
+
+`ThemeTokens` のフィールドを以下の対応でテーマのロールに取り込む:
+
+| `ThemeTokens` フィールド | 元 XML 対応 | テーマのロール |
+| --- | --- | --- |
+| `background` | `<a:lt1>`（背景 1、`<a:sysClr>` の場合は `lastClr` を含めて解決済み） | base の候補。純白 `FFFFFF` の場合は Step 3 でオフホワイトへの調整を検討 |
+| `text` | `<a:dk1>`（テキスト 1、同上） | ink の候補。純黒 `000000` の場合は Step 3 で調整 |
+| `primary` | `<a:accent1>` | accent |
+| `secondary`, `accent3`〜`accent6` | `<a:accent2>`〜`<a:accent6>` | `colors.charts`（`primary` を先頭に、`secondary` → `accent3` → ... の順で 3〜5 色） |
+
+`surface` / `muted` に相当するロールは `extractThemeTokensFromPptx()` の戻り値に含まれない（`<a:lt2>` / `<a:dk2>` は API のスコープ外）ため、Step 3 の導出ルールで `base` / `ink` から都度算出する。
+
+**フォント（`<a:fontScheme>`）について**: `extractThemeTokensFromPptx()` は色のみを扱い、フォント抽出は #906 のスコープ外。当面は従来どおり手読みする（programmatic 化は必要になれば別 issue で対応する）。
+
+```bash
+unzip -p <input.pptx> ppt/theme/theme1.xml
+```
 
 | theme1.xml | テーマのロール |
 | --- | --- |
-| `<a:lt1>`（背景 1） | base の候補。純白 `FFFFFF` の場合は Step 3 でオフホワイトへの調整を検討 |
-| `<a:lt2>`（背景 2） | surface の候補 |
-| `<a:dk1>`（テキスト 1） | ink の候補。純黒 `000000` の場合は Step 3 で調整 |
-| `<a:dk2>`（テキスト 2） | muted 導出の参考 |
-| `<a:accent1>` | accent |
-| `<a:accent1>`〜`<a:accent6>` | `colors.charts`（上から順に 3〜5 色） |
 | `<a:fontScheme>` の `minorFont` | `typography.fontFamily`（日本語デッキでは `<a:ea>` の typeface を優先、無ければ `<a:latin>`） |
 | `<a:fontScheme>` の `majorFont` | `typography.headingFontFamily` |
 
-色値は `<a:srgbClr val="..."/>` から取る。`<a:sysClr>`（`windowText` → `000000`、`window` → `FFFFFF`）の場合は `lastClr` 属性の値を使う。
+**マスターの背景オーバーライド（`<p:bg>`）について**: `extractThemeTokensFromPptx()` はテーマの配色スキームのみを返し、スライドマスター個別の背景オーバーライドは対象外なので、これも従来どおり手読みする。
 
-`slideMaster1.xml` の `<p:bg>` に単色背景（`<a:solidFill>`）があれば base および `slideMaster.background.color` に反映する。画像背景の場合は `slideMaster.background` には取り込まず、完了報告でその旨を伝える（画像背景の移植は対象外）。
+```bash
+unzip -p <input.pptx> ppt/slideMasters/slideMaster1.xml
+```
 
-`theme1.xml` が存在しない・読み取れない場合はエラー内容を報告し、ブランドカラー直接指定での再実行を案内する。
+`<p:bg>` に単色背景（`<a:solidFill>`）があれば base および `slideMaster.background.color` に反映する。画像背景の場合は `slideMaster.background` には取り込まず、完了報告でその旨を伝える（画像背景の移植は対象外）。
 
 #### c. Web サイト / 画像からの抽出
 
@@ -119,7 +130,7 @@ unzip -p <input.pptx> ppt/slideMasters/slideMaster1.xml
 
 ### 3. 5 ロールパレットの導出
 
-主ブランドカラーを accent に据え、残りのロールを導出する。PPTX マスター由来で全ロールが揃っている場合も、以下の品質基準（純白・純黒回避、コントラスト）を満たすよう微調整する。
+主ブランドカラーを accent に据え、残りのロールを導出する。PPTX マスター由来で base / ink / accent が判明している場合も、以下の品質基準（純白・純黒回避、コントラスト）を満たすよう微調整する。
 
 **ライト基調**:
 

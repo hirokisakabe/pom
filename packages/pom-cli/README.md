@@ -15,6 +15,7 @@
 - **Live Preview Server** — `pom preview` opens a browser, watches the source file, and rebuilds + reloads on every save (handles editor atomic writes like Vim).
 - **PPTX Build** — `pom build` converts `.pom.xml` / `.pom.md` to a `.pptx` file, with optional `--watch` mode for incremental rebuilds.
 - **PNG / SVG Render** — `pom render` rasterizes each slide to PNG (default) or SVG without LibreOffice, useful for slide-image previews in docs.
+- **Theme Extraction** — `pom theme extract` reads an existing `.pptx` and prints its theme colors as pom `ThemeTokens` JSON, for onboarding brand assets.
 - **Diagnostic Surfacing** — Layout, image, master, and auto-fit diagnostics from `buildPptx` fail the run on stderr with a non-zero exit (`pom build` / `pom render`), while `pom preview` keeps updating so issues can be fixed interactively.
 - **Bundled Fonts** — Carlito and Noto Sans CJK JP are bundled for SVG / PNG rendering, so output looks the same on machines without those fonts installed.
 - **Configurable Output** — Choose port, target slides, output format, text rendering mode (`path` outlines vs native `<text>`), and verbose per-step timing.
@@ -138,6 +139,16 @@ To print per-step timing on stderr:
 ```bash
 pom render slides.pom.xml -o ./images --verbose
 ```
+
+### Theme Extract
+
+Extracts PowerPoint theme colors from an existing `.pptx` as pom `ThemeTokens` JSON — useful for onboarding brand assets (e.g. the `pom-theme` agent skill).
+
+```bash
+pom theme extract brand-master.pptx
+```
+
+Prints a JSON array to stdout with one entry per visible slide layout (`text` / `background` / `primary` / `secondary` / `accent3`–`accent6`, all 6-digit uppercase hex prefixed with `#`), preserving the source master/layout order.
 
 ## Diagnostics
 
