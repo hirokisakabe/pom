@@ -28,7 +28,7 @@ describe("extractSlideMastersAsPptx", () => {
         const relsXml = await zip
           .file(`ppt/slides/_rels/slide${index + 1}.xml.rels`)!
           .async("text");
-        return /Target="\.\.\/slideLayouts\/(slideLayout\d+\.xml)"/.exec(
+        return /Target="\/ppt\/slideLayouts\/(slideLayout\d+\.xml)"/.exec(
           relsXml,
         )?.[1];
       }),
@@ -134,5 +134,40 @@ describe("extractSlideMastersAsPptx", () => {
   it("不正な PPTX バッファは reject する", async () => {
     const garbage = new Uint8Array([0, 1, 2, 3, 4, 5]);
     await expect(extractSlideMastersAsPptx(garbage)).rejects.toThrow();
+  });
+
+  it("元の presentation.xml に p:sldIdLst が無くても CT_Presentation の宣言順で挿入する", async () => {
+    const buffer = await createPptxFixture([
+      { usedBySlide: false, layoutShows: [undefined, undefined] },
+    ]);
+
+    const zip = await JSZip.loadAsync(buffer);
+    const presentationXml = await zip
+      .file("ppt/presentation.xml")!
+      .async("text");
+    const withoutSldIdLst = presentationXml.replace(
+      /<p:sldIdLst>[\s\S]*?<\/p:sldIdLst>\s*/,
+      "",
+    );
+    expect(withoutSldIdLst).not.toContain("p:sldIdLst");
+    zip.file("ppt/presentation.xml", withoutSldIdLst);
+    const strippedBuffer = await zip.generateAsync({ type: "uint8array" });
+
+    const result = await extractSlideMastersAsPptx(strippedBuffer);
+    const resultZip = await JSZip.loadAsync(result);
+    const resultPresentationXml = await resultZip
+      .file("ppt/presentation.xml")!
+      .async("text");
+
+    const sldMasterIdLstIndex =
+      resultPresentationXml.indexOf("<p:sldMasterIdLst>");
+    const sldIdLstIndex = resultPresentationXml.indexOf("<p:sldIdLst>");
+    const sldSzIndex = resultPresentationXml.indexOf("<p:sldSz");
+    expect(sldMasterIdLstIndex).toBeGreaterThanOrEqual(0);
+    expect(sldIdLstIndex).toBeGreaterThan(sldMasterIdLstIndex);
+    expect(sldSzIndex).toBeGreaterThan(sldIdLstIndex);
+
+    expect(() => readPptx(new Uint8Array(result))).not.toThrow();
+    expect(readPptx(new Uint8Array(result)).slides).toHaveLength(2);
   });
 });

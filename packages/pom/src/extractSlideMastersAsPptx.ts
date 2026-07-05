@@ -15,6 +15,25 @@ const PRESENTATION_PART_PATH = "ppt/presentation.xml";
 const PRESENTATION_RELS_PART_PATH = "ppt/_rels/presentation.xml.rels";
 const CONTENT_TYPES_PART_PATH = "[Content_Types].xml";
 
+// CT_Presentation (ECMA-376) の子要素の宣言順。p:sldIdLst が元々存在しない
+// PPTX を扱う際、末尾追加ではなくこの順序で組み直して schema 違反を防ぐ。
+const PRESENTATION_CHILD_ORDER = [
+  "p:sldMasterIdLst",
+  "p:notesMasterIdLst",
+  "p:handoutMasterIdLst",
+  "p:sldIdLst",
+  "p:sldSz",
+  "p:notesSz",
+  "p:embeddedFontLst",
+  "p:custShowLst",
+  "p:photoAlbum",
+  "p:custDataLst",
+  "p:kinsoku",
+  "p:defaultTextStyle",
+  "p:modifyVerifier",
+  "p:extLst",
+];
+
 // JSZip は CJS パッケージのため動的 import で読み込む
 async function loadJSZip(): Promise<typeof import("jszip")> {
   const mod = await import("jszip");
@@ -44,7 +63,7 @@ const xmlBuilder = new XMLBuilder({
   suppressEmptyNode: false,
 });
 
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 
 function blankSlideXml(): string {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -53,15 +72,11 @@ function blankSlideXml(): string {
 </p:sld>`;
 }
 
-function blankSlideRelsXml(layoutFileName: string): string {
+function blankSlideRelsXml(layoutPartPath: string): string {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/${layoutFileName}"/>
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="/${layoutPartPath}"/>
 </Relationships>`;
-}
-
-function partPathFileName(partPath: string): string {
-  return partPath.split("/").pop() ?? partPath;
 }
 
 async function readZipText(
@@ -71,6 +86,27 @@ async function readZipText(
   const file = zip.file(partPath);
   if (file === null) throw new Error(`${partPath} not found in the PPTX`);
   return file.async("text");
+}
+
+function reorderPresentationChildren(
+  presentation: Record<string, unknown>,
+): Record<string, unknown> {
+  const attributeEntries = Object.entries(presentation).filter(([key]) =>
+    key.startsWith("@_"),
+  );
+  const knownKeys = new Set(PRESENTATION_CHILD_ORDER);
+  const orderedChildEntries = PRESENTATION_CHILD_ORDER.filter(
+    (key) => key in presentation,
+  ).map((key) => [key, presentation[key]] as const);
+  const otherChildEntries = Object.entries(presentation).filter(
+    ([key]) => !key.startsWith("@_") && !knownKeys.has(key),
+  );
+
+  return Object.fromEntries([
+    ...attributeEntries,
+    ...orderedChildEntries,
+    ...otherChildEntries,
+  ]);
 }
 
 async function updatePresentationXml(
@@ -83,10 +119,10 @@ async function updatePresentationXml(
 
   const existingSldIds: Array<Record<string, string>> =
     presentation["p:sldIdLst"]?.["p:sldId"] ?? [];
-  const maxSldId = existingSldIds.reduce(
-    (max, sldId) => Math.max(max, parseInt(sldId["@_id"] ?? "0", 10)),
-    255,
-  );
+  const maxSldId = existingSldIds.reduce((max, sldId) => {
+    const id = parseInt(sldId["@_id"] ?? "0", 10);
+    return Number.isFinite(id) ? Math.max(max, id) : max;
+  }, 255);
 
   presentation["p:sldIdLst"] = {
     "p:sldId": Array.from({ length: slideCount }, (_, index) => ({
@@ -95,6 +131,7 @@ async function updatePresentationXml(
     })),
   };
 
+  parsed["p:presentation"] = reorderPresentationChildren(presentation);
   zip.file(PRESENTATION_PART_PATH, xmlBuilder.build(parsed));
 }
 
@@ -152,7 +189,7 @@ async function updateContentTypesXml(
   zip.file(CONTENT_TYPES_PART_PATH, xmlBuilder.build(parsed));
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
+/* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 
 /**
  * Convert a PPTX buffer into a new PPTX that contains exactly one blank slide
@@ -168,19 +205,19 @@ export async function extractSlideMastersAsPptx(
   const buffer = toUint8Array(pptxBuffer);
   const source = readPptx(buffer);
 
-  const layoutFileNames: string[] = [];
+  const layoutPartPaths: string[] = [];
   for (const masterPartPath of getPresentationMasterPartPaths(source)) {
     for (const layoutPartPath of getMasterLayoutPartPaths(
       source,
       masterPartPath,
     )) {
       if (isVisibleLayout(source, layoutPartPath)) {
-        layoutFileNames.push(partPathFileName(layoutPartPath));
+        layoutPartPaths.push(layoutPartPath);
       }
     }
   }
 
-  if (layoutFileNames.length === 0) {
+  if (layoutPartPaths.length === 0) {
     throw new Error("No visible slide layouts found for slide masters");
   }
 
@@ -191,18 +228,18 @@ export async function extractSlideMastersAsPptx(
     if (path.startsWith("ppt/slides/")) zip.remove(path);
   }
 
-  layoutFileNames.forEach((layoutFileName, index) => {
+  layoutPartPaths.forEach((layoutPartPath, index) => {
     const slideNumber = index + 1;
     zip.file(`ppt/slides/slide${slideNumber}.xml`, blankSlideXml());
     zip.file(
       `ppt/slides/_rels/slide${slideNumber}.xml.rels`,
-      blankSlideRelsXml(layoutFileName),
+      blankSlideRelsXml(layoutPartPath),
     );
   });
 
-  await updatePresentationXml(zip, layoutFileNames.length);
-  await updatePresentationRelsXml(zip, layoutFileNames.length);
-  await updateContentTypesXml(zip, layoutFileNames.length);
+  await updatePresentationXml(zip, layoutPartPaths.length);
+  await updatePresentationRelsXml(zip, layoutPartPaths.length);
+  await updateContentTypesXml(zip, layoutPartPaths.length);
 
   return zip.generateAsync({ type: "arraybuffer" });
 }
