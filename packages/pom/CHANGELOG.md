@@ -1,5 +1,13 @@
 # @hirokisakabe/pom
 
+## 9.1.0
+
+### Minor Changes
+
+- [#925](https://github.com/hirokisakabe/pom/pull/925) [`f748519`](https://github.com/hirokisakabe/pom/commit/f74851911968de692df8e64f8d1de865f41f5207) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - PPTX バッファから PowerPoint theme の配色を `ThemeTokens[]` として抽出する `extractThemeTokensFromPptx()` API を追加しました。
+
+- [#927](https://github.com/hirokisakabe/pom/pull/927) [`2fa8c77`](https://github.com/hirokisakabe/pom/commit/2fa8c77d1ff9511e585f79fba8f2e6a990885998) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - PPTX バッファを各 slideMaster 配下の表示レイアウトごとに空白スライド 1 枚だけ含む PPTX に変換する `extractSlideMastersAsPptx()` API を追加しました。
+
 ## 9.0.0
 
 ### Major Changes
