@@ -133,11 +133,11 @@ XML を書き始める前に、デッキ全体のデザイントークン（配�
     <Text fontSize="32" bold="true" color="$ink">アジェンダ</Text>
     <VStack gap="16">
       <HStack gap="16" alignItems="center">
-        <Text fontSize="20" bold="true" color="$accent">01</Text>
+        <Text fontSize="20" bold="true" color="$accent">01.</Text>
         <Text fontSize="16" color="$ink">背景と課題</Text>
       </HStack>
       <HStack gap="16" alignItems="center">
-        <Text fontSize="20" bold="true" color="$accent">02</Text>
+        <Text fontSize="20" bold="true" color="$accent">02.</Text>
         <Text fontSize="16" color="$ink">提案内容</Text>
       </HStack>
     </VStack>
@@ -254,7 +254,7 @@ XML を書き始める前に、デッキ全体のデザイントークン（配�
 - h1 の `fontSize` / `color` も同一。スライドごとに 28 / 32 を揺らさない
 - VStack の `gap` (eyebrow と h1 の縦距離) と外周 `padding` も統一する
 - eyebrow の文言は `SECTION 0X · {大文字 1 語}` か `0X · {章タイトル}` のどちらかに固定し、書き分けない
-- 章番号（`01` `02` ...）は **A9 回避策** として常に `01.` や `#01` のように非数字を 1 文字混ぜる。`pom render` 経由の PNG では純数字の leading 0 が消える（"01" → "1"）ことがあるため
+- 章番号（`01` `02` ...）は **A9 回避策** として常に `01.` や `#01` のように非数字を 1 文字混ぜる。LibreOffice 経由の fallback / legacy PNG 化では純数字の leading 0 が消える（"01" -> "1"）ことがあるため
 
 #### 制約と回避（PPTX 原理限界）
 
