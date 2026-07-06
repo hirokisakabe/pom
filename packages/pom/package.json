@@ -89,7 +89,7 @@
     "tsx": "4.23.0"
   },
   "dependencies": {
-    "@pptx-glimpse/document": "0.1.0",
+    "@pptx-glimpse/document": "0.2.0",
     "@resvg/resvg-wasm": "^2.6.2",
     "fast-xml-parser": "^5.9.3",
     "image-size": "2.0.2",
