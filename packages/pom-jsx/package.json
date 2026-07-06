@@ -59,7 +59,7 @@
   },
   "devDependencies": {
     "@hirokisakabe/pom": "workspace:*",
-    "@vitest/coverage-v8": "^4.1.9"
+    "@vitest/coverage-v8": "^4.1.10"
   },
   "publishConfig": {
     "access": "public"
