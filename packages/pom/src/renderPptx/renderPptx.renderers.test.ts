@@ -167,6 +167,34 @@ describe("renderTextNode", () => {
     expect(relsXml).toContain('Target="https://example.com?a=1&amp;b=2"');
     expect(relsXml).toContain('TargetMode="External"');
   });
+
+  it("pptx.stream でも glimpse text box XML に置換する", async () => {
+    const buildContext = createBuildContext();
+    const pptx = await renderPptx(
+      [
+        vstackPage([
+          {
+            type: "text",
+            text: "streamed",
+            x: 0,
+            y: 0,
+            w: 160,
+            h: 40,
+          },
+        ]),
+      ],
+      { w: 1280, h: 720 },
+      buildContext,
+    );
+    patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
+
+    const buffer = (await pptx.stream({ compression: true })) as Uint8Array;
+    const zip = await JSZip.loadAsync(buffer);
+    const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+
+    expect(slideXml).toContain("<a:t>streamed</a:t>");
+    expect(slideXml).not.toContain("pom-text:");
+  });
 });
 
 describe("renderImageNode", () => {

@@ -210,6 +210,36 @@ describe("renderTextNode (runs 分岐)", () => {
     expect(xml.match(/<a:srgbClr val="0088CC"\/>/g)).toHaveLength(2);
   });
 
+  it("href を持つ run は underline 未指定時に旧 addText と同じ既定 underline を出力する", () => {
+    const addShape = vi.fn();
+    const registry = new GlimpseTextBoxRegistry();
+    const ctx = {
+      slide: { addShape },
+      pptx: { ShapeType: { rect: "rect" } },
+      buildContext: { glimpseTextBoxes: registry },
+    } as unknown as RenderContext;
+
+    renderTextNode(
+      {
+        type: "text",
+        text: "Link",
+        runs: [
+          { text: "Link", href: "https://example.com" },
+          { text: "Plain" },
+        ],
+        x: 0,
+        y: 0,
+        w: 100,
+        h: 50,
+      },
+      ctx,
+    );
+
+    const xml = registry.entries[0].xml;
+    expect(xml).toContain('<a:rPr u="sng"');
+    expect(xml.match(/<a:rPr/g)).toHaveLength(2);
+  });
+
   it("Text glow の opacity 未指定時は既定値 0.75 を XML に反映する", () => {
     const addShape = vi.fn();
     const registry = new GlimpseTextBoxRegistry();

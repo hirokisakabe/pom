@@ -40,6 +40,7 @@ import { EMU_PER_IN, pxToEmu, pxToPt } from "./units.ts";
 import { createTextOptions, resolveSubSup } from "./textOptions.ts";
 
 type PptxGenJSInstance = import("pptxgenjs").default;
+type StreamProps = NonNullable<Parameters<PptxGenJSInstance["stream"]>[0]>;
 type WriteProps = NonNullable<Parameters<PptxGenJSInstance["write"]>[0]>;
 type WriteFileProps = NonNullable<
   Parameters<PptxGenJSInstance["writeFile"]>[0]
@@ -155,7 +156,7 @@ function buildRunProperties(
     gradientFill,
     bold: run?.bold ?? node.bold,
     italic: run?.italic ?? node.italic,
-    underline: toUnderlineInput(run?.underline ?? node.underline),
+    underline: toUnderlineInput(resolveUnderline(node, run)),
     strike: run?.strike ?? node.strike,
     baseline: toBaselineInput(subSup.subscript, subSup.superscript),
     highlight: toColorInput(run?.highlight ?? node.highlight),
@@ -163,6 +164,15 @@ function buildRunProperties(
     outline: toOutlineInput(node.outline),
     charSpacing: toCharSpacing(letterSpacingPx),
   });
+}
+
+function resolveUnderline(
+  node: TextPositionedNode,
+  run: NonNullable<TextPositionedNode["runs"]>[number] | undefined,
+): Underline | undefined {
+  if (run?.underline !== undefined) return run.underline;
+  if (node.underline !== undefined) return node.underline;
+  return run?.href ? true : undefined;
 }
 
 function createParagraphProperties(
@@ -506,6 +516,13 @@ export function patchPptxWriteForGlimpseTextBoxes(
     });
   };
   pptx.write = patchedWrite;
+
+  const patchedStream = async (props?: StreamProps) =>
+    patchedWrite({
+      outputType: "STREAM",
+      compression: props?.compression,
+    });
+  pptx.stream = patchedStream;
 
   const patchedWriteFile = async (rawProps?: WriteFileProps | string) => {
     const props: WriteFileProps | undefined =
