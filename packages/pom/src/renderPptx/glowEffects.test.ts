@@ -58,6 +58,17 @@ describe("buildPptx with Shape glow", () => {
     expect(slideXml).toContain('name="pom-glow:0"');
   });
 
+  it("Shape glow 単独でも stream 経路で effectLst として出力される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Shape shapeType="ellipse" w="100" h="100" fill.color="FF0000" glow.size="8" glow.color="00FF00"/>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.stream({ compression: true })) as Uint8Array;
+    const slideXml = await readSlideXml(buffer);
+
+    expect(slideXml).toContain("<a:effectLst><a:glow");
+  });
+
   it("Shape の outline は line のエイリアスとして反映される", async () => {
     const xml = `<Slide><VStack w="100%" h="max">
       <Shape shapeType="rect" w="100" h="100" outline.size="3" outline.color="0088CC"/>

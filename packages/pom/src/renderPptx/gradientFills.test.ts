@@ -65,6 +65,18 @@ describe("buildPptx with backgroundGradient", () => {
     );
   });
 
+  it("backgroundGradient 単独でも stream 経路で gradFill として出力される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Shape shapeType="rect" w="200" h="100" backgroundGradient="linear-gradient(45deg, #FF0000 0%, #0000FF 100%)"/>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.stream({ compression: true })) as Uint8Array;
+    const slideXml = await readSlideXml(buffer);
+
+    expect(slideXml).toContain("<a:gradFill");
+    expect(slideXml).not.toContain('<a:solidFill><a:srgbClr val="0F7A3D"/>');
+  });
+
   it("ルートノードの backgroundGradient はスライド背景 (p:bgPr) に適用される", async () => {
     const xml = `<Slide><VStack w="100%" h="max" backgroundGradient="linear-gradient(to right, #11998E, #38EF7D)">
       <Text fontSize="24">test</Text>

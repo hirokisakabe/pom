@@ -20,6 +20,7 @@ import type { Gradient } from "../shared/gradient.ts";
 import { parseGradient } from "../shared/gradient.ts";
 
 type PptxGenJSInstance = import("pptxgenjs").default;
+type StreamProps = NonNullable<Parameters<PptxGenJSInstance["stream"]>[0]>;
 type WriteProps = NonNullable<Parameters<PptxGenJSInstance["write"]>[0]>;
 type WriteFileProps = NonNullable<
   Parameters<PptxGenJSInstance["writeFile"]>[0]
@@ -219,6 +220,13 @@ export function patchPptxWriteForGradientFills(
     });
   };
   pptx.write = patchedWrite;
+
+  const patchedStream = async (props?: StreamProps) =>
+    pptx.write({
+      outputType: "STREAM",
+      compression: props?.compression,
+    });
+  pptx.stream = patchedStream;
 
   const patchedWriteFile = async (rawProps?: WriteFileProps | string) => {
     // DEPRECATED: pptxgenjs は writeFile(fileName) の文字列 overload を
