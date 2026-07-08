@@ -209,6 +209,32 @@ describe("renderTextNode (runs 分岐)", () => {
     expect(xml.match(/<a:ln w="19050">/g)).toHaveLength(2);
     expect(xml.match(/<a:srgbClr val="0088CC"\/>/g)).toHaveLength(2);
   });
+
+  it("Text glow の opacity 未指定時は既定値 0.75 を XML に反映する", () => {
+    const addShape = vi.fn();
+    const registry = new GlimpseTextBoxRegistry();
+    const ctx = {
+      slide: { addShape },
+      pptx: { ShapeType: { rect: "rect" } },
+      buildContext: { glimpseTextBoxes: registry },
+    } as unknown as RenderContext;
+
+    renderTextNode(
+      {
+        type: "text",
+        text: "Glow",
+        x: 0,
+        y: 0,
+        w: 100,
+        h: 50,
+        glow: { size: 8, color: "FF3399" },
+      },
+      ctx,
+    );
+
+    const xml = registry.entries[0].xml;
+    expect(xml).toContain('<a:alpha val="75000"/>');
+  });
 });
 
 describe("convertGlow", () => {

@@ -44,6 +44,9 @@ type WriteProps = NonNullable<Parameters<PptxGenJSInstance["write"]>[0]>;
 type WriteFileProps = NonNullable<
   Parameters<PptxGenJSInstance["writeFile"]>[0]
 >;
+type BrowserWritablePptx = PptxGenJSInstance & {
+  writeFileToBrowser?: (fileName: string, blobContent: Blob) => Promise<string>;
+};
 type TextPositionedNode = Extract<PositionedNode, { type: "text" }>;
 
 const MARKER_PREFIX = "pom-text:";
@@ -220,8 +223,8 @@ function buildParagraphs(node: TextPositionedNode): {
 
 function withGlowAlpha(xml: string, node: TextPositionedNode): string {
   const glow = node.glow;
-  if (!glow || glow.opacity === undefined) return xml;
-  const alpha = Math.round(glow.opacity * 100000);
+  if (!glow) return xml;
+  const alpha = Math.round((glow.opacity ?? 0.75) * 100000);
   const color = cleanHex(glow.color ?? "FFFFFF");
   const target = `<a:glow rad="${Math.round(pxToEmu(glow.size ?? 8))}"><a:srgbClr val="${color}"/></a:glow>`;
   const replacement = `<a:glow rad="${Math.round(pxToEmu(glow.size ?? 8))}"><a:srgbClr val="${color}"><a:alpha val="${alpha}"/></a:srgbClr></a:glow>`;
@@ -473,7 +476,6 @@ export function patchPptxWriteForGlimpseTextBoxes(
   if (registry.isEmpty) return;
 
   const originalWrite = pptx.write.bind(pptx);
-  const originalWriteFile = pptx.writeFile.bind(pptx);
 
   const patchedWrite = async (rawProps?: WriteProps | string) => {
     const props: WriteProps | undefined =
@@ -493,7 +495,10 @@ export function patchPptxWriteForGlimpseTextBoxes(
       });
     }
     if (outputType) {
-      return zip.generateAsync({ type: outputType });
+      return zip.generateAsync({
+        type: outputType,
+        compression: props?.compression ? "DEFLATE" : "STORE",
+      });
     }
     return zip.generateAsync({
       type: "blob",
@@ -508,7 +513,22 @@ export function patchPptxWriteForGlimpseTextBoxes(
     const isNode =
       typeof process !== "undefined" && Boolean(process.versions?.node);
     if (!isNode) {
-      return originalWriteFile(props);
+      const browserWriter = pptx as BrowserWritablePptx;
+      if (typeof browserWriter.writeFileToBrowser !== "function") {
+        throw new Error(
+          "pptx.writeFile browser download helper is unavailable; use pptx.write({ outputType: 'blob' }) instead",
+        );
+      }
+      const rawName = props?.fileName ?? "Presentation.pptx";
+      const fileName = rawName.toLowerCase().endsWith(".pptx")
+        ? rawName
+        : `${rawName}.pptx`;
+      const blob = (await patchedWrite({
+        outputType: "blob",
+        compression: props?.compression,
+      })) as Blob;
+      await browserWriter.writeFileToBrowser(fileName, blob);
+      return fileName;
     }
     const rawName = props?.fileName ?? "Presentation.pptx";
     const fileName = rawName.toLowerCase().endsWith(".pptx")
