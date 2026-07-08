@@ -322,11 +322,12 @@ describe("buildPptx with textGradient", () => {
     // text run 内に gradFill が描画される (a:rPr 配下)
     expect(slideXml).toMatch(/<a:rPr[^>]*><a:gradFill/);
     expect(slideXml).toContain(
-      '<a:gradFill flip="none" rotWithShape="1"><a:gsLst>' +
+      "<a:gradFill><a:gsLst>" +
         '<a:gs pos="0"><a:srgbClr val="38BDF8"/></a:gs>' +
         '<a:gs pos="100000"><a:srgbClr val="A78BFA"/></a:gs>' +
-        '</a:gsLst><a:lin ang="0" scaled="0"/></a:gradFill>',
+        '</a:gsLst><a:lin ang="0" scaled="1"/></a:gradFill>',
     );
+    expect(slideXml).not.toContain("pom-text:");
   });
 
   it("textGradient 指定時は node の color よりも gradient が優先される", async () => {

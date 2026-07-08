@@ -10,12 +10,14 @@
  *    `<a:solidFill><a:srgbClr val="マーカー色"/></a:solidFill>` を
  *    DrawingML ネイティブの `<a:gradFill>` に置換する
  *
+ * Text の textGradient は glimpseTextBoxes.ts の TextBox native XML 生成へ移行済み。
+ *
  * 置換は pptxgenjs が生成する固定パターンに対する完全一致の文字列置換で行う。
  * スライド XML 全体をパーサーで往復させると無関係な要素の表現が変わり得るため、
  * 意図的に文字列置換を採用している。
  */
 import type { Gradient } from "../shared/gradient.ts";
-import { parseGradient, parseLinearGradient } from "../shared/gradient.ts";
+import { parseGradient } from "../shared/gradient.ts";
 
 type PptxGenJSInstance = import("pptxgenjs").default;
 type WriteProps = NonNullable<Parameters<PptxGenJSInstance["write"]>[0]>;
@@ -99,25 +101,6 @@ export function registerBackgroundGradient(
   const gradient = parseGradient(value);
   if (!gradient) return undefined;
   return registry.register(gradient, opacity);
-}
-
-/**
- * textGradient 属性値をパースしてレジストリに登録し、マーカー色を返す。
- * 戻り値のマーカー色を text run の color に渡すと、pptxgenjs が出力する
- * `<a:rPr><a:solidFill><a:srgbClr val="マーカー色"/></a:solidFill></a:rPr>` が
- * 後処理で gradFill に置換され、PowerPoint 上ネイティブの文字グラデーションとして
- * 表示・編集可能になる。
- *
- * textGradient は radial-gradient を受け付けない (linear-gradient のみ)。
- * パースできない場合 (スキーマ検証済みのため通常発生しない) は undefined を返す。
- */
-export function registerTextGradient(
-  value: string,
-  registry: GradientFillRegistry,
-): string | undefined {
-  const linear = parseLinearGradient(value);
-  if (!linear) return undefined;
-  return registry.register({ kind: "linear", value: linear });
 }
 
 /**

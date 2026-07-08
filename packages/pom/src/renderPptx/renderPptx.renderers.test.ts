@@ -6,9 +6,11 @@
  * renderer 内部のリファクタリングで public な出力挙動が変わっていない
  * ことを保証する。
  */
+import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 import { renderPptx } from "./renderPptx.ts";
 import { createBuildContext } from "../buildContext.ts";
+import { patchPptxWriteForGlimpseTextBoxes } from "./glimpseTextBoxes.ts";
 import { pxToIn, pxToPt } from "./units.ts";
 import type { PositionedNode } from "../types.ts";
 
@@ -26,6 +28,21 @@ async function renderPage(page: PositionedNode) {
     pptx as unknown as { _slides: { _slideObjects: SlideObject[] }[] }
   )._slides;
   return { objects: slides[0]._slideObjects, buildContext };
+}
+
+async function renderPageSlideXml(page: PositionedNode) {
+  const zip = await renderPagePptxZip(page);
+  return zip.file("ppt/slides/slide1.xml")!.async("text");
+}
+
+async function renderPagePptxZip(page: PositionedNode) {
+  const buildContext = createBuildContext();
+  const pptx = await renderPptx([page], { w: 1280, h: 720 }, buildContext);
+  patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
+  const buffer = (await pptx.write({
+    outputType: "uint8array",
+  })) as Uint8Array;
+  return JSZip.loadAsync(buffer);
 }
 
 function vstackPage(children: PositionedNode[]): PositionedNode {
@@ -80,8 +97,8 @@ describe("renderShapeNode", () => {
 });
 
 describe("renderTextNode", () => {
-  it("rotate を通常テキストの pptxgenjs options に渡す", async () => {
-    const { objects } = await renderPage(
+  it("rotate を通常テキストの glimpse text box XML に渡す", async () => {
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "text",
@@ -95,11 +112,13 @@ describe("renderTextNode", () => {
       ]),
     );
 
-    expect(objects[0].options.rotate).toBe(15);
+    expect(slideXml).toContain('<a:xfrm rot="900000">');
+    expect(slideXml).toContain("<a:t>rotated</a:t>");
+    expect(slideXml).not.toContain("pom-text:");
   });
 
-  it("rotate を inline runs テキストの pptxgenjs options に渡す", async () => {
-    const { objects } = await renderPage(
+  it("rotate を inline runs テキストの glimpse text box XML に渡す", async () => {
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "text",
@@ -114,7 +133,39 @@ describe("renderTextNode", () => {
       ]),
     );
 
-    expect(objects[0].options.rotate).toBe(-15);
+    expect(slideXml).toContain('<a:xfrm rot="-900000">');
+    expect(slideXml).toContain("<a:t>rotated</a:t>");
+    expect(slideXml).not.toContain("pom-text:");
+  });
+
+  it("inline run の hyperlink を slide XML と relationships に出力する", async () => {
+    const zip = await renderPagePptxZip(
+      vstackPage([
+        {
+          type: "text",
+          text: "Visit site",
+          runs: [
+            { text: "Visit " },
+            { text: "site", href: "https://example.com?a=1&b=2" },
+          ],
+          x: 0,
+          y: 0,
+          w: 240,
+          h: 40,
+        },
+      ]),
+    );
+    const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+    const relsXml = await zip
+      .file("ppt/slides/_rels/slide1.xml.rels")!
+      .async("text");
+
+    expect(slideXml).toMatch(/<a:hlinkClick r:id="rId\d+"\/>/);
+    expect(relsXml).toContain(
+      'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"',
+    );
+    expect(relsXml).toContain('Target="https://example.com?a=1&amp;b=2"');
+    expect(relsXml).toContain('TargetMode="External"');
   });
 });
 
