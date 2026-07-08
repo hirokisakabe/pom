@@ -177,6 +177,20 @@ describe("buildPptx with Shape glow", () => {
     expect(slideXml).toContain("<a:glow");
   });
 
+  it("Text glimpse writer と Shape glow を併用しても stream 経路で双方が出力される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text fontSize="24">Hello</Text>
+      <Shape shapeType="ellipse" w="100" h="100" fill.color="FF0000" glow.size="8" glow.color="00FF00"/>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.stream({ compression: true })) as Uint8Array;
+    const slideXml = await readSlideXml(buffer);
+
+    expect(slideXml).toContain("<a:t>Hello</a:t>");
+    expect(slideXml).toContain("<a:glow");
+    expect(slideXml).not.toContain("pom-text:");
+  });
+
   it("shadow と glow を併用した shape で effectLst が 1 つに統合される", async () => {
     // pptxgenjs は shadow 指定時に <a:spPr> 配下に <a:effectLst><a:outerShdw/></a:effectLst>
     // を出力する。glow を追加する際に新たな <a:effectLst> を別途並べると

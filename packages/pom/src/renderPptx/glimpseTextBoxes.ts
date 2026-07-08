@@ -518,7 +518,7 @@ export function patchPptxWriteForGlimpseTextBoxes(
   pptx.write = patchedWrite;
 
   const patchedStream = async (props?: StreamProps) =>
-    patchedWrite({
+    pptx.write({
       outputType: "STREAM",
       compression: props?.compression,
     });
