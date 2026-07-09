@@ -1,5 +1,11 @@
 # @hirokisakabe/pom
 
+## 9.1.1
+
+### Patch Changes
+
+- [#934](https://github.com/hirokisakabe/pom/pull/934) [`90622a7`](https://github.com/hirokisakabe/pom/commit/90622a7acdc9aa63c4483d283bb6d9c517d78323) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Text primitive の PPTX 生成を @pptx-glimpse/document writer 経由に移行しました。
+
 ## 9.1.0
 
 ### Minor Changes
