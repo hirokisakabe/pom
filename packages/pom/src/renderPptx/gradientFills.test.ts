@@ -8,7 +8,7 @@ import { ParseXmlError } from "../parseXml/parseXml.ts";
 import type { Gradient } from "../shared/gradient.ts";
 import { GradientFillRegistry } from "./gradientFills.ts";
 
-async function readSlideXml(buffer: Uint8Array): Promise<string> {
+async function readSlideXml(buffer: Uint8Array | ArrayBuffer): Promise<string> {
   const zip = await JSZip.loadAsync(buffer);
   return zip.file("ppt/slides/slide1.xml")!.async("text");
 }
@@ -72,6 +72,18 @@ describe("buildPptx with backgroundGradient", () => {
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
     const buffer = (await pptx.stream({ compression: true })) as Uint8Array;
     const slideXml = await readSlideXml(buffer);
+
+    expect(slideXml).toContain("<a:gradFill");
+    expect(slideXml).not.toContain('<a:solidFill><a:srgbClr val="0F7A3D"/>');
+  });
+
+  it("backgroundGradient 単独でも default write 経路で gradFill として出力される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Shape shapeType="rect" w="200" h="100" backgroundGradient="linear-gradient(45deg, #FF0000 0%, #0000FF 100%)"/>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const blob = (await pptx.write()) as Blob;
+    const slideXml = await readSlideXml(await blob.arrayBuffer());
 
     expect(slideXml).toContain("<a:gradFill");
     expect(slideXml).not.toContain('<a:solidFill><a:srgbClr val="0F7A3D"/>');

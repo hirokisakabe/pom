@@ -7,7 +7,7 @@
  * ことを保証する。
  */
 import JSZip from "jszip";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { renderPptx } from "./renderPptx.ts";
 import { createBuildContext } from "../buildContext.ts";
 import { patchPptxWriteForGlimpseTextBoxes } from "./glimpseTextBoxes.ts";
@@ -194,6 +194,105 @@ describe("renderTextNode", () => {
 
     expect(slideXml).toContain("<a:t>streamed</a:t>");
     expect(slideXml).not.toContain("pom-text:");
+  });
+
+  it("pptx.write の default output でも glimpse text box XML に置換する", async () => {
+    const buildContext = createBuildContext();
+    const pptx = await renderPptx(
+      [
+        vstackPage([
+          {
+            type: "text",
+            text: "blob output",
+            x: 0,
+            y: 0,
+            w: 160,
+            h: 40,
+          },
+        ]),
+      ],
+      { w: 1280, h: 720 },
+      buildContext,
+    );
+    patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
+
+    const blob = (await pptx.write()) as Blob;
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+
+    expect(slideXml).toContain("<a:t>blob output</a:t>");
+    expect(slideXml).not.toContain("pom-text:");
+  });
+
+  it("browser writeFile helper が無い場合は marker を残さず利用案内エラーにする", async () => {
+    const buildContext = createBuildContext();
+    buildContext.glimpseTextBoxes.register({
+      type: "text",
+      text: "browser",
+      x: 0,
+      y: 0,
+      w: 160,
+      h: 40,
+    });
+    const originalWrite = vi.fn();
+    const pptx = {
+      write: originalWrite,
+      writeFile: vi.fn(),
+    } as unknown as Parameters<typeof patchPptxWriteForGlimpseTextBoxes>[0];
+
+    vi.stubGlobal("process", { platform: "browser", versions: {} });
+    try {
+      patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
+
+      await expect(pptx.writeFile({ fileName: "browser" })).rejects.toThrow(
+        "pptx.writeFile browser download helper is unavailable",
+      );
+      expect(originalWrite).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("browser writeFile helper がある場合は置換済み blob を渡す", async () => {
+    const buildContext = createBuildContext();
+    buildContext.glimpseTextBoxes.register({
+      type: "text",
+      text: "browser",
+      x: 0,
+      y: 0,
+      w: 160,
+      h: 40,
+    });
+    const inputZip = new JSZip();
+    inputZip.file("ppt/slides/slide1.xml", "<p:sld/>");
+    const originalWrite = vi
+      .fn()
+      .mockResolvedValue(await inputZip.generateAsync({ type: "uint8array" }));
+    const writeFileToBrowser = vi.fn().mockResolvedValue("browser.pptx");
+    const pptx = {
+      write: originalWrite,
+      writeFile: vi.fn(),
+      writeFileToBrowser,
+    } as unknown as Parameters<typeof patchPptxWriteForGlimpseTextBoxes>[0];
+
+    vi.stubGlobal("process", { platform: "browser", versions: {} });
+    try {
+      patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
+
+      const writeFileWithRuntimeOverload = (fileName: string) =>
+        (pptx.writeFile as unknown as (fileName: string) => Promise<string>)(
+          fileName,
+        );
+      await expect(writeFileWithRuntimeOverload("browser")).resolves.toBe(
+        "browser.pptx",
+      );
+      expect(writeFileToBrowser).toHaveBeenCalledWith(
+        "browser.pptx",
+        expect.any(Blob),
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 

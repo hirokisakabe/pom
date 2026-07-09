@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { buildPptx } from "../buildPptx.ts";
 import { GlowEffectRegistry } from "./glowEffects.ts";
 
-async function readSlideXml(buffer: Uint8Array): Promise<string> {
+async function readSlideXml(buffer: Uint8Array | ArrayBuffer): Promise<string> {
   const zip = await JSZip.loadAsync(buffer);
   return zip.file("ppt/slides/slide1.xml")!.async("text");
 }
@@ -65,6 +65,17 @@ describe("buildPptx with Shape glow", () => {
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
     const buffer = (await pptx.stream({ compression: true })) as Uint8Array;
     const slideXml = await readSlideXml(buffer);
+
+    expect(slideXml).toContain("<a:effectLst><a:glow");
+  });
+
+  it("Shape glow 単独でも default write 経路で effectLst として出力される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Shape shapeType="ellipse" w="100" h="100" fill.color="FF0000" glow.size="8" glow.color="00FF00"/>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const blob = (await pptx.write()) as Blob;
+    const slideXml = await readSlideXml(await blob.arrayBuffer());
 
     expect(slideXml).toContain("<a:effectLst><a:glow");
   });
