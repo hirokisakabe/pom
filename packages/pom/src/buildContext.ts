@@ -2,6 +2,7 @@ import type { TextMeasurementMode } from "./calcYogaLayout/measureText.ts";
 import { DiagnosticCollector } from "./diagnostics.ts";
 import { GlowEffectRegistry } from "./renderPptx/glowEffects.ts";
 import { GradientFillRegistry } from "./renderPptx/gradientFills.ts";
+import { GlimpseTextBoxRegistry } from "./renderPptx/glimpseTextBoxes.ts";
 
 export interface BuildContext {
   textMeasurementMode: TextMeasurementMode;
@@ -11,6 +12,7 @@ export interface BuildContext {
   diagnostics: DiagnosticCollector;
   gradientFills: GradientFillRegistry;
   glowEffects: GlowEffectRegistry;
+  glimpseTextBoxes: GlimpseTextBoxRegistry;
 }
 
 export function createBuildContext(
@@ -24,5 +26,6 @@ export function createBuildContext(
     diagnostics: new DiagnosticCollector(),
     gradientFills: new GradientFillRegistry(),
     glowEffects: new GlowEffectRegistry(),
+    glimpseTextBoxes: new GlimpseTextBoxRegistry(),
   };
 }

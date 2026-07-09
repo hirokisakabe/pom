@@ -6,9 +6,11 @@
  * renderer 内部のリファクタリングで public な出力挙動が変わっていない
  * ことを保証する。
  */
-import { describe, expect, it } from "vitest";
+import JSZip from "jszip";
+import { describe, expect, it, vi } from "vitest";
 import { renderPptx } from "./renderPptx.ts";
 import { createBuildContext } from "../buildContext.ts";
+import { patchPptxWriteForGlimpseTextBoxes } from "./glimpseTextBoxes.ts";
 import { pxToIn, pxToPt } from "./units.ts";
 import type { PositionedNode } from "../types.ts";
 
@@ -26,6 +28,21 @@ async function renderPage(page: PositionedNode) {
     pptx as unknown as { _slides: { _slideObjects: SlideObject[] }[] }
   )._slides;
   return { objects: slides[0]._slideObjects, buildContext };
+}
+
+async function renderPageSlideXml(page: PositionedNode) {
+  const zip = await renderPagePptxZip(page);
+  return zip.file("ppt/slides/slide1.xml")!.async("text");
+}
+
+async function renderPagePptxZip(page: PositionedNode) {
+  const buildContext = createBuildContext();
+  const pptx = await renderPptx([page], { w: 1280, h: 720 }, buildContext);
+  patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
+  const buffer = (await pptx.write({
+    outputType: "uint8array",
+  })) as Uint8Array;
+  return JSZip.loadAsync(buffer);
 }
 
 function vstackPage(children: PositionedNode[]): PositionedNode {
@@ -80,8 +97,8 @@ describe("renderShapeNode", () => {
 });
 
 describe("renderTextNode", () => {
-  it("rotate を通常テキストの pptxgenjs options に渡す", async () => {
-    const { objects } = await renderPage(
+  it("rotate を通常テキストの glimpse text box XML に渡す", async () => {
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "text",
@@ -95,11 +112,13 @@ describe("renderTextNode", () => {
       ]),
     );
 
-    expect(objects[0].options.rotate).toBe(15);
+    expect(slideXml).toContain('<a:xfrm rot="900000">');
+    expect(slideXml).toContain("<a:t>rotated</a:t>");
+    expect(slideXml).not.toContain("pom-text:");
   });
 
-  it("rotate を inline runs テキストの pptxgenjs options に渡す", async () => {
-    const { objects } = await renderPage(
+  it("rotate を inline runs テキストの glimpse text box XML に渡す", async () => {
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "text",
@@ -114,7 +133,166 @@ describe("renderTextNode", () => {
       ]),
     );
 
-    expect(objects[0].options.rotate).toBe(-15);
+    expect(slideXml).toContain('<a:xfrm rot="-900000">');
+    expect(slideXml).toContain("<a:t>rotated</a:t>");
+    expect(slideXml).not.toContain("pom-text:");
+  });
+
+  it("inline run の hyperlink を slide XML と relationships に出力する", async () => {
+    const zip = await renderPagePptxZip(
+      vstackPage([
+        {
+          type: "text",
+          text: "Visit site",
+          runs: [
+            { text: "Visit " },
+            { text: "site", href: "https://example.com?a=1&b=2" },
+          ],
+          x: 0,
+          y: 0,
+          w: 240,
+          h: 40,
+        },
+      ]),
+    );
+    const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+    const relsXml = await zip
+      .file("ppt/slides/_rels/slide1.xml.rels")!
+      .async("text");
+
+    expect(slideXml).toMatch(/<a:hlinkClick r:id="rId\d+"\/>/);
+    expect(relsXml).toContain(
+      'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"',
+    );
+    expect(relsXml).toContain('Target="https://example.com?a=1&amp;b=2"');
+    expect(relsXml).toContain('TargetMode="External"');
+  });
+
+  it("pptx.stream でも glimpse text box XML に置換する", async () => {
+    const buildContext = createBuildContext();
+    const pptx = await renderPptx(
+      [
+        vstackPage([
+          {
+            type: "text",
+            text: "streamed",
+            x: 0,
+            y: 0,
+            w: 160,
+            h: 40,
+          },
+        ]),
+      ],
+      { w: 1280, h: 720 },
+      buildContext,
+    );
+    patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
+
+    const buffer = (await pptx.stream({ compression: true })) as Uint8Array;
+    const zip = await JSZip.loadAsync(buffer);
+    const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+
+    expect(slideXml).toContain("<a:t>streamed</a:t>");
+    expect(slideXml).not.toContain("pom-text:");
+  });
+
+  it("pptx.write の default output でも glimpse text box XML に置換する", async () => {
+    const buildContext = createBuildContext();
+    const pptx = await renderPptx(
+      [
+        vstackPage([
+          {
+            type: "text",
+            text: "blob output",
+            x: 0,
+            y: 0,
+            w: 160,
+            h: 40,
+          },
+        ]),
+      ],
+      { w: 1280, h: 720 },
+      buildContext,
+    );
+    patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
+
+    const blob = (await pptx.write()) as Blob;
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+
+    expect(slideXml).toContain("<a:t>blob output</a:t>");
+    expect(slideXml).not.toContain("pom-text:");
+  });
+
+  it("browser writeFile helper が無い場合は marker を残さず利用案内エラーにする", async () => {
+    const buildContext = createBuildContext();
+    buildContext.glimpseTextBoxes.register({
+      type: "text",
+      text: "browser",
+      x: 0,
+      y: 0,
+      w: 160,
+      h: 40,
+    });
+    const originalWrite = vi.fn();
+    const pptx = {
+      write: originalWrite,
+      writeFile: vi.fn(),
+    } as unknown as Parameters<typeof patchPptxWriteForGlimpseTextBoxes>[0];
+
+    vi.stubGlobal("process", { platform: "browser", versions: {} });
+    try {
+      patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
+
+      await expect(pptx.writeFile({ fileName: "browser" })).rejects.toThrow(
+        "pptx.writeFile browser download helper is unavailable",
+      );
+      expect(originalWrite).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("browser writeFile helper がある場合は置換済み blob を渡す", async () => {
+    const buildContext = createBuildContext();
+    buildContext.glimpseTextBoxes.register({
+      type: "text",
+      text: "browser",
+      x: 0,
+      y: 0,
+      w: 160,
+      h: 40,
+    });
+    const inputZip = new JSZip();
+    inputZip.file("ppt/slides/slide1.xml", "<p:sld/>");
+    const originalWrite = vi
+      .fn()
+      .mockResolvedValue(await inputZip.generateAsync({ type: "uint8array" }));
+    const writeFileToBrowser = vi.fn().mockResolvedValue("browser.pptx");
+    const pptx = {
+      write: originalWrite,
+      writeFile: vi.fn(),
+      writeFileToBrowser,
+    } as unknown as Parameters<typeof patchPptxWriteForGlimpseTextBoxes>[0];
+
+    vi.stubGlobal("process", { platform: "browser", versions: {} });
+    try {
+      patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
+
+      const writeFileWithRuntimeOverload = (fileName: string) =>
+        (pptx.writeFile as unknown as (fileName: string) => Promise<string>)(
+          fileName,
+        );
+      await expect(writeFileWithRuntimeOverload("browser")).resolves.toBe(
+        "browser.pptx",
+      );
+      expect(writeFileToBrowser).toHaveBeenCalledWith(
+        "browser.pptx",
+        expect.any(Blob),
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 

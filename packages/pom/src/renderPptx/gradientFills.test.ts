@@ -8,7 +8,7 @@ import { ParseXmlError } from "../parseXml/parseXml.ts";
 import type { Gradient } from "../shared/gradient.ts";
 import { GradientFillRegistry } from "./gradientFills.ts";
 
-async function readSlideXml(buffer: Uint8Array): Promise<string> {
+async function readSlideXml(buffer: Uint8Array | ArrayBuffer): Promise<string> {
   const zip = await JSZip.loadAsync(buffer);
   return zip.file("ppt/slides/slide1.xml")!.async("text");
 }
@@ -63,6 +63,30 @@ describe("buildPptx with backgroundGradient", () => {
         '<a:gs pos="100000"><a:srgbClr val="0000FF"/></a:gs>' +
         '</a:gsLst><a:lin ang="18900000" scaled="0"/></a:gradFill>',
     );
+  });
+
+  it("backgroundGradient 単独でも stream 経路で gradFill として出力される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Shape shapeType="rect" w="200" h="100" backgroundGradient="linear-gradient(45deg, #FF0000 0%, #0000FF 100%)"/>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.stream({ compression: true })) as Uint8Array;
+    const slideXml = await readSlideXml(buffer);
+
+    expect(slideXml).toContain("<a:gradFill");
+    expect(slideXml).not.toContain('<a:solidFill><a:srgbClr val="0F7A3D"/>');
+  });
+
+  it("backgroundGradient 単独でも default write 経路で gradFill として出力される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Shape shapeType="rect" w="200" h="100" backgroundGradient="linear-gradient(45deg, #FF0000 0%, #0000FF 100%)"/>
+    </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const blob = (await pptx.write()) as Blob;
+    const slideXml = await readSlideXml(await blob.arrayBuffer());
+
+    expect(slideXml).toContain("<a:gradFill");
+    expect(slideXml).not.toContain('<a:solidFill><a:srgbClr val="0F7A3D"/>');
   });
 
   it("ルートノードの backgroundGradient はスライド背景 (p:bgPr) に適用される", async () => {
@@ -322,11 +346,12 @@ describe("buildPptx with textGradient", () => {
     // text run 内に gradFill が描画される (a:rPr 配下)
     expect(slideXml).toMatch(/<a:rPr[^>]*><a:gradFill/);
     expect(slideXml).toContain(
-      '<a:gradFill flip="none" rotWithShape="1"><a:gsLst>' +
+      "<a:gradFill><a:gsLst>" +
         '<a:gs pos="0"><a:srgbClr val="38BDF8"/></a:gs>' +
         '<a:gs pos="100000"><a:srgbClr val="A78BFA"/></a:gs>' +
-        '</a:gsLst><a:lin ang="0" scaled="0"/></a:gradFill>',
+        '</a:gsLst><a:lin ang="0" scaled="1"/></a:gradFill>',
     );
+    expect(slideXml).not.toContain("pom-text:");
   });
 
   it("textGradient 指定時は node の color よりも gradient が優先される", async () => {

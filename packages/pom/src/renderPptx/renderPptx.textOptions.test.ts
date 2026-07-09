@@ -6,6 +6,7 @@ import {
   convertOutline,
 } from "./textOptions.ts";
 import { renderTextNode } from "./nodes/text.ts";
+import { GlimpseTextBoxRegistry } from "./glimpseTextBoxes.ts";
 import type { RenderContext } from "./types.ts";
 import { pxToIn, pxToPt } from "./units.ts";
 
@@ -146,9 +147,13 @@ describe("calcGlyphCenteringShiftPx", () => {
 
 describe("renderTextNode (runs 分岐)", () => {
   it("run に fontSize 指定があれば run 単位で適用され、未指定なら親 Text の fontSize を継承する", () => {
-    const addText =
-      vi.fn<(items: { options: { fontSize?: number } }[]) => void>();
-    const ctx = { slide: { addText } } as unknown as RenderContext;
+    const addShape = vi.fn();
+    const registry = new GlimpseTextBoxRegistry();
+    const ctx = {
+      slide: { addShape },
+      pptx: { ShapeType: { rect: "rect" } },
+      buildContext: { glimpseTextBoxes: registry },
+    } as unknown as RenderContext;
 
     renderTextNode(
       {
@@ -164,19 +169,23 @@ describe("renderTextNode (runs 分岐)", () => {
       ctx,
     );
 
-    expect(addText).toHaveBeenCalledTimes(1);
-    const textItems = addText.mock.calls[0][0];
-    expect(textItems).toHaveLength(2);
-    expect(textItems[0].options.fontSize).toBe(pxToPt(52));
-    expect(textItems[1].options.fontSize).toBe(pxToPt(18));
+    expect(addShape).toHaveBeenCalledTimes(1);
+    expect(addShape.mock.calls[0][1]).toMatchObject({
+      objectName: "pom-text:0",
+    });
+    const xml = registry.entries[0].xml;
+    expect(xml).toContain('<a:rPr sz="3900">');
+    expect(xml).toContain('<a:rPr sz="1350">');
   });
 
   it("runs ありの Text でノード単位の glow / outline が各 run に適用される", () => {
-    const addText =
-      vi.fn<
-        (items: { options: { glow?: unknown; outline?: unknown } }[]) => void
-      >();
-    const ctx = { slide: { addText } } as unknown as RenderContext;
+    const addShape = vi.fn();
+    const registry = new GlimpseTextBoxRegistry();
+    const ctx = {
+      slide: { addShape },
+      pptx: { ShapeType: { rect: "rect" } },
+      buildContext: { glimpseTextBoxes: registry },
+    } as unknown as RenderContext;
 
     renderTextNode(
       {
@@ -193,20 +202,68 @@ describe("renderTextNode (runs 分岐)", () => {
       ctx,
     );
 
-    expect(addText).toHaveBeenCalledTimes(1);
-    const textItems = addText.mock.calls[0][0];
-    expect(textItems).toHaveLength(2);
-    for (const item of textItems) {
-      expect(item.options.glow).toEqual({
-        size: pxToPt(8),
-        opacity: 0.5,
-        color: "FF3399",
-      });
-      expect(item.options.outline).toEqual({
-        size: pxToPt(2),
-        color: "0088CC",
-      });
-    }
+    expect(addShape).toHaveBeenCalledTimes(1);
+    const xml = registry.entries[0].xml;
+    expect(xml.match(/<a:glow rad="76200">/g)).toHaveLength(2);
+    expect(xml.match(/<a:alpha val="50000"\/>/g)).toHaveLength(2);
+    expect(xml.match(/<a:ln w="19050">/g)).toHaveLength(2);
+    expect(xml.match(/<a:srgbClr val="0088CC"\/>/g)).toHaveLength(2);
+  });
+
+  it("href を持つ run は underline 未指定時に旧 addText と同じ既定 underline を出力する", () => {
+    const addShape = vi.fn();
+    const registry = new GlimpseTextBoxRegistry();
+    const ctx = {
+      slide: { addShape },
+      pptx: { ShapeType: { rect: "rect" } },
+      buildContext: { glimpseTextBoxes: registry },
+    } as unknown as RenderContext;
+
+    renderTextNode(
+      {
+        type: "text",
+        text: "Link",
+        runs: [
+          { text: "Link", href: "https://example.com" },
+          { text: "Plain" },
+        ],
+        x: 0,
+        y: 0,
+        w: 100,
+        h: 50,
+      },
+      ctx,
+    );
+
+    const xml = registry.entries[0].xml;
+    expect(xml).toContain('<a:rPr u="sng"');
+    expect(xml.match(/<a:rPr/g)).toHaveLength(2);
+  });
+
+  it("Text glow の opacity 未指定時は既定値 0.75 を XML に反映する", () => {
+    const addShape = vi.fn();
+    const registry = new GlimpseTextBoxRegistry();
+    const ctx = {
+      slide: { addShape },
+      pptx: { ShapeType: { rect: "rect" } },
+      buildContext: { glimpseTextBoxes: registry },
+    } as unknown as RenderContext;
+
+    renderTextNode(
+      {
+        type: "text",
+        text: "Glow",
+        x: 0,
+        y: 0,
+        w: 100,
+        h: 50,
+        glow: { size: 8, color: "FF3399" },
+      },
+      ctx,
+    );
+
+    const xml = registry.entries[0].xml;
+    expect(xml).toContain('<a:alpha val="75000"/>');
   });
 });
 

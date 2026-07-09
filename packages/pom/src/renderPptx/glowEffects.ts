@@ -17,6 +17,7 @@ import type { TextGlow } from "../types.ts";
 import { pxToEmu } from "./units.ts";
 
 type PptxGenJSInstance = import("pptxgenjs").default;
+type StreamProps = NonNullable<Parameters<PptxGenJSInstance["stream"]>[0]>;
 type WriteProps = NonNullable<Parameters<PptxGenJSInstance["write"]>[0]>;
 type WriteFileProps = NonNullable<
   Parameters<PptxGenJSInstance["writeFile"]>[0]
@@ -199,6 +200,13 @@ export function patchPptxWriteForGlowEffects(
     });
   };
   pptx.write = patchedWrite;
+
+  const patchedStream = async (props?: StreamProps) =>
+    pptx.write({
+      outputType: "STREAM",
+      compression: props?.compression,
+    });
+  pptx.stream = patchedStream;
 
   const patchedWriteFile = async (rawProps?: WriteFileProps | string) => {
     const props: WriteFileProps | undefined =
