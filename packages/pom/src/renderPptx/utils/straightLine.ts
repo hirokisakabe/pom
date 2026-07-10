@@ -40,7 +40,10 @@ type StraightLinePoints = { x1: number; y1: number; x2: number; y2: number };
 type StraightLineStyle = Pick<
   LineNode,
   "color" | "lineWidth" | "dashType" | "beginArrow" | "endArrow"
-> & { backgroundGradient?: string; opacity?: number };
+> & {
+  lineGradient?: string;
+  lineGradientOpacity?: number;
+};
 
 /**
  * 始点 (x1, y1) から終点 (x2, y2) への直線を描画する
@@ -54,8 +57,8 @@ export function addStraightLine(
     dashType,
     beginArrow,
     endArrow,
-    backgroundGradient,
-    opacity,
+    lineGradient,
+    lineGradientOpacity,
   }: StraightLineStyle,
 ): void {
   const minX = Math.min(x1, x2);
@@ -91,8 +94,8 @@ export function addStraightLine(
       flipH,
       flipV,
       dashType,
-      backgroundGradient,
-      fillOpacity: opacity,
+      outlineGradient: lineGradient,
+      outlineOpacity: lineGradientOpacity,
     },
   );
 }

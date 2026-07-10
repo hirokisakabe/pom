@@ -1,9 +1,16 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { stripHash } from "../utils/visualStyle.ts";
-import { pxToIn, pxToPt } from "../units.ts";
+import { pxToIn } from "../units.ts";
 import { measurePyramid } from "../../calcYogaLayout/measureCompositeNodes.ts";
 import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
+import {
+  addGlimpseShape,
+  createShapeBoundsInput,
+  noShapeOutline,
+  solidShapeFill,
+} from "../utils/glimpseShape.ts";
+import { addGlimpseTextBox } from "../utils/glimpseTextBox.ts";
 
 type PyramidPositionedNode = Extract<PositionedNode, { type: "pyramid" }>;
 
@@ -77,30 +84,49 @@ export function renderPyramidNode(
       { close: true as const },
     ];
 
-    // 図形を描画（頂点層は三角形、それ以外は台形）
-    ctx.slide.addShape("custGeom" as never, {
-      x: pxToIn(bboxX),
-      y: pxToIn(layerY),
-      w: pxToIn(bboxW),
-      h: pxToIn(layerHeight),
-      points,
-      fill: { color: fillColor },
-      line: { type: "none" as const },
-    });
+    addGlimpseShape(
+      ctx,
+      {
+        preset: "rect",
+        ...createShapeBoundsInput({
+          x: bboxX,
+          y: layerY,
+          w: bboxW,
+          h: layerHeight,
+        }),
+        fill: solidShapeFill(fillColor),
+        outline: noShapeOutline(),
+      },
+      { x: bboxX, y: layerY, w: bboxW, h: layerHeight },
+      {
+        fillColor,
+        customGeometry: {
+          width: pxToIn(bboxW),
+          height: pxToIn(layerHeight),
+          points,
+        },
+      },
+    );
 
     // テキストを図形の中央に重ねて描画
-    ctx.slide.addText(level.label, {
-      x: pxToIn(bboxX),
-      y: pxToIn(layerY),
-      w: pxToIn(bboxW),
-      h: pxToIn(layerHeight),
-      fontSize: pxToPt((node.fontSize ?? 14) * scaleFactor),
-      fontFace: node.fontFamily ?? "Noto Sans JP",
-      color: textColor,
-      bold: node.bold ?? false,
-      align: "center",
-      valign: "middle",
-      autoFit: true,
-    });
+    addGlimpseTextBox(
+      ctx,
+      {
+        x: bboxX,
+        y: layerY,
+        w: bboxW,
+        h: layerHeight,
+      },
+      {
+        text: level.label,
+        fontSize: (node.fontSize ?? 14) * scaleFactor,
+        fontFace: node.fontFamily ?? "Noto Sans JP",
+        color: textColor,
+        bold: node.bold ?? false,
+        align: "center",
+        valign: "middle",
+        autoFit: true,
+      },
+    );
   }
 }

@@ -11,7 +11,6 @@ import { describe, expect, it, vi } from "vitest";
 import { renderPptx } from "./renderPptx.ts";
 import { createBuildContext } from "../buildContext.ts";
 import { patchPptxWriteForGlimpseTextBoxes } from "./glimpseTextBoxes.ts";
-import { pxToIn, pxToPt } from "./units.ts";
 import type { PositionedNode } from "../types.ts";
 
 type SlideObject = {
@@ -34,18 +33,28 @@ async function renderPage(page: PositionedNode) {
 }
 
 async function renderPageSlideXml(page: PositionedNode) {
-  const zip = await renderPagePptxZip(page);
-  return zip.file("ppt/slides/slide1.xml")!.async("text");
+  const { slideXml } = await renderPageSlideXmlWithContext(page);
+  return slideXml;
 }
 
 async function renderPagePptxZip(page: PositionedNode) {
+  const { zip } = await renderPageSlideXmlWithContext(page);
+  return zip;
+}
+
+async function renderPageSlideXmlWithContext(page: PositionedNode) {
   const buildContext = createBuildContext();
   const pptx = await renderPptx([page], { w: 1280, h: 720 }, buildContext);
   patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
   const buffer = (await pptx.write({
     outputType: "uint8array",
   })) as Uint8Array;
-  return JSZip.loadAsync(buffer);
+  const zip = await JSZip.loadAsync(buffer);
+  return {
+    zip,
+    slideXml: await zip.file("ppt/slides/slide1.xml")!.async("text"),
+    buildContext,
+  };
 }
 
 function vstackPage(children: PositionedNode[]): PositionedNode {
@@ -426,7 +435,7 @@ describe("renderIconNode", () => {
 
 describe("renderUlNode", () => {
   it("padding を除いたコンテンツ領域にテキストが配置される", async () => {
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "ul",
@@ -441,16 +450,11 @@ describe("renderUlNode", () => {
       ]),
     );
 
-    expect(objects).toHaveLength(1);
-    expect(objects[0]._type).toBe("text");
-    expect(objects[0].options).toMatchObject({
-      x: pxToIn(48),
-      y: pxToIn(480 + 24),
-      w: pxToIn(384 - 48),
-      h: pxToIn(192 - 24),
-      fontSize: pxToPt(24),
-      bullet: true,
-    });
+    expect(slideXml).toContain('<a:off x="457200" y="4800600"/>');
+    expect(slideXml).toContain('<a:ext cx="3200400" cy="1600200"/>');
+    expect(slideXml).toContain('<a:rPr sz="1800">');
+    expect(slideXml).toContain('<a:buChar char="&#x2022;"/>');
+    expect(slideXml).not.toContain("pom-text:");
   });
 });
 
@@ -462,20 +466,7 @@ describe("renderTimelineNode", () => {
 
   it("padding 分オフセットしたコンテンツ領域基準で線とノード円を描画する", async () => {
     // content = (148, 148, 704, 304)。intrinsic (240x128) より大きいため scaleFactor = 1
-    const { objects, buildContext } = await renderPage(
-      vstackPage([
-        {
-          type: "timeline",
-          x: 100,
-          y: 100,
-          w: 800,
-          h: 400,
-          padding: 48,
-          items,
-        },
-      ]),
-    );
-    const slideXml = await renderPageSlideXml(
+    const { slideXml, buildContext } = await renderPageSlideXmlWithContext(
       vstackPage([
         {
           type: "timeline",
@@ -492,24 +483,18 @@ describe("renderTimelineNode", () => {
     expect(buildContext.diagnostics.items).toEqual([]);
 
     // メイン線: 端点は labelW/2 = 60 インセット、lineY はコンテンツ領域の垂直中央
-    const lineY = 148 + 304 / 2;
-    expect(slideXml).toContain(
-      `<a:off x="${(148 + 60) * 9525}" y="${lineY * 9525}"/>`,
-    );
-    expect(slideXml).toContain(`<a:ext cx="${(704 - 120) * 9525}" cy="0"/>`);
+    expect(slideXml).toContain('<a:off x="1981200" y="2857500"/>');
+    expect(slideXml).toContain('<a:ext cx="5562600" cy="0"/>');
+    expect(slideXml).toContain('<a:prstGeom prst="line">');
 
     // 最初のアイテムのノード円 (半径 12px)
-    const ellipse = objects.find((o) => o.shape === "ellipse");
-    expect(ellipse?.options).toMatchObject({
-      x: pxToIn(148 + 60 - 12),
-      y: pxToIn(lineY - 12),
-      w: pxToIn(24),
-      h: pxToIn(24),
-    });
+    expect(slideXml).toContain('<a:off x="1866900" y="2743200"/>');
+    expect(slideXml).toContain('<a:ext cx="228600" cy="228600"/>');
+    expect(slideXml).toContain('<a:prstGeom prst="ellipse">');
   });
 
   it("割り当てが固有サイズの半分未満なら SCALE_BELOW_THRESHOLD を記録して 0.5 にクランプする", async () => {
-    const { objects, buildContext } = await renderPage(
+    const { slideXml, buildContext } = await renderPageSlideXmlWithContext(
       vstackPage([{ type: "timeline", x: 0, y: 0, w: 100, h: 50, items }]),
     );
 
@@ -518,8 +503,7 @@ describe("renderTimelineNode", () => {
     );
 
     // nodeRadius 12px が scaleFactor 0.5 でスケールされる
-    const ellipse = objects.find((o) => o.shape === "ellipse");
-    expect(ellipse?.options).toMatchObject({ w: pxToIn(12), h: pxToIn(12) });
+    expect(slideXml).toContain('<a:ext cx="114300" cy="114300"/>');
   });
 
   it("connectorColor を指定すると軸線にその色が使われる", async () => {
@@ -536,6 +520,7 @@ describe("renderTimelineNode", () => {
         },
       ]),
     );
+    expect(slideXml).toContain('<a:prstGeom prst="line">');
     expect(slideXml).toContain('<a:srgbClr val="1D4ED8"/>');
   });
 
@@ -543,11 +528,12 @@ describe("renderTimelineNode", () => {
     const slideXml = await renderPageSlideXml(
       vstackPage([{ type: "timeline", x: 0, y: 0, w: 800, h: 400, items }]),
     );
+    expect(slideXml).toContain('<a:prstGeom prst="line">');
     expect(slideXml).toContain('<a:srgbClr val="E2E8F0"/>');
   });
 
-  it("connectorGradient を指定すると軸線が native gradFill で描画される", async () => {
-    const slideXml = await renderPageSlideXml(
+  it("connectorGradient を指定すると native gradFill として軸線に使われる", async () => {
+    const { slideXml, buildContext } = await renderPageSlideXmlWithContext(
       vstackPage([
         {
           type: "timeline",
@@ -560,6 +546,7 @@ describe("renderTimelineNode", () => {
         },
       ]),
     );
+    expect(buildContext.gradientFills.entries).toEqual([]);
     expect(slideXml).toContain("<a:gradFill");
     expect(slideXml).toContain('<a:srgbClr val="1D4ED8"/>');
     expect(slideXml).toContain('<a:srgbClr val="DC2626"/>');
@@ -570,7 +557,7 @@ describe("renderTimelineNode", () => {
       { date: "D1", title: "T1", color: "1D4ED8" },
       { date: "D2", title: "T2", color: "16A34A" },
     ];
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "timeline",
@@ -583,14 +570,12 @@ describe("renderTimelineNode", () => {
         },
       ]),
     );
-    const findText = (label: string) =>
-      objects.find(
-        (o) =>
-          Array.isArray(o.text) &&
-          (o.text as { text: string }[]).some((r) => r.text === label),
-      );
-    expect(findText("D1")?.options.color).toBe("1D4ED8");
-    expect(findText("D2")?.options.color).toBe("16A34A");
+    expect(slideXml).toMatch(
+      /<a:srgbClr val="1D4ED8"\/>[\s\S]*?<a:t>D1<\/a:t>/,
+    );
+    expect(slideXml).toMatch(
+      /<a:srgbClr val="16A34A"\/>[\s\S]*?<a:t>D2<\/a:t>/,
+    );
   });
 
   it("TimelineItem.dateColor は Timeline.dateColor / useColorForDate より優先される", async () => {
@@ -598,7 +583,7 @@ describe("renderTimelineNode", () => {
       { date: "D1", title: "T1", color: "1D4ED8" },
       { date: "D2", title: "T2", color: "16A34A", dateColor: "DC2626" },
     ];
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "timeline",
@@ -612,19 +597,17 @@ describe("renderTimelineNode", () => {
         },
       ]),
     );
-    const findText = (label: string) =>
-      objects.find(
-        (o) =>
-          Array.isArray(o.text) &&
-          (o.text as { text: string }[]).some((r) => r.text === label),
-      );
     // D1: useColorForDate により item.color (1D4ED8)、D2: per-item dateColor が最優先
-    expect(findText("D1")?.options.color).toBe("1D4ED8");
-    expect(findText("D2")?.options.color).toBe("DC2626");
+    expect(slideXml).toMatch(
+      /<a:srgbClr val="1D4ED8"\/>[\s\S]*?<a:t>D1<\/a:t>/,
+    );
+    expect(slideXml).toMatch(
+      /<a:srgbClr val="DC2626"\/>[\s\S]*?<a:t>D2<\/a:t>/,
+    );
   });
 
   it("fontFamily を指定すると全テキストの fontFace に反映される", async () => {
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "timeline",
@@ -637,25 +620,22 @@ describe("renderTimelineNode", () => {
         },
       ]),
     );
-    const texts = objects.filter((o) => Array.isArray(o.text));
-    expect(texts.length).toBeGreaterThanOrEqual(3);
-    for (const t of texts) {
-      expect(t.options.fontFace).toBe("Arial");
-    }
+    expect(
+      (slideXml.match(/typeface="Arial"/g) ?? []).length,
+    ).toBeGreaterThanOrEqual(9);
   });
 
   it("fontFamily 未指定なら従来通り Noto Sans JP が使われる", async () => {
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([{ type: "timeline", x: 0, y: 0, w: 800, h: 400, items }]),
     );
-    const text = objects.find((o) => Array.isArray(o.text));
-    expect(text?.options.fontFace).toBe("Noto Sans JP");
+    expect(slideXml).toContain('typeface="Noto Sans JP"');
   });
 });
 
 describe("renderPyramidNode", () => {
-  it('"#" 付きの色指定は "#" なしで pptxgenjs に渡される', async () => {
-    const { objects } = await renderPage(
+  it('"#" 付きの色指定は "#" なしで glimpse shape / text XML に渡される', async () => {
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "pyramid",
@@ -671,12 +651,12 @@ describe("renderPyramidNode", () => {
       ]),
     );
 
-    const shapes = objects.filter((o) => o.shape === "custGeom");
-    expect(shapes[0].options.fill).toEqual({ color: "112233" });
-
-    // ラベルは text を持つオブジェクト (図形は text: null)
-    const labels = objects.filter((o) => Array.isArray(o.text));
-    expect(labels[1].options.color).toBe("445566");
+    expect(slideXml).toContain("<a:custGeom>");
+    expect(slideXml).toContain('<a:srgbClr val="112233"/>');
+    expect(slideXml).toMatch(
+      /<a:srgbClr val="445566"\/>[\s\S]*?<a:t>L2<\/a:t>/,
+    );
+    expect(slideXml).not.toContain("pom-shape:");
   });
 });
 
