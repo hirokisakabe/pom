@@ -90,6 +90,31 @@ describe("renderShapeNode", () => {
 
     expect(slideXml).toContain('<a:xfrm rot="2700000">');
   });
+
+  it("shape text underline を glimpse shape run properties に渡す", async () => {
+    const slideXml = await renderPageSlideXml(
+      vstackPage([
+        {
+          type: "shape",
+          shapeType: "rect",
+          text: "underlined",
+          x: 0,
+          y: 0,
+          w: 160,
+          h: 80,
+          underline: {
+            style: "sng",
+            color: "FF0000",
+          },
+        },
+      ]),
+    );
+
+    expect(slideXml).toContain("<a:t>underlined</a:t>");
+    expect(slideXml).toContain(
+      '<a:uFill><a:solidFill><a:srgbClr val="FF0000"/>',
+    );
+  });
 });
 
 describe("renderTextNode", () => {

@@ -93,6 +93,17 @@ describe("renderBackgroundAndBorder の辺ごと border", () => {
     expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
   });
 
+  it("backgroundImage と背景色・一律 border の分割描画でも glimpse marker は残らない", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text w="200" h="100" backgroundColor="F8FAFC" backgroundImage.src="https://example.com/bg.png" border.color="FF0000" border.width="3">test</Text>
+    </VStack></Slide>`;
+    const slideXml = await buildSlideXml(xml);
+
+    expect(slideXml).toContain('<a:srgbClr val="F8FAFC"/>');
+    expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
+    expect(slideXml).not.toContain("pom-shape:");
+  });
+
   it("borderRadius と併用した場合は辺ごとの指定を無視して一律 border で描画する", async () => {
     const xml = `<Slide><VStack w="100%" h="max">
       <Text w="200" h="100" borderRadius="8" border.color="000000" borderLeft.color="FF0000">test</Text>
