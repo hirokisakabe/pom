@@ -334,15 +334,13 @@ function withRoundRectAdjust(
 
 function shadowXml(shadow: ShadowStyle | undefined): string | undefined {
   if (!shadow) return undefined;
-  const blur = Math.round(pxToPt(shadow.blur ?? 0) * 12700);
-  const dist = Math.round(pxToPt(shadow.offset ?? 0) * 12700);
-  const dir = Math.round((shadow.angle ?? 45) * 60000);
+  const blur = Math.round((shadow.blur ?? 3) * 12700);
+  const dist = Math.round((shadow.offset ?? 23000 / 12700) * 12700);
+  const dir = Math.round((shadow.angle ?? 90) * 60000);
   const color = cleanHex(shadow.color ?? "000000") ?? "000000";
   const alpha = Math.round((shadow.opacity ?? 0.35) * 100000);
-  if (shadow.type === "inner") {
-    return `<a:innerShdw blurRad="${blur}" dist="${dist}" dir="${dir}"><a:srgbClr val="${color}"><a:alpha val="${alpha}"/></a:srgbClr></a:innerShdw>`;
-  }
-  return `<a:outerShdw sx="100000" sy="100000" kx="0" ky="0" algn="bl" rotWithShape="0" blurRad="${blur}" dist="${dist}" dir="${dir}"><a:srgbClr val="${color}"><a:alpha val="${alpha}"/></a:srgbClr></a:outerShdw>`;
+  const type = shadow.type ?? "outer";
+  return `<a:${type}Shdw sx="100000" sy="100000" kx="0" ky="0" algn="bl" blurRad="${blur}" rotWithShape="1" dist="${dist}" dir="${dir}"><a:srgbClr val="${color}"><a:alpha val="${alpha}"/></a:srgbClr></a:${type}Shdw>`;
 }
 
 function withShadow(xml: string, shadow: ShadowStyle | undefined): string {
@@ -378,7 +376,8 @@ function withLineZeroExtent(
   if (preset !== "line" || (!zeroWidth && !zeroHeight)) return xml;
   return xml.replace(
     /<a:ext cx="(\d+)" cy="(\d+)"\/>/,
-    `<a:ext cx="${zeroWidth ? "0" : "$1"}" cy="${zeroHeight ? "0" : "$2"}"/>`,
+    (_match, cx: string, cy: string) =>
+      `<a:ext cx="${zeroWidth ? "0" : cx}" cy="${zeroHeight ? "0" : cy}"/>`,
   );
 }
 
@@ -575,7 +574,7 @@ function escapeRegExp(value: string): string {
 function replaceShapeId(xml: string, id: string, name: string): string {
   return xml.replace(
     /<p:cNvPr id="[^"]+" name="[^"]*"/,
-    `<p:cNvPr id="${id}" name="${name}"`,
+    `<p:cNvPr id="${xmlAttr(id)}" name="${xmlAttr(name)}"`,
   );
 }
 

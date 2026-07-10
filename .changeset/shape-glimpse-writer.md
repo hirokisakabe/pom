@@ -1,5 +1,5 @@
 ---
-"@hirokisakabe/pom": minor
+"@hirokisakabe/pom": patch
 ---
 
-Shape / Line / Arrow primitive generation now uses @pptx-glimpse/document shape writer XML replacement.
+Improve Shape, Line, and Arrow PPTX XML generation by using the @pptx-glimpse/document shape writer.

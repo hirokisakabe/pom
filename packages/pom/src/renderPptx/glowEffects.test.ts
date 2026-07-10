@@ -108,7 +108,7 @@ describe("buildPptx with Shape glow", () => {
     expect(slideXml).not.toContain('<a:srgbClr val="111111"/>');
   });
 
-  it("複数 Shape で同じ glow を指定した場合に同じ marker / effectLst が複数挿入される", async () => {
+  it("複数 Shape で同じ glow を指定した場合に effectLst が複数出力され、marker は残らない", async () => {
     const xml = `<Slide><VStack w="100%" h="max">
       <Shape shapeType="ellipse" w="50" h="50" fill.color="AAAAAA" glow.size="8" glow.color="FF0000"/>
       <Shape shapeType="ellipse" w="50" h="50" fill.color="BBBBBB" glow.size="8" glow.color="FF0000"/>
@@ -231,7 +231,9 @@ describe("buildPptx with Shape glow", () => {
     const glowStart = slideXml.indexOf("<a:glow");
     expect(glowStart).toBeGreaterThanOrEqual(0);
     const spStart = slideXml.lastIndexOf("<p:sp>", glowStart);
+    expect(spStart).toBeGreaterThanOrEqual(0);
     const spEnd = slideXml.indexOf("</p:sp>", spStart);
+    expect(spEnd).toBeGreaterThan(spStart);
     const spBlock = slideXml.substring(spStart, spEnd);
     expect(spBlock.match(/<a:effectLst[^>]*>/g)).toHaveLength(1);
     expect(spBlock).toContain("<a:outerShdw");
