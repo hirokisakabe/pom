@@ -34,7 +34,6 @@ import {
   renderBackgroundAndBorder,
   renderBorderOnly,
 } from "./utils/backgroundBorder.ts";
-import { registerBackgroundGradient } from "./gradientFills.ts";
 import { getNodeDef } from "../registry/index.ts";
 
 type SlidePx = { w: number; h: number };
@@ -265,19 +264,19 @@ export async function renderPptx(
       : undefined;
     const rootHasOpacity =
       !isLinelike && "opacity" in data && data.opacity !== undefined;
-    // backgroundGradient はスライド背景では従来の p:bgPr 後処理を維持する。
-    // root を full-slide shape にすると slide master のオブジェクトを覆うため。
     const rootGradientMarker =
       rootBackgroundGradient && !rootHasOpacity
-        ? registerBackgroundGradient(
+        ? buildContext.glimpseTextBoxes.registerSlideBackgroundGradient(
             rootBackgroundGradient,
-            undefined,
-            buildContext.gradientFills,
           )
         : undefined;
     if (rootGradientMarker) {
       slide.background = { color: rootGradientMarker };
-    } else if (rootBackgroundColor && !rootHasOpacity) {
+    } else if (
+      rootBackgroundColor &&
+      !rootBackgroundGradient &&
+      !rootHasOpacity
+    ) {
       slide.background = { color: rootBackgroundColor };
     }
 
@@ -308,8 +307,7 @@ export async function renderPptx(
         if (
           isRoot &&
           (rootBackgroundImage ||
-            ((rootBackgroundColor || rootBackgroundGradient) &&
-              !rootHasOpacity))
+            ((rootBackgroundColor || rootGradientMarker) && !rootHasOpacity))
         ) {
           // border のみ描画（backgroundColor/backgroundImage はスキップ）
           renderBorderOnly(node, ctx);

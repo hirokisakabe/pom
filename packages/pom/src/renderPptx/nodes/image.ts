@@ -1,8 +1,10 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToIn, rectPxToIn } from "../units.ts";
 import { getContentArea } from "../utils/contentArea.ts";
-import { convertShadow } from "../utils/visualStyle.ts";
+import {
+  addGlimpsePicture,
+  imageBytesFromSource,
+} from "../utils/glimpsePicture.ts";
 
 type ImagePositionedNode = Extract<PositionedNode, { type: "image" }>;
 
@@ -11,27 +13,14 @@ export function renderImageNode(
   ctx: RenderContext,
 ): void {
   const content = getContentArea(node);
-  const imageOptions: Record<string, unknown> = {
-    ...rectPxToIn(content),
-    shadow: convertShadow(node.shadow),
-    rotate: node.rotate,
-  };
-
-  if (node.sizing) {
-    imageOptions.sizing = {
-      type: node.sizing.type,
-      w: pxToIn(node.sizing.w ?? content.w),
-      h: pxToIn(node.sizing.h ?? content.h),
-      ...(node.sizing.x !== undefined && { x: pxToIn(node.sizing.x) }),
-      ...(node.sizing.y !== undefined && { y: pxToIn(node.sizing.y) }),
-    };
-  }
-
-  if (node.imageData) {
-    // Base64 データがある場合は data プロパティを使用（リモート画像）
-    ctx.slide.addImage({ ...imageOptions, data: node.imageData });
-  } else {
-    // ローカルパスの場合は path プロパティを使用
-    ctx.slide.addImage({ ...imageOptions, path: node.src });
-  }
+  addGlimpsePicture(
+    ctx,
+    content,
+    imageBytesFromSource(node.src, node.imageData),
+    {
+      rotate: node.rotate,
+      sizing: node.sizing,
+      shadow: node.shadow,
+    },
+  );
 }

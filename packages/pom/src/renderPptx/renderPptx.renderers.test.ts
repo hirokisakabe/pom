@@ -21,6 +21,9 @@ type SlideObject = {
   text?: unknown;
 };
 
+const ONE_BY_ONE_PNG =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lU9qJwAAAABJRU5ErkJggg==";
+
 async function renderPage(page: PositionedNode) {
   const buildContext = createBuildContext();
   const pptx = await renderPptx([page], { w: 1280, h: 720 }, buildContext);
@@ -318,33 +321,72 @@ describe("renderTextNode", () => {
 });
 
 describe("renderImageNode", () => {
-  it("rotate を pptxgenjs options に渡す", async () => {
-    const { objects } = await renderPage(
+  it("rotate を glimpse picture XML に渡す", async () => {
+    const page = vstackPage([
+      {
+        type: "image",
+        src: "sample_images/sample_0.png",
+        x: 0,
+        y: 0,
+        w: 120,
+        h: 80,
+        rotate: 30,
+      },
+    ]);
+    const zip = await renderPagePptxZip(page);
+    const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+    const relsXml = await zip
+      .file("ppt/slides/_rels/slide1.xml.rels")!
+      .async("text");
+    const contentTypesXml = await zip
+      .file("[Content_Types].xml")!
+      .async("text");
+
+    expect(slideXml).toContain("<p:pic>");
+    expect(slideXml).toContain('rot="1800000"');
+    expect(slideXml).not.toContain("pom-picture:");
+    expect(relsXml).toContain(
+      'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"',
+    );
+    expect(relsXml).toContain('Target="../media/image');
+    expect(contentTypesXml).toContain('ContentType="image/png"');
+    expect(
+      Object.keys(zip.files).some((file) =>
+        /^ppt\/media\/image\d+\.png$/.test(file),
+      ),
+    ).toBe(true);
+  });
+});
+
+describe("renderSvgNode", () => {
+  it("Svg ラスタ画像を glimpse picture XML として描画する", async () => {
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
-          type: "image",
-          src: "sample_images/sample_0.png",
+          type: "svg",
+          svgContent: "<svg />",
+          iconImageData: ONE_BY_ONE_PNG,
           x: 0,
           y: 0,
-          w: 120,
-          h: 80,
-          rotate: 30,
+          w: 32,
+          h: 32,
         },
       ]),
     );
 
-    expect(objects[0].options.rotate).toBe(30);
+    expect(slideXml).toContain("<p:pic>");
+    expect(slideXml).not.toContain("pom-picture:");
   });
 });
 
 describe("renderIconNode", () => {
-  it("rotate をアイコン画像の pptxgenjs options に渡す", async () => {
-    const { objects } = await renderPage(
+  it("rotate をアイコン画像の glimpse picture XML に渡す", async () => {
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "icon",
           name: "cpu",
-          iconImageData: "data:image/png;base64,AA==",
+          iconImageData: ONE_BY_ONE_PNG,
           x: 0,
           y: 0,
           w: 32,
@@ -354,16 +396,18 @@ describe("renderIconNode", () => {
       ]),
     );
 
-    expect(objects[0].options.rotate).toBe(90);
+    expect(slideXml).toContain("<p:pic>");
+    expect(slideXml).toContain('rot="5400000"');
+    expect(slideXml).not.toContain("pom-picture:");
   });
 
   it("rotate を variant 背景図形にも渡す", async () => {
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "icon",
           name: "cpu",
-          iconImageData: "data:image/png;base64,AA==",
+          iconImageData: ONE_BY_ONE_PNG,
           variant: "circle-filled",
           x: 0,
           y: 0,
@@ -374,8 +418,9 @@ describe("renderIconNode", () => {
       ]),
     );
 
-    expect(objects[0].options.rotate).toBe(90);
-    expect(objects[1].options.rotate).toBe(90);
+    expect(slideXml).toContain("<p:sp>");
+    expect(slideXml).toContain("<p:pic>");
+    expect(slideXml.match(/rot="5400000"/g)).toHaveLength(2);
   });
 });
 
@@ -430,18 +475,28 @@ describe("renderTimelineNode", () => {
         },
       ]),
     );
+    const slideXml = await renderPageSlideXml(
+      vstackPage([
+        {
+          type: "timeline",
+          x: 100,
+          y: 100,
+          w: 800,
+          h: 400,
+          padding: 48,
+          items,
+        },
+      ]),
+    );
 
     expect(buildContext.diagnostics.items).toEqual([]);
 
     // メイン線: 端点は labelW/2 = 60 インセット、lineY はコンテンツ領域の垂直中央
     const lineY = 148 + 304 / 2;
-    expect(objects[0].shape).toBe("line");
-    expect(objects[0].options).toMatchObject({
-      x: pxToIn(148 + 60),
-      y: pxToIn(lineY),
-      w: pxToIn(704 - 120),
-      h: 0,
-    });
+    expect(slideXml).toContain(
+      `<a:off x="${(148 + 60) * 9525}" y="${lineY * 9525}"/>`,
+    );
+    expect(slideXml).toContain(`<a:ext cx="${(704 - 120) * 9525}" cy="0"/>`);
 
     // 最初のアイテムのノード円 (半径 12px)
     const ellipse = objects.find((o) => o.shape === "ellipse");
@@ -468,7 +523,7 @@ describe("renderTimelineNode", () => {
   });
 
   it("connectorColor を指定すると軸線にその色が使われる", async () => {
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "timeline",
@@ -481,20 +536,18 @@ describe("renderTimelineNode", () => {
         },
       ]),
     );
-    const line = objects.find((o) => o.shape === "line");
-    expect(line?.options).toMatchObject({ line: { color: "1D4ED8" } });
+    expect(slideXml).toContain('<a:srgbClr val="1D4ED8"/>');
   });
 
   it("connectorColor 未指定なら従来通り E2E8F0 が使われる", async () => {
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([{ type: "timeline", x: 0, y: 0, w: 800, h: 400, items }]),
     );
-    const line = objects.find((o) => o.shape === "line");
-    expect(line?.options).toMatchObject({ line: { color: "E2E8F0" } });
+    expect(slideXml).toContain('<a:srgbClr val="E2E8F0"/>');
   });
 
-  it("connectorGradient を指定するとマーカー色が registry に登録され軸線に使われる", async () => {
-    const { objects, buildContext } = await renderPage(
+  it("connectorGradient を指定すると軸線が native gradFill で描画される", async () => {
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "timeline",
@@ -507,10 +560,9 @@ describe("renderTimelineNode", () => {
         },
       ]),
     );
-    const marker = buildContext.gradientFills.entries[0]?.marker;
-    expect(marker).toBeDefined();
-    const line = objects.find((o) => o.shape === "line");
-    expect(line?.options).toMatchObject({ line: { color: marker } });
+    expect(slideXml).toContain("<a:gradFill");
+    expect(slideXml).toContain('<a:srgbClr val="1D4ED8"/>');
+    expect(slideXml).toContain('<a:srgbClr val="DC2626"/>');
   });
 
   it("useColorForDate=true なら各 item.color が date テキスト色になる", async () => {

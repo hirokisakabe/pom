@@ -4,39 +4,11 @@ import os from "os";
 import path from "path";
 import { describe, expect, it } from "vitest";
 import { buildPptx } from "../buildPptx.ts";
-import { GlowEffectRegistry } from "./glowEffects.ts";
 
 async function readSlideXml(buffer: Uint8Array | ArrayBuffer): Promise<string> {
   const zip = await JSZip.loadAsync(buffer);
   return zip.file("ppt/slides/slide1.xml")!.async("text");
 }
-
-describe("GlowEffectRegistry", () => {
-  it("同一スペックには同じマーカーを返し、異なるスペックには別マーカーを返す", () => {
-    const registry = new GlowEffectRegistry();
-    const m1 = registry.register({ size: 8, opacity: 0.5, color: "FF3399" });
-    const m2 = registry.register({ size: 8, opacity: 0.5, color: "FF3399" });
-    const m3 = registry.register({ size: 12, opacity: 0.5, color: "FF3399" });
-    expect(m1).toBe(m2);
-    expect(m3).not.toBe(m1);
-    expect(registry.entries).toHaveLength(2);
-  });
-
-  it("マーカーは pom-glow: プレフィックス付き連番になる", () => {
-    const registry = new GlowEffectRegistry();
-    const m1 = registry.register({ size: 8 });
-    const m2 = registry.register({ size: 12 });
-    expect(m1).toBe("pom-glow:0");
-    expect(m2).toBe("pom-glow:1");
-  });
-
-  it("色は # を取り除いて大文字に正規化する", () => {
-    const registry = new GlowEffectRegistry();
-    const m1 = registry.register({ color: "#ff3399" });
-    const m2 = registry.register({ color: "FF3399" });
-    expect(m1).toBe(m2);
-  });
-});
 
 describe("buildPptx with Shape glow", () => {
   it("Shape の glow がネイティブの effectLst として出力される", async () => {
@@ -162,7 +134,8 @@ describe("buildPptx with Shape glow", () => {
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain("<a:effectLst><a:glow");
-    expect(slideXml).toContain('name="pom-glow:0"');
+    expect(slideXml).toContain("<p:pic>");
+    expect(slideXml).not.toContain("pom-glow:");
     expect(slideXml).toContain('<a:srgbClr val="00AAFF"/>');
   });
 
@@ -212,9 +185,7 @@ describe("buildPptx with Shape glow", () => {
   });
 
   it("shadow と glow を併用した shape で effectLst が 1 つに統合される", async () => {
-    // pptxgenjs は shadow 指定時に <a:spPr> 配下に <a:effectLst><a:outerShdw/></a:effectLst>
-    // を出力する。glow を追加する際に新たな <a:effectLst> を別途並べると
-    // OOXML として不正になるため、既存 effectLst の内側に <a:glow> を追加する。
+    // shadow と glow を同じ <a:effectLst> に入れないと OOXML として不正になる。
     const xml = `<Slide><VStack w="100%" h="max">
       <Shape shapeType="rect" w="100" h="100" fill.color="FF0000"
         shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000000"

@@ -10,6 +10,12 @@ import { GlimpseTextBoxRegistry } from "./glimpseTextBoxes.ts";
 import type { RenderContext } from "./types.ts";
 import { pxToIn, pxToPt } from "./units.ts";
 
+function firstShapeXml(registry: GlimpseTextBoxRegistry): string {
+  const entry = registry.entries[0];
+  expect(entry?.kind).toBe("shape");
+  return entry && entry.kind === "shape" ? entry.xml : "";
+}
+
 describe("createTextOptions", () => {
   it("指定した色と配置をオプションに反映する", () => {
     const options = createTextOptions({
@@ -173,7 +179,7 @@ describe("renderTextNode (runs 分岐)", () => {
     expect(addShape.mock.calls[0][1]).toMatchObject({
       objectName: "pom-text:0",
     });
-    const xml = registry.entries[0].xml;
+    const xml = firstShapeXml(registry);
     expect(xml).toContain('<a:rPr sz="3900">');
     expect(xml).toContain('<a:rPr sz="1350">');
   });
@@ -203,7 +209,7 @@ describe("renderTextNode (runs 分岐)", () => {
     );
 
     expect(addShape).toHaveBeenCalledTimes(1);
-    const xml = registry.entries[0].xml;
+    const xml = firstShapeXml(registry);
     expect(xml.match(/<a:glow rad="76200">/g)).toHaveLength(2);
     expect(xml.match(/<a:alpha val="50000"\/>/g)).toHaveLength(2);
     expect(xml.match(/<a:ln w="19050">/g)).toHaveLength(2);
@@ -235,7 +241,7 @@ describe("renderTextNode (runs 分岐)", () => {
       ctx,
     );
 
-    const xml = registry.entries[0].xml;
+    const xml = firstShapeXml(registry);
     expect(xml).toContain('<a:rPr u="sng"');
     expect(xml.match(/<a:rPr/g)).toHaveLength(2);
   });
@@ -262,7 +268,7 @@ describe("renderTextNode (runs 分岐)", () => {
       ctx,
     );
 
-    const xml = registry.entries[0].xml;
+    const xml = firstShapeXml(registry);
     expect(xml).toContain('<a:alpha val="75000"/>');
   });
 });

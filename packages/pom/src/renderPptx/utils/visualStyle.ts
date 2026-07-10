@@ -13,9 +13,8 @@
  * - borderRadius (角丸): resolveRectRadius
  *
  * 既存 helper との責務境界:
- * - gradientFills.ts: backgroundGradient のマーカー登録と出力時の gradFill 置換。
- *   グラデーションはマーカー色 1 色の単色塗りに帰着するため本モジュールでは
- *   解釈せず、マーカー色を resolveBackgroundFill で単色 fill として扱う。
+ * - utils/glimpseShape.ts: backgroundGradient を writer 生成 XML の native
+ *   gradFill として出力する。
  * - utils/backgroundBorder.ts: 背景色 → 背景画像 → ボーダーの描画順序の
  *   オーケストレーション。個々の属性値の変換は本モジュールに委譲する。
  * - textOptions.ts: テキスト系属性 (font / underline / strike など) の変換。
@@ -142,13 +141,12 @@ export function opacityToTransparency(
 }
 
 /**
- * backgroundColor / opacity / グラデーションマーカー色から
+ * backgroundColor / opacity / 互換用のグラデーション fallback 色から
  * pptxgenjs の fill オプションを解決する
  *
- * gradientMarker がある場合はマーカー色の単色塗りとして描画し、
- * 出力時の後処理で gradFill に置換される (gradientFills.ts 参照)。
- * opacity はマーカー側ではなく gradFill のカラーストップの alpha で
- * 表現するため、マーカー fill には transparency を付与しない。
+ * gradientMarker は旧 pptxgenjs 経路との互換 helper 用に残している。
+ * writer 経路の backgroundGradient は utils/glimpseShape.ts 側で native
+ * gradFill に変換する。
  */
 export function resolveBackgroundFill(
   backgroundColor: string | undefined,
