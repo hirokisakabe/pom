@@ -68,6 +68,27 @@ describe("buildPptx with backgroundGradient", () => {
     expect(slideXml).toContain('<a:lin ang="0" scaled="0"/>');
   });
 
+  it("ルート backgroundGradient の marker 色は別スライドの通常背景色を置換しない", async () => {
+    const xml = `
+      <Slide><VStack w="100%" h="max" backgroundGradient="linear-gradient(to right, #11998E, #38EF7D)">
+        <Text fontSize="24">gradient</Text>
+      </VStack></Slide>
+      <Slide><VStack w="100%" h="max" backgroundColor="0F7A3D">
+        <Text fontSize="24">solid</Text>
+      </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.write({
+      outputType: "uint8array",
+    })) as Uint8Array;
+    const zip = await JSZip.loadAsync(buffer);
+    const slide1Xml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+    const slide2Xml = await zip.file("ppt/slides/slide2.xml")!.async("text");
+
+    expect(slide1Xml).toMatch(/<p:bgPr><a:gradFill/);
+    expect(slide2Xml).toContain('<a:srgbClr val="0F7A3D"/>');
+    expect(slide2Xml).not.toContain("<a:gradFill");
+  });
+
   it("opacity 指定時は各カラーストップに alpha が付く", async () => {
     const xml = `<Slide><VStack w="100%" h="max">
       <Text w="200" h="100" backgroundGradient="linear-gradient(#FF0000, #0000FF)" opacity="0.5" text=""></Text>

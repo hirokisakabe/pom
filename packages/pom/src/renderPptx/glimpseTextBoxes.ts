@@ -589,6 +589,7 @@ interface RegisteredPicture {
 interface RegisteredSlideBackground {
   kind: "slideBackground";
   marker: string;
+  slideNumber: number;
   xml: string;
 }
 
@@ -642,6 +643,7 @@ export class GlimpseTextBoxRegistry {
 
   registerSlideBackgroundGradient(
     backgroundGradient: string,
+    slideNumber: number,
     opacity?: number,
   ): string | undefined {
     const xml = buildGradFillXml(backgroundGradient, opacity);
@@ -650,7 +652,7 @@ export class GlimpseTextBoxRegistry {
       .toString(16)
       .toUpperCase()
       .padStart(6, "0");
-    this.registered.push({ kind: "slideBackground", marker, xml });
+    this.registered.push({ kind: "slideBackground", marker, slideNumber, xml });
     return marker;
   }
 
@@ -814,10 +816,13 @@ function applyGlimpseTextBoxesToXml(
 function applySlideBackgroundGradientsToXml(
   xml: string,
   registry: GlimpseTextBoxRegistry,
+  slidePath: string,
 ): string {
   let result = xml;
+  const slideNumber = Number(slidePath.match(/slide(\d+)\.xml$/)?.[1]);
   for (const entry of registry.entries) {
     if (entry.kind !== "slideBackground") continue;
+    if (entry.slideNumber !== slideNumber) continue;
     const target = `<p:bgPr><a:solidFill><a:srgbClr val="${entry.marker}"/></a:solidFill></p:bgPr>`;
     result = result.replace(target, `<p:bgPr>${entry.xml}</p:bgPr>`);
   }
@@ -942,6 +947,7 @@ async function applyGlimpseTextBoxes(
     const withSlideBackground = applySlideBackgroundGradientsToXml(
       original,
       registry,
+      path,
     );
     const pictureResult = source
       ? applyGlimpsePicturesToXml(

@@ -246,7 +246,7 @@ export async function renderPptx(
     ? defineSlideMasterFromOptions(pptx, master)
     : undefined;
 
-  for (const data of pages) {
+  for (const [pageIndex, data] of pages.entries()) {
     // マスターが指定されている場合は masterName を使用
     const slide = masterName ? pptx.addSlide({ masterName }) : pptx.addSlide();
     const idPositionMap = buildIdPositionMap(data, buildContext.diagnostics);
@@ -268,6 +268,7 @@ export async function renderPptx(
       rootBackgroundGradient && !rootHasOpacity
         ? buildContext.glimpseTextBoxes.registerSlideBackgroundGradient(
             rootBackgroundGradient,
+            pageIndex + 1,
           )
         : undefined;
     if (rootGradientMarker) {
