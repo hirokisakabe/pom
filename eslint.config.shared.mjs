@@ -24,7 +24,7 @@ export function defineSharedConfig({
 }) {
   return defineConfig([
     {
-      ignores: ["dist/**", "node_modules/**", ...ignores],
+      ignores: ["dist/**", "coverage/**", "node_modules/**", ...ignores],
     },
     {
       files,
