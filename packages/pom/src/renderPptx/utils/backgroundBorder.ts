@@ -117,6 +117,7 @@ export function renderBackgroundAndBorder(
             fillOpacity: node.opacity,
             backgroundGradient,
             rectRadius,
+            dashType: border?.dashType,
           },
         );
       }
@@ -144,6 +145,7 @@ export function renderBackgroundAndBorder(
         fillOpacity: node.opacity,
         backgroundGradient,
         rectRadius,
+        dashType: border?.dashType,
       },
     );
   }
@@ -197,6 +199,7 @@ export function renderBackgroundAndBorder(
         node,
         {
           rectRadius,
+          dashType: border?.dashType,
         },
       );
     }
@@ -257,6 +260,7 @@ export function renderBorderOnly(
     node,
     {
       rectRadius: resolveRectRadius(borderRadius, node.w, node.h),
+      dashType: border.dashType,
     },
   );
 }
@@ -293,6 +297,9 @@ function renderPerSideBorderLines(
         outline: shapeOutline(style, "000000"),
       },
       edges[side],
+      {
+        dashType: style.dashType,
+      },
     );
   }
 }

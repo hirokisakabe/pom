@@ -33,6 +33,7 @@ import {
   type PptxSourceModelAddTextBoxEdit,
 } from "@pptx-glimpse/document";
 import type {
+  BorderStyle,
   PositionedNode,
   ShadowStyle,
   TextGlow,
@@ -324,8 +325,11 @@ function withRoundRectAdjust(
   rectRadius: number | undefined,
 ): string {
   if (input.preset !== "roundRect" || rectRadius === undefined) return xml;
-  const minDimensionIn = Math.min(input.width, input.height) / EMU_PER_IN;
-  const adj = Math.round((rectRadius / minDimensionIn) * 100000);
+  // `rectRadius` is the pptxgenjs-compatible option value already resolved by
+  // visualStyle.resolveRectRadius. Keep the same formula pptxgenjs uses.
+  const adj = Math.round(
+    (rectRadius * EMU_PER_IN * 100000) / Math.min(input.width, input.height),
+  );
   return xml.replace(
     /<a:prstGeom prst="roundRect"><a:avLst\/><\/a:prstGeom>/,
     `<a:prstGeom prst="roundRect"><a:avLst><a:gd name="adj" fmla="val ${adj}"/></a:avLst></a:prstGeom>`,
@@ -381,23 +385,35 @@ function withLineZeroExtent(
   );
 }
 
-function withPptxGenLineArrowDefaults(xml: string, preset: string): string {
-  if (preset !== "line") return xml;
-  const withoutDefaultSizes = xml.replace(
-    /<a:(headEnd|tailEnd) type="([^"]+)" w="med" len="med"\/>/g,
-    '<a:$1 type="$2"/>',
-  );
-  return withoutDefaultSizes.replace(
+function withPrstDash(xml: string, dashType: string): string {
+  return xml.replace(
     /<a:ln\b([^>]*)>([\s\S]*?)<\/a:ln>/g,
     (match, attrs, body) => {
       const bodyText = body as string;
       if (bodyText.includes("<a:prstDash")) return match;
       return `<a:ln${attrs as string}>${bodyText.replace(
         /(<a:(?:solidFill|noFill\/)>[\s\S]*?<\/a:solidFill>|<a:noFill\/>)/,
-        '$1<a:prstDash val="solid"/>',
+        `$1<a:prstDash val="${dashType}"/>`,
       )}</a:ln>`;
     },
   );
+}
+
+function withUnsupportedDashStyle(
+  xml: string,
+  dashType: BorderStyle["dashType"] | undefined,
+): string {
+  if (dashType !== "lgDashDotDot") return xml;
+  return withPrstDash(xml, dashType);
+}
+
+function withPptxGenLineArrowDefaults(xml: string, preset: string): string {
+  if (preset !== "line") return xml;
+  const withoutDefaultSizes = xml.replace(
+    /<a:(headEnd|tailEnd) type="([^"]+)" w="med" len="med"\/>/g,
+    '<a:$1 type="$2"/>',
+  );
+  return withPrstDash(withoutDefaultSizes, "solid");
 }
 
 function withPptxGenParagraphDefaults(xml: string): string {
@@ -482,6 +498,7 @@ export type GlimpseShapeXmlOptions = {
   glow?: TextGlow;
   shadow?: ShadowStyle;
   rectRadius?: number;
+  dashType?: BorderStyle["dashType"];
   flipH?: boolean;
   flipV?: boolean;
   zeroWidth?: boolean;
@@ -514,6 +531,7 @@ function createShapeXml(
   );
   xml = withRoundRectAdjust(xml, input, options?.rectRadius);
   xml = withShadow(xml, options?.shadow);
+  xml = withUnsupportedDashStyle(xml, options?.dashType);
   xml = withLineFlip(xml, options?.flipH, options?.flipV);
   xml = withLineZeroExtent(
     xml,

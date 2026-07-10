@@ -79,6 +79,6 @@ export function addStraightLine(
       },
     },
     { x: minX, y: minY, w: lineW, h: lineH },
-    { flipH, flipV },
+    { flipH, flipV, dashType },
   );
 }

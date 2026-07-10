@@ -137,6 +137,7 @@ export function renderShapeNode(
       fillOpacity,
       glow: node.glow,
       shadow: node.shadow,
+      dashType: lineSpec?.dashType,
     },
   );
 }

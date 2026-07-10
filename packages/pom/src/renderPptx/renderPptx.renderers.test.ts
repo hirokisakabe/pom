@@ -756,6 +756,28 @@ describe("renderLineNode / renderArrowNode", () => {
     expect(slideXml).not.toContain("pom-shape:");
   });
 
+  it("line: lgDashDotDot を solid に落とさず prstDash に保持する", async () => {
+    const slideXml = await renderPageSlideXml(
+      vstackPage([
+        {
+          type: "line",
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+          x1: 100,
+          y1: 100,
+          x2: 300,
+          y2: 100,
+          color: "00FF00",
+          dashType: "lgDashDotDot",
+        },
+      ]),
+    );
+
+    expect(slideXml).toContain('<a:prstDash val="lgDashDotDot"/>');
+  });
+
   it("arrow: 参照ノードの中心同士を結ぶ線を描画する", async () => {
     const slideXml = await renderPageSlideXml({
       type: "layer",

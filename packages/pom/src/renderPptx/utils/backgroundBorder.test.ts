@@ -51,6 +51,28 @@ describe("renderBackgroundAndBorder の辺ごと border", () => {
     expect(countLineShapes(slideXml)).toBe(0);
   });
 
+  it("backgroundGradient + shadow は legacy gradient 後処理と shadow XML を共存させる", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text w="200" h="100" backgroundGradient="linear-gradient(90deg, #FF0000, #0000FF)" shadow.type="outer" shadow.blur="4" shadow.offset="2">test</Text>
+    </VStack></Slide>`;
+    const slideXml = await buildSlideXml(xml);
+
+    expect(slideXml).toContain("<a:gradFill");
+    expect(slideXml).toContain("<a:outerShdw");
+    expect(slideXml).not.toContain("pom-gradient:");
+  });
+
+  it("backgroundGradient + borderRadius + shadow は roundRect geometry と effectLst を共存させる", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text w="200" h="100" borderRadius="12" backgroundGradient="linear-gradient(90deg, #FF0000, #0000FF)" shadow.type="outer">test</Text>
+    </VStack></Slide>`;
+    const slideXml = await buildSlideXml(xml);
+
+    expect(slideXml).toContain("<a:gradFill");
+    expect(slideXml).toContain("<a:outerShdw");
+    expect(slideXml).toContain('<a:prstGeom prst="roundRect">');
+  });
+
   it("背景付きルートノード (slide.background 最適化パス) でも辺ごとの border が描画される", async () => {
     const xml = `<Slide><VStack w="100%" h="max" backgroundColor="F8FAFC" borderLeft.color="FF0000" borderLeft.width="6">
       <Text w="200" h="100">test</Text>

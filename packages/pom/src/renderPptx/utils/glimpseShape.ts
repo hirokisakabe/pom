@@ -22,6 +22,7 @@ export type GlimpseShapeStyleOptions = {
   glow?: TextGlow;
   shadow?: ShadowStyle;
   rectRadius?: number;
+  dashType?: BorderStyle["dashType"];
   flipH?: boolean;
   flipV?: boolean;
   zeroWidth?: boolean;
@@ -82,8 +83,7 @@ export function backgroundShapeFill(
 function dashStyle(
   dashType: BorderStyle["dashType"],
 ): SourceDashStyle | undefined {
-  if (dashType === "lgDashDotDot") return undefined;
-  return dashType;
+  return dashType as SourceDashStyle | undefined;
 }
 
 export function shapeOutline(
