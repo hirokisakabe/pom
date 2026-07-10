@@ -53,9 +53,7 @@ describe("buildPptx with Shape glow", () => {
     expect(slideXml).toContain(
       '<a:effectLst><a:glow rad="114300"><a:srgbClr val="00FF00"><a:alpha val="50000"/></a:srgbClr></a:glow></a:effectLst>',
     );
-    // マーカー文字列は最終出力に残してよい (PowerPoint で shape の name として
-    // 編集できる) が、ここでは存在のみ確認する
-    expect(slideXml).toContain('name="pom-glow:0"');
+    expect(slideXml).not.toContain("pom-glow:");
   });
 
   it("Shape glow 単独でも stream 経路で effectLst として出力される", async () => {
@@ -122,7 +120,7 @@ describe("buildPptx with Shape glow", () => {
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml.match(/<a:effectLst><a:glow/g)).toHaveLength(2);
-    expect(slideXml.match(/name="pom-glow:0"/g)).toHaveLength(2);
+    expect(slideXml).not.toContain("pom-glow:");
   });
 
   it("glow / outline 未指定時は effectLst / 余計な ln が挿入されない", async () => {
@@ -150,7 +148,7 @@ describe("buildPptx with Shape glow", () => {
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain("<a:effectLst><a:glow");
-    expect(slideXml).toContain('name="pom-glow:0"');
+    expect(slideXml).not.toContain("pom-glow:");
   });
 
   it("Icon variant の背景図形に glow / outline が適用される", async () => {
@@ -230,8 +228,9 @@ describe("buildPptx with Shape glow", () => {
 
     // 該当 shape の <p:spPr> に effectLst は 1 つだけ存在し、その中に
     // outerShdw と glow の両方が含まれる
-    const spStart = slideXml.indexOf('name="pom-glow:0"');
-    expect(spStart).toBeGreaterThanOrEqual(0);
+    const glowStart = slideXml.indexOf("<a:glow");
+    expect(glowStart).toBeGreaterThanOrEqual(0);
+    const spStart = slideXml.lastIndexOf("<p:sp>", glowStart);
     const spEnd = slideXml.indexOf("</p:sp>", spStart);
     const spBlock = slideXml.substring(spStart, spEnd);
     expect(spBlock.match(/<a:effectLst[^>]*>/g)).toHaveLength(1);

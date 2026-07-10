@@ -50,8 +50,8 @@ function vstackPage(children: PositionedNode[]): PositionedNode {
 }
 
 describe("renderShapeNode", () => {
-  it("padding を除いたコンテンツ領域に inch 変換して描画される", async () => {
-    const { objects } = await renderPage(
+  it("padding を除いたコンテンツ領域に EMU 変換して glimpse shape XML で描画される", async () => {
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "shape",
@@ -66,19 +66,15 @@ describe("renderShapeNode", () => {
       ]),
     );
 
-    expect(objects).toHaveLength(1);
-    expect(objects[0].shape).toBe("rect");
-    expect(objects[0].options).toMatchObject({
-      x: pxToIn(96 + 24),
-      y: pxToIn(96 + 24),
-      w: pxToIn(192 - 48),
-      h: pxToIn(96 - 48),
-      fill: { color: "FF0000" },
-    });
+    expect(slideXml).toContain('<a:off x="1143000" y="1143000"/>');
+    expect(slideXml).toContain('<a:ext cx="1371600" cy="457200"/>');
+    expect(slideXml).toContain('<a:prstGeom prst="rect">');
+    expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
+    expect(slideXml).not.toContain("pom-shape:");
   });
 
-  it("rotate を pptxgenjs options に渡す", async () => {
-    const { objects } = await renderPage(
+  it("rotate を glimpse shape XML に渡す", async () => {
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "shape",
@@ -92,7 +88,7 @@ describe("renderShapeNode", () => {
       ]),
     );
 
-    expect(objects[0].options.rotate).toBe(45);
+    expect(slideXml).toContain('<a:xfrm rot="2700000">');
   });
 });
 
@@ -609,7 +605,7 @@ describe("renderPyramidNode", () => {
 
 describe("ルートノードの background + border", () => {
   it("backgroundColor は slide.background に逃がし、border のみノード全体に fill なしで描画する", async () => {
-    const { objects } = await renderPage({
+    const slideXml = await renderPageSlideXml({
       type: "vstack",
       x: 0,
       y: 0,
@@ -620,15 +616,13 @@ describe("ルートノードの background + border", () => {
       children: [],
     });
 
-    expect(objects).toHaveLength(1);
-    expect(objects[0].options).toMatchObject({
-      x: 0,
-      y: 0,
-      w: pxToIn(1280),
-      h: pxToIn(720),
-      fill: { type: "none" },
-    });
-    expect(objects[0].options.line).toMatchObject({ color: "FF0000" });
+    expect(slideXml).toContain("<p:bg>");
+    expect(slideXml).toContain('<a:srgbClr val="EEEEEE"/>');
+    expect(slideXml).toContain('<a:off x="0" y="0"/>');
+    expect(slideXml).toContain('<a:ext cx="12192000" cy="6858000"/>');
+    expect(slideXml).toContain("<a:noFill/>");
+    expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
+    expect(slideXml).not.toContain("pom-shape:");
   });
 });
 
@@ -737,7 +731,7 @@ describe("renderChartNode", () => {
 
 describe("renderLineNode / renderArrowNode", () => {
   it("line: 逆向き座標は左上原点 + flip で表現される", async () => {
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "line",
@@ -754,20 +748,16 @@ describe("renderLineNode / renderArrowNode", () => {
       ]),
     );
 
-    expect(objects[0].shape).toBe("line");
-    expect(objects[0].options).toMatchObject({
-      x: pxToIn(100),
-      y: pxToIn(50),
-      w: pxToIn(200),
-      h: pxToIn(50),
-      flipH: true,
-      flipV: true,
-    });
-    expect(objects[0].options.line).toMatchObject({ color: "00FF00" });
+    expect(slideXml).toContain('<a:xfrm flipH="1" flipV="1">');
+    expect(slideXml).toContain('<a:off x="952500" y="476250"/>');
+    expect(slideXml).toContain('<a:ext cx="1905000" cy="476250"/>');
+    expect(slideXml).toContain('<a:prstGeom prst="line">');
+    expect(slideXml).toContain('<a:srgbClr val="00FF00"/>');
+    expect(slideXml).not.toContain("pom-shape:");
   });
 
   it("arrow: 参照ノードの中心同士を結ぶ線を描画する", async () => {
-    const { objects } = await renderPage({
+    const slideXml = await renderPageSlideXml({
       type: "layer",
       x: 0,
       y: 0,
@@ -806,18 +796,11 @@ describe("renderLineNode / renderArrowNode", () => {
       ],
     });
 
-    const line = objects.find((o) => o.shape === "line");
-    expect(line?.options).toMatchObject({
-      x: pxToIn(100),
-      y: pxToIn(100),
-      w: pxToIn(200),
-      h: pxToIn(100),
-      flipH: false,
-      flipV: false,
-    });
-    expect(line?.options.line).toMatchObject({
-      color: "0000FF",
-      endArrowType: "triangle",
-    });
+    expect(slideXml).toContain('<a:off x="952500" y="952500"/>');
+    expect(slideXml).toContain('<a:ext cx="1905000" cy="952500"/>');
+    expect(slideXml).toContain('<a:prstGeom prst="line">');
+    expect(slideXml).toContain('<a:srgbClr val="0000FF"/>');
+    expect(slideXml).toContain('<a:tailEnd type="triangle"/>');
+    expect(slideXml).not.toContain("pom-shape:");
   });
 });

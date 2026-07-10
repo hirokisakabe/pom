@@ -265,8 +265,8 @@ export async function renderPptx(
       : undefined;
     const rootHasOpacity =
       !isLinelike && "opacity" in data && data.opacity !== undefined;
-    // backgroundGradient はマーカー色で slide.background に適用し、
-    // 出力時の後処理で gradFill に置換される (gradientFills.ts 参照)
+    // backgroundGradient はスライド背景では従来の p:bgPr 後処理を維持する。
+    // root を full-slide shape にすると slide master のオブジェクトを覆うため。
     const rootGradientMarker =
       rootBackgroundGradient && !rootHasOpacity
         ? registerBackgroundGradient(

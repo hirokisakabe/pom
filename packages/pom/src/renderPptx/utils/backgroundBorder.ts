@@ -13,6 +13,14 @@ import {
   resolveRectRadius,
   type PerSideBorders,
 } from "./visualStyle.ts";
+import {
+  addGlimpseShape,
+  backgroundShapeFill,
+  createShapeBoundsInput,
+  noShapeOutline,
+  noneShapeFill,
+  shapeOutline,
+} from "./glimpseShape.ts";
 
 /**
  * ノードの背景色・背景画像・ボーダー・影を描画する
@@ -33,20 +41,9 @@ export function renderBackgroundAndBorder(
     shadow,
   } = node;
 
-  // backgroundGradient はマーカー色の solidFill として描画し、
-  // 出力時の後処理で gradFill に置換される (gradientFills.ts 参照)。
-  // opacity はマーカー側ではなく gradFill のカラーストップの alpha で表現する
-  const gradientMarker = backgroundGradient
-    ? registerBackgroundGradient(
-        backgroundGradient,
-        node.opacity,
-        ctx.buildContext.gradientFills,
-      )
-    : undefined;
-
   const perSideBorders = resolveEffectivePerSideBorders(node, ctx);
 
-  const hasBackground = Boolean(backgroundColor) || Boolean(gradientMarker);
+  const hasBackground = Boolean(backgroundColor) || Boolean(backgroundGradient);
   const hasBackgroundImage = Boolean(backgroundImage);
   // 辺ごとの指定がある場合、一律 border は各辺へのマージで反映済みのため
   // shape の line としては描画しない
@@ -64,7 +61,8 @@ export function renderBackgroundAndBorder(
   }
 
   // borderRadius がある場合は roundRect を使用し、rectRadius を計算
-  const shapeType = borderRadius
+  const shapeType = borderRadius ? "roundRect" : "rect";
+  const legacyShapeType = borderRadius
     ? ctx.pptx.ShapeType.roundRect
     : ctx.pptx.ShapeType.rect;
 
@@ -73,21 +71,55 @@ export function renderBackgroundAndBorder(
   // backgroundImage がない場合は従来通り1回の addShape で処理
   if (!hasBackgroundImage) {
     if (hasBackground || hasUniformBorder || hasShadow) {
-      const fill = hasBackground
-        ? resolveBackgroundFill(backgroundColor, node.opacity, gradientMarker)
-        : { type: "none" as const };
+      if (hasShadow) {
+        const gradientMarker = backgroundGradient
+          ? registerBackgroundGradient(
+              backgroundGradient,
+              node.opacity,
+              ctx.buildContext.gradientFills,
+            )
+          : undefined;
+        ctx.slide.addShape(legacyShapeType, {
+          ...rectPxToIn(node),
+          fill: hasBackground
+            ? resolveBackgroundFill(
+                backgroundColor,
+                node.opacity,
+                gradientMarker,
+              )
+            : { type: "none" as const },
+          line: hasUniformBorder
+            ? convertBorderLine(border, "000000")
+            : { type: "none" as const },
+          rectRadius,
+          shadow: convertShadow(shadow),
+        });
+      } else {
+        const fill = hasBackground
+          ? backgroundShapeFill(backgroundColor, backgroundGradient)
+          : noneShapeFill();
 
-      const line = hasUniformBorder
-        ? convertBorderLine(border, "000000")
-        : { type: "none" as const };
+        const line = hasUniformBorder
+          ? shapeOutline(border, "000000")
+          : noShapeOutline();
 
-      ctx.slide.addShape(shapeType, {
-        ...rectPxToIn(node),
-        fill,
-        line,
-        rectRadius,
-        shadow: convertShadow(shadow),
-      });
+        addGlimpseShape(
+          ctx,
+          {
+            preset: shapeType,
+            ...createShapeBoundsInput(node),
+            fill,
+            outline: line,
+          },
+          node,
+          {
+            fillColor: backgroundColor,
+            fillOpacity: node.opacity,
+            backgroundGradient,
+            rectRadius,
+          },
+        );
+      }
     }
 
     renderPerSideBorderLines(node, perSideBorders, ctx);
@@ -98,16 +130,22 @@ export function renderBackgroundAndBorder(
 
   // 1. 背景色
   if (hasBackground) {
-    ctx.slide.addShape(shapeType, {
-      ...rectPxToIn(node),
-      fill: resolveBackgroundFill(
-        backgroundColor,
-        node.opacity,
-        gradientMarker,
-      ),
-      line: { type: "none" as const },
-      rectRadius,
-    });
+    addGlimpseShape(
+      ctx,
+      {
+        preset: shapeType,
+        ...createShapeBoundsInput(node),
+        fill: backgroundShapeFill(backgroundColor, backgroundGradient),
+        outline: noShapeOutline(),
+      },
+      node,
+      {
+        fillColor: backgroundColor,
+        fillOpacity: node.opacity,
+        backgroundGradient,
+        rectRadius,
+      },
+    );
   }
 
   // 2. 背景画像
@@ -135,15 +173,33 @@ export function renderBackgroundAndBorder(
 
   // 3. ボーダー
   if (hasUniformBorder || hasShadow) {
-    ctx.slide.addShape(shapeType, {
-      ...rectPxToIn(node),
-      fill: { type: "none" as const },
-      line: hasUniformBorder
-        ? convertBorderLine(border, "000000")
-        : { type: "none" as const },
-      rectRadius,
-      shadow: convertShadow(shadow),
-    });
+    if (hasShadow) {
+      ctx.slide.addShape(legacyShapeType, {
+        ...rectPxToIn(node),
+        fill: { type: "none" as const },
+        line: hasUniformBorder
+          ? convertBorderLine(border, "000000")
+          : { type: "none" as const },
+        rectRadius,
+        shadow: convertShadow(shadow),
+      });
+    } else {
+      addGlimpseShape(
+        ctx,
+        {
+          preset: shapeType,
+          ...createShapeBoundsInput(node),
+          fill: noneShapeFill(),
+          outline: hasUniformBorder
+            ? shapeOutline(border, "000000")
+            : noShapeOutline(),
+        },
+        node,
+        {
+          rectRadius,
+        },
+      );
+    }
   }
 
   renderPerSideBorderLines(node, perSideBorders, ctx);
@@ -188,16 +244,21 @@ export function renderBorderOnly(
 
   if (!hasVisibleBorder(border)) return;
 
-  const shapeType = borderRadius
-    ? ctx.pptx.ShapeType.roundRect
-    : ctx.pptx.ShapeType.rect;
+  const shapeType = borderRadius ? "roundRect" : "rect";
 
-  ctx.slide.addShape(shapeType, {
-    ...rectPxToIn(node),
-    fill: { type: "none" as const },
-    line: convertBorderLine(border, "000000"),
-    rectRadius: resolveRectRadius(borderRadius, node.w, node.h),
-  });
+  addGlimpseShape(
+    ctx,
+    {
+      preset: shapeType,
+      ...createShapeBoundsInput(node),
+      fill: noneShapeFill(),
+      outline: shapeOutline(border, "000000"),
+    },
+    node,
+    {
+      rectRadius: resolveRectRadius(borderRadius, node.w, node.h),
+    },
+  );
 }
 
 /**
@@ -223,9 +284,15 @@ function renderPerSideBorderLines(
     const style = perSideBorders[side];
     if (!style) continue;
 
-    ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-      ...rectPxToIn(edges[side]),
-      line: convertBorderLine(style, "000000"),
-    });
+    addGlimpseShape(
+      ctx,
+      {
+        preset: "line",
+        ...createShapeBoundsInput(edges[side]),
+        fill: noneShapeFill(),
+        outline: shapeOutline(style, "000000"),
+      },
+      edges[side],
+    );
   }
 }

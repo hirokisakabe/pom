@@ -16,6 +16,7 @@
  * を経由しない。
  */
 import {
+  addShape,
   addTextBox,
   asEmu,
   asHundredthPt,
@@ -24,18 +25,21 @@ import {
   asPt,
   createPptx,
   type AddTextBoxGradientFillInput,
+  type AddShapeInput,
   type AddTextBoxInput,
   type AddTextBoxParagraphInput,
   type AddTextBoxRunPropertiesInput,
+  type PptxSourceModelAddShapeEdit,
   type PptxSourceModelAddTextBoxEdit,
 } from "@pptx-glimpse/document";
 import type {
   PositionedNode,
+  ShadowStyle,
   TextGlow,
   TextOutline,
   Underline,
 } from "../types.ts";
-import { parseLinearGradient } from "../shared/gradient.ts";
+import { parseGradient, parseLinearGradient } from "../shared/gradient.ts";
 import { EMU_PER_IN, pxToEmu, pxToPt } from "./units.ts";
 import { createTextOptions, resolveSubSup } from "./textOptions.ts";
 
@@ -51,6 +55,7 @@ type BrowserWritablePptx = PptxGenJSInstance & {
 type TextPositionedNode = Extract<PositionedNode, { type: "text" }>;
 
 const MARKER_PREFIX = "pom-text:";
+const SHAPE_MARKER_PREFIX = "pom-shape:";
 const HYPERLINK_REL_TYPE =
   "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 
@@ -67,11 +72,11 @@ async function loadJSZip(): Promise<typeof import("jszip")> {
   /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return */
 }
 
-function cleanHex(color: string | undefined): string | undefined {
+export function cleanHex(color: string | undefined): string | undefined {
   return color?.replace(/^#/, "").toUpperCase();
 }
 
-function toColorInput(color: string | undefined) {
+export function toColorInput(color: string | undefined) {
   const hex = cleanHex(color);
   return hex ? { kind: "srgb" as const, hex } : undefined;
 }
@@ -241,6 +246,161 @@ function withGlowAlpha(xml: string, node: TextPositionedNode): string {
   return xml.replaceAll(target, replacement);
 }
 
+function withShapeGlowAlpha(xml: string, glow: TextGlow | undefined): string {
+  if (!glow) return xml;
+  const alpha = Math.round((glow.opacity ?? 0.75) * 100000);
+  const color = cleanHex(glow.color ?? "FFFFFF");
+  const target = `<a:glow rad="${Math.round(pxToEmu(glow.size ?? 8))}"><a:srgbClr val="${color}"/></a:glow>`;
+  const replacement = `<a:glow rad="${Math.round(pxToEmu(glow.size ?? 8))}"><a:srgbClr val="${color}"><a:alpha val="${alpha}"/></a:srgbClr></a:glow>`;
+  return xml.replaceAll(target, replacement);
+}
+
+function colorWithOptionalAlphaXml(
+  color: string,
+  opacity: number | undefined,
+): string {
+  const clean = cleanHex(color) ?? color;
+  if (opacity === undefined) return `<a:srgbClr val="${clean}"/>`;
+  return `<a:srgbClr val="${clean}"><a:alpha val="${Math.round(opacity * 100000)}"/></a:srgbClr>`;
+}
+
+function buildGradFillXml(value: string, opacity?: number): string | undefined {
+  const gradient = parseGradient(value);
+  if (!gradient) return undefined;
+  const gsXml = gradient.value.stops
+    .map(
+      (stop) =>
+        `<a:gs pos="${Math.round(stop.position * 1000)}">${colorWithOptionalAlphaXml(
+          stop.color,
+          opacity,
+        )}</a:gs>`,
+    )
+    .join("");
+
+  if (gradient.kind === "linear") {
+    const dmlAngle = (((gradient.value.angle - 90) % 360) + 360) % 360;
+    const ang = Math.round(dmlAngle * 60000);
+    return `<a:gradFill flip="none" rotWithShape="1"><a:gsLst>${gsXml}</a:gsLst><a:lin ang="${ang}" scaled="0"/></a:gradFill>`;
+  }
+
+  const { centerX, centerY } = gradient.value;
+  const l = Math.round(centerX * 1000);
+  const t = Math.round(centerY * 1000);
+  const r = Math.round((100 - centerX) * 1000);
+  const b = Math.round((100 - centerY) * 1000);
+  return `<a:gradFill flip="none" rotWithShape="1"><a:gsLst>${gsXml}</a:gsLst><a:path path="circle"><a:fillToRect l="${l}" t="${t}" r="${r}" b="${b}"/></a:path></a:gradFill>`;
+}
+
+function withSolidFillAlpha(
+  xml: string,
+  color: string | undefined,
+  opacity: number | undefined,
+): string {
+  if (color === undefined || opacity === undefined) return xml;
+  const clean = cleanHex(color);
+  return xml.replaceAll(
+    `<a:solidFill><a:srgbClr val="${clean}"/></a:solidFill>`,
+    `<a:solidFill>${colorWithOptionalAlphaXml(clean ?? color, opacity)}</a:solidFill>`,
+  );
+}
+
+function withGradientFill(
+  xml: string,
+  backgroundGradient: string | undefined,
+  opacity: number | undefined,
+): string {
+  if (!backgroundGradient) return xml;
+  const gradFill = buildGradFillXml(backgroundGradient, opacity);
+  if (!gradFill) return xml;
+  return xml.replace(
+    /<a:(?:solidFill|gradFill)\b[\s\S]*?<\/a:(?:solidFill|gradFill)>|<a:noFill\/>/,
+    gradFill,
+  );
+}
+
+function withRoundRectAdjust(
+  xml: string,
+  input: AddShapeInput,
+  rectRadius: number | undefined,
+): string {
+  if (input.preset !== "roundRect" || rectRadius === undefined) return xml;
+  const minDimensionIn = Math.min(input.width, input.height) / EMU_PER_IN;
+  const adj = Math.round((rectRadius / minDimensionIn) * 100000);
+  return xml.replace(
+    /<a:prstGeom prst="roundRect"><a:avLst\/><\/a:prstGeom>/,
+    `<a:prstGeom prst="roundRect"><a:avLst><a:gd name="adj" fmla="val ${adj}"/></a:avLst></a:prstGeom>`,
+  );
+}
+
+function shadowXml(shadow: ShadowStyle | undefined): string | undefined {
+  if (!shadow) return undefined;
+  const blur = Math.round(pxToPt(shadow.blur ?? 0) * 12700);
+  const dist = Math.round(pxToPt(shadow.offset ?? 0) * 12700);
+  const dir = Math.round((shadow.angle ?? 45) * 60000);
+  const color = cleanHex(shadow.color ?? "000000") ?? "000000";
+  const alpha = Math.round((shadow.opacity ?? 0.35) * 100000);
+  if (shadow.type === "inner") {
+    return `<a:innerShdw blurRad="${blur}" dist="${dist}" dir="${dir}"><a:srgbClr val="${color}"><a:alpha val="${alpha}"/></a:srgbClr></a:innerShdw>`;
+  }
+  return `<a:outerShdw sx="100000" sy="100000" kx="0" ky="0" algn="bl" rotWithShape="0" blurRad="${blur}" dist="${dist}" dir="${dir}"><a:srgbClr val="${color}"><a:alpha val="${alpha}"/></a:srgbClr></a:outerShdw>`;
+}
+
+function withShadow(xml: string, shadow: ShadowStyle | undefined): string {
+  const effect = shadowXml(shadow);
+  if (!effect) return xml;
+  if (xml.includes("<a:effectLst>")) {
+    return xml.replace("</a:effectLst>", `${effect}</a:effectLst>`);
+  }
+  return xml.replace(
+    "</p:spPr>",
+    `<a:effectLst>${effect}</a:effectLst></p:spPr>`,
+  );
+}
+
+function withLineFlip(
+  xml: string,
+  flipH: boolean | undefined,
+  flipV: boolean | undefined,
+): string {
+  if (!flipH && !flipV) return xml;
+  return xml.replace(
+    "<a:xfrm",
+    `<a:xfrm${flipH ? ' flipH="1"' : ""}${flipV ? ' flipV="1"' : ""}`,
+  );
+}
+
+function withLineZeroExtent(
+  xml: string,
+  preset: string,
+  zeroWidth: boolean | undefined,
+  zeroHeight: boolean | undefined,
+): string {
+  if (preset !== "line" || (!zeroWidth && !zeroHeight)) return xml;
+  return xml.replace(
+    /<a:ext cx="(\d+)" cy="(\d+)"\/>/,
+    `<a:ext cx="${zeroWidth ? "0" : "$1"}" cy="${zeroHeight ? "0" : "$2"}"/>`,
+  );
+}
+
+function withPptxGenLineArrowDefaults(xml: string, preset: string): string {
+  if (preset !== "line") return xml;
+  const withoutDefaultSizes = xml.replace(
+    /<a:(headEnd|tailEnd) type="([^"]+)" w="med" len="med"\/>/g,
+    '<a:$1 type="$2"/>',
+  );
+  return withoutDefaultSizes.replace(
+    /<a:ln\b([^>]*)>([\s\S]*?)<\/a:ln>/g,
+    (match, attrs, body) => {
+      const bodyText = body as string;
+      if (bodyText.includes("<a:prstDash")) return match;
+      return `<a:ln${attrs as string}>${bodyText.replace(
+        /(<a:(?:solidFill|noFill\/)>[\s\S]*?<\/a:solidFill>|<a:noFill\/>)/,
+        '$1<a:prstDash val="solid"/>',
+      )}</a:ln>`;
+    },
+  );
+}
+
 function withPptxGenParagraphDefaults(xml: string): string {
   let result = xml.replaceAll('baseline="-25000"', 'baseline="-40000"');
   result = result.replace(/<a:bodyPr\b([^>]*)\/>/g, (_match, attrs) => {
@@ -316,6 +476,56 @@ function createTextBoxXml(
   };
 }
 
+export type GlimpseShapeXmlOptions = {
+  fillColor?: string;
+  fillOpacity?: number;
+  backgroundGradient?: string;
+  glow?: TextGlow;
+  shadow?: ShadowStyle;
+  rectRadius?: number;
+  flipH?: boolean;
+  flipV?: boolean;
+  zeroWidth?: boolean;
+  zeroHeight?: boolean;
+};
+
+function createShapeXml(
+  input: AddShapeInput,
+  options: GlimpseShapeXmlOptions | undefined,
+): string {
+  const source = createPptx();
+  const slideHandle = source.slides[0]?.handle;
+  if (!slideHandle) {
+    throw new Error("createPptx did not create an editable slide");
+  }
+
+  const edited = addShape(source, slideHandle, input);
+  const edit = edited.edits?.at(-1) as PptxSourceModelAddShapeEdit | undefined;
+  if (edit?.kind !== "addShape") {
+    throw new Error("addShape did not produce an addShape edit");
+  }
+
+  let xml = edit.xml;
+  xml = withShapeGlowAlpha(xml, options?.glow);
+  xml = withSolidFillAlpha(xml, options?.fillColor, options?.fillOpacity);
+  xml = withGradientFill(
+    xml,
+    options?.backgroundGradient,
+    options?.fillOpacity,
+  );
+  xml = withRoundRectAdjust(xml, input, options?.rectRadius);
+  xml = withShadow(xml, options?.shadow);
+  xml = withLineFlip(xml, options?.flipH, options?.flipV);
+  xml = withLineZeroExtent(
+    xml,
+    input.preset,
+    options?.zeroWidth,
+    options?.zeroHeight,
+  );
+  xml = withPptxGenLineArrowDefaults(xml, input.preset);
+  return xml;
+}
+
 interface RegisteredTextBox {
   marker: string;
   name: string;
@@ -325,13 +535,27 @@ interface RegisteredTextBox {
 
 export class GlimpseTextBoxRegistry {
   private readonly registered: RegisteredTextBox[] = [];
+  private textCount = 0;
+  private shapeCount = 0;
 
   register(node: TextPositionedNode): string {
-    const index = this.registered.length;
+    const index = this.textCount++;
     const marker = `${MARKER_PREFIX}${index}`;
     const name = `Text ${index + 1}`;
     const { xml, hyperlinks } = createTextBoxXml(node, name);
     this.registered.push({ marker, name, xml, hyperlinks });
+    return marker;
+  }
+
+  registerShape(
+    input: AddShapeInput,
+    options?: GlimpseShapeXmlOptions & { name?: string },
+  ): string {
+    const index = this.shapeCount++;
+    const marker = `${SHAPE_MARKER_PREFIX}${index}`;
+    const name = options?.name ?? `Shape ${index + 1}`;
+    const xml = createShapeXml({ ...input, name }, options);
+    this.registered.push({ marker, name, xml, hyperlinks: [] });
     return marker;
   }
 

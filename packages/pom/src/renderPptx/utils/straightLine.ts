@@ -7,7 +7,15 @@
  */
 import type { LineArrow, LineNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToIn, pxToPt } from "../units.ts";
+import { asEmu } from "@pptx-glimpse/document";
+import { pxToEmu } from "../units.ts";
+import {
+  addGlimpseShape,
+  arrowEndpoint,
+  createShapeBoundsInput,
+  noneShapeFill,
+  solidShapeFill,
+} from "./glimpseShape.ts";
 
 /**
  * boolean | LineArrowOptions から pptxgenjs の arrow type を取得
@@ -53,19 +61,24 @@ export function addStraightLine(
   const flipH = x2 < x1;
   const flipV = y2 < y1;
 
-  ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-    x: pxToIn(minX),
-    y: pxToIn(minY),
-    w: pxToIn(lineW),
-    h: pxToIn(lineH),
-    flipH,
-    flipV,
-    line: {
-      color: color ?? "000000",
-      width: lineWidth !== undefined ? pxToPt(lineWidth) : 1,
-      dashType,
-      beginArrowType: resolveArrowType(beginArrow),
-      endArrowType: resolveArrowType(endArrow),
+  addGlimpseShape(
+    ctx,
+    {
+      preset: "line",
+      ...createShapeBoundsInput({ x: minX, y: minY, w: lineW, h: lineH }),
+      fill: noneShapeFill(),
+      outline: {
+        fill: solidShapeFill(color ?? "000000"),
+        width:
+          lineWidth !== undefined
+            ? asEmu(Math.round(pxToEmu(lineWidth)))
+            : asEmu(12700),
+        dash: dashType === "lgDashDotDot" ? undefined : dashType,
+        headEnd: arrowEndpoint(resolveArrowType(beginArrow)),
+        tailEnd: arrowEndpoint(resolveArrowType(endArrow)),
+      },
     },
-  });
+    { x: minX, y: minY, w: lineW, h: lineH },
+    { flipH, flipV },
+  );
 }
