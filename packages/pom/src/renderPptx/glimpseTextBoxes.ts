@@ -534,6 +534,7 @@ export type GlimpseShapeXmlOptions = {
   fillOpacity?: number;
   backgroundGradient?: string;
   outlineGradient?: string;
+  outlineOpacity?: number;
   glow?: TextGlow;
   shadow?: ShadowStyle;
   rectRadius?: number;
@@ -570,7 +571,7 @@ function buildCustomGeometryXml(
   let hasMoveTo = false;
   const commands = geometry.points
     .map((point) => {
-      if ("close" in point) return "<a:close/>";
+      if ("close" in point) return hasMoveTo ? "<a:close/>" : "";
       if (!hasMoveTo) {
         hasMoveTo = true;
         return `<a:moveTo>${geometryPointXml(point)}</a:moveTo>`;
@@ -607,13 +608,22 @@ function withOutlineGradientFill(
   if (!outlineGradient) return xml;
   const gradFill = buildGradFillXml(outlineGradient, opacity);
   if (!gradFill) return xml;
+  const lineFillPattern =
+    /<a:(?:solidFill|gradFill)\b[\s\S]*?<\/a:(?:solidFill|gradFill)>|<a:noFill\/>/;
+  if (/<a:ln\b[^>]*\/>/.test(xml)) {
+    return xml.replace(
+      /<a:ln\b([^>]*)\/>/,
+      (_match, attrs: string) => `<a:ln${attrs}>${gradFill}</a:ln>`,
+    );
+  }
   return xml.replace(
     /(<a:ln\b[^>]*>)([\s\S]*?)(<\/a:ln>)/,
-    (_match, open: string, body: string, close: string) =>
-      `${open}${body.replace(
-        /<a:(?:solidFill|gradFill)\b[\s\S]*?<\/a:(?:solidFill|gradFill)>|<a:noFill\/>/,
-        gradFill,
-      )}${close}`,
+    (_match, open: string, body: string, close: string) => {
+      const nextBody = lineFillPattern.test(body)
+        ? body.replace(lineFillPattern, gradFill)
+        : `${gradFill}${body}`;
+      return `${open}${nextBody}${close}`;
+    },
   );
 }
 
@@ -645,7 +655,7 @@ function createShapeXml(
   xml = withOutlineGradientFill(
     xml,
     options?.outlineGradient,
-    options?.fillOpacity,
+    options?.outlineOpacity ?? options?.fillOpacity,
   );
   xml = withRoundRectAdjust(xml, input, options?.rectRadius);
   xml = withShadow(xml, options?.shadow);

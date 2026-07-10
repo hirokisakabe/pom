@@ -23,6 +23,7 @@ export type GlimpseShapeStyleOptions = {
   fillOpacity?: number;
   backgroundGradient?: string;
   outlineGradient?: string;
+  outlineOpacity?: number;
   glow?: TextGlow;
   shadow?: ShadowStyle;
   rectRadius?: number;

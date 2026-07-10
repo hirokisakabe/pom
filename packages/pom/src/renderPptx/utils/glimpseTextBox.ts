@@ -143,9 +143,17 @@ function textBoxInput(
 }
 
 function withShapeAutofit(xml: string): string {
-  return xml.replace(
+  const selfClosing = xml.replace(
     /<a:bodyPr\b([^>]*)\/>/,
     (_match, attrs: string) => `<a:bodyPr${attrs}><a:spAutoFit/></a:bodyPr>`,
+  );
+  if (selfClosing !== xml) return selfClosing;
+  return xml.replace(
+    /(<a:bodyPr\b[^>]*>)([\s\S]*?)(<\/a:bodyPr>)/,
+    (_match, open: string, body: string, close: string) => {
+      if (body.includes("<a:spAutoFit/>")) return `${open}${body}${close}`;
+      return `${open}<a:spAutoFit/>${body}${close}`;
+    },
   );
 }
 

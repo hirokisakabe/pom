@@ -543,13 +543,18 @@ describe("renderTimelineNode", () => {
           h: 400,
           items,
           connectorGradient: "linear-gradient(90deg, #1D4ED8 0%, #DC2626 100%)",
+          opacity: 0.4,
         },
       ]),
     );
     expect(buildContext.gradientFills.entries).toEqual([]);
     expect(slideXml).toContain("<a:gradFill");
-    expect(slideXml).toContain('<a:srgbClr val="1D4ED8"/>');
-    expect(slideXml).toContain('<a:srgbClr val="DC2626"/>');
+    expect(slideXml).toMatch(
+      /<a:srgbClr val="1D4ED8"><a:alpha val="40000"\/><\/a:srgbClr>/,
+    );
+    expect(slideXml).toMatch(
+      /<a:srgbClr val="DC2626"><a:alpha val="40000"\/><\/a:srgbClr>/,
+    );
   });
 
   it("useColorForDate=true なら各 item.color が date テキスト色になる", async () => {
