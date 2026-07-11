@@ -1,6 +1,6 @@
 {
   "name": "@hirokisakabe/pom",
-  "version": "9.1.1",
+  "version": "9.1.2",
   "description": "AI-friendly PowerPoint generation with a Flexbox layout engine.",
   "type": "module",
   "main": "./dist/index.js",
