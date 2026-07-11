@@ -5,7 +5,7 @@ import { pxToIn, pxToPt } from "../units.ts";
 import { measureTimeline } from "../../calcYogaLayout/measureCompositeNodes.ts";
 import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
 import { withContentBounds } from "../utils/contentArea.ts";
-import { registerBackgroundGradient } from "../gradientFills.ts";
+import { addStraightLine } from "../utils/straightLine.ts";
 
 type TimelinePositionedNode = Extract<PositionedNode, { type: "timeline" }>;
 
@@ -22,6 +22,8 @@ type TimelineRenderOptions = {
   scaleFactor: number;
   textColors: TimelineTextColors;
   connectorLineColor: string;
+  connectorGradient?: string;
+  opacity?: number;
   fontFace: string;
   useColorForDate: boolean;
 };
@@ -46,18 +48,7 @@ export function renderTimelineNode(
     description: stripHash(node.descriptionColor) ?? "64748B",
   };
 
-  // 軸線色を解決する。connectorGradient が指定されていれば gradient registry に
-  // 登録してマーカー色を採用する (後処理で gradFill に置換される)。
-  // connectorColor が指定されていればそれを採用、未指定ならデフォルトの E2E8F0。
-  const connectorGradientMarker = node.connectorGradient
-    ? registerBackgroundGradient(
-        node.connectorGradient,
-        node.opacity,
-        ctx.buildContext.gradientFills,
-      )
-    : undefined;
-  const connectorLineColor =
-    connectorGradientMarker ?? stripHash(node.connectorColor) ?? "E2E8F0";
+  const connectorLineColor = stripHash(node.connectorColor) ?? "E2E8F0";
 
   const fontFace = node.fontFamily ?? "Noto Sans JP";
   const useColorForDate = node.useColorForDate ?? false;
@@ -82,6 +73,8 @@ export function renderTimelineNode(
     scaleFactor,
     textColors,
     connectorLineColor,
+    connectorGradient: node.connectorGradient,
+    opacity: node.opacity,
     fontFace,
     useColorForDate,
   };
@@ -120,6 +113,8 @@ function renderHorizontalTimeline(
     scaleFactor,
     textColors,
     connectorLineColor,
+    connectorGradient,
+    opacity,
     fontFace,
   } = options;
   const itemCount = items.length;
@@ -132,13 +127,16 @@ function renderHorizontalTimeline(
   const lineLength = endX - startX;
 
   // メインの線を描画
-  ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-    x: pxToIn(startX),
-    y: pxToIn(lineY),
-    w: pxToIn(lineLength),
-    h: 0,
-    line: { color: connectorLineColor, width: pxToPt(lineWidth) },
-  });
+  addStraightLine(
+    ctx,
+    { x1: startX, y1: lineY, x2: endX, y2: lineY },
+    {
+      color: connectorLineColor,
+      lineWidth,
+      backgroundGradient: connectorGradient,
+      opacity,
+    },
+  );
   const dateLabelH = 24 * scaleFactor;
   const titleLabelH = 24 * scaleFactor;
   const descLabelH = 32 * scaleFactor;
@@ -221,6 +219,8 @@ function renderVerticalTimeline(
     scaleFactor,
     textColors,
     connectorLineColor,
+    connectorGradient,
+    opacity,
     fontFace,
   } = options;
   const itemCount = items.length;
@@ -230,13 +230,16 @@ function renderVerticalTimeline(
   const lineLength = endY - startY;
 
   // メインの線を描画
-  ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-    x: pxToIn(lineX),
-    y: pxToIn(startY),
-    w: 0,
-    h: pxToIn(lineLength),
-    line: { color: connectorLineColor, width: pxToPt(lineWidth) },
-  });
+  addStraightLine(
+    ctx,
+    { x1: lineX, y1: startY, x2: lineX, y2: endY },
+    {
+      color: connectorLineColor,
+      lineWidth,
+      backgroundGradient: connectorGradient,
+      opacity,
+    },
+  );
 
   const labelGap = 16 * scaleFactor;
   const dateLabelW = 100 * scaleFactor;

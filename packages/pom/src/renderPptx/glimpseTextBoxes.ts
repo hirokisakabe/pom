@@ -16,6 +16,7 @@
  * を経由しない。
  */
 import {
+  addPicture,
   addShape,
   addTextBox,
   asEmu,
@@ -26,11 +27,17 @@ import {
   createPptx,
   type AddTextBoxGradientFillInput,
   type AddShapeInput,
+  type AddPictureInput,
   type AddTextBoxInput,
   type AddTextBoxParagraphInput,
   type AddTextBoxRunPropertiesInput,
+  type MediaPart,
+  type PartPath,
+  type PptxSourceModel,
+  type PptxSourceModelAddPictureEdit,
   type PptxSourceModelAddShapeEdit,
   type PptxSourceModelAddTextBoxEdit,
+  readPptx,
 } from "@pptx-glimpse/document";
 import type {
   BorderStyle,
@@ -57,8 +64,12 @@ type TextPositionedNode = Extract<PositionedNode, { type: "text" }>;
 
 const MARKER_PREFIX = "pom-text:";
 const SHAPE_MARKER_PREFIX = "pom-shape:";
+const PICTURE_MARKER_PREFIX = "pom-picture:";
+const SLIDE_BACKGROUND_MARKER_BASE = 0x0f7a3d;
 const HYPERLINK_REL_TYPE =
   "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
+const IMAGE_REL_TYPE =
+  "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
 
 interface GlimpseTextRun {
   text: string;
@@ -309,10 +320,25 @@ function withGradientFill(
   xml: string,
   backgroundGradient: string | undefined,
   opacity: number | undefined,
+  preset: string,
 ): string {
   if (!backgroundGradient) return xml;
   const gradFill = buildGradFillXml(backgroundGradient, opacity);
   if (!gradFill) return xml;
+  if (preset === "line") {
+    return xml.replace(
+      /<a:ln\b([^>]*)>([\s\S]*?)<\/a:ln>/,
+      (match, attrs, body) => {
+        const nextBody = (body as string).replace(
+          /<a:(?:solidFill|gradFill)\b[\s\S]*?<\/a:(?:solidFill|gradFill)>|<a:noFill\/>/,
+          gradFill,
+        );
+        return nextBody === body
+          ? match
+          : `<a:ln${attrs as string}>${nextBody}</a:ln>`;
+      },
+    );
+  }
   return xml.replace(
     /<a:(?:solidFill|gradFill)\b[\s\S]*?<\/a:(?:solidFill|gradFill)>|<a:noFill\/>/,
     gradFill,
@@ -528,6 +554,7 @@ function createShapeXml(
     xml,
     options?.backgroundGradient,
     options?.fillOpacity,
+    input.preset,
   );
   xml = withRoundRectAdjust(xml, input, options?.rectRadius);
   xml = withShadow(xml, options?.shadow);
@@ -544,23 +571,44 @@ function createShapeXml(
 }
 
 interface RegisteredTextBox {
+  kind: "shape";
   marker: string;
   name: string;
   xml: string;
   hyperlinks: readonly (string | undefined)[];
 }
 
+interface RegisteredPicture {
+  kind: "picture";
+  marker: string;
+  name: string;
+  input: AddPictureInput;
+  shadow?: ShadowStyle;
+}
+
+interface RegisteredSlideBackground {
+  kind: "slideBackground";
+  marker: string;
+  slideNumber: number;
+  xml: string;
+}
+
+type RegisteredDrawing =
+  RegisteredTextBox | RegisteredPicture | RegisteredSlideBackground;
+
 export class GlimpseTextBoxRegistry {
-  private readonly registered: RegisteredTextBox[] = [];
+  private readonly registered: RegisteredDrawing[] = [];
   private textCount = 0;
   private shapeCount = 0;
+  private pictureCount = 0;
+  private slideBackgroundCount = 0;
 
   register(node: TextPositionedNode): string {
     const index = this.textCount++;
     const marker = `${MARKER_PREFIX}${index}`;
     const name = `Text ${index + 1}`;
     const { xml, hyperlinks } = createTextBoxXml(node, name);
-    this.registered.push({ marker, name, xml, hyperlinks });
+    this.registered.push({ kind: "shape", marker, name, xml, hyperlinks });
     return marker;
   }
 
@@ -572,7 +620,39 @@ export class GlimpseTextBoxRegistry {
     const marker = `${SHAPE_MARKER_PREFIX}${index}`;
     const name = options?.name ?? `Shape ${index + 1}`;
     const xml = createShapeXml({ ...input, name }, options);
-    this.registered.push({ marker, name, xml, hyperlinks: [] });
+    this.registered.push({ kind: "shape", marker, name, xml, hyperlinks: [] });
+    return marker;
+  }
+
+  registerPicture(
+    input: AddPictureInput,
+    options?: { name?: string; shadow?: ShadowStyle },
+  ): string {
+    const index = this.pictureCount++;
+    const marker = `${PICTURE_MARKER_PREFIX}${index}`;
+    const name = options?.name ?? `Picture ${index + 1}`;
+    this.registered.push({
+      kind: "picture",
+      marker,
+      name,
+      input: { ...input, name },
+      shadow: options?.shadow,
+    });
+    return marker;
+  }
+
+  registerSlideBackgroundGradient(
+    backgroundGradient: string,
+    slideNumber: number,
+    opacity?: number,
+  ): string | undefined {
+    const xml = buildGradFillXml(backgroundGradient, opacity);
+    if (!xml) return undefined;
+    const marker = (SLIDE_BACKGROUND_MARKER_BASE + this.slideBackgroundCount++)
+      .toString(16)
+      .toUpperCase()
+      .padStart(6, "0");
+    this.registered.push({ kind: "slideBackground", marker, slideNumber, xml });
     return marker;
   }
 
@@ -580,7 +660,7 @@ export class GlimpseTextBoxRegistry {
     return this.registered.length === 0;
   }
 
-  get entries(): readonly RegisteredTextBox[] {
+  get entries(): readonly RegisteredDrawing[] {
     return this.registered;
   }
 }
@@ -631,6 +711,20 @@ class SlideRelationshipEditor {
     return id;
   }
 
+  addImageRelationship(id: string, target: string): void {
+    const idPattern = new RegExp(`\\bId="${escapeRegExp(id)}"`);
+    if (idPattern.test(this.xml)) return;
+    const rel =
+      `<Relationship Id="${xmlAttr(id)}" Type="${IMAGE_REL_TYPE}" ` +
+      `Target="${xmlAttr(target)}"/>`;
+    this.xml = this.xml.replace("</Relationships>", `${rel}</Relationships>`);
+    const numeric = id.match(/^rId(\d+)$/)?.[1];
+    if (numeric) {
+      this.nextId = Math.max(this.nextId, Number(numeric) + 1);
+    }
+    this.changed = true;
+  }
+
   get result(): { xml: string; changed: boolean } {
     return { xml: this.xml, changed: this.changed };
   }
@@ -662,6 +756,37 @@ function withHyperlinkRelationships(
   );
 }
 
+function findSlideHandle(source: PptxSourceModel, slidePath: string) {
+  return source.slides.find((slide) => slide.partPath === slidePath)?.handle;
+}
+
+function findMediaPart(source: PptxSourceModel, partPath: PartPath): MediaPart {
+  const media = source.packageGraph.media.find(
+    (part) => part.partPath === partPath,
+  );
+  if (!media) {
+    throw new Error(`addPicture media part was not found: ${partPath}`);
+  }
+  return media;
+}
+
+function findSlideImageTarget(
+  source: PptxSourceModel,
+  slidePath: string,
+  relationshipId: string,
+): string {
+  const relationships = source.packageGraph.relationships.find(
+    (group) => group.sourcePartPath === slidePath,
+  );
+  const relationship = relationships?.relationships.find(
+    (candidate) => candidate.id === relationshipId,
+  );
+  if (!relationship) {
+    throw new Error(`addPicture relationship was not found: ${relationshipId}`);
+  }
+  return relationship.target;
+}
+
 function applyGlimpseTextBoxesToXml(
   xml: string,
   registry: GlimpseTextBoxRegistry,
@@ -669,6 +794,7 @@ function applyGlimpseTextBoxesToXml(
 ): string {
   let result = xml;
   for (const entry of registry.entries) {
+    if (entry.kind !== "shape") continue;
     const re = new RegExp(
       `<p:sp><p:nvSpPr><p:cNvPr id="([^"]+)" name="${escapeRegExp(
         entry.marker,
@@ -687,12 +813,124 @@ function applyGlimpseTextBoxesToXml(
   return result;
 }
 
+function applySlideBackgroundGradientsToXml(
+  xml: string,
+  registry: GlimpseTextBoxRegistry,
+  slidePath: string,
+): string {
+  let result = xml;
+  const slideNumber = Number(slidePath.match(/slide(\d+)\.xml$/)?.[1]);
+  for (const entry of registry.entries) {
+    if (entry.kind !== "slideBackground") continue;
+    if (entry.slideNumber !== slideNumber) continue;
+    const target = `<p:bgPr><a:solidFill><a:srgbClr val="${entry.marker}"/></a:solidFill></p:bgPr>`;
+    result = result.replace(target, `<p:bgPr>${entry.xml}</p:bgPr>`);
+  }
+  return result;
+}
+
+function withPptxGenPictureSizingXml(xml: string, hasSizing: boolean): string {
+  if (!hasSizing) return xml;
+  return xml.replace("<a:stretch><a:fillRect/></a:stretch>", "<a:stretch/>");
+}
+
+function applyGlimpsePicturesToXml(
+  xml: string,
+  registry: GlimpseTextBoxRegistry,
+  source: PptxSourceModel,
+  slidePath: string,
+  relationshipEditor: SlideRelationshipEditor,
+  addMedia: (media: MediaPart) => void,
+): { xml: string; source: PptxSourceModel } {
+  let result = xml;
+  let editedSource = source;
+  for (const entry of registry.entries) {
+    if (entry.kind !== "picture") continue;
+    const re = new RegExp(
+      `<p:sp><p:nvSpPr><p:cNvPr id="([^"]+)" name="${escapeRegExp(
+        entry.marker,
+      )}"[\\s\\S]*?</p:sp>`,
+      "g",
+    );
+    result = result.replace(re, (_match, id: string) => {
+      const slideHandle = findSlideHandle(editedSource, slidePath);
+      if (!slideHandle) {
+        throw new Error(`slide handle was not found: ${slidePath}`);
+      }
+      editedSource = addPicture(editedSource, slideHandle, entry.input);
+      const edit = editedSource.edits?.at(-1) as
+        PptxSourceModelAddPictureEdit | undefined;
+      if (edit?.kind !== "addPicture") {
+        throw new Error("addPicture did not produce an addPicture edit");
+      }
+      const media = findMediaPart(editedSource, edit.mediaPartPath);
+      addMedia(media);
+      relationshipEditor.addImageRelationship(
+        edit.relationshipId,
+        findSlideImageTarget(editedSource, slidePath, edit.relationshipId),
+      );
+      const xml = withPptxGenPictureSizingXml(
+        replaceShapeId(edit.xml, id, entry.name),
+        entry.input.crop !== undefined,
+      );
+      return withShadow(xml, entry.shadow);
+    });
+  }
+  return { xml: result, source: editedSource };
+}
+
+function ensureContentTypeDefault(
+  xml: string,
+  extension: string,
+  contentType: string,
+): string {
+  const existing = new RegExp(
+    `<Default\\s+[^>]*Extension="${escapeRegExp(extension)}"[^>]*/>`,
+  );
+  if (existing.test(xml)) return xml;
+  const entry = `<Default Extension="${xmlAttr(extension)}" ContentType="${xmlAttr(
+    contentType,
+  )}"/>`;
+  return xml.replace("</Types>", `${entry}</Types>`);
+}
+
+async function applyGlimpseMediaParts(
+  zip: import("jszip"),
+  mediaParts: Iterable<MediaPart>,
+): Promise<void> {
+  const mediaList = Array.from(mediaParts);
+  if (mediaList.length === 0) return;
+  const contentTypesFile = zip.file("[Content_Types].xml");
+  if (!contentTypesFile) {
+    throw new Error("[Content_Types].xml was not found in pptx output");
+  }
+  let contentTypesXml = await contentTypesFile.async("text");
+  for (const media of mediaList) {
+    zip.file(media.partPath, media.bytes);
+    const extension = media.partPath.split(".").at(-1);
+    if (!extension) continue;
+    contentTypesXml = ensureContentTypeDefault(
+      contentTypesXml,
+      extension,
+      media.contentType,
+    );
+  }
+  zip.file("[Content_Types].xml", contentTypesXml);
+}
+
 async function applyGlimpseTextBoxes(
   data: Uint8Array | ArrayBuffer,
   registry: GlimpseTextBoxRegistry,
 ): Promise<import("jszip")> {
   const JSZip = await loadJSZip();
   const zip = await JSZip.loadAsync(data);
+  const hasPictures = registry.entries.some(
+    (entry) => entry.kind === "picture",
+  );
+  let source = hasPictures
+    ? readPptx(data instanceof Uint8Array ? data : new Uint8Array(data))
+    : undefined;
+  const addedMedia = new Map<string, MediaPart>();
 
   const slidePaths = Object.keys(zip.files).filter((path) =>
     /^ppt\/slides\/slide\d+\.xml$/.test(path),
@@ -706,8 +944,28 @@ async function applyGlimpseTextBoxes(
     const relationshipEditor = createRelationshipEditor(
       relsFile ? await relsFile.async("text") : undefined,
     );
-    const replaced = applyGlimpseTextBoxesToXml(original, registry, (href) =>
-      relationshipEditor.addHyperlink(href),
+    const withSlideBackground = applySlideBackgroundGradientsToXml(
+      original,
+      registry,
+      path,
+    );
+    const pictureResult = source
+      ? applyGlimpsePicturesToXml(
+          withSlideBackground,
+          registry,
+          source,
+          path,
+          relationshipEditor,
+          (media) => {
+            addedMedia.set(media.partPath, media);
+          },
+        )
+      : { xml: withSlideBackground, source };
+    source = pictureResult.source;
+    const replaced = applyGlimpseTextBoxesToXml(
+      pictureResult.xml,
+      registry,
+      (href) => relationshipEditor.addHyperlink(href),
     );
     if (replaced !== original) {
       zip.file(path, replaced);
@@ -717,6 +975,7 @@ async function applyGlimpseTextBoxes(
       zip.file(relsPath, relationships.xml);
     }
   }
+  await applyGlimpseMediaParts(zip, addedMedia.values());
   return zip;
 }
 

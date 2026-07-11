@@ -5,46 +5,11 @@ import path from "path";
 import { describe, expect, it } from "vitest";
 import { buildPptx } from "../buildPptx.ts";
 import { ParseXmlError } from "../parseXml/parseXml.ts";
-import type { Gradient } from "../shared/gradient.ts";
-import { GradientFillRegistry } from "./gradientFills.ts";
 
 async function readSlideXml(buffer: Uint8Array | ArrayBuffer): Promise<string> {
   const zip = await JSZip.loadAsync(buffer);
   return zip.file("ppt/slides/slide1.xml")!.async("text");
 }
-
-describe("GradientFillRegistry", () => {
-  const gradient: Gradient = {
-    kind: "linear",
-    value: {
-      angle: 90,
-      stops: [
-        { color: "FF0000", position: 0 },
-        { color: "0000FF", position: 100 },
-      ],
-    },
-  };
-
-  it("同一スペックには同じマーカーを返し、異なるスペックには別マーカーを返す", () => {
-    const registry = new GradientFillRegistry();
-    const marker1 = registry.register(gradient);
-    const marker2 = registry.register({ ...gradient });
-    const marker3 = registry.register(gradient, 0.5);
-    expect(marker1).toMatch(/^[0-9A-F]{6}$/);
-    expect(marker2).toBe(marker1);
-    expect(marker3).not.toBe(marker1);
-    expect(registry.entries).toHaveLength(2);
-  });
-
-  it("予約済みの色はマーカーとして使用しない", () => {
-    const plain = new GradientFillRegistry();
-    const firstMarker = plain.register(gradient);
-
-    const registry = new GradientFillRegistry();
-    registry.reserveColors(`<Text backgroundColor="${firstMarker}"/>`);
-    expect(registry.register(gradient)).not.toBe(firstMarker);
-  });
-});
 
 describe("buildPptx with backgroundGradient", () => {
   it("shape の背景がネイティブの gradFill として出力される", async () => {
@@ -89,7 +54,7 @@ describe("buildPptx with backgroundGradient", () => {
     expect(slideXml).not.toContain('<a:solidFill><a:srgbClr val="0F7A3D"/>');
   });
 
-  it("ルートノードの backgroundGradient はスライド背景 (p:bgPr) に適用される", async () => {
+  it("ルートノードの backgroundGradient はスライド背景に適用される", async () => {
     const xml = `<Slide><VStack w="100%" h="max" backgroundGradient="linear-gradient(to right, #11998E, #38EF7D)">
       <Text fontSize="24">test</Text>
     </VStack></Slide>`;
@@ -101,6 +66,27 @@ describe("buildPptx with backgroundGradient", () => {
 
     expect(slideXml).toMatch(/<p:bgPr><a:gradFill/);
     expect(slideXml).toContain('<a:lin ang="0" scaled="0"/>');
+  });
+
+  it("ルート backgroundGradient の marker 色は別スライドの通常背景色を置換しない", async () => {
+    const xml = `
+      <Slide><VStack w="100%" h="max" backgroundGradient="linear-gradient(to right, #11998E, #38EF7D)">
+        <Text fontSize="24">gradient</Text>
+      </VStack></Slide>
+      <Slide><VStack w="100%" h="max" backgroundColor="0F7A3D">
+        <Text fontSize="24">solid</Text>
+      </VStack></Slide>`;
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const buffer = (await pptx.write({
+      outputType: "uint8array",
+    })) as Uint8Array;
+    const zip = await JSZip.loadAsync(buffer);
+    const slide1Xml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+    const slide2Xml = await zip.file("ppt/slides/slide2.xml")!.async("text");
+
+    expect(slide1Xml).toMatch(/<p:bgPr><a:gradFill/);
+    expect(slide2Xml).toContain('<a:srgbClr val="0F7A3D"/>');
+    expect(slide2Xml).not.toContain("<a:gradFill");
   });
 
   it("opacity 指定時は各カラーストップに alpha が付く", async () => {
