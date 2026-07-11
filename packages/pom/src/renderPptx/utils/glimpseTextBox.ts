@@ -205,7 +205,10 @@ function bulletXml(options: ListBulletOptions): string {
   if (options.kind === "bullet") {
     return '<a:buSzPct val="100000"/><a:buChar char="&#x2022;"/>';
   }
-  return `<a:buSzPct val="100000"/><a:buFont typeface="+mj-lt"/><a:buAutoNum type="arabicPeriod" startAt="${
+  const scheme = isSupportedAutoNumScheme(options.scheme)
+    ? options.scheme
+    : "arabicPeriod";
+  return `<a:buSzPct val="100000"/><a:buFont typeface="+mj-lt"/><a:buAutoNum type="${scheme}" startAt="${
     options.startAt ?? 1
   }"/>`;
 }
@@ -226,28 +229,28 @@ function isSupportedAutoNumScheme(
   );
 }
 
+function withoutParagraphIndentAttrs(attrs: string): string {
+  return attrs.replace(/\s(?:indent|marL)="[^"]*"/g, "");
+}
+
 export function listBulletXmlTransform(
   options: ListBulletOptions & { lineHeight?: number },
 ) {
   const lineSpacing = `<a:lnSpc><a:spcPct val="${Math.round(
     (options.lineHeight ?? 1.3) * 100000,
   )}"/></a:lnSpc>`;
-  const paragraphBody = `${lineSpacing}${bulletXml(
-    options.kind === "number" && !isSupportedAutoNumScheme(options.scheme)
-      ? { ...options, scheme: options.scheme ?? "arabicPeriod" }
-      : options,
-  )}`;
+  const paragraphBody = `${lineSpacing}${bulletXml(options)}`;
   return (xml: string): string => {
     const expanded = xml.replace(
       /<a:pPr([^>]*)\/>/g,
       (_match, attrs: string) =>
-        `<a:pPr${attrs} marL="342900" indent="-342900">${paragraphBody}</a:pPr>`,
+        `<a:pPr${withoutParagraphIndentAttrs(attrs)} marL="342900" indent="-342900">${paragraphBody}</a:pPr>`,
     );
     return expanded.replace(
       /<a:pPr([^>]*)>([\s\S]*?)<\/a:pPr>/g,
       (match: string, attrs: string, body: string) => {
         if (!body.includes("<a:buNone/>")) return match;
-        return `<a:pPr${attrs} marL="342900" indent="-342900">${body.replace(
+        return `<a:pPr${withoutParagraphIndentAttrs(attrs)} marL="342900" indent="-342900">${body.replace(
           /(?:<a:lnSpc>[\s\S]*?<\/a:lnSpc>)?<a:buNone\/>/,
           paragraphBody,
         )}</a:pPr>`;

@@ -6,7 +6,6 @@ import {
   addGlimpseTextBox,
   createGlimpseRunProperties,
   listBulletXmlTransform,
-  listLineSpacingXmlTransform,
   type GlimpseTextRunStyle,
 } from "../utils/glimpseTextBox.ts";
 import {
@@ -104,85 +103,12 @@ function buildListParagraphs(
   return { paragraphs, hyperlinks };
 }
 
-function buildStyledListParagraph(
-  items: LiNode[],
-  parent: UlPositionedNode | OlPositionedNode,
-): {
-  paragraphs: AddTextBoxParagraphInput[];
-  hyperlinks: (string | undefined)[];
-} {
-  const runs: AddTextBoxRunInput[] = [];
-  const hyperlinks: (string | undefined)[] = [];
-  items.forEach((li, itemIndex) => {
-    const style = resolveStyle(li, parent);
-    const isLastItem = itemIndex === items.length - 1;
-    if (li.runs && li.runs.length > 0) {
-      li.runs.forEach((run, runIndex) => {
-        const isLastRun = runIndex === li.runs!.length - 1;
-        const runSubSup = resolveSubSup(run, style);
-        runs.push({
-          text: run.text + (isLastRun && !isLastItem ? "\n" : ""),
-          properties: createGlimpseRunProperties({
-            fontSize: run.fontSize ?? style.fontSize,
-            fontFace: run.fontFamily ?? style.fontFamily,
-            color: run.color ?? style.color,
-            bold: run.bold ?? style.bold,
-            italic: run.italic ?? style.italic,
-            underline: run.underline ?? style.underline,
-            strike: run.strike ?? style.strike,
-            subscript: runSubSup.subscript,
-            superscript: runSubSup.superscript,
-            highlight: run.highlight ?? style.highlight,
-          }),
-        });
-        hyperlinks.push(run.text ? run.href : undefined);
-      });
-      return;
-    }
-
-    runs.push({
-      text: li.text + (!isLastItem ? "\n" : ""),
-      properties: createGlimpseRunProperties(toRunStyle(style)),
-    });
-    hyperlinks.push(undefined);
-  });
-  return {
-    paragraphs: [{ properties: paragraphProperties(parent), runs }],
-    hyperlinks,
-  };
-}
-
-function hasItemStyleOverride(items: LiNode[]): boolean {
-  return items.some(
-    (li) =>
-      li.fontSize !== undefined ||
-      li.color !== undefined ||
-      li.bold !== undefined ||
-      li.italic !== undefined ||
-      li.underline !== undefined ||
-      li.strike !== undefined ||
-      li.subscript !== undefined ||
-      li.superscript !== undefined ||
-      li.highlight !== undefined ||
-      li.fontFamily !== undefined ||
-      li.runs !== undefined,
-  );
-}
-
-function hasInlineRuns(items: LiNode[]): boolean {
-  return items.some((li) => li.runs !== undefined);
-}
-
 export function renderUlNode(node: UlPositionedNode, ctx: RenderContext): void {
   const fontSizePx = node.fontSize ?? 24;
   const fontFamily = node.fontFamily ?? "Noto Sans JP";
   const content = getContentArea(node);
 
-  const isStyledList = hasItemStyleOverride(node.items);
-  const containsInlineRuns = hasInlineRuns(node.items);
-  const { paragraphs, hyperlinks } = isStyledList
-    ? buildStyledListParagraph(node.items, node)
-    : buildListParagraphs(node.items, node);
+  const { paragraphs, hyperlinks } = buildListParagraphs(node.items, node);
   addGlimpseTextBox(ctx, content, {
     fontSize: fontSizePx,
     fontFace: fontFamily,
@@ -199,15 +125,10 @@ export function renderUlNode(node: UlPositionedNode, ctx: RenderContext): void {
     highlight: node.highlight,
     paragraphs,
     hyperlinks,
-    xmlTransform:
-      isStyledList && containsInlineRuns
-        ? listLineSpacingXmlTransform({
-            lineHeight: node.lineHeight,
-          })
-        : listBulletXmlTransform({
-            kind: "bullet",
-            lineHeight: node.lineHeight,
-          }),
+    xmlTransform: listBulletXmlTransform({
+      kind: "bullet",
+      lineHeight: node.lineHeight,
+    }),
   });
 }
 
@@ -216,11 +137,7 @@ export function renderOlNode(node: OlPositionedNode, ctx: RenderContext): void {
   const fontFamily = node.fontFamily ?? "Noto Sans JP";
   const content = getContentArea(node);
 
-  const isStyledList = hasItemStyleOverride(node.items);
-  const containsInlineRuns = hasInlineRuns(node.items);
-  const { paragraphs, hyperlinks } = isStyledList
-    ? buildStyledListParagraph(node.items, node)
-    : buildListParagraphs(node.items, node);
+  const { paragraphs, hyperlinks } = buildListParagraphs(node.items, node);
   addGlimpseTextBox(ctx, content, {
     fontSize: fontSizePx,
     fontFace: fontFamily,
@@ -237,16 +154,11 @@ export function renderOlNode(node: OlPositionedNode, ctx: RenderContext): void {
     highlight: node.highlight,
     paragraphs,
     hyperlinks,
-    xmlTransform:
-      isStyledList && containsInlineRuns
-        ? listLineSpacingXmlTransform({
-            lineHeight: node.lineHeight,
-          })
-        : listBulletXmlTransform({
-            kind: "number",
-            scheme: node.numberType,
-            startAt: node.numberStartAt,
-            lineHeight: node.lineHeight,
-          }),
+    xmlTransform: listBulletXmlTransform({
+      kind: "number",
+      scheme: node.numberType,
+      startAt: node.numberStartAt,
+      lineHeight: node.lineHeight,
+    }),
   });
 }

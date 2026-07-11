@@ -69,6 +69,9 @@ describe("glimpse text box helpers", () => {
     expect(transform("<a:pPr><a:buNone/></a:pPr>")).toBe(
       '<a:pPr marL="342900" indent="-342900"><a:lnSpc><a:spcPct val="110000"/></a:lnSpc><a:buSzPct val="100000"/><a:buChar char="&#x2022;"/></a:pPr>',
     );
+    expect(transform('<a:pPr indent="0" marL="0"><a:buNone/></a:pPr>')).toBe(
+      '<a:pPr marL="342900" indent="-342900"><a:lnSpc><a:spcPct val="110000"/></a:lnSpc><a:buSzPct val="100000"/><a:buChar char="&#x2022;"/></a:pPr>',
+    );
     expect(transform("<a:pPr><a:buChar/></a:pPr>")).toBe(
       "<a:pPr><a:buChar/></a:pPr>",
     );
@@ -89,7 +92,7 @@ describe("glimpse text box helpers", () => {
       scheme: "romanUcPeriod",
     })("<a:pPr/>");
     expect(defaultStart).toContain(
-      '<a:buAutoNum type="arabicPeriod" startAt="1"/>',
+      '<a:buAutoNum type="romanUcPeriod" startAt="1"/>',
     );
   });
 

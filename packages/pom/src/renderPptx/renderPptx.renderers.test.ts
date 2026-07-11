@@ -477,6 +477,61 @@ describe("renderUlNode", () => {
     expect(slideXml).toContain('<a:buChar char="&#x2022;"/>');
     expect(slideXml).not.toContain("pom-text:");
   });
+
+  it("inline runs 付き item でも各 paragraph の bullet marker を保持する", async () => {
+    const slideXml = await renderPageSlideXml(
+      vstackPage([
+        {
+          type: "ul",
+          x: 0,
+          y: 0,
+          w: 384,
+          h: 192,
+          items: [
+            {
+              text: "",
+              runs: [
+                { text: "See " },
+                { text: "link", bold: true, color: "1D4ED8" },
+              ],
+            },
+            { text: "Next" },
+          ],
+        },
+      ]),
+    );
+
+    expect(slideXml.match(/<a:buChar char="&#x2022;"\/>/g)).toHaveLength(2);
+    expect(textRunXml(slideXml, "link")).toContain('<a:srgbClr val="1D4ED8"/>');
+    expect(slideXml).not.toMatch(
+      /\s(?:indent|marL)="0"\s[^>]*(?:indent|marL)=/,
+    );
+    expect(slideXml).not.toContain("pom-text:");
+  });
+});
+
+describe("renderOlNode", () => {
+  it("numberType と numberStartAt を XML の autoNum に反映する", async () => {
+    const slideXml = await renderPageSlideXml(
+      vstackPage([
+        {
+          type: "ol",
+          x: 0,
+          y: 0,
+          w: 384,
+          h: 192,
+          numberType: "romanUcPeriod",
+          numberStartAt: 3,
+          items: [{ text: "Alpha" }, { text: "Beta" }],
+        },
+      ]),
+    );
+
+    expect(
+      slideXml.match(/<a:buAutoNum type="romanUcPeriod" startAt="3"\/>/g),
+    ).toHaveLength(2);
+    expect(slideXml).not.toContain("pom-text:");
+  });
 });
 
 describe("renderFlowNode", () => {
