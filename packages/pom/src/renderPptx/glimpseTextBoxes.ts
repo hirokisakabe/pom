@@ -727,6 +727,7 @@ export class GlimpseTextBoxRegistry {
     const name = options?.name ?? `Text ${index + 1}`;
     const xml = createTextBoxXmlFromInput({ ...input, name }, options);
     this.registered.push({
+      kind: "shape",
       marker,
       name,
       xml,

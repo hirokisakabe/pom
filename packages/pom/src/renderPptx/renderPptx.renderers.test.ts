@@ -680,7 +680,7 @@ describe("renderTimelineNode", () => {
   });
 
   it("connectorGradient を指定すると native gradFill として軸線に使われる", async () => {
-    const { slideXml, buildContext } = await renderPageSlideXmlWithContext(
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "timeline",
@@ -694,9 +694,9 @@ describe("renderTimelineNode", () => {
         },
       ]),
     );
-    expect(buildContext.gradientFills.entries).toEqual([]);
     const lineXml = findShapeXml(slideXml, '<a:prstGeom prst="line">');
     expect(lineXml).toContain("<a:gradFill");
+    expect(slideXml).not.toContain("pom-shape:");
     expect(lineXml).toMatch(
       /<a:srgbClr val="1D4ED8"><a:alpha val="40000"\/><\/a:srgbClr>/,
     );
