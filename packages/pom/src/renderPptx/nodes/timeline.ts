@@ -1,11 +1,18 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { stripHash } from "../utils/visualStyle.ts";
-import { pxToIn, pxToPt } from "../units.ts";
 import { measureTimeline } from "../../calcYogaLayout/measureCompositeNodes.ts";
 import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
 import { withContentBounds } from "../utils/contentArea.ts";
+import { parseGradient } from "../../shared/gradient.ts";
 import { addStraightLine } from "../utils/straightLine.ts";
+import {
+  addGlimpseShape,
+  createShapeBoundsInput,
+  noShapeOutline,
+  solidShapeFill,
+} from "../utils/glimpseShape.ts";
+import { addGlimpseTextBox } from "../utils/glimpseTextBox.ts";
 
 type TimelinePositionedNode = Extract<PositionedNode, { type: "timeline" }>;
 
@@ -23,7 +30,7 @@ type TimelineRenderOptions = {
   textColors: TimelineTextColors;
   connectorLineColor: string;
   connectorGradient?: string;
-  opacity?: number;
+  connectorGradientOpacity?: number;
   fontFace: string;
   useColorForDate: boolean;
 };
@@ -48,7 +55,13 @@ export function renderTimelineNode(
     description: stripHash(node.descriptionColor) ?? "64748B",
   };
 
-  const connectorLineColor = stripHash(node.connectorColor) ?? "E2E8F0";
+  const connectorGradientFallback = node.connectorGradient
+    ? parseGradient(node.connectorGradient)?.value.stops[0]?.color
+    : undefined;
+  const connectorLineColor =
+    stripHash(connectorGradientFallback) ??
+    stripHash(node.connectorColor) ??
+    "E2E8F0";
 
   const fontFace = node.fontFamily ?? "Noto Sans JP";
   const useColorForDate = node.useColorForDate ?? false;
@@ -74,7 +87,7 @@ export function renderTimelineNode(
     textColors,
     connectorLineColor,
     connectorGradient: node.connectorGradient,
-    opacity: node.opacity,
+    connectorGradientOpacity: node.opacity,
     fontFace,
     useColorForDate,
   };
@@ -113,8 +126,6 @@ function renderHorizontalTimeline(
     scaleFactor,
     textColors,
     connectorLineColor,
-    connectorGradient,
-    opacity,
     fontFace,
   } = options;
   const itemCount = items.length;
@@ -129,12 +140,12 @@ function renderHorizontalTimeline(
   // メインの線を描画
   addStraightLine(
     ctx,
-    { x1: startX, y1: lineY, x2: endX, y2: lineY },
+    { x1: startX, y1: lineY, x2: startX + lineLength, y2: lineY },
     {
       color: connectorLineColor,
       lineWidth,
-      backgroundGradient: connectorGradient,
-      opacity,
+      lineGradient: options.connectorGradient,
+      lineGradientOpacity: options.connectorGradientOpacity,
     },
   );
   const dateLabelH = 24 * scaleFactor;
@@ -153,55 +164,86 @@ function renderHorizontalTimeline(
     const dateColor = resolveItemDateColor(item, options);
 
     // ノード（円）を描画
-    ctx.slide.addShape(ctx.pptx.ShapeType.ellipse, {
-      x: pxToIn(cx - nodeRadius),
-      y: pxToIn(cy - nodeRadius),
-      w: pxToIn(nodeRadius * 2),
-      h: pxToIn(nodeRadius * 2),
-      fill: { color },
-      line: { type: "none" as const },
-    });
+    addGlimpseShape(
+      ctx,
+      {
+        preset: "ellipse",
+        ...createShapeBoundsInput({
+          x: cx - nodeRadius,
+          y: cy - nodeRadius,
+          w: nodeRadius * 2,
+          h: nodeRadius * 2,
+        }),
+        fill: solidShapeFill(color),
+        outline: noShapeOutline(),
+      },
+      {
+        x: cx - nodeRadius,
+        y: cy - nodeRadius,
+        w: nodeRadius * 2,
+        h: nodeRadius * 2,
+      },
+      { fillColor: color },
+    );
 
     // 日付を上に表示
-    ctx.slide.addText(item.date, {
-      x: pxToIn(cx - labelW / 2),
-      y: pxToIn(cy - nodeRadius - dateOffset),
-      w: pxToIn(labelW),
-      h: pxToIn(dateLabelH),
-      fontSize: pxToPt(12 * scaleFactor),
-      fontFace,
-      color: dateColor,
-      align: "center",
-      valign: "bottom",
-    });
+    addGlimpseTextBox(
+      ctx,
+      {
+        x: cx - labelW / 2,
+        y: cy - nodeRadius - dateOffset,
+        w: labelW,
+        h: dateLabelH,
+      },
+      {
+        text: item.date,
+        fontSize: 12 * scaleFactor,
+        fontFace,
+        color: dateColor,
+        align: "center",
+        valign: "bottom",
+      },
+    );
 
     // タイトルを下に表示
-    ctx.slide.addText(item.title, {
-      x: pxToIn(cx - labelW / 2),
-      y: pxToIn(cy + nodeRadius + titleGap),
-      w: pxToIn(labelW),
-      h: pxToIn(titleLabelH),
-      fontSize: pxToPt(14 * scaleFactor),
-      fontFace,
-      color: textColors.title,
-      bold: true,
-      align: "center",
-      valign: "top",
-    });
+    addGlimpseTextBox(
+      ctx,
+      {
+        x: cx - labelW / 2,
+        y: cy + nodeRadius + titleGap,
+        w: labelW,
+        h: titleLabelH,
+      },
+      {
+        text: item.title,
+        fontSize: 14 * scaleFactor,
+        fontFace,
+        color: textColors.title,
+        bold: true,
+        align: "center",
+        valign: "top",
+      },
+    );
 
     // 説明を表示
     if (item.description) {
-      ctx.slide.addText(item.description, {
-        x: pxToIn(cx - labelW / 2),
-        y: pxToIn(cy + nodeRadius + descOffset),
-        w: pxToIn(labelW),
-        h: pxToIn(descLabelH),
-        fontSize: pxToPt(11 * scaleFactor),
-        fontFace,
-        color: textColors.description,
-        align: "center",
-        valign: "top",
-      });
+      addGlimpseTextBox(
+        ctx,
+        {
+          x: cx - labelW / 2,
+          y: cy + nodeRadius + descOffset,
+          w: labelW,
+          h: descLabelH,
+        },
+        {
+          text: item.description,
+          fontSize: 11 * scaleFactor,
+          fontFace,
+          color: textColors.description,
+          align: "center",
+          valign: "top",
+        },
+      );
     }
   });
 }
@@ -219,8 +261,6 @@ function renderVerticalTimeline(
     scaleFactor,
     textColors,
     connectorLineColor,
-    connectorGradient,
-    opacity,
     fontFace,
   } = options;
   const itemCount = items.length;
@@ -232,12 +272,12 @@ function renderVerticalTimeline(
   // メインの線を描画
   addStraightLine(
     ctx,
-    { x1: lineX, y1: startY, x2: lineX, y2: endY },
+    { x1: lineX, y1: startY, x2: lineX, y2: startY + lineLength },
     {
       color: connectorLineColor,
       lineWidth,
-      backgroundGradient: connectorGradient,
-      opacity,
+      lineGradient: options.connectorGradient,
+      lineGradientOpacity: options.connectorGradientOpacity,
     },
   );
 
@@ -258,55 +298,86 @@ function renderVerticalTimeline(
     const dateColor = resolveItemDateColor(item, options);
 
     // ノード（円）を描画
-    ctx.slide.addShape(ctx.pptx.ShapeType.ellipse, {
-      x: pxToIn(cx - nodeRadius),
-      y: pxToIn(cy - nodeRadius),
-      w: pxToIn(nodeRadius * 2),
-      h: pxToIn(nodeRadius * 2),
-      fill: { color },
-      line: { type: "none" as const },
-    });
+    addGlimpseShape(
+      ctx,
+      {
+        preset: "ellipse",
+        ...createShapeBoundsInput({
+          x: cx - nodeRadius,
+          y: cy - nodeRadius,
+          w: nodeRadius * 2,
+          h: nodeRadius * 2,
+        }),
+        fill: solidShapeFill(color),
+        outline: noShapeOutline(),
+      },
+      {
+        x: cx - nodeRadius,
+        y: cy - nodeRadius,
+        w: nodeRadius * 2,
+        h: nodeRadius * 2,
+      },
+      { fillColor: color },
+    );
 
     // 日付を左上に表示
-    ctx.slide.addText(item.date, {
-      x: pxToIn(cx + nodeRadius + labelGap),
-      y: pxToIn(cy - nodeRadius - 4 * scaleFactor),
-      w: pxToIn(dateLabelW),
-      h: pxToIn(dateLabelH),
-      fontSize: pxToPt(12 * scaleFactor),
-      fontFace,
-      color: dateColor,
-      align: "left",
-      valign: "bottom",
-    });
+    addGlimpseTextBox(
+      ctx,
+      {
+        x: cx + nodeRadius + labelGap,
+        y: cy - nodeRadius - 4 * scaleFactor,
+        w: dateLabelW,
+        h: dateLabelH,
+      },
+      {
+        text: item.date,
+        fontSize: 12 * scaleFactor,
+        fontFace,
+        color: dateColor,
+        align: "left",
+        valign: "bottom",
+      },
+    );
 
     // タイトルを右に表示
-    ctx.slide.addText(item.title, {
-      x: pxToIn(cx + nodeRadius + labelGap),
-      y: pxToIn(cy - 4 * scaleFactor),
-      w: pxToIn(titleLabelW),
-      h: pxToIn(titleLabelH),
-      fontSize: pxToPt(14 * scaleFactor),
-      fontFace,
-      color: textColors.title,
-      bold: true,
-      align: "left",
-      valign: "top",
-    });
+    addGlimpseTextBox(
+      ctx,
+      {
+        x: cx + nodeRadius + labelGap,
+        y: cy - 4 * scaleFactor,
+        w: titleLabelW,
+        h: titleLabelH,
+      },
+      {
+        text: item.title,
+        fontSize: 14 * scaleFactor,
+        fontFace,
+        color: textColors.title,
+        bold: true,
+        align: "left",
+        valign: "top",
+      },
+    );
 
     // 説明を表示
     if (item.description) {
-      ctx.slide.addText(item.description, {
-        x: pxToIn(cx + nodeRadius + labelGap),
-        y: pxToIn(cy + 20 * scaleFactor),
-        w: pxToIn(descLabelW),
-        h: pxToIn(descLabelH),
-        fontSize: pxToPt(11 * scaleFactor),
-        fontFace,
-        color: textColors.description,
-        align: "left",
-        valign: "top",
-      });
+      addGlimpseTextBox(
+        ctx,
+        {
+          x: cx + nodeRadius + labelGap,
+          y: cy + 20 * scaleFactor,
+          w: descLabelW,
+          h: descLabelH,
+        },
+        {
+          text: item.description,
+          fontSize: 11 * scaleFactor,
+          fontFace,
+          color: textColors.description,
+          align: "left",
+          valign: "top",
+        },
+      );
     }
   });
 }

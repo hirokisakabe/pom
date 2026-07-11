@@ -11,7 +11,6 @@ import { describe, expect, it, vi } from "vitest";
 import { renderPptx } from "./renderPptx.ts";
 import { createBuildContext } from "../buildContext.ts";
 import { patchPptxWriteForGlimpseTextBoxes } from "./glimpseTextBoxes.ts";
-import { pxToIn, pxToPt } from "./units.ts";
 import type { PositionedNode } from "../types.ts";
 
 type SlideObject = {
@@ -34,22 +33,53 @@ async function renderPage(page: PositionedNode) {
 }
 
 async function renderPageSlideXml(page: PositionedNode) {
-  const zip = await renderPagePptxZip(page);
-  return zip.file("ppt/slides/slide1.xml")!.async("text");
+  const { slideXml } = await renderPageSlideXmlWithContext(page);
+  return slideXml;
 }
 
 async function renderPagePptxZip(page: PositionedNode) {
+  const { zip } = await renderPageSlideXmlWithContext(page);
+  return zip;
+}
+
+async function renderPageSlideXmlWithContext(page: PositionedNode) {
   const buildContext = createBuildContext();
   const pptx = await renderPptx([page], { w: 1280, h: 720 }, buildContext);
   patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
   const buffer = (await pptx.write({
     outputType: "uint8array",
   })) as Uint8Array;
-  return JSZip.loadAsync(buffer);
+  const zip = await JSZip.loadAsync(buffer);
+  return {
+    zip,
+    slideXml: await zip.file("ppt/slides/slide1.xml")!.async("text"),
+    buildContext,
+  };
 }
 
 function vstackPage(children: PositionedNode[]): PositionedNode {
   return { type: "vstack", x: 0, y: 0, w: 1280, h: 720, children };
+}
+
+function shapeXmlFragments(slideXml: string): string[] {
+  return slideXml.match(/<p:sp>[\s\S]*?<\/p:sp>/g) ?? [];
+}
+
+function findShapeXml(slideXml: string, pattern: RegExp | string): string {
+  const fragment = shapeXmlFragments(slideXml).find((shape) =>
+    typeof pattern === "string" ? shape.includes(pattern) : pattern.test(shape),
+  );
+  expect(fragment).toBeDefined();
+  return fragment!;
+}
+
+function textRunXml(slideXml: string, text: string): string {
+  const escapedText = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = slideXml.match(
+    new RegExp(`<a:r>[\\s\\S]*?<a:t>${escapedText}</a:t>[\\s\\S]*?</a:r>`),
+  );
+  expect(match).toBeDefined();
+  return match![0];
 }
 
 describe("renderShapeNode", () => {
@@ -426,7 +456,7 @@ describe("renderIconNode", () => {
 
 describe("renderUlNode", () => {
   it("padding を除いたコンテンツ領域にテキストが配置される", async () => {
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "ul",
@@ -441,16 +471,192 @@ describe("renderUlNode", () => {
       ]),
     );
 
-    expect(objects).toHaveLength(1);
-    expect(objects[0]._type).toBe("text");
-    expect(objects[0].options).toMatchObject({
-      x: pxToIn(48),
-      y: pxToIn(480 + 24),
-      w: pxToIn(384 - 48),
-      h: pxToIn(192 - 24),
-      fontSize: pxToPt(24),
-      bullet: true,
-    });
+    expect(slideXml).toContain('<a:off x="457200" y="4800600"/>');
+    expect(slideXml).toContain('<a:ext cx="3200400" cy="1600200"/>');
+    expect(slideXml).toContain('<a:rPr sz="1800">');
+    expect(slideXml).toContain('<a:buChar char="&#x2022;"/>');
+    expect(slideXml).not.toContain("pom-text:");
+  });
+
+  it("inline runs 付き item でも各 paragraph の bullet marker を保持する", async () => {
+    const slideXml = await renderPageSlideXml(
+      vstackPage([
+        {
+          type: "ul",
+          x: 0,
+          y: 0,
+          w: 384,
+          h: 192,
+          items: [
+            {
+              text: "",
+              runs: [
+                { text: "See " },
+                { text: "link", bold: true, color: "1D4ED8" },
+              ],
+            },
+            { text: "Next" },
+          ],
+        },
+      ]),
+    );
+
+    expect(slideXml.match(/<a:buChar char="&#x2022;"\/>/g)).toHaveLength(2);
+    expect(textRunXml(slideXml, "link")).toContain('<a:srgbClr val="1D4ED8"/>');
+    expect(slideXml).not.toMatch(
+      /\s(?:indent|marL)="0"\s[^>]*(?:indent|marL)=/,
+    );
+    expect(slideXml).not.toContain("pom-text:");
+  });
+});
+
+describe("renderOlNode", () => {
+  it("numberType と numberStartAt を XML の autoNum に反映する", async () => {
+    const slideXml = await renderPageSlideXml(
+      vstackPage([
+        {
+          type: "ol",
+          x: 0,
+          y: 0,
+          w: 384,
+          h: 192,
+          numberType: "romanUcPeriod",
+          numberStartAt: 3,
+          items: [{ text: "Alpha" }, { text: "Beta" }],
+        },
+      ]),
+    );
+
+    expect(
+      slideXml.match(/<a:buAutoNum type="romanUcPeriod" startAt="3"\/>/g),
+    ).toHaveLength(2);
+    expect(slideXml).not.toContain("pom-text:");
+  });
+});
+
+describe("renderFlowNode", () => {
+  it("ノード図形・接続線・接続ラベルを glimpse XML として描画する", async () => {
+    const slideXml = await renderPageSlideXml(
+      vstackPage([
+        {
+          type: "flow",
+          x: 0,
+          y: 0,
+          w: 640,
+          h: 220,
+          nodes: [
+            {
+              id: "start",
+              shape: "flowChartTerminator",
+              text: "Start",
+              color: "16A34A",
+              textColor: "FFFFFF",
+            },
+            {
+              id: "decision",
+              shape: "flowChartDecision",
+              text: "Check",
+              color: "FACC15",
+              textColor: "111827",
+            },
+          ],
+          connections: [
+            {
+              from: "start",
+              to: "decision",
+              label: "ok",
+              color: "DC2626",
+              labelColor: "1D4ED8",
+            },
+          ],
+          connectorStyle: { arrowType: "triangle" },
+        },
+      ]),
+    );
+
+    const terminatorXml = findShapeXml(
+      slideXml,
+      '<a:prstGeom prst="flowChartTerminator">',
+    );
+    expect(terminatorXml).toContain('<a:srgbClr val="16A34A"/>');
+    expect(terminatorXml).toContain("<a:t>Start</a:t>");
+    expect(terminatorXml).toContain('<a:pPr algn="ctr"/>');
+    expect(terminatorXml).toContain('<a:bodyPr wrap="square" anchor="ctr"');
+
+    const decisionXml = findShapeXml(
+      slideXml,
+      '<a:prstGeom prst="flowChartDecision">',
+    );
+    expect(decisionXml).toContain('<a:srgbClr val="FACC15"/>');
+    expect(decisionXml).toContain('<a:srgbClr val="111827"/>');
+    expect(decisionXml).toContain("<a:t>Check</a:t>");
+
+    const connectorXml = findShapeXml(slideXml, '<a:prstGeom prst="line">');
+    expect(connectorXml).toContain('<a:srgbClr val="DC2626"/>');
+    expect(connectorXml).toContain('<a:tailEnd type="triangle"/>');
+
+    expect(textRunXml(slideXml, "ok")).toContain('<a:srgbClr val="1D4ED8"/>');
+    expect(slideXml).not.toContain("pom-shape:");
+    expect(slideXml).not.toContain("pom-text:");
+  });
+});
+
+describe("renderMatrixNode", () => {
+  it("軸線・軸ラベル・象限ラベル・item を glimpse XML として描画する", async () => {
+    const slideXml = await renderPageSlideXml(
+      vstackPage([
+        {
+          type: "matrix",
+          x: 0,
+          y: 0,
+          w: 480,
+          h: 360,
+          axes: { x: "Impact", y: "Effort" },
+          quadrants: {
+            topLeft: "Quick wins",
+            topRight: "Strategic",
+            bottomLeft: "Skip",
+            bottomRight: "Later",
+          },
+          axisLabelColor: "334155",
+          quadrantLabelColor: "64748B",
+          itemLabelColor: "0F172A",
+          items: [
+            {
+              label: "A",
+              x: 0.75,
+              y: 0.25,
+              color: "F97316",
+              textColor: "111827",
+            },
+          ],
+        },
+      ]),
+    );
+
+    const lineXmls = shapeXmlFragments(slideXml).filter((shape) =>
+      shape.includes('<a:prstGeom prst="line">'),
+    );
+    expect(lineXmls.length).toBeGreaterThanOrEqual(2);
+    expect(lineXmls.some((shape) => shape.includes('cy="0"'))).toBe(true);
+    expect(lineXmls.some((shape) => shape.includes('cx="0"'))).toBe(true);
+
+    const itemXml = findShapeXml(slideXml, '<a:prstGeom prst="ellipse">');
+    expect(itemXml).toContain('<a:srgbClr val="F97316"/>');
+    expect(itemXml).toContain("<a:noFill/>");
+
+    expect(findShapeXml(slideXml, 'rot="16200000"')).toContain(
+      "<a:t>Effort</a:t>",
+    );
+    expect(textRunXml(slideXml, "Impact")).toContain(
+      '<a:srgbClr val="334155"/>',
+    );
+    expect(textRunXml(slideXml, "Quick wins")).toContain(
+      '<a:srgbClr val="64748B"/>',
+    );
+    expect(textRunXml(slideXml, "A")).toContain('<a:srgbClr val="111827"/>');
+    expect(slideXml).not.toContain("pom-shape:");
+    expect(slideXml).not.toContain("pom-text:");
   });
 });
 
@@ -462,20 +668,7 @@ describe("renderTimelineNode", () => {
 
   it("padding 分オフセットしたコンテンツ領域基準で線とノード円を描画する", async () => {
     // content = (148, 148, 704, 304)。intrinsic (240x128) より大きいため scaleFactor = 1
-    const { objects, buildContext } = await renderPage(
-      vstackPage([
-        {
-          type: "timeline",
-          x: 100,
-          y: 100,
-          w: 800,
-          h: 400,
-          padding: 48,
-          items,
-        },
-      ]),
-    );
-    const slideXml = await renderPageSlideXml(
+    const { slideXml, buildContext } = await renderPageSlideXmlWithContext(
       vstackPage([
         {
           type: "timeline",
@@ -492,24 +685,18 @@ describe("renderTimelineNode", () => {
     expect(buildContext.diagnostics.items).toEqual([]);
 
     // メイン線: 端点は labelW/2 = 60 インセット、lineY はコンテンツ領域の垂直中央
-    const lineY = 148 + 304 / 2;
-    expect(slideXml).toContain(
-      `<a:off x="${(148 + 60) * 9525}" y="${lineY * 9525}"/>`,
-    );
-    expect(slideXml).toContain(`<a:ext cx="${(704 - 120) * 9525}" cy="0"/>`);
+    expect(slideXml).toContain('<a:off x="1981200" y="2857500"/>');
+    expect(slideXml).toContain('<a:ext cx="5562600" cy="0"/>');
+    expect(slideXml).toContain('<a:prstGeom prst="line">');
 
     // 最初のアイテムのノード円 (半径 12px)
-    const ellipse = objects.find((o) => o.shape === "ellipse");
-    expect(ellipse?.options).toMatchObject({
-      x: pxToIn(148 + 60 - 12),
-      y: pxToIn(lineY - 12),
-      w: pxToIn(24),
-      h: pxToIn(24),
-    });
+    expect(slideXml).toContain('<a:off x="1866900" y="2743200"/>');
+    expect(slideXml).toContain('<a:ext cx="228600" cy="228600"/>');
+    expect(slideXml).toContain('<a:prstGeom prst="ellipse">');
   });
 
   it("割り当てが固有サイズの半分未満なら SCALE_BELOW_THRESHOLD を記録して 0.5 にクランプする", async () => {
-    const { objects, buildContext } = await renderPage(
+    const { slideXml, buildContext } = await renderPageSlideXmlWithContext(
       vstackPage([{ type: "timeline", x: 0, y: 0, w: 100, h: 50, items }]),
     );
 
@@ -518,8 +705,7 @@ describe("renderTimelineNode", () => {
     );
 
     // nodeRadius 12px が scaleFactor 0.5 でスケールされる
-    const ellipse = objects.find((o) => o.shape === "ellipse");
-    expect(ellipse?.options).toMatchObject({ w: pxToIn(12), h: pxToIn(12) });
+    expect(slideXml).toContain('<a:ext cx="114300" cy="114300"/>');
   });
 
   it("connectorColor を指定すると軸線にその色が使われる", async () => {
@@ -536,17 +722,19 @@ describe("renderTimelineNode", () => {
         },
       ]),
     );
-    expect(slideXml).toContain('<a:srgbClr val="1D4ED8"/>');
+    const lineXml = findShapeXml(slideXml, '<a:prstGeom prst="line">');
+    expect(lineXml).toContain('<a:srgbClr val="1D4ED8"/>');
   });
 
   it("connectorColor 未指定なら従来通り E2E8F0 が使われる", async () => {
     const slideXml = await renderPageSlideXml(
       vstackPage([{ type: "timeline", x: 0, y: 0, w: 800, h: 400, items }]),
     );
-    expect(slideXml).toContain('<a:srgbClr val="E2E8F0"/>');
+    const lineXml = findShapeXml(slideXml, '<a:prstGeom prst="line">');
+    expect(lineXml).toContain('<a:srgbClr val="E2E8F0"/>');
   });
 
-  it("connectorGradient を指定すると軸線が native gradFill で描画される", async () => {
+  it("connectorGradient を指定すると native gradFill として軸線に使われる", async () => {
     const slideXml = await renderPageSlideXml(
       vstackPage([
         {
@@ -557,12 +745,19 @@ describe("renderTimelineNode", () => {
           h: 400,
           items,
           connectorGradient: "linear-gradient(90deg, #1D4ED8 0%, #DC2626 100%)",
+          opacity: 0.4,
         },
       ]),
     );
-    expect(slideXml).toContain("<a:gradFill");
-    expect(slideXml).toContain('<a:srgbClr val="1D4ED8"/>');
-    expect(slideXml).toContain('<a:srgbClr val="DC2626"/>');
+    const lineXml = findShapeXml(slideXml, '<a:prstGeom prst="line">');
+    expect(lineXml).toContain("<a:gradFill");
+    expect(slideXml).not.toContain("pom-shape:");
+    expect(lineXml).toMatch(
+      /<a:srgbClr val="1D4ED8"><a:alpha val="40000"\/><\/a:srgbClr>/,
+    );
+    expect(lineXml).toMatch(
+      /<a:srgbClr val="DC2626"><a:alpha val="40000"\/><\/a:srgbClr>/,
+    );
   });
 
   it("useColorForDate=true なら各 item.color が date テキスト色になる", async () => {
@@ -570,7 +765,7 @@ describe("renderTimelineNode", () => {
       { date: "D1", title: "T1", color: "1D4ED8" },
       { date: "D2", title: "T2", color: "16A34A" },
     ];
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "timeline",
@@ -583,14 +778,8 @@ describe("renderTimelineNode", () => {
         },
       ]),
     );
-    const findText = (label: string) =>
-      objects.find(
-        (o) =>
-          Array.isArray(o.text) &&
-          (o.text as { text: string }[]).some((r) => r.text === label),
-      );
-    expect(findText("D1")?.options.color).toBe("1D4ED8");
-    expect(findText("D2")?.options.color).toBe("16A34A");
+    expect(textRunXml(slideXml, "D1")).toContain('<a:srgbClr val="1D4ED8"/>');
+    expect(textRunXml(slideXml, "D2")).toContain('<a:srgbClr val="16A34A"/>');
   });
 
   it("TimelineItem.dateColor は Timeline.dateColor / useColorForDate より優先される", async () => {
@@ -598,7 +787,7 @@ describe("renderTimelineNode", () => {
       { date: "D1", title: "T1", color: "1D4ED8" },
       { date: "D2", title: "T2", color: "16A34A", dateColor: "DC2626" },
     ];
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "timeline",
@@ -612,19 +801,13 @@ describe("renderTimelineNode", () => {
         },
       ]),
     );
-    const findText = (label: string) =>
-      objects.find(
-        (o) =>
-          Array.isArray(o.text) &&
-          (o.text as { text: string }[]).some((r) => r.text === label),
-      );
     // D1: useColorForDate により item.color (1D4ED8)、D2: per-item dateColor が最優先
-    expect(findText("D1")?.options.color).toBe("1D4ED8");
-    expect(findText("D2")?.options.color).toBe("DC2626");
+    expect(textRunXml(slideXml, "D1")).toContain('<a:srgbClr val="1D4ED8"/>');
+    expect(textRunXml(slideXml, "D2")).toContain('<a:srgbClr val="DC2626"/>');
   });
 
   it("fontFamily を指定すると全テキストの fontFace に反映される", async () => {
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "timeline",
@@ -637,25 +820,22 @@ describe("renderTimelineNode", () => {
         },
       ]),
     );
-    const texts = objects.filter((o) => Array.isArray(o.text));
-    expect(texts.length).toBeGreaterThanOrEqual(3);
-    for (const t of texts) {
-      expect(t.options.fontFace).toBe("Arial");
-    }
+    expect(
+      (slideXml.match(/typeface="Arial"/g) ?? []).length,
+    ).toBeGreaterThanOrEqual(9);
   });
 
   it("fontFamily 未指定なら従来通り Noto Sans JP が使われる", async () => {
-    const { objects } = await renderPage(
+    const slideXml = await renderPageSlideXml(
       vstackPage([{ type: "timeline", x: 0, y: 0, w: 800, h: 400, items }]),
     );
-    const text = objects.find((o) => Array.isArray(o.text));
-    expect(text?.options.fontFace).toBe("Noto Sans JP");
+    expect(slideXml).toContain('typeface="Noto Sans JP"');
   });
 });
 
 describe("renderPyramidNode", () => {
-  it('"#" 付きの色指定は "#" なしで pptxgenjs に渡される', async () => {
-    const { objects } = await renderPage(
+  it('"#" 付きの色指定は "#" なしで glimpse shape / text XML に渡される', async () => {
+    const slideXml = await renderPageSlideXml(
       vstackPage([
         {
           type: "pyramid",
@@ -671,12 +851,123 @@ describe("renderPyramidNode", () => {
       ]),
     );
 
-    const shapes = objects.filter((o) => o.shape === "custGeom");
-    expect(shapes[0].options.fill).toEqual({ color: "112233" });
+    const levelXml = findShapeXml(slideXml, "<a:custGeom>");
+    expect(levelXml).toContain('<a:srgbClr val="112233"/>');
+    expect(textRunXml(slideXml, "L2")).toContain('<a:srgbClr val="445566"/>');
+    expect(slideXml).not.toContain("pom-shape:");
+  });
+});
 
-    // ラベルは text を持つオブジェクト (図形は text: null)
-    const labels = objects.filter((o) => Array.isArray(o.text));
-    expect(labels[1].options.color).toBe("445566");
+describe("renderProcessArrowNode", () => {
+  it("水平・垂直の矢印本体を custom geometry で描画しテキストを glimpse XML にする", async () => {
+    const slideXml = await renderPageSlideXml(
+      vstackPage([
+        {
+          type: "processArrow",
+          x: 0,
+          y: 0,
+          w: 480,
+          h: 160,
+          steps: [
+            { label: "Plan", color: "112233", textColor: "F8FAFC" },
+            { label: "Build", color: "445566", textColor: "E2E8F0" },
+          ],
+        },
+        {
+          type: "processArrow",
+          direction: "vertical",
+          x: 520,
+          y: 0,
+          w: 220,
+          h: 320,
+          steps: [{ label: "Down", color: "778899", textColor: "111827" }],
+        },
+      ]),
+    );
+
+    const customShapes = shapeXmlFragments(slideXml).filter((shape) =>
+      shape.includes("<a:custGeom>"),
+    );
+    expect(customShapes.length).toBeGreaterThanOrEqual(3);
+    expect(customShapes.some((shape) => shape.includes("112233"))).toBe(true);
+    expect(customShapes.some((shape) => shape.includes("778899"))).toBe(true);
+    expect(textRunXml(slideXml, "Plan")).toContain('<a:srgbClr val="F8FAFC"/>');
+    expect(textRunXml(slideXml, "Down")).toContain('<a:srgbClr val="111827"/>');
+    expect(slideXml).not.toContain("pom-shape:");
+    expect(slideXml).not.toContain("pom-text:");
+  });
+});
+
+describe("renderTreeNode", () => {
+  it("接続線と roundRect / ellipse ノードを glimpse XML として描画する", async () => {
+    const verticalXml = await renderPageSlideXml(
+      vstackPage([
+        {
+          type: "tree",
+          x: 0,
+          y: 0,
+          w: 420,
+          h: 260,
+          nodeShape: "roundRect",
+          textColor: "F8FAFC",
+          connectorStyle: { color: "DC2626", width: 3 },
+          data: {
+            label: "Root",
+            color: "1D4ED8",
+            children: [{ label: "Child", color: "16A34A" }],
+          },
+        },
+      ]),
+    );
+
+    const verticalLines = shapeXmlFragments(verticalXml).filter((shape) =>
+      shape.includes('<a:prstGeom prst="line">'),
+    );
+    expect(verticalLines.length).toBeGreaterThanOrEqual(2);
+    expect(verticalLines.some((shape) => shape.includes('cx="0"'))).toBe(true);
+    expect(verticalLines.some((shape) => shape.includes("DC2626"))).toBe(true);
+    expect(
+      findShapeXml(verticalXml, '<a:prstGeom prst="roundRect">'),
+    ).toContain('<a:srgbClr val="1D4ED8"/>');
+    expect(textRunXml(verticalXml, "Root")).toContain(
+      '<a:srgbClr val="F8FAFC"/>',
+    );
+    expect(verticalXml).not.toContain("pom-shape:");
+    expect(verticalXml).not.toContain("pom-text:");
+
+    const horizontalXml = await renderPageSlideXml(
+      vstackPage([
+        {
+          type: "tree",
+          layout: "horizontal",
+          x: 0,
+          y: 0,
+          w: 420,
+          h: 260,
+          nodeShape: "ellipse",
+          data: {
+            label: "Root",
+            children: [{ label: "Leaf", textColor: "111827" }],
+          },
+        },
+      ]),
+    );
+
+    const horizontalLines = shapeXmlFragments(horizontalXml).filter((shape) =>
+      shape.includes('<a:prstGeom prst="line">'),
+    );
+    expect(horizontalLines.length).toBeGreaterThanOrEqual(2);
+    expect(horizontalLines.some((shape) => shape.includes('cy="0"'))).toBe(
+      true,
+    );
+    expect(
+      findShapeXml(horizontalXml, '<a:prstGeom prst="ellipse">'),
+    ).toContain("<a:t>Root</a:t>");
+    expect(textRunXml(horizontalXml, "Leaf")).toContain(
+      '<a:srgbClr val="111827"/>',
+    );
+    expect(horizontalXml).not.toContain("pom-shape:");
+    expect(horizontalXml).not.toContain("pom-text:");
   });
 });
 

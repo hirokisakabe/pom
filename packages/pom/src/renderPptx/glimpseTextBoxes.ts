@@ -62,6 +62,8 @@ type BrowserWritablePptx = PptxGenJSInstance & {
 };
 type TextPositionedNode = Extract<PositionedNode, { type: "text" }>;
 
+type XmlTransform = (xml: string) => string;
+
 const MARKER_PREFIX = "pom-text:";
 const SHAPE_MARKER_PREFIX = "pom-shape:";
 const PICTURE_MARKER_PREFIX = "pom-picture:";
@@ -479,12 +481,6 @@ function createTextBoxXml(
   node: TextPositionedNode,
   name: string,
 ): { xml: string; hyperlinks: readonly (string | undefined)[] } {
-  const source = createPptx();
-  const slideHandle = source.slides[0]?.handle;
-  if (!slideHandle) {
-    throw new Error("createPptx did not create an editable slide");
-  }
-
   const textOptions = createTextOptions(node);
   const { paragraphs, hyperlinks } = buildParagraphs(node);
   const input: AddTextBoxInput = {
@@ -505,22 +501,40 @@ function createTextBoxXml(
     },
     paragraphs,
   };
+  return {
+    xml: createTextBoxXmlFromInput(input, {
+      xmlTransform: (xml) => withGlowAlpha(xml, node),
+    }),
+    hyperlinks,
+  };
+}
+
+function createTextBoxXmlFromInput(
+  input: AddTextBoxInput,
+  options?: { xmlTransform?: XmlTransform },
+): string {
+  const source = createPptx();
+  const slideHandle = source.slides[0]?.handle;
+  if (!slideHandle) {
+    throw new Error("createPptx did not create an editable slide");
+  }
+
   const edited = addTextBox(source, slideHandle, input);
   const edit = edited.edits?.at(-1) as
     PptxSourceModelAddTextBoxEdit | undefined;
   if (edit?.kind !== "addTextBox") {
     throw new Error("addTextBox did not produce an addTextBox edit");
   }
-  return {
-    xml: withPptxGenParagraphDefaults(withGlowAlpha(edit.xml, node)),
-    hyperlinks,
-  };
+  const xml = withPptxGenParagraphDefaults(edit.xml);
+  return options?.xmlTransform ? options.xmlTransform(xml) : xml;
 }
 
 export type GlimpseShapeXmlOptions = {
   fillColor?: string;
   fillOpacity?: number;
   backgroundGradient?: string;
+  outlineGradient?: string;
+  outlineOpacity?: number;
   glow?: TextGlow;
   shadow?: ShadowStyle;
   rectRadius?: number;
@@ -529,7 +543,89 @@ export type GlimpseShapeXmlOptions = {
   flipV?: boolean;
   zeroWidth?: boolean;
   zeroHeight?: boolean;
+  customGeometry?: CustomGeometryXmlInput;
 };
+
+type CustomGeometryPointInput = { x: number; y: number } | { close: true };
+
+export type CustomGeometryXmlInput = {
+  width: number;
+  height: number;
+  points: readonly CustomGeometryPointInput[];
+};
+
+function geometryPointXml(point: { x: number; y: number }): string {
+  return `<a:pt x="${Math.round(point.x * EMU_PER_IN)}" y="${Math.round(
+    point.y * EMU_PER_IN,
+  )}"/>`;
+}
+
+function buildCustomGeometryXml(
+  geometry: CustomGeometryXmlInput,
+): string | undefined {
+  const first = geometry.points.find(
+    (point): point is { x: number; y: number } => "x" in point,
+  );
+  if (!first) return undefined;
+
+  let hasMoveTo = false;
+  const commands = geometry.points
+    .map((point) => {
+      if ("close" in point) return hasMoveTo ? "<a:close/>" : "";
+      if (!hasMoveTo) {
+        hasMoveTo = true;
+        return `<a:moveTo>${geometryPointXml(point)}</a:moveTo>`;
+      }
+      return `<a:lnTo>${geometryPointXml(point)}</a:lnTo>`;
+    })
+    .join("");
+
+  return (
+    "<a:custGeom><a:avLst/><a:gdLst/><a:ahLst/><a:cxnLst/>" +
+    '<a:rect l="l" t="t" r="r" b="b"/>' +
+    `<a:pathLst><a:path w="${Math.round(
+      geometry.width * EMU_PER_IN,
+    )}" h="${Math.round(geometry.height * EMU_PER_IN)}">${commands}</a:path></a:pathLst>` +
+    "</a:custGeom>"
+  );
+}
+
+function withCustomGeometry(
+  xml: string,
+  geometry: CustomGeometryXmlInput | undefined,
+): string {
+  if (!geometry) return xml;
+  const customGeometry = buildCustomGeometryXml(geometry);
+  if (!customGeometry) return xml;
+  return xml.replace(/<a:prstGeom\b[\s\S]*?<\/a:prstGeom>/, customGeometry);
+}
+
+function withOutlineGradientFill(
+  xml: string,
+  outlineGradient: string | undefined,
+  opacity: number | undefined,
+): string {
+  if (!outlineGradient) return xml;
+  const gradFill = buildGradFillXml(outlineGradient, opacity);
+  if (!gradFill) return xml;
+  const lineFillPattern =
+    /<a:(?:solidFill|gradFill)\b[\s\S]*?<\/a:(?:solidFill|gradFill)>|<a:noFill\/>/;
+  if (/<a:ln\b[^>]*\/>/.test(xml)) {
+    return xml.replace(
+      /<a:ln\b([^>]*)\/>/,
+      (_match, attrs: string) => `<a:ln${attrs}>${gradFill}</a:ln>`,
+    );
+  }
+  return xml.replace(
+    /(<a:ln\b[^>]*>)([\s\S]*?)(<\/a:ln>)/,
+    (_match, open: string, body: string, close: string) => {
+      const nextBody = lineFillPattern.test(body)
+        ? body.replace(lineFillPattern, gradFill)
+        : `${gradFill}${body}`;
+      return `${open}${nextBody}${close}`;
+    },
+  );
+}
 
 function createShapeXml(
   input: AddShapeInput,
@@ -556,6 +652,11 @@ function createShapeXml(
     options?.fillOpacity,
     input.preset,
   );
+  xml = withOutlineGradientFill(
+    xml,
+    options?.outlineGradient,
+    options?.outlineOpacity ?? options?.fillOpacity,
+  );
   xml = withRoundRectAdjust(xml, input, options?.rectRadius);
   xml = withShadow(xml, options?.shadow);
   xml = withUnsupportedDashStyle(xml, options?.dashType);
@@ -567,6 +668,7 @@ function createShapeXml(
     options?.zeroHeight,
   );
   xml = withPptxGenLineArrowDefaults(xml, input.preset);
+  xml = withCustomGeometry(xml, options?.customGeometry);
   return xml;
 }
 
@@ -609,6 +711,28 @@ export class GlimpseTextBoxRegistry {
     const name = `Text ${index + 1}`;
     const { xml, hyperlinks } = createTextBoxXml(node, name);
     this.registered.push({ kind: "shape", marker, name, xml, hyperlinks });
+    return marker;
+  }
+
+  registerTextBox(
+    input: AddTextBoxInput,
+    options?: {
+      name?: string;
+      hyperlinks?: readonly (string | undefined)[];
+      xmlTransform?: XmlTransform;
+    },
+  ): string {
+    const index = this.textCount++;
+    const marker = `${MARKER_PREFIX}${index}`;
+    const name = options?.name ?? `Text ${index + 1}`;
+    const xml = createTextBoxXmlFromInput({ ...input, name }, options);
+    this.registered.push({
+      kind: "shape",
+      marker,
+      name,
+      xml,
+      hyperlinks: options?.hyperlinks ?? [],
+    });
     return marker;
   }
 

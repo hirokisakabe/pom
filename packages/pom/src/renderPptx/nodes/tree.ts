@@ -6,8 +6,15 @@ import type {
 } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { stripHash } from "../utils/visualStyle.ts";
-import { pxToIn, pxToPt } from "../units.ts";
 import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
+import { addStraightLine } from "../utils/straightLine.ts";
+import {
+  addGlimpseShape,
+  createShapeBoundsInput,
+  shapeOutline,
+  solidShapeFill,
+} from "../utils/glimpseShape.ts";
+import { createGlimpseParagraphs } from "../utils/glimpseTextBox.ts";
 
 type TreePositionedNode = Extract<PositionedNode, { type: "tree" }>;
 
@@ -150,35 +157,34 @@ export function renderTreeNode(
       const midY = (parentBottomY + childTopY) / 2;
 
       // 垂直線（親から中間点まで）
-      ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-        x: pxToIn(parentCenterX),
-        y: pxToIn(parentBottomY),
-        w: 0,
-        h: pxToIn(midY - parentBottomY),
-        line: { color: lineColor, width: pxToPt(lineWidth * sf) },
-      });
+      addStraightLine(
+        ctx,
+        {
+          x1: parentCenterX,
+          y1: parentBottomY,
+          x2: parentCenterX,
+          y2: midY,
+        },
+        { color: lineColor, lineWidth: lineWidth * sf },
+      );
 
       // 水平線（中間点で）
       const minX = Math.min(parentCenterX, childCenterX);
       const maxX = Math.max(parentCenterX, childCenterX);
       if (maxX > minX) {
-        ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-          x: pxToIn(minX),
-          y: pxToIn(midY),
-          w: pxToIn(maxX - minX),
-          h: 0,
-          line: { color: lineColor, width: pxToPt(lineWidth * sf) },
-        });
+        addStraightLine(
+          ctx,
+          { x1: minX, y1: midY, x2: maxX, y2: midY },
+          { color: lineColor, lineWidth: lineWidth * sf },
+        );
       }
 
       // 垂直線（中間点から子まで）
-      ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-        x: pxToIn(childCenterX),
-        y: pxToIn(midY),
-        w: 0,
-        h: pxToIn(childTopY - midY),
-        line: { color: lineColor, width: pxToPt(lineWidth * sf) },
-      });
+      addStraightLine(
+        ctx,
+        { x1: childCenterX, y1: midY, x2: childCenterX, y2: childTopY },
+        { color: lineColor, lineWidth: lineWidth * sf },
+      );
     } else {
       // 親の右端中央から子の左端中央へ
       const parentRightX = ox + (parent.x + parent.width) * sf;
@@ -188,35 +194,29 @@ export function renderTreeNode(
       const midX = (parentRightX + childLeftX) / 2;
 
       // 水平線（親から中間点まで）
-      ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-        x: pxToIn(parentRightX),
-        y: pxToIn(parentCenterY),
-        w: pxToIn(midX - parentRightX),
-        h: 0,
-        line: { color: lineColor, width: pxToPt(lineWidth * sf) },
-      });
+      addStraightLine(
+        ctx,
+        { x1: parentRightX, y1: parentCenterY, x2: midX, y2: parentCenterY },
+        { color: lineColor, lineWidth: lineWidth * sf },
+      );
 
       // 垂直線（中間点で）
       const minY = Math.min(parentCenterY, childCenterY);
       const maxY = Math.max(parentCenterY, childCenterY);
       if (maxY > minY) {
-        ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-          x: pxToIn(midX),
-          y: pxToIn(minY),
-          w: 0,
-          h: pxToIn(maxY - minY),
-          line: { color: lineColor, width: pxToPt(lineWidth * sf) },
-        });
+        addStraightLine(
+          ctx,
+          { x1: midX, y1: minY, x2: midX, y2: maxY },
+          { color: lineColor, lineWidth: lineWidth * sf },
+        );
       }
 
       // 水平線（中間点から子まで）
-      ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-        x: pxToIn(midX),
-        y: pxToIn(childCenterY),
-        w: pxToIn(childLeftX - midX),
-        h: 0,
-        line: { color: lineColor, width: pxToPt(lineWidth * sf) },
-      });
+      addStraightLine(
+        ctx,
+        { x1: midX, y1: childCenterY, x2: childLeftX, y2: childCenterY },
+        { color: lineColor, lineWidth: lineWidth * sf },
+      );
     }
   }
 
@@ -233,11 +233,11 @@ export function renderTreeNode(
     const shapeType = (() => {
       switch (shape) {
         case "rect":
-          return ctx.pptx.ShapeType.rect;
+          return "rect";
         case "roundRect":
-          return ctx.pptx.ShapeType.roundRect;
+          return "roundRect";
         case "ellipse":
-          return ctx.pptx.ShapeType.ellipse;
+          return "ellipse";
       }
     })();
 
@@ -246,28 +246,27 @@ export function renderTreeNode(
     const drawW = layoutNode.width * sf;
     const drawH = layoutNode.height * sf;
 
-    // ノードの背景
-    ctx.slide.addShape(shapeType, {
-      x: pxToIn(drawX),
-      y: pxToIn(drawY),
-      w: pxToIn(drawW),
-      h: pxToIn(drawH),
-      fill: { color },
-      line: { color: "333333", width: pxToPt(1 * sf) },
-    });
-
-    // ノードのラベル
-    ctx.slide.addText(layoutNode.item.label, {
-      x: pxToIn(drawX),
-      y: pxToIn(drawY),
-      w: pxToIn(drawW),
-      h: pxToIn(drawH),
-      fontSize: pxToPt(12 * sf),
-      fontFace: "Noto Sans JP",
-      color: stripHash(layoutNode.item.textColor) ?? defaultTextColor,
-      align: "center",
-      valign: "middle",
-    });
+    addGlimpseShape(
+      ctx,
+      {
+        preset: shapeType,
+        ...createShapeBoundsInput({ x: drawX, y: drawY, w: drawW, h: drawH }),
+        fill: solidShapeFill(color),
+        outline: shapeOutline({ color: "333333", width: 1 * sf }),
+        body: { anchor: "middle" },
+        paragraphs: createGlimpseParagraphs(
+          layoutNode.item.label,
+          {
+            fontSize: 12 * sf,
+            fontFace: "Noto Sans JP",
+            color: stripHash(layoutNode.item.textColor) ?? defaultTextColor,
+          },
+          { align: "center" },
+        ),
+      },
+      { x: drawX, y: drawY, w: drawW, h: drawH },
+      { fillColor: color },
+    );
   }
 
   // すべての接続線を再帰的に描画

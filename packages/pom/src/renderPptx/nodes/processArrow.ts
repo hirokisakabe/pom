@@ -1,8 +1,7 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { stripHash } from "../utils/visualStyle.ts";
-import { pxToIn, pxToPt } from "../units.ts";
-import { convertUnderline, convertStrike } from "../textOptions.ts";
+import { pxToIn } from "../units.ts";
 import { measureProcessArrow } from "../../calcYogaLayout/measureCompositeNodes.ts";
 import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
 import {
@@ -11,6 +10,13 @@ import {
   DEFAULT_PROCESS_ARROW_ITEM_HEIGHT,
 } from "../../shared/processArrowConstants.ts";
 import { withContentBounds } from "../utils/contentArea.ts";
+import {
+  addGlimpseShape,
+  createShapeBoundsInput,
+  noShapeOutline,
+  solidShapeFill,
+} from "../utils/glimpseShape.ts";
+import { addGlimpseTextBox } from "../utils/glimpseTextBox.ts";
 
 type ProcessArrowPositionedNode = Extract<
   PositionedNode,
@@ -126,36 +132,56 @@ function renderHorizontalProcessArrow(
           { close: true as const },
         ];
 
-    ctx.slide.addShape("custGeom" as never, {
-      x: pxToIn(stepX),
-      y: pxToIn(stepY),
-      w: pxToIn(itemWidth),
-      h: pxToIn(itemHeight),
-      points,
-      fill: { color: fillColor },
-      line: { type: "none" as const },
-    });
+    addGlimpseShape(
+      ctx,
+      {
+        preset: "rect",
+        ...createShapeBoundsInput({
+          x: stepX,
+          y: stepY,
+          w: itemWidth,
+          h: itemHeight,
+        }),
+        fill: solidShapeFill(fillColor),
+        outline: noShapeOutline(),
+      },
+      { x: stepX, y: stepY, w: itemWidth, h: itemHeight },
+      {
+        fillColor,
+        customGeometry: {
+          width: pxToIn(itemWidth),
+          height: pxToIn(itemHeight),
+          points,
+        },
+      },
+    );
 
     // テキストを図形の中央（矢印部分を除いた領域）に配置
     const textOffsetLeft = isFirst ? 0 : arrowDepth;
     const textWidth = Math.max(1, itemWidth - arrowDepth - textOffsetLeft);
 
-    ctx.slide.addText(step.label, {
-      x: pxToIn(stepX + textOffsetLeft),
-      y: pxToIn(stepY),
-      w: pxToIn(textWidth),
-      h: pxToIn(itemHeight),
-      fontSize: pxToPt((node.fontSize ?? 14) * scaleFactor),
-      fontFace: node.fontFamily ?? "Noto Sans JP",
-      color: textColor,
-      bold: node.bold ?? false,
-      italic: node.italic,
-      underline: convertUnderline(node.underline),
-      strike: convertStrike(node.strike),
-      highlight: node.highlight,
-      align: "center",
-      valign: "middle",
-    });
+    addGlimpseTextBox(
+      ctx,
+      {
+        x: stepX + textOffsetLeft,
+        y: stepY,
+        w: textWidth,
+        h: itemHeight,
+      },
+      {
+        text: step.label,
+        fontSize: (node.fontSize ?? 14) * scaleFactor,
+        fontFace: node.fontFamily ?? "Noto Sans JP",
+        color: textColor,
+        bold: node.bold ?? false,
+        italic: node.italic,
+        underline: node.underline,
+        strike: node.strike,
+        highlight: node.highlight,
+        align: "center",
+        valign: "middle",
+      },
+    );
   });
 }
 
@@ -204,35 +230,55 @@ function renderVerticalProcessArrow(
           { close: true as const },
         ];
 
-    ctx.slide.addShape("custGeom" as never, {
-      x: pxToIn(stepX),
-      y: pxToIn(stepY),
-      w: pxToIn(itemWidth),
-      h: pxToIn(itemHeight),
-      points,
-      fill: { color: fillColor },
-      line: { type: "none" as const },
-    });
+    addGlimpseShape(
+      ctx,
+      {
+        preset: "rect",
+        ...createShapeBoundsInput({
+          x: stepX,
+          y: stepY,
+          w: itemWidth,
+          h: itemHeight,
+        }),
+        fill: solidShapeFill(fillColor),
+        outline: noShapeOutline(),
+      },
+      { x: stepX, y: stepY, w: itemWidth, h: itemHeight },
+      {
+        fillColor,
+        customGeometry: {
+          width: pxToIn(itemWidth),
+          height: pxToIn(itemHeight),
+          points,
+        },
+      },
+    );
 
     // テキストを図形の中央（矢印部分を除いた領域）に配置
     const textOffsetTop = isFirst ? 0 : arrowDepth;
     const textHeight = Math.max(1, itemHeight - arrowDepth - textOffsetTop);
 
-    ctx.slide.addText(step.label, {
-      x: pxToIn(stepX),
-      y: pxToIn(stepY + textOffsetTop),
-      w: pxToIn(itemWidth),
-      h: pxToIn(textHeight),
-      fontSize: pxToPt((node.fontSize ?? 14) * scaleFactor),
-      fontFace: node.fontFamily ?? "Noto Sans JP",
-      color: textColor,
-      bold: node.bold ?? false,
-      italic: node.italic,
-      underline: convertUnderline(node.underline),
-      strike: convertStrike(node.strike),
-      highlight: node.highlight,
-      align: "center",
-      valign: "middle",
-    });
+    addGlimpseTextBox(
+      ctx,
+      {
+        x: stepX,
+        y: stepY + textOffsetTop,
+        w: itemWidth,
+        h: textHeight,
+      },
+      {
+        text: step.label,
+        fontSize: (node.fontSize ?? 14) * scaleFactor,
+        fontFace: node.fontFamily ?? "Noto Sans JP",
+        color: textColor,
+        bold: node.bold ?? false,
+        italic: node.italic,
+        underline: node.underline,
+        strike: node.strike,
+        highlight: node.highlight,
+        align: "center",
+        valign: "middle",
+      },
+    );
   });
 }

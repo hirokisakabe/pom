@@ -9,7 +9,10 @@ import {
 } from "@pptx-glimpse/document";
 import type { BorderStyle, ShadowStyle, TextGlow } from "../../types.ts";
 import { parseGradient } from "../../shared/gradient.ts";
-import { toColorInput } from "../glimpseTextBoxes.ts";
+import {
+  toColorInput,
+  type CustomGeometryXmlInput,
+} from "../glimpseTextBoxes.ts";
 import { pxToEmu, rectPxToIn } from "../units.ts";
 import type { RenderContext } from "../types.ts";
 
@@ -19,6 +22,8 @@ export type GlimpseShapeStyleOptions = {
   fillColor?: string;
   fillOpacity?: number;
   backgroundGradient?: string;
+  outlineGradient?: string;
+  outlineOpacity?: number;
   glow?: TextGlow;
   shadow?: ShadowStyle;
   rectRadius?: number;
@@ -27,6 +32,7 @@ export type GlimpseShapeStyleOptions = {
   flipV?: boolean;
   zeroWidth?: boolean;
   zeroHeight?: boolean;
+  customGeometry?: CustomGeometryXmlInput;
 };
 
 const TRANSPARENT_MARKER_STYLE = {
