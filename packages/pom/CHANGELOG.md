@@ -1,5 +1,13 @@
 # @hirokisakabe/pom
 
+## 9.1.2
+
+### Patch Changes
+
+- [#944](https://github.com/hirokisakabe/pom/pull/944) [`72774d5`](https://github.com/hirokisakabe/pom/commit/72774d5ed91bedee03e59ef12ad1d4b146d66c88) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Image / Svg / Icon primitives now emit image media parts and `<p:pic>` XML through the `@pptx-glimpse/document` writer path.
+
+- [#941](https://github.com/hirokisakabe/pom/pull/941) [`a61d148`](https://github.com/hirokisakabe/pom/commit/a61d148b216a37f1f02892a2f1209accc88d995d) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Improve Shape, Line, and Arrow PPTX XML generation by using the @pptx-glimpse/document shape writer.
+
 ## 9.1.1
 
 ### Patch Changes
