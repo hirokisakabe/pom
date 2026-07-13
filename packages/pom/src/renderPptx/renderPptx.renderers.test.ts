@@ -1,10 +1,9 @@
 /**
  * ノード renderer の出力回帰テスト。
  *
- * renderPptx に PositionedNode を直接渡し、pptxgenjs 内部の
- * _slideObjects (描画オブジェクトの位置・スタイル) を検証することで、
- * renderer 内部のリファクタリングで public な出力挙動が変わっていない
- * ことを保証する。
+ * renderPptx に PositionedNode を直接渡し、生成された OOXML、relationship、
+ * 埋め込み workbook を検証することで、renderer 内部のリファクタリングで
+ * public な出力挙動が変わっていないことを保証する。
  */
 import JSZip from "jszip";
 import { describe, expect, it, vi } from "vitest";
@@ -39,6 +38,13 @@ async function renderPageSlideXmlWithContext(page: PositionedNode) {
     slideXml: await zip.file("ppt/slides/slide1.xml")!.async("text"),
     buildContext,
   };
+}
+
+function extractChartPointColors(chartXml: string) {
+  return (chartXml.match(/<c:dPt>[\s\S]*?<\/c:dPt>/g) ?? []).map(
+    (dataPointXml) =>
+      dataPointXml.match(/<a:srgbClr val="([0-9A-F]{6})"\/>/)?.[1],
+  );
 }
 
 function vstackPage(children: PositionedNode[]): PositionedNode {
@@ -1023,6 +1029,8 @@ describe("renderChartNode", () => {
     expect(chartXml).toContain("<c:legend>");
     expect(chartXml).toContain("<c:catAx>");
     expect(chartXml).toContain("<c:valAx>");
+    expect(chartXml).not.toContain('<c:delete val="1"/>');
+    expect(chartXml).not.toContain("<c:manualLayout>");
     expect(chartXml).toContain('<a:srgbClr val="123456"/>');
     expect(slideRels).toContain(
       'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart"',
@@ -1130,14 +1138,18 @@ describe("renderChartNode", () => {
 
     const barXml = await barZip.file("ppt/charts/chart1.xml")!.async("text");
     const pieXml = await pieZip.file("ppt/charts/chart1.xml")!.async("text");
-    expect(barXml.match(/<c:dPt>/g)).toHaveLength(4);
-    expect(barXml.match(/<a:srgbClr val="111111"\/>/g)!.length).toBeGreaterThan(
-      1,
-    );
-    expect(pieXml.match(/<c:dPt>/g)).toHaveLength(4);
-    expect(pieXml.match(/<a:srgbClr val="333333"\/>/g)!.length).toBeGreaterThan(
-      1,
-    );
+    expect(extractChartPointColors(barXml)).toEqual([
+      "111111",
+      "222222",
+      "111111",
+      "222222",
+    ]);
+    expect(extractChartPointColors(pieXml)).toEqual([
+      "333333",
+      "444444",
+      "333333",
+      "444444",
+    ]);
   });
 
   it("sparkline=true でも pie などサポート外の chartType では通常描画にフォールバックする", async () => {
