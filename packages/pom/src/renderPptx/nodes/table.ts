@@ -14,7 +14,8 @@ import {
 import { pxToEmu, pxToPt } from "../units.ts";
 import { getContentArea } from "../utils/contentArea.ts";
 import { addGlimpseGraphicFrameMarker } from "../utils/glimpseGraphicFrame.ts";
-import type { TableRunCompatibility } from "../glimpseTextBoxes.ts";
+import { cleanHex, type TableRunCompatibility } from "../glimpseTextBoxes.ts";
+import { resolveSubSup } from "../textOptions.ts";
 
 type TablePositionedNode = Extract<PositionedNode, { type: "table" }>;
 
@@ -27,7 +28,7 @@ export function renderTableNode(
   const border = node.cellBorder
     ? {
         width: asEmu(Math.round(pxToEmu(node.cellBorder.width ?? 1 / 0.75))),
-        color: node.cellBorder.color ?? "000000",
+        color: cleanHex(node.cellBorder.color) ?? "000000",
         dash: toTableDash(node.cellBorder.dashType),
       }
     : undefined;
@@ -42,7 +43,10 @@ export function renderTableNode(
       ),
       rows: buildTableRows(node, rowHeights, border),
     },
-    { runProperties: buildTableRunCompatibility(node) },
+    {
+      runProperties: buildTableRunCompatibility(node),
+      borderDash: node.cellBorder?.dashType,
+    },
   );
   addGlimpseGraphicFrameMarker(ctx, marker, content);
 }
@@ -55,14 +59,14 @@ function buildTableRunCompatibility(
       const runs = cell.runs?.length ? cell.runs : [{ text: cell.text }];
       return runs.map((run) => {
         const underline = run.underline ?? cell.underline;
+        const subSup = resolveSubSup(run, cell);
         return {
           strike: run.strike ?? cell.strike,
-          baseline:
-            (run.subscript ?? cell.subscript)
-              ? "subscript"
-              : (run.superscript ?? cell.superscript)
-                ? "superscript"
-                : undefined,
+          baseline: subSup.subscript
+            ? "subscript"
+            : subSup.superscript
+              ? "superscript"
+              : undefined,
           highlight: run.highlight ?? cell.highlight,
           underlineStyle:
             typeof underline === "object"
@@ -102,7 +106,7 @@ function buildTableRows(
       while (cells[columnIndex] !== undefined) columnIndex += 1;
       cells[columnIndex] = {
         runs: buildTableRuns(cell),
-        fill: cell.backgroundColor,
+        fill: cleanHex(cell.backgroundColor),
         align: cell.textAlign ?? "left",
         borders: border
           ? { top: border, right: border, bottom: border, left: border }
@@ -141,7 +145,7 @@ function buildTableRuns(
     properties: {
       fontSize: asPt(pxToPt(run.fontSize ?? cell.fontSize ?? 18)),
       fontFace: run.fontFamily ?? cell.fontFamily,
-      color: run.color ?? cell.color,
+      color: cleanHex(run.color ?? cell.color),
       bold: run.bold ?? cell.bold,
       italic: run.italic ?? cell.italic,
       underline: Boolean(run.underline ?? cell.underline),

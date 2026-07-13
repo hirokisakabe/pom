@@ -1074,6 +1074,72 @@ describe("renderChartNode", () => {
     expect(chartXml).toContain('<c:h val="1"/>');
   });
 
+  it("既定 palette は pptxgenjs と同じ7色目以降も保持する", async () => {
+    const zip = await renderPagePptxZip(
+      vstackPage([
+        {
+          type: "chart",
+          chartType: "bar",
+          data: Array.from({ length: 8 }, (_, index) => ({
+            name: `Series ${index + 1}`,
+            labels: ["Q1"],
+            values: [index + 1],
+          })),
+          x: 0,
+          y: 0,
+          w: 400,
+          h: 200,
+        },
+      ]),
+    );
+
+    const chartXml = await zip.file("ppt/charts/chart1.xml")!.async("text");
+    expect(chartXml).toContain('<a:srgbClr val="628FC6"/>');
+    expect(chartXml).toContain('<a:srgbClr val="C86360"/>');
+  });
+
+  it("単一系列 bar の複数色と pie の point 超過色をデータ点へ循環適用する", async () => {
+    const barZip = await renderPagePptxZip(
+      vstackPage([
+        {
+          type: "chart",
+          chartType: "bar",
+          data: sampleData,
+          chartColors: ["111111", "222222"],
+          x: 0,
+          y: 0,
+          w: 400,
+          h: 200,
+        },
+      ]),
+    );
+    const pieZip = await renderPagePptxZip(
+      vstackPage([
+        {
+          type: "chart",
+          chartType: "pie",
+          data: sampleData,
+          chartColors: ["333333", "444444"],
+          x: 0,
+          y: 0,
+          w: 400,
+          h: 200,
+        },
+      ]),
+    );
+
+    const barXml = await barZip.file("ppt/charts/chart1.xml")!.async("text");
+    const pieXml = await pieZip.file("ppt/charts/chart1.xml")!.async("text");
+    expect(barXml.match(/<c:dPt>/g)).toHaveLength(4);
+    expect(barXml.match(/<a:srgbClr val="111111"\/>/g)!.length).toBeGreaterThan(
+      1,
+    );
+    expect(pieXml.match(/<c:dPt>/g)).toHaveLength(4);
+    expect(pieXml.match(/<a:srgbClr val="333333"\/>/g)!.length).toBeGreaterThan(
+      1,
+    );
+  });
+
   it("sparkline=true でも pie などサポート外の chartType では通常描画にフォールバックする", async () => {
     const zip = await renderPagePptxZip(
       vstackPage([
@@ -1125,8 +1191,18 @@ describe("renderTableNode", () => {
                   text: "Header",
                   bold: true,
                   strike: true,
+                  subscript: true,
                   highlight: "FFFF00",
+                  fontFamily: "Aptos",
+                  underline: { style: "dbl", color: "#FF0000" },
                   backgroundColor: "E2E8F0",
+                  runs: [
+                    {
+                      text: "Header",
+                      superscript: true,
+                      href: "https://example.com/header",
+                    },
+                  ],
                 },
                 {
                   text: "Link",
@@ -1136,7 +1212,11 @@ describe("renderTableNode", () => {
               ],
             },
           ],
-          cellBorder: { color: "334155", width: 1 },
+          cellBorder: {
+            color: "#334155",
+            width: 1,
+            dashType: "lgDashDotDot",
+          },
         },
       ]),
     );
@@ -1151,12 +1231,28 @@ describe("renderTableNode", () => {
     expect(slideXml).toContain('<a:tr h="381000">');
     expect(slideXml).toContain('<a:rPr b="1"');
     expect(slideXml).toContain('strike="sngStrike"');
+    expect(slideXml).toContain('baseline="30000"');
+    expect(slideXml).not.toContain('baseline="-40000"');
     expect(slideXml).toContain(
       '<a:highlight><a:srgbClr val="FFFF00"/></a:highlight>',
     );
     expect(slideXml).toContain('<a:srgbClr val="E2E8F0"/>');
     expect(slideXml).toContain('<a:pPr algn="r"/>');
     expect(slideXml).toContain('<a:srgbClr val="334155"/>');
+    expect(slideXml).toContain('<a:prstDash val="lgDashDotDot"/>');
+    const firstRunProperties = slideXml.match(
+      /<a:rPr\b[^>]*>[\s\S]*?<\/a:rPr>/,
+    )?.[0];
+    expect(firstRunProperties).toBeDefined();
+    expect(firstRunProperties!.indexOf("<a:highlight>")).toBeLessThan(
+      firstRunProperties!.indexOf("<a:uFill>"),
+    );
+    expect(firstRunProperties!.indexOf("<a:uFill>")).toBeLessThan(
+      firstRunProperties!.indexOf("<a:latin"),
+    );
+    expect(firstRunProperties!.indexOf("<a:latin")).toBeLessThan(
+      firstRunProperties!.indexOf("<a:hlinkClick"),
+    );
     const firstCellProperties = slideXml.match(
       /<a:tcPr\b[\s\S]*?<\/a:tcPr>/,
     )?.[0];

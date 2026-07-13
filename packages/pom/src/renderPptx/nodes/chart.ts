@@ -14,8 +14,27 @@ const DEFAULT_BAR_CHART_COLORS = [
   "8064A2",
   "4BACC6",
   "F79646",
+  "628FC6",
+  "C86360",
+  "C0504D",
+  "4F81BD",
+  "9BBB59",
+  "8064A2",
+  "4BACC6",
+  "F79646",
+  "628FC6",
+  "C86360",
 ];
 const DEFAULT_PIE_CHART_COLORS = [
+  "5DA5DA",
+  "FAA43A",
+  "60BD68",
+  "F17CB0",
+  "B2912F",
+  "B276B2",
+  "DECF3F",
+  "F15854",
+  "A7A7A7",
   "5DA5DA",
   "FAA43A",
   "60BD68",
@@ -45,6 +64,18 @@ export function renderChartNode(
     (node.chartType === "pie" || node.chartType === "doughnut"
       ? DEFAULT_PIE_CHART_COLORS
       : DEFAULT_BAR_CHART_COLORS);
+  const pointColors =
+    chartColors.length > 0 &&
+    (node.chartType === "pie" ||
+      node.chartType === "doughnut" ||
+      (node.chartType === "bar" &&
+        node.data.length === 1 &&
+        node.chartColors !== undefined &&
+        node.chartColors.length > 1))
+      ? node.data[0]?.values.map(
+          (_value, index) => chartColors[index % chartColors.length],
+        )
+      : undefined;
   const marker = ctx.buildContext.glimpseTextBoxes.registerChart(
     {
       chartType: node.chartType,
@@ -69,7 +100,7 @@ export function renderChartNode(
         : undefined,
       plotLayout: isSparkline ? { x: 0, y: 0, width: 1, height: 1 } : undefined,
     },
-    { pointColors: chartColors },
+    { pointColors },
   );
   addGlimpseGraphicFrameMarker(ctx, marker, content);
 }

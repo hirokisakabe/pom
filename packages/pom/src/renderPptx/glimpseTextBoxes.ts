@@ -702,6 +702,7 @@ interface RegisteredTable {
   name: string;
   input: AddTableInput;
   runProperties?: readonly TableRunCompatibility[];
+  borderDash?: string;
 }
 
 export type TableRunCompatibility = {
@@ -808,6 +809,7 @@ export class GlimpseTextBoxRegistry {
     options?: {
       name?: string;
       runProperties?: readonly TableRunCompatibility[];
+      borderDash?: string;
     },
   ): string {
     const index = this.tableCount++;
@@ -819,6 +821,7 @@ export class GlimpseTextBoxRegistry {
       name,
       input: { ...input, name },
       runProperties: options?.runProperties,
+      borderDash: options?.borderDash,
     });
     return marker;
   }
@@ -972,6 +975,7 @@ type AddedGraphicFrame = {
 function withPptxGenTableDefaults(
   xml: string,
   runProperties: readonly TableRunCompatibility[] | undefined,
+  borderDash: string | undefined,
 ): string {
   let runIndex = 0;
   return xml
@@ -1001,11 +1005,19 @@ function withPptxGenTableDefaults(
           setAttr("u", compatibility.underlineStyle);
         }
         let body = rawBody ?? "";
-        if (compatibility.underlineColor) {
-          body += `<a:uFill><a:solidFill><a:srgbClr val="${cleanHex(compatibility.underlineColor)}"/></a:solidFill></a:uFill>`;
-        }
+        let compatibilityChildren = "";
         if (compatibility.highlight) {
-          body += `<a:highlight><a:srgbClr val="${cleanHex(compatibility.highlight)}"/></a:highlight>`;
+          compatibilityChildren += `<a:highlight><a:srgbClr val="${cleanHex(compatibility.highlight)}"/></a:highlight>`;
+        }
+        if (compatibility.underlineColor) {
+          compatibilityChildren += `<a:uFill><a:solidFill><a:srgbClr val="${cleanHex(compatibility.underlineColor)}"/></a:solidFill></a:uFill>`;
+        }
+        if (compatibilityChildren) {
+          const lateChild =
+            /<a:(?:latin|ea|cs|sym|hlinkClick|hlinkMouseOver|rtl)\b/;
+          body = lateChild.test(body)
+            ? body.replace(lateChild, `${compatibilityChildren}$&`)
+            : `${body}${compatibilityChildren}`;
         }
         return body ? `<a:rPr${attrs}>${body}</a:rPr>` : `<a:rPr${attrs}/>`;
       },
@@ -1022,6 +1034,10 @@ function withPptxGenTableDefaults(
         );
         return `<a:tcPr${attrs}>${borders.join("")}${bodyWithoutBorders}</a:tcPr>`;
       },
+    )
+    .replace(
+      /<a:prstDash val="[^"]+"\/>/g,
+      borderDash ? `<a:prstDash val="${xmlAttr(borderDash)}"/>` : "$&",
     );
 }
 
@@ -1115,14 +1131,11 @@ function withPptxGenChartDefaults(
       return `<c:ser>${seriesBody}</c:ser>`;
     },
   );
-  if (
-    pointColors?.length &&
-    (input.chartType === "pie" || input.chartType === "doughnut")
-  ) {
+  if (pointColors?.length) {
     const points = pointColors
       .map(
         (color, index) =>
-          `<c:dPt><c:idx val="${index}"/><c:bubble3D val="0"/><c:spPr><a:solidFill><a:srgbClr val="${cleanHex(color)}"/></a:solidFill><a:effectLst/></c:spPr></c:dPt>`,
+          `<c:dPt><c:idx val="${index}"/>${input.chartType === "bar" ? '<c:invertIfNegative val="0"/>' : ""}<c:bubble3D val="0"/><c:spPr><a:solidFill><a:srgbClr val="${cleanHex(color)}"/></a:solidFill><a:effectLst/></c:spPr></c:dPt>`,
       )
       .join("");
     result = result.replace(/(<c:ser>[\s\S]*?<\/c:spPr>)/, `$1${points}`);
@@ -1238,7 +1251,11 @@ async function addGlimpseGraphicFrames(
       slidePath,
       xml:
         entry.kind === "table"
-          ? withPptxGenTableDefaults(edit.xml, entry.runProperties)
+          ? withPptxGenTableDefaults(
+              edit.xml,
+              entry.runProperties,
+              entry.borderDash,
+            )
           : edit.xml,
       chartPartPath: edit.kind === "addChart" ? edit.chartPartPath : undefined,
       chartInput: entry.kind === "chart" ? entry.input : undefined,
