@@ -1,10 +1,9 @@
 /**
- * Text primitive の @pptx-glimpse/document writer への段階的 swap。
+ * Primitive の @pptx-glimpse/document writer への段階的 swap。
  *
- * 混在期間の合成方式は「pptxgenjs 出力 zip をベースに、swap 済み Text
- * primitive の shape XML だけを glimpse writer で生成して該当 marker shape と
- * 差し替える」方式を採用する。pptxgenjs 側にはまだ Shape / Image / Table /
- * Chart など未 swap primitive と slide master 生成が残っているため、既存 zip を
+ * 混在期間の合成方式は「pptxgenjs 出力 zip をベースに、swap 済み primitive
+ * の XML / package part を glimpse writer で生成して該当 marker shape と
+ * 差し替える」方式を採用する。pptxgenjs 側には slide master 生成が残っているため、既存 zip を
  * ベースにすると [Content_Types].xml / rels / media parts の管理を現行実装へ
  * 寄せられる。代替案として glimpse の package をベースに未 swap primitive を
  * pptxgenjs から取り込む方式も検討したが、初回スライス時点では pptxgenjs 側の
@@ -12,12 +11,14 @@
  * primitive swap より先に package 合成の複雑さが大きくなるため採用しない。
  *
  * marker shape は描画順を保持するためだけに pptxgenjs へ追加し、write 時に
- * glimpse の `<p:sp>` で丸ごと置換する。Text content 自体は pptxgenjs `addText`
- * を経由しない。
+ * glimpse の `<p:sp>` / `<p:graphicFrame>` で丸ごと置換する。swap 済み primitive
+ * 自体は対応する pptxgenjs API を経由しない。
  */
 import {
+  addChart,
   addPicture,
   addShape,
+  addTable,
   addTextBox,
   asEmu,
   asHundredthPt,
@@ -25,9 +26,11 @@ import {
   asOoxmlPercent,
   asPt,
   createPptx,
+  type AddChartInput,
   type AddTextBoxGradientFillInput,
   type AddShapeInput,
   type AddPictureInput,
+  type AddTableInput,
   type AddTextBoxInput,
   type AddTextBoxParagraphInput,
   type AddTextBoxRunPropertiesInput,
@@ -36,8 +39,11 @@ import {
   type PptxSourceModel,
   type PptxSourceModelAddPictureEdit,
   type PptxSourceModelAddShapeEdit,
+  type PptxSourceModelAddChartEdit,
+  type PptxSourceModelAddTableEdit,
   type PptxSourceModelAddTextBoxEdit,
   readPptx,
+  writePptx,
 } from "@pptx-glimpse/document";
 import type {
   BorderStyle,
@@ -67,6 +73,8 @@ type XmlTransform = (xml: string) => string;
 const MARKER_PREFIX = "pom-text:";
 const SHAPE_MARKER_PREFIX = "pom-shape:";
 const PICTURE_MARKER_PREFIX = "pom-picture:";
+const TABLE_MARKER_PREFIX = "pom-table:";
+const CHART_MARKER_PREFIX = "pom-chart:";
 const SLIDE_BACKGROUND_MARKER_BASE = 0x0f7a3d;
 const HYPERLINK_REL_TYPE =
   "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
@@ -688,6 +696,31 @@ interface RegisteredPicture {
   shadow?: ShadowStyle;
 }
 
+interface RegisteredTable {
+  kind: "table";
+  marker: string;
+  name: string;
+  input: AddTableInput;
+  runProperties?: readonly TableRunCompatibility[];
+  borderDash?: string;
+}
+
+export type TableRunCompatibility = {
+  strike?: boolean;
+  baseline?: "subscript" | "superscript";
+  highlight?: string;
+  underlineStyle?: string;
+  underlineColor?: string;
+};
+
+interface RegisteredChart {
+  kind: "chart";
+  marker: string;
+  name: string;
+  input: AddChartInput;
+  pointColors?: readonly string[];
+}
+
 interface RegisteredSlideBackground {
   kind: "slideBackground";
   marker: string;
@@ -696,13 +729,19 @@ interface RegisteredSlideBackground {
 }
 
 type RegisteredDrawing =
-  RegisteredTextBox | RegisteredPicture | RegisteredSlideBackground;
+  | RegisteredTextBox
+  | RegisteredPicture
+  | RegisteredTable
+  | RegisteredChart
+  | RegisteredSlideBackground;
 
 export class GlimpseTextBoxRegistry {
   private readonly registered: RegisteredDrawing[] = [];
   private textCount = 0;
   private shapeCount = 0;
   private pictureCount = 0;
+  private tableCount = 0;
+  private chartCount = 0;
   private slideBackgroundCount = 0;
 
   register(node: TextPositionedNode): string {
@@ -761,6 +800,45 @@ export class GlimpseTextBoxRegistry {
       name,
       input: { ...input, name },
       shadow: options?.shadow,
+    });
+    return marker;
+  }
+
+  registerTable(
+    input: AddTableInput,
+    options?: {
+      name?: string;
+      runProperties?: readonly TableRunCompatibility[];
+      borderDash?: string;
+    },
+  ): string {
+    const index = this.tableCount++;
+    const marker = `${TABLE_MARKER_PREFIX}${index}`;
+    const name = options?.name ?? `Table ${index + 1}`;
+    this.registered.push({
+      kind: "table",
+      marker,
+      name,
+      input: { ...input, name },
+      runProperties: options?.runProperties,
+      borderDash: options?.borderDash,
+    });
+    return marker;
+  }
+
+  registerChart(
+    input: AddChartInput,
+    options?: { name?: string; pointColors?: readonly string[] },
+  ): string {
+    const index = this.chartCount++;
+    const marker = `${CHART_MARKER_PREFIX}${index}`;
+    const name = options?.name ?? `Chart ${index + 1}`;
+    this.registered.push({
+      kind: "chart",
+      marker,
+      name,
+      input: { ...input, name },
+      pointColors: options?.pointColors,
     });
     return marker;
   }
@@ -882,6 +960,422 @@ function withHyperlinkRelationships(
 
 function findSlideHandle(source: PptxSourceModel, slidePath: string) {
   return source.slides.find((slide) => slide.partPath === slidePath)?.handle;
+}
+
+type AddedGraphicFrame = {
+  marker: string;
+  name: string;
+  slidePath: string;
+  xml: string;
+  chartPartPath?: PartPath;
+  chartInput?: AddChartInput;
+  pointColors?: readonly string[];
+};
+
+function withPptxGenTableDefaults(
+  xml: string,
+  runProperties: readonly TableRunCompatibility[] | undefined,
+  borderDash: string | undefined,
+): string {
+  let runIndex = 0;
+  return xml
+    .replace(/<a:tblPr\b[^>]*>[\s\S]*?<\/a:tblPr>/, "<a:tblPr/>")
+    .replace(
+      /<a:tcPr(?=[\s/>])/g,
+      '<a:tcPr marL="0" marR="0" marT="0" marB="0"',
+    )
+    .replace(
+      /<a:rPr\b([^>]*?)(?:\/>|>([\s\S]*?)<\/a:rPr>)/g,
+      (_match, rawAttrs: string, rawBody: string | undefined) => {
+        const compatibility = runProperties?.[runIndex++];
+        if (!compatibility) return _match;
+        let attrs = rawAttrs;
+        const setAttr = (name: string, value: string) => {
+          const pattern = new RegExp(`\\s${name}="[^"]*"`);
+          attrs = pattern.test(attrs)
+            ? attrs.replace(pattern, ` ${name}="${value}"`)
+            : `${attrs} ${name}="${value}"`;
+        };
+        if (compatibility.strike) setAttr("strike", "sngStrike");
+        if (compatibility.baseline === "subscript")
+          setAttr("baseline", "-40000");
+        if (compatibility.baseline === "superscript")
+          setAttr("baseline", "30000");
+        if (compatibility.underlineStyle) {
+          setAttr("u", compatibility.underlineStyle);
+        }
+        let body = rawBody ?? "";
+        let compatibilityChildren = "";
+        if (compatibility.highlight) {
+          compatibilityChildren += `<a:highlight><a:srgbClr val="${cleanHex(compatibility.highlight)}"/></a:highlight>`;
+        }
+        if (compatibility.underlineColor) {
+          compatibilityChildren += `<a:uFill><a:solidFill><a:srgbClr val="${cleanHex(compatibility.underlineColor)}"/></a:solidFill></a:uFill>`;
+        }
+        if (compatibilityChildren) {
+          const lateChild =
+            /<a:(?:latin|ea|cs|sym|hlinkClick|hlinkMouseOver|rtl)\b/;
+          body = lateChild.test(body)
+            ? body.replace(lateChild, `${compatibilityChildren}$&`)
+            : `${body}${compatibilityChildren}`;
+        }
+        return body ? `<a:rPr${attrs}>${body}</a:rPr>` : `<a:rPr${attrs}/>`;
+      },
+    )
+    .replace(
+      /<a:tcPr\b([^>]*)>([\s\S]*?)<\/a:tcPr>/g,
+      (_match, attrs: string, body: string) => {
+        const borders =
+          body.match(/<a:ln(?:L|R|T|B)\b[\s\S]*?<\/a:ln(?:L|R|T|B)>/g) ?? [];
+        if (borders.length === 0) return _match;
+        const bodyWithoutBorders = body.replace(
+          /<a:ln(?:L|R|T|B)\b[\s\S]*?<\/a:ln(?:L|R|T|B)>/g,
+          "",
+        );
+        return `<a:tcPr${attrs}>${borders.join("")}${bodyWithoutBorders}</a:tcPr>`;
+      },
+    )
+    .replace(
+      /<a:r>(<a:rPr\b(?:[^>]*\/>|[^>]*>[\s\S]*?<\/a:rPr>))<a:t([^>]*)>([\s\S]*?)<\/a:t><\/a:r>/g,
+      (match, runPropertiesXml: string, textAttrs: string, text: string) => {
+        const segments = text.split(/\r?\n|&#x?0*A;/i);
+        if (segments.length === 1) return match;
+        return segments
+          .map(
+            (segment, index) =>
+              `${index === 0 ? "" : "<a:br/>"}<a:r>${runPropertiesXml}<a:t${textAttrs}>${segment}</a:t></a:r>`,
+          )
+          .join("");
+      },
+    )
+    .replace(
+      /<a:prstDash val="[^"]+"\/>/g,
+      borderDash ? `<a:prstDash val="${xmlAttr(borderDash)}"/>` : "$&",
+    );
+}
+
+const CHART_AXIS_LINE_XML =
+  '<c:spPr><a:ln w="12700" cap="flat"><a:solidFill><a:srgbClr val="888888"/></a:solidFill><a:prstDash val="solid"/><a:round/></a:ln></c:spPr>';
+const CHART_AXIS_TEXT_XML =
+  '<c:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="1200" b="0" i="0" u="none" strike="noStrike"><a:solidFill><a:srgbClr val="000000"/></a:solidFill><a:latin typeface="Arial"/></a:defRPr></a:pPr><a:endParaRPr lang="en-US"/></a:p></c:txPr>';
+const CHART_NO_FILL_XML =
+  "<c:spPr><a:noFill/><a:ln><a:noFill/></a:ln><a:effectLst/></c:spPr>";
+const CHART_TRANSPARENT_FILL_XML =
+  '<c:spPr><a:solidFill><a:srgbClr val="FFFFFF"><a:alpha val="0"/></a:srgbClr></a:solidFill><a:ln w="12700" cap="flat"><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill></a:ln><a:effectLst/></c:spPr>';
+const CHART_HIDDEN_AXIS_LINE_XML =
+  '<c:spPr><a:ln w="12700" cap="flat"><a:noFill/><a:prstDash val="solid"/><a:round/></a:ln></c:spPr>';
+
+function withPptxGenChartDefaults(
+  xml: string,
+  input: AddChartInput,
+  pointColors: readonly string[] | undefined,
+): string {
+  const isSparkline = input.plotLayout !== undefined;
+  const chartAreaShape = isSparkline
+    ? CHART_TRANSPARENT_FILL_XML
+    : CHART_NO_FILL_XML;
+  let result = xml
+    .replace(/<c:lang\b[^>]*\/>/, "")
+    .replace('<c:dispBlanksAs val="gap"/>', '<c:dispBlanksAs val="span"/>')
+    .replace(/(<c:legend>.*?)<c:layout\/>/g, "$1")
+    .replace("</c:plotArea>", `${chartAreaShape}</c:plotArea>`)
+    .replace(
+      "</c:chart><c:externalData",
+      `</c:chart>${chartAreaShape}<c:externalData`,
+    );
+  if (!isSparkline) {
+    result = result.replace(
+      '<c:roundedCorners val="0"/>',
+      '<c:roundedCorners val="1"/>',
+    );
+  }
+
+  if (input.title !== undefined) {
+    result = result.replace(/<c:title>[\s\S]*?<\/c:title>/, (titleXml) =>
+      titleXml
+        .replace(
+          "<a:p><a:r>",
+          '<a:p><a:pPr><a:defRPr sz="1800" b="0" i="0" u="none" strike="noStrike"><a:solidFill><a:srgbClr val="000000"/></a:solidFill><a:latin typeface="Arial"/></a:defRPr></a:pPr><a:r>',
+        )
+        .replace(
+          /<a:rPr\b[^>]*\/>/,
+          '<a:rPr sz="1800" b="0" i="0" u="none" strike="noStrike"><a:solidFill><a:srgbClr val="000000"/></a:solidFill><a:latin typeface="Arial"/></a:rPr>',
+        ),
+    );
+  }
+
+  if (isSparkline) {
+    result = result.replace(
+      '<c:xMode val="factor"/><c:yMode val="factor"/><c:wMode val="factor"/><c:hMode val="factor"/>',
+      '<c:xMode val="edge"/><c:yMode val="edge"/>',
+    );
+    result = withPptxGenChartAxisDefaults(result, "catAx", true, true);
+    result = withPptxGenChartAxisDefaults(result, "valAx", false, true);
+  } else {
+    result = withPptxGenChartAxisDefaults(result, "catAx", true, false);
+    result = withPptxGenChartAxisDefaults(result, "valAx", false, false);
+  }
+
+  let seriesIndex = 0;
+  result = result.replace(
+    /<c:ser>([\s\S]*?)<\/c:ser>/g,
+    (_match, body: string) => {
+      const color = cleanHex(input.series[seriesIndex]?.color) ?? "C0504D";
+      seriesIndex += 1;
+      let seriesBody = body;
+      const solidFill = `<a:solidFill><a:srgbClr val="${color}"/></a:solidFill>`;
+      const seriesShape =
+        input.chartType === "pie" || input.chartType === "doughnut"
+          ? '<c:spPr><a:solidFill><a:schemeClr val="accent1"/></a:solidFill><a:ln w="9525" cap="flat"><a:solidFill><a:srgbClr val="F9F9F9"/></a:solidFill><a:prstDash val="solid"/><a:round/></a:ln><a:effectLst/></c:spPr>'
+          : input.chartType === "line" || input.chartType === "radar"
+            ? `<c:spPr>${solidFill}<a:ln w="25400" cap="flat">${solidFill}<a:prstDash val="solid"/><a:round/></a:ln><a:effectLst/></c:spPr>`
+            : `<c:spPr>${solidFill}<a:effectLst/></c:spPr>`;
+      seriesBody = seriesBody.replace(
+        /<c:spPr>[\s\S]*?<\/c:spPr>/,
+        seriesShape,
+      );
+      if (input.chartType === "line" || input.chartType === "radar") {
+        const markerShape = `<c:marker><c:symbol val="circle"/><c:size val="6"/><c:spPr>${solidFill}<a:ln w="9525" cap="flat">${solidFill}<a:prstDash val="solid"/><a:round/></a:ln><a:effectLst/></c:spPr></c:marker>`;
+        seriesBody = seriesBody.replace(
+          /<c:marker>[\s\S]*?<\/c:marker>/,
+          markerShape,
+        );
+      }
+      return `<c:ser>${seriesBody}</c:ser>`;
+    },
+  );
+  if (pointColors?.length) {
+    const points = pointColors
+      .map(
+        (color, index) =>
+          `<c:dPt><c:idx val="${index}"/>${input.chartType === "bar" ? '<c:invertIfNegative val="0"/>' : ""}<c:bubble3D val="0"/><c:spPr><a:solidFill><a:srgbClr val="${cleanHex(color)}"/></a:solidFill><a:effectLst/></c:spPr></c:dPt>`,
+      )
+      .join("");
+    result = result.replace(/(<c:ser>[\s\S]*?<\/c:spPr>)/, `$1${points}`);
+  }
+  return result;
+}
+
+function withPptxGenChartAxisDefaults(
+  xml: string,
+  tag: "catAx" | "valAx",
+  category: boolean,
+  hidden: boolean,
+): string {
+  return xml.replace(
+    new RegExp(`<c:${tag}>([\\s\\S]*?)</c:${tag}>`),
+    (_match, rawBody: string) => {
+      let body = rawBody
+        .replace(
+          '<c:majorTickMark val="none"/>',
+          '<c:majorTickMark val="out"/>',
+        )
+        .replace(
+          /<c:tickLblPos val="[^"]+"\/>/,
+          `<c:tickLblPos val="${category ? "low" : "nextTo"}"/>`,
+        )
+        .replace(
+          '<c:numFmt formatCode="General" sourceLinked="1"/>',
+          `<c:numFmt formatCode="General" sourceLinked="${category ? 1 : 0}"/>`,
+        )
+        .replace(
+          /<c:spPr><a:ln><a:noFill\/><\/a:ln><\/c:spPr>/,
+          hidden ? CHART_HIDDEN_AXIS_LINE_XML : "",
+        );
+      if (tag === "valAx") {
+        body = body.replace(
+          "<c:majorGridlines/>",
+          `<c:majorGridlines>${CHART_AXIS_LINE_XML}</c:majorGridlines>`,
+        );
+      }
+      body = body.replace(
+        "<c:crossAx",
+        `${hidden ? "" : CHART_AXIS_LINE_XML}${CHART_AXIS_TEXT_XML}<c:crossAx`,
+      );
+      if (category) {
+        body = body
+          .replace(/<c:lblOffset\b[^>]*\/>/, "")
+          .replace("</c:catAx>", "</c:catAx>");
+        body += '<c:noMultiLvlLbl val="1"/>';
+      }
+      return `<c:${tag}>${body}</c:${tag}>`;
+    },
+  );
+}
+
+function markerShapePattern(marker: string): RegExp {
+  return new RegExp(
+    `<p:sp><p:nvSpPr><p:cNvPr id="([^"]+)" name="${escapeRegExp(
+      marker,
+    )}"[\\s\\S]*?</p:sp>`,
+  );
+}
+
+async function addGlimpseGraphicFrames(
+  data: Uint8Array | ArrayBuffer,
+  registry: GlimpseTextBoxRegistry,
+): Promise<Uint8Array> {
+  const entries = registry.entries.filter(
+    (entry): entry is RegisteredTable | RegisteredChart =>
+      entry.kind === "table" || entry.kind === "chart",
+  );
+  if (entries.length === 0) {
+    return data instanceof Uint8Array ? data : new Uint8Array(data);
+  }
+
+  const JSZip = await loadJSZip();
+  const inputZip = await JSZip.loadAsync(data);
+  const slidePaths = Object.keys(inputZip.files).filter((path) =>
+    /^ppt\/slides\/slide\d+\.xml$/.test(path),
+  );
+  const slideXmlByPath = new Map<string, string>();
+  for (const path of slidePaths) {
+    const file = inputZip.file(path);
+    if (file) slideXmlByPath.set(path, await file.async("text"));
+  }
+
+  let source = readPptx(
+    data instanceof Uint8Array ? data : new Uint8Array(data),
+  );
+  const added: AddedGraphicFrame[] = [];
+  for (const entry of entries) {
+    const slidePath = slidePaths.find((path) =>
+      markerShapePattern(entry.marker).test(slideXmlByPath.get(path) ?? ""),
+    );
+    if (!slidePath) {
+      throw new Error(`graphic frame marker was not found: ${entry.marker}`);
+    }
+    const slideHandle = findSlideHandle(source, slidePath);
+    if (!slideHandle) {
+      throw new Error(`slide handle was not found: ${slidePath}`);
+    }
+    source =
+      entry.kind === "table"
+        ? addTable(source, slideHandle, entry.input)
+        : addChart(source, slideHandle, entry.input);
+    const edit = source.edits?.at(-1) as
+      PptxSourceModelAddTableEdit | PptxSourceModelAddChartEdit | undefined;
+    if (!edit || (edit.kind !== "addTable" && edit.kind !== "addChart")) {
+      throw new Error(`${entry.kind} did not produce an add edit`);
+    }
+    added.push({
+      marker: entry.marker,
+      name: entry.name,
+      slidePath,
+      xml:
+        entry.kind === "table"
+          ? withPptxGenTableDefaults(
+              edit.xml,
+              entry.runProperties,
+              entry.borderDash,
+            )
+          : edit.xml,
+      chartPartPath: edit.kind === "addChart" ? edit.chartPartPath : undefined,
+      chartInput: entry.kind === "chart" ? entry.input : undefined,
+      pointColors: entry.kind === "chart" ? entry.pointColors : undefined,
+    });
+  }
+
+  const writtenZip = await JSZip.loadAsync(writePptx(source));
+  for (const [path, file] of Object.entries(writtenZip.files)) {
+    if (file.dir || inputZip.file(path)) continue;
+    inputZip.file(path, await file.async("uint8array"));
+  }
+  for (const entry of added) {
+    if (!entry.chartPartPath || !entry.chartInput) continue;
+    const chartFile = writtenZip.file(entry.chartPartPath);
+    if (!chartFile) {
+      throw new Error(`chart part was not found: ${entry.chartPartPath}`);
+    }
+    inputZip.file(
+      entry.chartPartPath,
+      withPptxGenChartDefaults(
+        await chartFile.async("text"),
+        entry.chartInput,
+        entry.pointColors,
+      ),
+    );
+  }
+
+  const contentTypes = inputZip.file("[Content_Types].xml");
+  const writtenContentTypes = writtenZip.file("[Content_Types].xml");
+  if (contentTypes && writtenContentTypes) {
+    inputZip.file(
+      "[Content_Types].xml",
+      mergePackageDeclarations(
+        await contentTypes.async("text"),
+        await writtenContentTypes.async("text"),
+        "Default",
+        "Extension",
+      ),
+    );
+    const current = await inputZip.file("[Content_Types].xml")!.async("text");
+    inputZip.file(
+      "[Content_Types].xml",
+      mergePackageDeclarations(
+        current,
+        await writtenContentTypes.async("text"),
+        "Override",
+        "PartName",
+      ),
+    );
+  }
+
+  for (const path of new Set(added.map((entry) => entry.slidePath))) {
+    const file = inputZip.file(path);
+    if (!file) throw new Error(`slide XML was not found: ${path}`);
+    let xml = await file.async("text");
+    for (const entry of added.filter(
+      (candidate) => candidate.slidePath === path,
+    )) {
+      const marker = markerShapePattern(entry.marker);
+      if (!marker.test(xml))
+        throw new Error(`graphic frame marker was not found: ${entry.marker}`);
+      xml = xml.replace(marker, (_match, id: string) =>
+        replaceShapeId(entry.xml, id, entry.name),
+      );
+    }
+    inputZip.file(path, xml);
+
+    const relsPath = slideRelsPath(path);
+    const rels = inputZip.file(relsPath);
+    const writtenRels = writtenZip.file(relsPath);
+    if (writtenRels) {
+      inputZip.file(
+        relsPath,
+        mergePackageDeclarations(
+          rels
+            ? await rels.async("text")
+            : createRelationshipEditor(undefined).result.xml,
+          await writtenRels.async("text"),
+          "Relationship",
+          "Id",
+        ),
+      );
+    }
+  }
+  return inputZip.generateAsync({ type: "uint8array" });
+}
+
+function mergePackageDeclarations(
+  target: string,
+  source: string,
+  tag: "Default" | "Override" | "Relationship",
+  key: "Extension" | "PartName" | "Id",
+): string {
+  let result = target;
+  const closeTag = tag === "Relationship" ? "Relationships" : "Types";
+  const entries = source.match(new RegExp(`<${tag}\\b[^>]*/>`, "g")) ?? [];
+  for (const entry of entries) {
+    const value = entry.match(new RegExp(`\\b${key}="([^"]+)"`))?.[1];
+    if (!value) continue;
+    const exists = new RegExp(
+      `<${tag}\\b[^>]*\\b${key}="${escapeRegExp(value)}"`,
+    ).test(result);
+    if (!exists)
+      result = result.replace(`</${closeTag}>`, `${entry}</${closeTag}>`);
+  }
+  return result;
 }
 
 function findMediaPart(source: PptxSourceModel, partPath: PartPath): MediaPart {
@@ -1046,6 +1540,7 @@ async function applyGlimpseTextBoxes(
   data: Uint8Array | ArrayBuffer,
   registry: GlimpseTextBoxRegistry,
 ): Promise<import("jszip")> {
+  data = await addGlimpseGraphicFrames(data, registry);
   const JSZip = await loadJSZip();
   const zip = await JSZip.loadAsync(data);
   const hasPictures = registry.entries.some(
