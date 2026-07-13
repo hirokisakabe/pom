@@ -1053,9 +1053,15 @@ describe("renderChartNode", () => {
       type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart",
       target: "../charts/chart1.xml",
     });
-    expect(chartRels).toContain(
-      'Target="../embeddings/Microsoft_Excel_Worksheet1.xlsx"',
-    );
+    const workbookRelationshipId = chartXml.match(
+      /<c:externalData\b[^>]*\br:id="([^"]+)"/,
+    )?.[1];
+    expect(workbookRelationshipId).toBeDefined();
+    expectRelationship(chartRels, {
+      id: workbookRelationshipId!,
+      type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/package",
+      target: "../embeddings/Microsoft_Excel_Worksheet1.xlsx",
+    });
     const workbookFile = zip.file(
       "ppt/embeddings/Microsoft_Excel_Worksheet1.xlsx",
     );
@@ -1098,6 +1104,32 @@ describe("renderChartNode", () => {
     expect(chartXml).toContain("<c:v>Q2</c:v>");
     expect(chartXml).toContain("<c:v>0</c:v>");
   });
+
+  it.each([
+    { data: [] },
+    { data: [{ name: "Empty", labels: [], values: [] }] },
+  ])(
+    "空の chart data %# でも native writer の最小系列へフォールバックする",
+    async ({ data }) => {
+      const zip = await renderPagePptxZip(
+        vstackPage([
+          {
+            type: "chart",
+            chartType: "bar",
+            data,
+            x: 0,
+            y: 0,
+            w: 200,
+            h: 100,
+          },
+        ]),
+      );
+
+      const chartXml = await zip.file("ppt/charts/chart1.xml")!.async("text");
+      expect(chartXml).toContain("<c:barChart>");
+      expect(chartXml).toContain('<c:ptCount val="1"/>');
+    },
+  );
 
   it("sparkline=true のとき凡例 / 軸 / グリッド線を XML で非表示にする", async () => {
     const zip = await renderPagePptxZip(

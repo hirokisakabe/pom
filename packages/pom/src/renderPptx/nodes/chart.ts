@@ -115,18 +115,22 @@ export function renderChartNode(
  * category を共有し、欠けた値を 0 で補う。
  */
 function normalizeChartSeries(data: ChartPositionedNode["data"]) {
+  const sourceData = data.length > 0 ? data : [{ labels: [], values: [] }];
   const pointCount = Math.max(
-    0,
-    ...data.flatMap((series) => [series.labels.length, series.values.length]),
+    1,
+    ...sourceData.flatMap((series) => [
+      series.labels.length,
+      series.values.length,
+    ]),
   );
   const categories = Array.from(
     { length: pointCount },
     (_, index) =>
-      data.find((series) => series.labels[index] !== undefined)?.labels[
+      sourceData.find((series) => series.labels[index] !== undefined)?.labels[
         index
       ] ?? "",
   );
-  return data.map((series) => ({
+  return sourceData.map((series) => ({
     name: series.name,
     labels: categories,
     values: Array.from(
