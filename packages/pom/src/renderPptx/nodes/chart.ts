@@ -1,19 +1,36 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { getContentAreaIn } from "../utils/contentArea.ts";
+import { asEmu } from "@pptx-glimpse/document";
+import { pxToEmu } from "../units.ts";
+import { getContentArea } from "../utils/contentArea.ts";
+import { addGlimpseGraphicFrameMarker } from "../utils/glimpseGraphicFrame.ts";
 
 type ChartPositionedNode = Extract<PositionedNode, { type: "chart" }>;
+
+const DEFAULT_BAR_CHART_COLORS = [
+  "C0504D",
+  "4F81BD",
+  "9BBB59",
+  "8064A2",
+  "4BACC6",
+  "F79646",
+];
+const DEFAULT_PIE_CHART_COLORS = [
+  "5DA5DA",
+  "FAA43A",
+  "60BD68",
+  "F17CB0",
+  "B2912F",
+  "B276B2",
+  "DECF3F",
+  "F15854",
+  "A7A7A7",
+];
 
 export function renderChartNode(
   node: ChartPositionedNode,
   ctx: RenderContext,
 ): void {
-  const chartData = node.data.map((d) => ({
-    name: d.name,
-    labels: d.labels,
-    values: d.values,
-  }));
-
   // sparkline モードは bar / line / area のみ対応。pie / doughnut / radar は
   // 元々凡例 / 軸の概念が異なるため sparkline=true でも通常描画にフォールバックする。
   const isSparkline =
@@ -22,41 +39,37 @@ export function renderChartNode(
       node.chartType === "line" ||
       node.chartType === "area");
 
-  const chartOptions: Record<string, unknown> = {
-    ...getContentAreaIn(node),
-    showLegend: isSparkline ? false : (node.showLegend ?? false),
-    showTitle: isSparkline ? false : (node.showTitle ?? false),
-    title: isSparkline ? undefined : node.title,
-    chartColors: node.chartColors,
-  };
-
-  // radar専用オプション
-  if (node.chartType === "radar" && node.radarStyle) {
-    chartOptions.radarStyle = node.radarStyle;
-  }
-
-  // sparkline モード: 凡例 / 軸 / グリッド線 / マージンをすべて非表示にし、
-  // プロット領域をチャート領域いっぱいに広げて小寸法でも視認できるようにする
-  if (isSparkline) {
-    chartOptions.catAxisHidden = true;
-    chartOptions.valAxisHidden = true;
-    chartOptions.catAxisLineShow = false;
-    chartOptions.valAxisLineShow = false;
-    chartOptions.showCatAxisTitle = false;
-    chartOptions.showValAxisTitle = false;
-    chartOptions.catGridLine = { style: "none" };
-    chartOptions.valGridLine = { style: "none" };
-    chartOptions.chartArea = {
-      fill: { type: "solid", color: "FFFFFF", transparency: 100 },
-      border: { color: "FFFFFF", pt: 0 },
-      roundedCorners: false,
-    };
-    chartOptions.plotArea = {
-      fill: { type: "solid", color: "FFFFFF", transparency: 100 },
-      border: { color: "FFFFFF", pt: 0 },
-    };
-    chartOptions.layout = { x: 0, y: 0, w: 1, h: 1 };
-  }
-
-  ctx.slide.addChart(node.chartType, chartData, chartOptions);
+  const content = getContentArea(node);
+  const chartColors =
+    node.chartColors ??
+    (node.chartType === "pie" || node.chartType === "doughnut"
+      ? DEFAULT_PIE_CHART_COLORS
+      : DEFAULT_BAR_CHART_COLORS);
+  const marker = ctx.buildContext.glimpseTextBoxes.registerChart(
+    {
+      chartType: node.chartType,
+      series: node.data.map((series, index) => ({
+        name: series.name,
+        categories: series.labels,
+        values: series.values,
+        color: chartColors[index % chartColors.length],
+      })),
+      offsetX: asEmu(Math.round(pxToEmu(content.x))),
+      offsetY: asEmu(Math.round(pxToEmu(content.y))),
+      width: asEmu(Math.round(pxToEmu(content.w))),
+      height: asEmu(Math.round(pxToEmu(content.h))),
+      title: !isSparkline && node.showTitle ? node.title : undefined,
+      showLegend: isSparkline ? false : (node.showLegend ?? false),
+      radarStyle: node.chartType === "radar" ? node.radarStyle : undefined,
+      categoryAxis: isSparkline
+        ? { hidden: true, lineVisible: false, gridLinesVisible: false }
+        : undefined,
+      valueAxis: isSparkline
+        ? { hidden: true, lineVisible: false, gridLinesVisible: false }
+        : undefined,
+      plotLayout: isSparkline ? { x: 0, y: 0, width: 1, height: 1 } : undefined,
+    },
+    { pointColors: chartColors },
+  );
+  addGlimpseGraphicFrameMarker(ctx, marker, content);
 }

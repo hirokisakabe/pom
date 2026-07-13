@@ -13,24 +13,8 @@ import { createBuildContext } from "../buildContext.ts";
 import { patchPptxWriteForGlimpseTextBoxes } from "./glimpseTextBoxes.ts";
 import type { PositionedNode } from "../types.ts";
 
-type SlideObject = {
-  _type: string;
-  shape?: string;
-  options: Record<string, unknown>;
-  text?: unknown;
-};
-
 const ONE_BY_ONE_PNG =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lU9qJwAAAABJRU5ErkJggg==";
-
-async function renderPage(page: PositionedNode) {
-  const buildContext = createBuildContext();
-  const pptx = await renderPptx([page], { w: 1280, h: 720 }, buildContext);
-  const slides = (
-    pptx as unknown as { _slides: { _slideObjects: SlideObject[] }[] }
-  )._slides;
-  return { objects: slides[0]._slideObjects, buildContext };
-}
 
 async function renderPageSlideXml(page: PositionedNode) {
   const { slideXml } = await renderPageSlideXmlWithContext(page);
@@ -1003,8 +987,8 @@ describe("renderChartNode", () => {
     },
   ];
 
-  it("通常モードでは sparkline 関連オプションを渡さない (後方互換)", async () => {
-    const { objects } = await renderPage(
+  it("通常モードを glimpse chart XML と editable workbook で生成する", async () => {
+    const zip = await renderPagePptxZip(
       vstackPage([
         {
           type: "chart",
@@ -1017,24 +1001,52 @@ describe("renderChartNode", () => {
           showLegend: true,
           showTitle: true,
           title: "Sales",
+          chartColors: ["123456"],
         },
       ]),
     );
 
-    const chart = objects.find((o) => o._type === "chart");
-    expect(chart).toBeDefined();
-    expect(chart?.options).toMatchObject({
-      showLegend: true,
-      showTitle: true,
-      title: "Sales",
-    });
-    expect(chart?.options.catAxisHidden).toBeUndefined();
-    expect(chart?.options.valAxisHidden).toBeUndefined();
-    expect(chart?.options.layout).toBeUndefined();
+    const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+    const chartXml = await zip.file("ppt/charts/chart1.xml")!.async("text");
+    const slideRels = await zip
+      .file("ppt/slides/_rels/slide1.xml.rels")!
+      .async("text");
+    const chartRels = await zip
+      .file("ppt/charts/_rels/chart1.xml.rels")!
+      .async("text");
+
+    expect(slideXml).toContain("<p:graphicFrame>");
+    expect(slideXml).toContain('name="Chart 1"');
+    expect(slideXml).not.toContain("pom-chart:");
+    expect(chartXml).toContain("<c:barChart>");
+    expect(chartXml).toContain("<a:t>Sales</a:t>");
+    expect(chartXml).toContain("<c:legend>");
+    expect(chartXml).toContain("<c:catAx>");
+    expect(chartXml).toContain("<c:valAx>");
+    expect(chartXml).toContain('<a:srgbClr val="123456"/>');
+    expect(slideRels).toContain(
+      'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart"',
+    );
+    expect(chartRels).toContain(
+      'Target="../embeddings/Microsoft_Excel_Worksheet1.xlsx"',
+    );
+    const workbookFile = zip.file(
+      "ppt/embeddings/Microsoft_Excel_Worksheet1.xlsx",
+    );
+    expect(workbookFile).not.toBeNull();
+    const workbook = await JSZip.loadAsync(
+      await workbookFile!.async("uint8array"),
+    );
+    const worksheetXml = await workbook
+      .file("xl/worksheets/sheet1.xml")!
+      .async("text");
+    expect(worksheetXml).toContain("<t>Sales</t>");
+    expect(worksheetXml).toContain("<t>Q1</t>");
+    expect(worksheetXml).toContain("<v>100</v>");
   });
 
-  it("sparkline=true のとき凡例 / 軸 / マージンを非表示にする", async () => {
-    const { objects } = await renderPage(
+  it("sparkline=true のとき凡例 / 軸 / グリッド線を XML で非表示にする", async () => {
+    const zip = await renderPagePptxZip(
       vstackPage([
         {
           type: "chart",
@@ -1052,26 +1064,18 @@ describe("renderChartNode", () => {
       ]),
     );
 
-    const chart = objects.find((o) => o._type === "chart");
-    expect(chart).toBeDefined();
-    expect(chart?.options).toMatchObject({
-      showLegend: false,
-      showTitle: false,
-      catAxisHidden: true,
-      valAxisHidden: true,
-      catAxisLineShow: false,
-      valAxisLineShow: false,
-      showCatAxisTitle: false,
-      showValAxisTitle: false,
-      catGridLine: { style: "none" },
-      valGridLine: { style: "none" },
-      layout: { x: 0, y: 0, w: 1, h: 1 },
-    });
-    expect(chart?.options.title).toBeUndefined();
+    const chartXml = await zip.file("ppt/charts/chart1.xml")!.async("text");
+    expect(chartXml).not.toContain("<c:title>");
+    expect(chartXml).not.toContain("<c:legend>");
+    expect(chartXml.match(/<c:delete val="1"\/>/g)).toHaveLength(2);
+    expect(chartXml).not.toContain("<c:majorGridlines/>");
+    expect(chartXml).toContain("<c:manualLayout>");
+    expect(chartXml).toContain('<c:w val="1"/>');
+    expect(chartXml).toContain('<c:h val="1"/>');
   });
 
   it("sparkline=true でも pie などサポート外の chartType では通常描画にフォールバックする", async () => {
-    const { objects } = await renderPage(
+    const zip = await renderPagePptxZip(
       vstackPage([
         {
           type: "chart",
@@ -1087,13 +1091,84 @@ describe("renderChartNode", () => {
       ]),
     );
 
-    const chart = objects.find((o) => o._type === "chart");
-    expect(chart).toBeDefined();
-    expect(chart?.options).toMatchObject({
-      showLegend: true,
-    });
-    expect(chart?.options.catAxisHidden).toBeUndefined();
-    expect(chart?.options.layout).toBeUndefined();
+    const chartXml = await zip.file("ppt/charts/chart1.xml")!.async("text");
+    expect(chartXml).toContain("<c:pieChart>");
+    expect(chartXml).toContain("<c:legend>");
+    expect(chartXml).not.toContain("<c:manualLayout>");
+    const seriesXml = chartXml.match(/<c:ser>[\s\S]*?<\/c:ser>/)?.[0];
+    expect(seriesXml).toBeDefined();
+    expect(seriesXml!.indexOf("<c:spPr>")).toBeLessThan(
+      seriesXml!.indexOf("<c:dPt>"),
+    );
+    expect(seriesXml!.indexOf("<c:dPt>")).toBeLessThan(
+      seriesXml!.indexOf("<c:cat>"),
+    );
+  });
+});
+
+describe("renderTableNode", () => {
+  it("glimpse table XML で列幅・行高・書式・罫線・hyperlink を生成する", async () => {
+    const zip = await renderPagePptxZip(
+      vstackPage([
+        {
+          type: "table",
+          x: 96,
+          y: 96,
+          w: 300,
+          h: 40,
+          columns: [{ width: 100 }, { width: 200 }],
+          rows: [
+            {
+              height: 40,
+              cells: [
+                {
+                  text: "Header",
+                  bold: true,
+                  strike: true,
+                  highlight: "FFFF00",
+                  backgroundColor: "E2E8F0",
+                },
+                {
+                  text: "Link",
+                  runs: [{ text: "Link", href: "https://example.com" }],
+                  textAlign: "right",
+                },
+              ],
+            },
+          ],
+          cellBorder: { color: "334155", width: 1 },
+        },
+      ]),
+    );
+    const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+    const relsXml = await zip
+      .file("ppt/slides/_rels/slide1.xml.rels")!
+      .async("text");
+
+    expect(slideXml).toContain("<a:tbl>");
+    expect(slideXml).toContain('<a:gridCol w="952500"/>');
+    expect(slideXml).toContain('<a:gridCol w="1905000"/>');
+    expect(slideXml).toContain('<a:tr h="381000">');
+    expect(slideXml).toContain('<a:rPr b="1"');
+    expect(slideXml).toContain('strike="sngStrike"');
+    expect(slideXml).toContain(
+      '<a:highlight><a:srgbClr val="FFFF00"/></a:highlight>',
+    );
+    expect(slideXml).toContain('<a:srgbClr val="E2E8F0"/>');
+    expect(slideXml).toContain('<a:pPr algn="r"/>');
+    expect(slideXml).toContain('<a:srgbClr val="334155"/>');
+    const firstCellProperties = slideXml.match(
+      /<a:tcPr\b[\s\S]*?<\/a:tcPr>/,
+    )?.[0];
+    expect(firstCellProperties).toBeDefined();
+    expect(firstCellProperties!.indexOf("<a:lnL")).toBeLessThan(
+      firstCellProperties!.indexOf("<a:solidFill>"),
+    );
+    expect(slideXml).toMatch(/<a:hlinkClick r:id="rId\d+"\/>/);
+    expect(slideXml).not.toContain("pom-table:");
+    expect(relsXml).toContain(
+      'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"',
+    );
   });
 });
 
