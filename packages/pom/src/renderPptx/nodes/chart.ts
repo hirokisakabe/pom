@@ -59,6 +59,7 @@ export function renderChartNode(
       node.chartType === "area");
 
   const content = getContentArea(node);
+  const series = normalizeChartSeries(node.data);
   const chartColors =
     node.chartColors ??
     (node.chartType === "pie" || node.chartType === "doughnut"
@@ -79,17 +80,20 @@ export function renderChartNode(
   const marker = ctx.buildContext.glimpseTextBoxes.registerChart(
     {
       chartType: node.chartType,
-      series: node.data.map((series, index) => ({
-        name: series.name,
-        categories: series.labels,
-        values: series.values,
+      series: series.map((item, index) => ({
+        name: item.name,
+        categories: item.labels,
+        values: item.values,
         color: chartColors[index % chartColors.length],
       })),
       offsetX: asEmu(Math.round(pxToEmu(content.x))),
       offsetY: asEmu(Math.round(pxToEmu(content.y))),
-      width: asEmu(Math.round(pxToEmu(content.w))),
-      height: asEmu(Math.round(pxToEmu(content.h))),
-      title: !isSparkline && node.showTitle ? node.title : undefined,
+      width: asEmu(Math.round(pxToEmu(Math.max(content.w, 1)))),
+      height: asEmu(Math.round(pxToEmu(Math.max(content.h, 1)))),
+      title:
+        !isSparkline && node.showTitle
+          ? node.title || "Chart Title"
+          : undefined,
       showLegend: isSparkline ? false : (node.showLegend ?? false),
       radarStyle: node.chartType === "radar" ? node.radarStyle : undefined,
       categoryAxis: isSparkline
@@ -103,4 +107,31 @@ export function renderChartNode(
     { pointColors },
   );
   addGlimpseGraphicFrameMarker(ctx, marker, content);
+}
+
+/**
+ * glimpse の native writer は全系列で同じ category 軸と同じ点数を要求する。
+ * pptxgenjs が受理していた不揃いな入力も生成を継続できるよう、位置ベースで
+ * category を共有し、欠けた値を 0 で補う。
+ */
+function normalizeChartSeries(data: ChartPositionedNode["data"]) {
+  const pointCount = Math.max(
+    0,
+    ...data.flatMap((series) => [series.labels.length, series.values.length]),
+  );
+  const categories = Array.from(
+    { length: pointCount },
+    (_, index) =>
+      data.find((series) => series.labels[index] !== undefined)?.labels[
+        index
+      ] ?? "",
+  );
+  return data.map((series) => ({
+    name: series.name,
+    labels: categories,
+    values: Array.from(
+      { length: pointCount },
+      (_, index) => series.values[index] ?? 0,
+    ),
+  }));
 }

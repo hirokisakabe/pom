@@ -36,10 +36,10 @@ export function renderTableNode(
     {
       offsetX: asEmu(Math.round(pxToEmu(content.x))),
       offsetY: asEmu(Math.round(pxToEmu(content.y))),
-      width: asEmu(Math.round(pxToEmu(content.w))),
-      height: asEmu(Math.round(pxToEmu(content.h))),
+      width: asEmu(Math.round(pxToEmu(Math.max(content.w, 1)))),
+      height: asEmu(Math.round(pxToEmu(Math.max(content.h, 1)))),
       columnWidths: resolveColumnWidths(node, content.w).map((width) =>
-        asEmu(Math.round(pxToEmu(width))),
+        asEmu(Math.round(pxToEmu(Math.max(width, 1)))),
       ),
       rows: buildTableRows(node, rowHeights, border),
     },
@@ -126,11 +126,13 @@ function buildTableRows(
       columnIndex += colspan;
     }
 
-    if (cells.some((cell) => cell === undefined)) {
-      throw new Error("Table row does not fill the declared column grid");
+    for (let index = 0; index < cells.length; index += 1) {
+      if (cells[index] === undefined) cells[index] = {};
     }
     return {
-      height: asEmu(Math.round(pxToEmu(rowHeights[rowIndex] ?? 0))),
+      height: asEmu(
+        Math.round(pxToEmu(Math.max(rowHeights[rowIndex] ?? 0, 1))),
+      ),
       cells,
     };
   });

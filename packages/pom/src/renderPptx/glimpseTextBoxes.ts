@@ -1036,6 +1036,19 @@ function withPptxGenTableDefaults(
       },
     )
     .replace(
+      /<a:r>(<a:rPr\b(?:[^>]*\/>|[^>]*>[\s\S]*?<\/a:rPr>))<a:t([^>]*)>([\s\S]*?)<\/a:t><\/a:r>/g,
+      (match, runPropertiesXml: string, textAttrs: string, text: string) => {
+        const segments = text.split(/\r?\n|&#x?0*A;/i);
+        if (segments.length === 1) return match;
+        return segments
+          .map(
+            (segment, index) =>
+              `${index === 0 ? "" : "<a:br/>"}<a:r>${runPropertiesXml}<a:t${textAttrs}>${segment}</a:t></a:r>`,
+          )
+          .join("");
+      },
+    )
+    .replace(
       /<a:prstDash val="[^"]+"\/>/g,
       borderDash ? `<a:prstDash val="${xmlAttr(borderDash)}"/>` : "$&",
     );

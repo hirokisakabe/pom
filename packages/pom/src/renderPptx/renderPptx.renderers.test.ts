@@ -47,6 +47,18 @@ function extractChartPointColors(chartXml: string) {
   );
 }
 
+function expectRelationship(
+  relationshipsXml: string,
+  expected: { id: string; type: string; target: string },
+) {
+  const attributes = Array.from(
+    relationshipsXml.matchAll(/<Relationship\b([^>]*)\/>/g),
+  ).find((match) => match[1]?.includes(`Id="${expected.id}"`))?.[1];
+  expect(attributes).toBeDefined();
+  expect(attributes).toContain(`Type="${expected.type}"`);
+  expect(attributes).toContain(`Target="${expected.target}"`);
+}
+
 function vstackPage(children: PositionedNode[]): PositionedNode {
   return { type: "vstack", x: 0, y: 0, w: 1280, h: 720, children };
 }
@@ -1032,9 +1044,15 @@ describe("renderChartNode", () => {
     expect(chartXml).not.toContain('<c:delete val="1"/>');
     expect(chartXml).not.toContain("<c:manualLayout>");
     expect(chartXml).toContain('<a:srgbClr val="123456"/>');
-    expect(slideRels).toContain(
-      'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart"',
-    );
+    const chartRelationshipId = slideXml.match(
+      /<c:chart\b[^>]*\br:id="([^"]+)"/,
+    )?.[1];
+    expect(chartRelationshipId).toBeDefined();
+    expectRelationship(slideRels, {
+      id: chartRelationshipId!,
+      type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart",
+      target: "../charts/chart1.xml",
+    });
     expect(chartRels).toContain(
       'Target="../embeddings/Microsoft_Excel_Worksheet1.xlsx"',
     );
@@ -1051,6 +1069,34 @@ describe("renderChartNode", () => {
     expect(worksheetXml).toContain("<t>Sales</t>");
     expect(worksheetXml).toContain("<t>Q1</t>");
     expect(worksheetXml).toContain("<v>100</v>");
+  });
+
+  it("不揃いな系列を共有 category 軸へ正規化し、既定タイトルと最小寸法を保持する", async () => {
+    const zip = await renderPagePptxZip(
+      vstackPage([
+        {
+          type: "chart",
+          chartType: "bar",
+          data: [
+            { name: "A", labels: ["Q1", "Q2"], values: [100, 200] },
+            { name: "B", labels: ["other"], values: [300] },
+          ],
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+          showTitle: true,
+        },
+      ]),
+    );
+
+    const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+    const chartXml = await zip.file("ppt/charts/chart1.xml")!.async("text");
+    expect(slideXml).toContain('<a:ext cx="9525" cy="9525"/>');
+    expect(chartXml).toContain("<a:t>Chart Title</a:t>");
+    expect(chartXml).toContain("<c:v>Q1</c:v>");
+    expect(chartXml).toContain("<c:v>Q2</c:v>");
+    expect(chartXml).toContain("<c:v>0</c:v>");
   });
 
   it("sparkline=true のとき凡例 / 軸 / グリッド線を XML で非表示にする", async () => {
@@ -1274,9 +1320,41 @@ describe("renderTableNode", () => {
     );
     expect(slideXml).toMatch(/<a:hlinkClick r:id="rId\d+"\/>/);
     expect(slideXml).not.toContain("pom-table:");
-    expect(relsXml).toContain(
-      'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"',
+    const hyperlinkRelationshipIds = Array.from(
+      slideXml.matchAll(/<a:hlinkClick r:id="([^"]+)"\/>/g),
+      (match) => match[1],
     );
+    expect(hyperlinkRelationshipIds).toHaveLength(2);
+    expectRelationship(relsXml, {
+      id: hyperlinkRelationshipIds[0],
+      type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+      target: "https://example.com/header",
+    });
+    expectRelationship(relsXml, {
+      id: hyperlinkRelationshipIds[1],
+      type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+      target: "https://example.com",
+    });
+  });
+
+  it("不足セルを空セルで補い、セル内改行を DrawingML break として保持する", async () => {
+    const slideXml = await renderPageSlideXml(
+      vstackPage([
+        {
+          type: "table",
+          x: 0,
+          y: 0,
+          w: 200,
+          h: 40,
+          columns: [{ width: 100 }, { width: 100 }],
+          rows: [{ cells: [{ text: "first\nsecond" }] }],
+        },
+      ]),
+    );
+
+    expect(slideXml.match(/<a:tc(?:\s|>)/g)).toHaveLength(2);
+    expect(slideXml).toContain("<a:t>first</a:t></a:r><a:br/>");
+    expect(slideXml).toContain("<a:t>second</a:t>");
   });
 });
 
