@@ -43,7 +43,7 @@
     "@hirokisakabe/pom": "workspace:*",
     "@hirokisakabe/pom-md": "workspace:*",
     "commander": "^15.0.0",
-    "pptx-glimpse": "^3.1.0"
+    "pptx-glimpse": "^3.2.3"
   },
   "devDependencies": {
     "@types/node": "^26.1.0"
