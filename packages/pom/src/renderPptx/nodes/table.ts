@@ -6,16 +6,17 @@ import {
 } from "../../shared/tableUtils.ts";
 import {
   asEmu,
-  asOoxmlPercent,
-  asPt,
   type AddTableCellInput,
   type AddTableRowInput,
   type AddTableRunInput,
   type SourceDashStyle,
 } from "@pptx-glimpse/document";
-import { pxToEmu, pxToPt } from "../units.ts";
+import { pxToEmu } from "../units.ts";
 import { getContentArea } from "../utils/contentArea.ts";
-import { cleanHex, toColorInput } from "../pptxAuthoring.ts";
+import {
+  cleanHex,
+  createGlimpseTableRunProperties,
+} from "../glimpseAdapter.ts";
 import { resolveSubSup } from "../textOptions.ts";
 
 type TablePositionedNode = Extract<PositionedNode, { type: "table" }>;
@@ -33,7 +34,7 @@ export function renderTableNode(
         dash: toTableDash(node.cellBorder.dashType),
       }
     : undefined;
-  ctx.buildContext.pptxAuthoring.registerTable({
+  ctx.authoring.addTable({
     offsetX: asEmu(Math.round(pxToEmu(content.x))),
     offsetY: asEmu(Math.round(pxToEmu(content.y))),
     width: asEmu(Math.round(pxToEmu(Math.max(content.w, 1)))),
@@ -112,29 +113,19 @@ function buildTableRuns(
 ): AddTableRunInput[] {
   const runs = cell.runs?.length ? cell.runs : [{ text: cell.text }];
   return runs.flatMap((run) => {
-    const underline = run.underline ?? cell.underline;
     const subSup = resolveSubSup(run, cell);
-    const properties = {
-      fontSize: asPt(pxToPt(run.fontSize ?? cell.fontSize ?? 18)),
+    const properties = createGlimpseTableRunProperties({
+      fontSize: run.fontSize ?? cell.fontSize ?? 18,
       fontFace: run.fontFamily ?? cell.fontFamily,
-      color: cleanHex(run.color ?? cell.color),
+      color: run.color ?? cell.color,
       bold: run.bold ?? cell.bold,
       italic: run.italic ?? cell.italic,
-      underline:
-        typeof underline === "object"
-          ? {
-              style: underline.style,
-              color: toColorInput(underline.color),
-            }
-          : Boolean(underline),
+      underline: run.underline ?? cell.underline,
       strike: run.strike ?? cell.strike,
-      baseline: subSup.subscript
-        ? { type: "percent" as const, value: asOoxmlPercent(-40000) }
-        : subSup.superscript
-          ? { type: "percent" as const, value: asOoxmlPercent(30000) }
-          : undefined,
-      highlight: toColorInput(run.highlight ?? cell.highlight),
-    };
+      subscript: subSup.subscript,
+      superscript: subSup.superscript,
+      highlight: run.highlight ?? cell.highlight,
+    });
     const lines = run.text.replace(/\r*\n/g, "\n").split("\n");
     return lines.map((line, index) => ({
       text: index === 0 ? line : `\n${line}`,

@@ -1,7 +1,6 @@
 import type { TextMeasurementMode } from "./calcYogaLayout/measureText.ts";
 import { FontRegistry, type FontInput } from "./calcYogaLayout/fontLoader.ts";
 import { DiagnosticCollector } from "./diagnostics.ts";
-import { PptxAuthoringRegistry } from "./renderPptx/pptxAuthoring.ts";
 
 export interface BuildContext {
   textMeasurementMode: TextMeasurementMode;
@@ -10,7 +9,6 @@ export interface BuildContext {
   imageDataCache: Map<string, string>;
   iconRasterCache: Map<string, string>;
   diagnostics: DiagnosticCollector;
-  pptxAuthoring: PptxAuthoringRegistry;
 }
 
 export function createBuildContext(
@@ -24,6 +22,5 @@ export function createBuildContext(
     imageDataCache: new Map(),
     iconRasterCache: new Map(),
     diagnostics: new DiagnosticCollector(),
-    pptxAuthoring: new PptxAuthoringRegistry(),
   };
 }

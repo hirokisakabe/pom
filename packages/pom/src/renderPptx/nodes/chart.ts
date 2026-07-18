@@ -3,7 +3,7 @@ import type { RenderContext } from "../types.ts";
 import { asEmu, asOoxmlPercent, asPt } from "@pptx-glimpse/document";
 import { pxToEmu } from "../units.ts";
 import { getContentArea } from "../utils/contentArea.ts";
-import { toColorInput } from "../pptxAuthoring.ts";
+import { toColorInput } from "../glimpseAdapter.ts";
 
 type ChartPositionedNode = Extract<PositionedNode, { type: "chart" }>;
 
@@ -77,7 +77,7 @@ export function renderChartNode(
           (_value, index) => chartColors[index % chartColors.length],
         )
       : undefined;
-  ctx.buildContext.pptxAuthoring.registerChart({
+  ctx.authoring.addChart({
     chartType: node.chartType,
     series: series.map((item, index) => ({
       name: item.name,

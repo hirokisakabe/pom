@@ -3,33 +3,22 @@ import {
   asHundredthPt,
   asOoxmlAngle,
   asOoxmlPercent,
-  asPt,
   type AddTextBoxInput,
   type AddTextBoxParagraphInput,
-  type AddTextBoxRunPropertiesInput,
   type SourceAutoNumScheme,
 } from "@pptx-glimpse/document";
-import type { Underline } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { pxToEmu, pxToPt } from "../units.ts";
-import { toColorInput } from "../pptxAuthoring.ts";
+import {
+  createGlimpseRunProperties,
+  type GlimpseTextRunStyle,
+} from "../glimpseAdapter.ts";
 
 type TextBoundsPx = { x: number; y: number; w: number; h: number };
 
 type TextBoxVerticalAlign = "top" | "middle" | "bottom";
 
-export type GlimpseTextRunStyle = {
-  fontSize?: number;
-  fontFace?: string;
-  color?: string;
-  bold?: boolean;
-  italic?: boolean;
-  underline?: Underline;
-  strike?: boolean;
-  subscript?: boolean;
-  superscript?: boolean;
-  highlight?: string;
-};
+export type { GlimpseTextRunStyle } from "../glimpseAdapter.ts";
 
 export type GlimpseTextBoxOptions = GlimpseTextRunStyle & {
   text?: string;
@@ -50,34 +39,7 @@ export type ListBulletOptions =
       startAt?: number;
     };
 
-function toUnderlineInput(underline: Underline | undefined) {
-  if (underline === undefined || underline === false) return undefined;
-  if (underline === true) return true;
-  return {
-    style: underline.style,
-    color: toColorInput(underline.color),
-  };
-}
-
-export function createGlimpseRunProperties(
-  style: GlimpseTextRunStyle,
-): AddTextBoxRunPropertiesInput {
-  return {
-    fontFace: style.fontFace ?? "Noto Sans JP",
-    fontSize: asPt(pxToPt(style.fontSize ?? 24)),
-    color: toColorInput(style.color),
-    bold: style.bold,
-    italic: style.italic,
-    underline: toUnderlineInput(style.underline),
-    strike: style.strike,
-    baseline: style.subscript
-      ? { type: "percent", value: asOoxmlPercent(-40000) }
-      : style.superscript
-        ? { type: "percent", value: asOoxmlPercent(30000) }
-        : undefined,
-    highlight: toColorInput(style.highlight),
-  };
-}
+export { createGlimpseRunProperties } from "../glimpseAdapter.ts";
 
 function createGlimpseParagraph(
   text: string,
@@ -181,7 +143,6 @@ export function addGlimpseTextBox(
   bounds: TextBoundsPx,
   options: GlimpseTextBoxOptions & {
     paragraphs?: readonly AddTextBoxParagraphInput[];
-    hyperlinks?: readonly (string | undefined)[];
   } = {},
 ): void {
   const paragraphs = withListProperties(
@@ -192,12 +153,7 @@ export function addGlimpseTextBox(
       }),
     options,
   );
-  ctx.buildContext.pptxAuthoring.registerTextBox(
-    textBoxInput(bounds, options, paragraphs),
-    {
-      hyperlinks: options.hyperlinks,
-    },
-  );
+  ctx.authoring.addTextBox(textBoxInput(bounds, options, paragraphs));
 }
 
 function isSupportedAutoNumScheme(

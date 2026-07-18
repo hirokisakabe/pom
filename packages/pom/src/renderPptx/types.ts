@@ -1,4 +1,5 @@
 import type { BuildContext } from "../buildContext.ts";
+import type { PptxAuthoringContext } from "./authoringContext.ts";
 
 export type NodeBounds = { x: number; y: number; w: number; h: number };
 
@@ -15,17 +16,19 @@ export type NodeBounds = { x: number; y: number; w: number; h: number };
  *   (getContentArea / getContentAreaIn / withContentBounds)
  * - scaleToFit 系 diagram の前処理 (コンテンツ領域 + スケール係数):
  *   utils/scaleToFit.ts (resolveScaledContentArea)
- * - 見た目属性の純粋変換: utils/visualStyle.ts
+ * - POM style / geometry → glimpse input の純粋変換: glimpseAdapter.ts
+ * - renderer 内部の見た目属性解決: utils/visualStyle.ts
  *   (fill / border / shadow / borderRadius / stripHash)
  * - 背景色・背景画像・ボーダーの描画順序: utils/backgroundBorder.ts
  *   (renderer の手前で renderPptx 本体から呼ばれる)
  * - 2 点間直線の描画 (Line / Arrow): utils/straightLine.ts (addStraightLine)
- * - テキスト系属性の変換: textOptions.ts
- *   (createTextOptions / convertUnderline / convertStrike)
+ * - テキスト配置の解決: textOptions.ts (createTextOptions)
  */
 export type RenderContext = {
   /** diagnostics や画像・グラデーションのキャッシュなど build 全体の状態 */
   buildContext: BuildContext;
+  /** PPTX source、current target、要素名採番を render 内に閉じ込める状態 */
+  authoring: PptxAuthoringContext;
   /** Arrow の from/to 参照解決に使う id → 絶対座標マップ */
   idPositionMap: Map<string, NodeBounds>;
 };

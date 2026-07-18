@@ -1,16 +1,18 @@
 import {
   asEmu,
   asHundredthPt,
-  asPt,
   type AddShapeParagraphInput,
   type AddShapeRunPropertiesInput,
 } from "@pptx-glimpse/document";
-import type { BorderStyle, PositionedNode, Underline } from "../../types.ts";
+import type { BorderStyle, PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { pxToPt } from "../units.ts";
 import { getContentArea } from "../utils/contentArea.ts";
 import { pxToEmu } from "../units.ts";
-import { toColorInput } from "../pptxAuthoring.ts";
+import {
+  createGlimpseShapeRunProperties,
+  toColorInput,
+} from "../glimpseAdapter.ts";
 import {
   addGlimpseShape,
   createShapeBoundsInput,
@@ -45,33 +47,21 @@ function resolveShapeLine(
   };
 }
 
-function toUnderlineInput(underline: Underline | undefined) {
-  if (underline === undefined || underline === false) return undefined;
-  if (underline === true) return true;
-  return {
-    style: underline.style,
-    color: toColorInput(underline.color),
-  };
-}
-
 function buildShapeTextProperties(
   node: ShapePositionedNode,
 ): AddShapeRunPropertiesInput {
-  return {
-    fontFace: node.fontFamily ?? "Noto Sans JP",
-    fontSize: asPt(pxToPt(node.fontSize ?? 24)),
-    color: toColorInput(node.color),
+  return createGlimpseShapeRunProperties({
+    fontFace: node.fontFamily,
+    fontSize: node.fontSize,
+    color: node.color,
     bold: node.bold,
     italic: node.italic,
-    underline: toUnderlineInput(node.underline),
+    underline: node.underline,
     strike: node.strike,
-    baseline: node.subscript
-      ? "subscript"
-      : node.superscript
-        ? "superscript"
-        : undefined,
-    highlight: toColorInput(node.highlight),
-  };
+    subscript: node.subscript,
+    superscript: node.superscript,
+    highlight: node.highlight,
+  });
 }
 
 function buildShapeParagraphs(

@@ -433,6 +433,35 @@ describe("renderUlNode", () => {
     );
     expect(slideXml).not.toContain("pom-text:");
   });
+
+  it("inline run の hyperlink を glimpse run input から出力する", async () => {
+    const zip = await renderPagePptxZip(
+      vstackPage([
+        {
+          type: "ul",
+          x: 0,
+          y: 0,
+          w: 384,
+          h: 192,
+          items: [
+            {
+              text: "",
+              runs: [{ text: "Docs", href: "https://example.com/docs" }],
+            },
+          ],
+        },
+      ]),
+    );
+    const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+    const relsXml = await zip
+      .file("ppt/slides/_rels/slide1.xml.rels")!
+      .async("text");
+
+    expect(textRunXml(slideXml, "Docs")).toMatch(
+      /<a:hlinkClick r:id="rId\d+"\/>/,
+    );
+    expect(relsXml).toContain('Target="https://example.com/docs"');
+  });
 });
 
 describe("renderOlNode", () => {

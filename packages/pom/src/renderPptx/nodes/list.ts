@@ -57,12 +57,8 @@ function toRunStyle(
 function buildListParagraphs(
   items: LiNode[],
   parent: UlPositionedNode | OlPositionedNode,
-): {
-  paragraphs: AddTextBoxParagraphInput[];
-  hyperlinks: (string | undefined)[];
-} {
+): AddTextBoxParagraphInput[] {
   const paragraphs: AddTextBoxParagraphInput[] = [];
-  const hyperlinks: (string | undefined)[] = [];
   for (let i = 0; i < items.length; i++) {
     const li = items[i];
     const style = resolveStyle(li, parent);
@@ -84,22 +80,21 @@ function buildListParagraphs(
             superscript: runSubSup.superscript,
             highlight: run.highlight ?? style.highlight,
           }),
+          hyperlink: run.text ? run.href : undefined,
         });
-        hyperlinks.push(run.text ? run.href : undefined);
       }
     } else {
       runs.push({
         text: li.text,
         properties: createGlimpseRunProperties(toRunStyle(style)),
       });
-      hyperlinks.push(undefined);
     }
     paragraphs.push({
       properties: paragraphProperties(parent),
       runs,
     });
   }
-  return { paragraphs, hyperlinks };
+  return paragraphs;
 }
 
 export function renderUlNode(node: UlPositionedNode, ctx: RenderContext): void {
@@ -107,7 +102,7 @@ export function renderUlNode(node: UlPositionedNode, ctx: RenderContext): void {
   const fontFamily = node.fontFamily ?? "Noto Sans JP";
   const content = getContentArea(node);
 
-  const { paragraphs, hyperlinks } = buildListParagraphs(node.items, node);
+  const paragraphs = buildListParagraphs(node.items, node);
   addGlimpseTextBox(ctx, content, {
     fontSize: fontSizePx,
     fontFace: fontFamily,
@@ -123,7 +118,6 @@ export function renderUlNode(node: UlPositionedNode, ctx: RenderContext): void {
     superscript: node.superscript,
     highlight: node.highlight,
     paragraphs,
-    hyperlinks,
     lineHeight: node.lineHeight,
     bullet: {
       kind: "bullet",
@@ -136,7 +130,7 @@ export function renderOlNode(node: OlPositionedNode, ctx: RenderContext): void {
   const fontFamily = node.fontFamily ?? "Noto Sans JP";
   const content = getContentArea(node);
 
-  const { paragraphs, hyperlinks } = buildListParagraphs(node.items, node);
+  const paragraphs = buildListParagraphs(node.items, node);
   addGlimpseTextBox(ctx, content, {
     fontSize: fontSizePx,
     fontFace: fontFamily,
@@ -152,7 +146,6 @@ export function renderOlNode(node: OlPositionedNode, ctx: RenderContext): void {
     superscript: node.superscript,
     highlight: node.highlight,
     paragraphs,
-    hyperlinks,
     lineHeight: node.lineHeight,
     bullet: {
       kind: "number",

@@ -1,17 +1,9 @@
 import {
-  addChart,
-  addPicture,
-  addShape,
-  addTable,
-  addTextBox,
   asEmu,
   asHundredthPt,
   asOoxmlAngle,
   asOoxmlPercent,
   asPt,
-  createPptx,
-  setSlideBackground,
-  type AddChartInput,
   type AddPictureInput,
   type AddShapeColorInput,
   type AddShapeCustomGeometryPathCommandInput,
@@ -20,13 +12,12 @@ import {
   type AddShapeGeometryInput,
   type AddShapeInput,
   type AddShapeOutlineInput,
-  type AddTableInput,
+  type AddShapeRunPropertiesInput,
+  type AddTableRunPropertiesInput,
   type AddTextBoxGradientFillInput,
   type AddTextBoxInput,
   type AddTextBoxParagraphInput,
   type AddTextBoxRunPropertiesInput,
-  type PptxSourceModel,
-  type SourceHandle,
 } from "@pptx-glimpse/document";
 import { parseGradient, parseLinearGradient } from "../shared/gradient.ts";
 import type {
@@ -40,13 +31,32 @@ import type {
 import { createTextOptions, resolveSubSup } from "./textOptions.ts";
 import { EMU_PER_IN, pxToEmu, pxToPt } from "./units.ts";
 
+/** Pure POM style / geometry conversions for glimpse authoring inputs. */
+
 type TextPositionedNode = Extract<PositionedNode, { type: "text" }>;
 
 interface GlimpseTextRun {
   text: string;
   properties: AddTextBoxRunPropertiesInput;
-  href?: string;
+  hyperlink?: string;
 }
+
+export type GlimpseTextRunStyle = {
+  fontSize?: number;
+  fontFace?: string;
+  color?: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: Underline;
+  strike?: boolean;
+  subscript?: boolean;
+  superscript?: boolean;
+  highlight?: string;
+  glow?: TextGlow;
+  outline?: TextOutline;
+  letterSpacing?: number;
+  gradientFill?: AddTextBoxGradientFillInput;
+};
 
 export function cleanHex(color: string | undefined): string | undefined {
   const hex = color?.replace(/^#/, "").toUpperCase();
@@ -142,12 +152,6 @@ function toTextGradientInput(
   };
 }
 
-function stripUndefined<T extends Record<string, unknown>>(value: T): T {
-  return Object.fromEntries(
-    Object.entries(value).filter(([, entry]) => entry !== undefined),
-  ) as T;
-}
-
 function resolveUnderline(
   node: TextPositionedNode,
   run: NonNullable<TextPositionedNode["runs"]>[number] | undefined,
@@ -164,21 +168,67 @@ function buildRunProperties(
 ): AddTextBoxRunPropertiesInput {
   const fontSizePx = run?.fontSize ?? node.fontSize ?? 24;
   const subSup = run ? resolveSubSup(run, node) : node;
-  return stripUndefined({
-    fontFace: run?.fontFamily ?? node.fontFamily ?? "Noto Sans JP",
-    fontSize: asPt(pxToPt(fontSizePx)),
-    color: gradientFill ? undefined : toColorInput(run?.color ?? node.color),
+  return createGlimpseRunProperties({
+    fontFace: run?.fontFamily ?? node.fontFamily,
+    fontSize: fontSizePx,
+    color: run?.color ?? node.color,
     gradientFill,
     bold: run?.bold ?? node.bold,
     italic: run?.italic ?? node.italic,
-    underline: toUnderlineInput(resolveUnderline(node, run)),
+    underline: resolveUnderline(node, run),
     strike: run?.strike ?? node.strike,
-    baseline: toBaselineInput(subSup.subscript, subSup.superscript),
-    highlight: toColorInput(run?.highlight ?? node.highlight),
-    glow: toGlowInput(node.glow),
-    outline: toOutlineInput(node.outline),
-    charSpacing: toCharSpacing(run?.letterSpacing ?? node.letterSpacing),
+    subscript: subSup.subscript,
+    superscript: subSup.superscript,
+    highlight: run?.highlight ?? node.highlight,
+    glow: node.glow,
+    outline: node.outline,
+    letterSpacing: run?.letterSpacing ?? node.letterSpacing,
   });
+}
+
+export function createGlimpseRunProperties(
+  style: GlimpseTextRunStyle,
+): AddTextBoxRunPropertiesInput {
+  return {
+    fontFace: style.fontFace ?? "Noto Sans JP",
+    fontSize: asPt(pxToPt(style.fontSize ?? 24)),
+    color: style.gradientFill ? undefined : toColorInput(style.color),
+    gradientFill: style.gradientFill,
+    bold: style.bold,
+    italic: style.italic,
+    underline: toUnderlineInput(style.underline),
+    strike: style.strike,
+    baseline: toBaselineInput(style.subscript, style.superscript),
+    highlight: toColorInput(style.highlight),
+    glow: toGlowInput(style.glow),
+    outline: toOutlineInput(style.outline),
+    charSpacing: toCharSpacing(style.letterSpacing),
+  };
+}
+
+export function createGlimpseShapeRunProperties(
+  style: GlimpseTextRunStyle,
+): AddShapeRunPropertiesInput {
+  const properties = createGlimpseRunProperties(style);
+  return {
+    ...properties,
+    baseline: style.subscript
+      ? "subscript"
+      : style.superscript
+        ? "superscript"
+        : undefined,
+  };
+}
+
+export function createGlimpseTableRunProperties(
+  style: GlimpseTextRunStyle,
+): AddTableRunPropertiesInput {
+  const properties = createGlimpseRunProperties(style);
+  return {
+    ...properties,
+    fontFace: style.fontFace,
+    color: cleanHex(style.color),
+  };
 }
 
 function buildParagraphs(node: TextPositionedNode): AddTextBoxParagraphInput[] {
@@ -188,7 +238,7 @@ function buildParagraphs(node: TextPositionedNode): AddTextBoxParagraphInput[] {
       ? node.runs.map((run) => ({
           text: run.text,
           properties: buildRunProperties(node, run, gradientFill),
-          href: run.href,
+          hyperlink: run.href,
         }))
       : [
           {
@@ -219,9 +269,36 @@ function buildParagraphs(node: TextPositionedNode): AddTextBoxParagraphInput[] {
     runs: runs.map((run) => ({
       text: run.text,
       properties: run.properties,
-      hyperlink: run.href,
+      hyperlink: run.hyperlink,
     })),
   }));
+}
+
+export function createTextNodeInput(
+  node: TextPositionedNode,
+  useLayoutTextMargins: boolean,
+): AddTextBoxInput {
+  const textOptions = createTextOptions(node);
+  return {
+    offsetX: asEmu(Math.round(textOptions.x * EMU_PER_IN)),
+    offsetY: asEmu(Math.round(textOptions.y * EMU_PER_IN)),
+    width: asEmu(Math.round(textOptions.w * EMU_PER_IN)),
+    height: asEmu(Math.round(textOptions.h * EMU_PER_IN)),
+    rotation:
+      node.rotate === undefined
+        ? undefined
+        : asOoxmlAngle(Math.round(node.rotate * 60000)),
+    body: useLayoutTextMargins
+      ? undefined
+      : {
+          anchor: "top",
+          marginLeft: asEmu(0),
+          marginRight: asEmu(0),
+          marginTop: asEmu(0),
+          marginBottom: asEmu(0),
+        },
+    paragraphs: buildParagraphs(node),
+  };
 }
 
 export type CustomGeometryXmlInput = {
@@ -337,7 +414,7 @@ function customGeometry(
   };
 }
 
-function enrichShapeInput(
+export function enrichShapeInput(
   input: AddShapeInput,
   options: GlimpseShapeXmlOptions | undefined,
 ): AddShapeInput {
@@ -404,186 +481,34 @@ function enrichShapeInput(
   };
 }
 
-function applyHyperlinks(
-  input: AddTextBoxInput,
-  hyperlinks: readonly (string | undefined)[] | undefined,
-): AddTextBoxInput {
-  if (!hyperlinks?.some(Boolean) || !input.paragraphs) return input;
-  let index = 0;
+export function enrichPictureInput(
+  input: AddPictureInput,
+  shadow: ShadowStyle | undefined,
+): AddPictureInput {
   return {
     ...input,
-    paragraphs: input.paragraphs.map((paragraph) => ({
-      ...paragraph,
-      runs: paragraph.runs.map((run) => ({
-        ...run,
-        hyperlink: hyperlinks[index++],
-      })),
-    })),
+    effects: toShadowEffects(shadow),
   };
 }
 
-export class PptxAuthoringRegistry {
-  private currentSource: PptxSourceModel | undefined;
-  private currentSlideHandle: SourceHandle | undefined;
-  private useLayoutTextMargins = false;
-  private textCount = 0;
-  private shapeCount = 0;
-  private pictureCount = 0;
-  private tableCount = 0;
-  private chartCount = 0;
-
-  constructor() {
-    const source = createPptx();
-    this.currentSource = source;
-    this.currentSlideHandle = source.slides[0]?.handle;
-  }
-
-  initialize(source: PptxSourceModel, useLayoutTextMargins = false): void {
-    this.currentSource = source;
-    this.useLayoutTextMargins = useLayoutTextMargins;
-  }
-
-  selectSlide(handle: SourceHandle): void {
-    this.currentSlideHandle = handle;
-  }
-
-  get source(): PptxSourceModel {
-    if (!this.currentSource)
-      throw new Error("glimpse authoring is not initialized");
-    return this.currentSource;
-  }
-
-  get entries(): readonly { kind: "shape"; xml: string }[] {
-    return (this.source.edits ?? []).flatMap((edit) =>
-      (edit.kind === "addTextBox" || edit.kind === "addShape") && "xml" in edit
-        ? [{ kind: "shape" as const, xml: edit.xml }]
-        : [],
-    );
-  }
-
-  replaceSource(source: PptxSourceModel): void {
-    this.currentSource = source;
-  }
-
-  private get target(): SourceHandle {
-    if (!this.currentSlideHandle)
-      throw new Error("glimpse slide is not selected");
-    return this.currentSlideHandle;
-  }
-
-  register(node: TextPositionedNode): void {
-    const textOptions = createTextOptions(node);
-    this.registerTextBox({
-      offsetX: asEmu(Math.round(textOptions.x * EMU_PER_IN)),
-      offsetY: asEmu(Math.round(textOptions.y * EMU_PER_IN)),
-      width: asEmu(Math.round(textOptions.w * EMU_PER_IN)),
-      height: asEmu(Math.round(textOptions.h * EMU_PER_IN)),
-      rotation:
-        node.rotate === undefined
-          ? undefined
-          : asOoxmlAngle(Math.round(node.rotate * 60000)),
-      body: this.useLayoutTextMargins
-        ? undefined
-        : {
-            anchor: "top",
-            marginLeft: asEmu(0),
-            marginRight: asEmu(0),
-            marginTop: asEmu(0),
-            marginBottom: asEmu(0),
-          },
-      paragraphs: buildParagraphs(node),
-    });
-  }
-
-  registerTextBox(
-    input: AddTextBoxInput,
-    options?: {
-      name?: string;
-      hyperlinks?: readonly (string | undefined)[];
-    },
-  ): void {
-    const name = options?.name ?? `Text ${++this.textCount}`;
-    this.currentSource = addTextBox(
-      this.source,
-      this.target,
-      applyHyperlinks({ ...input, name }, options?.hyperlinks),
-    );
-  }
-
-  registerShape(
-    input: AddShapeInput,
-    options?: GlimpseShapeXmlOptions & { name?: string },
-  ): void {
-    const name = options?.name ?? `Shape ${++this.shapeCount}`;
-    this.currentSource = addShape(
-      this.source,
-      this.target,
-      enrichShapeInput({ ...input, name }, options),
-    );
-  }
-
-  registerPicture(
-    input: AddPictureInput,
-    options?: { name?: string; shadow?: ShadowStyle },
-  ): void {
-    const name = options?.name ?? `Picture ${++this.pictureCount}`;
-    this.currentSource = addPicture(this.source, this.target, {
-      ...input,
-      name,
-      effects: toShadowEffects(options?.shadow),
-    });
-  }
-
-  registerTable(input: AddTableInput, options?: { name?: string }): void {
-    const name = options?.name ?? `Table ${++this.tableCount}`;
-    this.currentSource = addTable(this.source, this.target, { ...input, name });
-  }
-
-  registerChart(input: AddChartInput, options?: { name?: string }): void {
-    const name = options?.name ?? `Chart ${++this.chartCount}`;
-    this.currentSource = addChart(this.source, this.target, { ...input, name });
-  }
-
-  setSlideBackgroundGradient(
-    backgroundGradient: string,
-    opacity?: number,
-  ): boolean {
-    const fill = toGradientFill(backgroundGradient, opacity);
-    if (!fill || fill.kind !== "gradient") return false;
-    const background =
-      fill.gradientType === "linear"
-        ? {
-            kind: "gradient" as const,
-            gradientType: "linear" as const,
-            stops: fill.stops,
-            angle: fill.angle ?? asOoxmlAngle(0),
-          }
-        : {
-            kind: "gradient" as const,
-            gradientType: "radial" as const,
-            stops: fill.stops,
-            centerX: fill.centerX,
-            centerY: fill.centerY,
-          };
-    this.currentSource = setSlideBackground(
-      this.source,
-      this.target,
-      background,
-    );
-    return true;
-  }
-
-  setSlideBackgroundSolid(color: string): void {
-    this.currentSource = setSlideBackground(this.source, this.target, {
-      kind: "solid",
-      color: toColorInput(color)!,
-    });
-  }
-
-  setSlideBackgroundImage(bytes: Uint8Array): void {
-    this.currentSource = setSlideBackground(this.source, this.target, {
-      kind: "image",
-      bytes,
-    });
-  }
+export function toSlideBackgroundGradient(
+  backgroundGradient: string,
+  opacity?: number,
+) {
+  const fill = toGradientFill(backgroundGradient, opacity);
+  if (!fill || fill.kind !== "gradient") return undefined;
+  return fill.gradientType === "linear"
+    ? {
+        kind: "gradient" as const,
+        gradientType: "linear" as const,
+        stops: fill.stops,
+        angle: fill.angle ?? asOoxmlAngle(0),
+      }
+    : {
+        kind: "gradient" as const,
+        gradientType: "radial" as const,
+        stops: fill.stops,
+        centerX: fill.centerX,
+        centerY: fill.centerY,
+      };
 }
