@@ -155,7 +155,7 @@ type SlideNumberOptions = {
 };
 ```
 
-マスターの `background.image` と `MasterImageObject.src` には HTTP(S) URL も指定できます。取得に失敗した場合は `IMAGE_MEASURE_FAILED` diagnostic を返し、明示された配置サイズを保った透明のフォールバック画像で生成を継続します。
+マスターの `background.image` と `MasterImageObject.src` には HTTP(S) URL も指定できます。取得に失敗した場合は `IMAGE_MEASURE_FAILED` diagnostic を返し、明示された配置サイズを保ったフォールバック画像で生成を継続します。
 
 ## Features
 

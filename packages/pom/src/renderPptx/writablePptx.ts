@@ -70,18 +70,19 @@ function downloadInBrowser(fileName: string, bytes: Uint8Array): void {
     type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   });
   const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = fileName;
+  let anchor: HTMLAnchorElement | undefined;
   const cleanup = () => {
     try {
-      anchor.remove();
+      anchor?.remove();
     } finally {
       URL.revokeObjectURL(url);
     }
   };
   let cleanupScheduled = false;
   try {
+    anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = fileName;
     document.body.append(anchor);
     anchor.click();
     setTimeout(cleanup, 0);

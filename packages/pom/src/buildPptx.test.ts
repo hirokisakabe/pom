@@ -410,4 +410,27 @@ describe("buildPptx output facade", () => {
       vi.unstubAllGlobals();
     }
   });
+
+  it("ブラウザ保存の anchor 作成失敗時にも Object URL を解放する", async () => {
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal("document", {
+      createElement: vi.fn(() => {
+        throw new Error("createElement failed");
+      }),
+    });
+    vi.stubGlobal("URL", {
+      createObjectURL: vi.fn(() => "blob:presentation"),
+      revokeObjectURL,
+    });
+
+    try {
+      const { pptx } = await buildPptx(xml, slideSize, { autoFit: false });
+      await expect(pptx.writeFile("browser-output")).rejects.toThrow(
+        "createElement failed",
+      );
+      expect(revokeObjectURL).toHaveBeenCalledWith("blob:presentation");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });
