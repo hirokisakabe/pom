@@ -456,4 +456,53 @@ describe("autoFitSlide", () => {
       freeYogaTree(map);
     }
   });
+
+  it("複数トップレベル要素の内側にある Layer も絶対座標で計測する", async () => {
+    const [node] = parseXml(`
+      <Slide>
+        <Shape shapeType="rect" h="10" />
+        <Layer>
+          <Shape shapeType="rect" x="0" y="0" h="350" />
+          <Shape shapeType="rect" x="0" y="0" h="350" />
+          <Text x="0" y="664" w="100" fontSize="10" letterSpacing="3">COPYRIGHT 2026</Text>
+        </Layer>
+      </Slide>
+    `);
+    const ctx = createBuildContext("fallback");
+    const map = await autoFitSlide(node, slideSize, ctx);
+
+    try {
+      const positioned = await toPositioned(
+        node,
+        ctx,
+        extractLayoutResults(map),
+      );
+      expect(maxPositionedLeafBottom(positioned)).toBe(700);
+      expect(ctx.diagnostics.items).toEqual([]);
+    } finally {
+      freeYogaTree(map);
+    }
+  });
+
+  it("Layer 内 Line の実境界を overflow diagnostic に含める", async () => {
+    const [node] = parseXml(`
+      <Slide>
+        <Layer>
+          <Line x1="0" y1="0" x2="100" y2="730" />
+        </Layer>
+      </Slide>
+    `);
+    const ctx = createBuildContext("fallback");
+    const map = await autoFitSlide(node, slideSize, ctx);
+
+    try {
+      expect(ctx.diagnostics.items).toHaveLength(1);
+      expect(ctx.diagnostics.items[0].code).toBe("AUTOFIT_OVERFLOW");
+      expect(ctx.diagnostics.items[0].message).toContain(
+        "Furthest node: line at y=0px with height=730px (bottom=730px)",
+      );
+    } finally {
+      freeYogaTree(map);
+    }
+  });
 });

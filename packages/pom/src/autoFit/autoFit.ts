@@ -1,8 +1,10 @@
-import type { POMNode } from "../types.ts";
+import type { POMNode, PositionedNode } from "../types.ts";
 import type { BuildContext } from "../buildContext.ts";
 import type { YogaNodeMap } from "../calcYogaLayout/types.ts";
+import { extractLayoutResults } from "../calcYogaLayout/types.ts";
 import { calcYogaLayout } from "../calcYogaLayout/calcYogaLayout.ts";
 import { freeYogaTree } from "../shared/freeYogaTree.ts";
+import { toPositioned } from "../toPositioned/toPositioned.ts";
 import { reduceTableRowHeight } from "./strategies/reduceTableRowHeight.ts";
 import { reduceFontSize } from "./strategies/reduceFontSize.ts";
 import { reduceGapAndPadding } from "./strategies/reduceGapAndPadding.ts";
@@ -50,64 +52,68 @@ async function measureOverflow(
   ctx: BuildContext,
 ): Promise<OverflowResult> {
   const map = await calcYogaLayout(node, slideSize, ctx);
-  const { contentHeight, furthestNode } = calcContentHeight(map, node);
+  const { contentHeight, furthestNode } = await calcContentHeight(
+    map,
+    node,
+    ctx,
+  );
   const isOverflowing = contentHeight > slideSize.h * OVERFLOW_TOLERANCE;
   const targetRatio = isOverflowing ? slideSize.h / contentHeight : 1;
   return { contentHeight, isOverflowing, targetRatio, map, furthestNode };
 }
 
 /**
- * Yoga レイアウト結果からコンテンツの占有高さを算出する。
+ * positioned tree からコンテンツの占有高さを算出する。
  *
- * ルートの yogaNode の子要素の (top + height) の最大値を計算し、
- * ルートの padding.bottom を加算してコンテンツの占有高さとする。
- * Layer の子は Yoga の通常フロー上の top ではなく、描画時と同じ y を使う。
+ * 描画時と同じ座標へ変換した葉ノードの (y + h) の最大値を計算し、
+ * ルートの padding.bottom を加算する。これにより Layer がネストしていても
+ * absolute child の y や Line の y1/y2 を含む実際の描画境界を使用できる。
  * h="max" や flexGrow の影響を受けず、正確なコンテンツ高さを返す。
  */
-function calcContentHeight(
+async function calcContentHeight(
   map: YogaNodeMap,
   node: POMNode,
-): ContentHeightResult {
+  ctx: BuildContext,
+): Promise<ContentHeightResult> {
   const rootYoga = map.get(node);
   if (!rootYoga) {
     throw new Error("YogaNode not found in map for root node");
   }
 
-  const childCount = rootYoga.getChildCount();
-  if (childCount === 0) {
+  const positioned = await toPositioned(node, ctx, extractLayoutResults(map));
+  const furthestNode = findFurthestLeaf(positioned);
+  if (!furthestNode) {
     return { contentHeight: rootYoga.getComputedHeight() };
   }
 
-  let maxBottom = 0;
-  let furthestNode: ContentHeightResult["furthestNode"];
-  for (let i = 0; i < childCount; i++) {
-    const child = rootYoga.getChild(i);
-    const childLayout = child.getComputedLayout();
-    const pomChild =
-      "children" in node && Array.isArray(node.children)
-        ? node.children[i]
-        : undefined;
-    const top =
-      node.type === "layer"
-        ? ((pomChild as { y: number } | undefined)?.y ?? childLayout.top)
-        : childLayout.top;
-    const bottom = top + childLayout.height;
-    if (bottom > maxBottom) {
-      maxBottom = bottom;
-      if (pomChild) {
-        furthestNode = {
-          type: pomChild.type,
-          top,
-          height: childLayout.height,
-          bottom,
-        };
+  const paddingBottom = rootYoga.getComputedPadding(2); // EDGE_BOTTOM = 2
+  return {
+    contentHeight: furthestNode.bottom + paddingBottom,
+    furthestNode,
+  };
+}
+
+function findFurthestLeaf(
+  node: PositionedNode,
+): ContentHeightResult["furthestNode"] {
+  if ("children" in node) {
+    const children = node.children as PositionedNode[];
+    let furthest: ContentHeightResult["furthestNode"];
+    for (const child of children) {
+      const candidate = findFurthestLeaf(child);
+      if (candidate && (!furthest || candidate.bottom > furthest.bottom)) {
+        furthest = candidate;
       }
     }
+    return furthest;
   }
 
-  // ルートの paddingBottom を加算
-  const paddingBottom = rootYoga.getComputedPadding(2); // EDGE_BOTTOM = 2
-  return { contentHeight: maxBottom + paddingBottom, furthestNode };
+  return {
+    type: node.type,
+    top: node.y,
+    height: node.h,
+    bottom: node.y + node.h,
+  };
 }
 
 /**
