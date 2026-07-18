@@ -307,4 +307,46 @@ describe("buildPptx output facade", () => {
     await expect(pptx.write()).rejects.toThrow("serialize failed");
     await expect(pptx.stream()).rejects.toThrow("serialize failed");
   });
+
+  it("ブラウザ保存ではクリック後に anchor と Object URL を解放する", async () => {
+    vi.useFakeTimers();
+    const append = vi.fn();
+    const remove = vi.fn();
+    const revokeObjectURL = vi.fn();
+    const anchor = {
+      href: "",
+      download: "",
+      click: vi.fn(() => {
+        expect(revokeObjectURL).not.toHaveBeenCalled();
+      }),
+      remove,
+    };
+    vi.stubGlobal("document", {
+      createElement: vi.fn(() => anchor),
+      body: { append },
+    });
+    vi.stubGlobal("URL", {
+      createObjectURL: vi.fn(() => "blob:presentation"),
+      revokeObjectURL,
+    });
+
+    try {
+      const { pptx } = await buildPptx(xml, slideSize, { autoFit: false });
+      await expect(pptx.writeFile("browser-output")).resolves.toBe(
+        "browser-output.pptx",
+      );
+
+      expect(append).toHaveBeenCalledWith(anchor);
+      expect(anchor.click).toHaveBeenCalledOnce();
+      expect(remove).not.toHaveBeenCalled();
+      expect(revokeObjectURL).not.toHaveBeenCalled();
+
+      await vi.runAllTimersAsync();
+      expect(remove).toHaveBeenCalledOnce();
+      expect(revokeObjectURL).toHaveBeenCalledWith("blob:presentation");
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  });
 });

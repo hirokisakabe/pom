@@ -118,7 +118,7 @@ type MasterTextObject = {
 
 type MasterImageObject = {
   type: "image";
-  src: string; // Path or data URI
+  src: string; // File path, HTTP(S) URL, or data URI
   x: number;
   y: number;
   w: number;
@@ -154,6 +154,8 @@ type SlideNumberOptions = {
   color?: string;
 };
 ```
+
+マスターの `background.image` と `MasterImageObject.src` には HTTP(S) URL も指定できます。取得に失敗した場合は `IMAGE_MEASURE_FAILED` diagnostic を返し、既定サイズを使って生成を継続します。
 
 ## Features
 

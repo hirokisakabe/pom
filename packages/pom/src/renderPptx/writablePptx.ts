@@ -1,4 +1,5 @@
 import { writePptx, type PptxSourceModel } from "@pptx-glimpse/document";
+import type { Buffer as NodeBuffer } from "node:buffer";
 
 export type PptxOutputType =
   | "arraybuffer"
@@ -16,21 +17,25 @@ export type PptxWriteFileOptions = {
   fileName?: string;
 };
 
+export type PptxWriteOutput<T extends PptxOutputType | undefined> =
+  T extends "arraybuffer"
+    ? ArrayBuffer
+    : T extends "base64" | "binarystring"
+      ? string
+      : T extends "nodebuffer"
+        ? NodeBuffer
+        : T extends "uint8array"
+          ? Uint8Array
+          : Blob;
+
 export interface WritablePptx {
+  write(): Promise<Blob>;
+  write<T extends PptxOutputType>(
+    options: PptxWriteOptions & { outputType: T },
+  ): Promise<PptxWriteOutput<T>>;
   write(
-    options: PptxWriteOptions & { outputType: "arraybuffer" },
-  ): Promise<ArrayBuffer>;
-  write(
-    options: PptxWriteOptions & { outputType: "base64" | "binarystring" },
-  ): Promise<string>;
-  write(options: PptxWriteOptions & { outputType: "blob" }): Promise<Blob>;
-  write(
-    options: PptxWriteOptions & { outputType: "nodebuffer" },
-  ): Promise<Uint8Array>;
-  write(
-    options: PptxWriteOptions & { outputType: "uint8array" },
-  ): Promise<Uint8Array>;
-  write(options?: PptxWriteOptions): Promise<Blob>;
+    options: PptxWriteOptions,
+  ): Promise<PptxWriteOutput<PptxOutputType | undefined>>;
   stream(): Promise<Uint8Array>;
   writeFile(options?: PptxWriteFileOptions | string): Promise<string>;
 }

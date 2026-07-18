@@ -79,15 +79,21 @@ export async function buildPptx(
   }
 
   const masterImageSources = [
-    master?.background && "image" in master.background
-      ? master.background.image
-      : undefined,
-    ...(master?.objects
-      ?.filter((object) => object.type === "image")
-      .map((object) => object.src) ?? []),
-  ].filter((source): source is string =>
-    Boolean(source?.startsWith("https://") || source?.startsWith("http://")),
-  );
+    ...new Set(
+      [
+        master?.background && "image" in master.background
+          ? master.background.image
+          : undefined,
+        ...(master?.objects
+          ?.filter((object) => object.type === "image")
+          .map((object) => object.src) ?? []),
+      ].filter((source): source is string =>
+        Boolean(
+          source?.startsWith("https://") || source?.startsWith("http://"),
+        ),
+      ),
+    ),
+  ];
   await Promise.all(
     masterImageSources.map((source) =>
       prefetchImageSize(
