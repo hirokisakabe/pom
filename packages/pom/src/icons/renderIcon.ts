@@ -1,8 +1,3 @@
-import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
-import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { ICON_DATA } from "./iconData.ts";
 
 // @resvg/resvg-wasm を遅延ロードする。
@@ -20,7 +15,9 @@ let wasmInitPromise: Promise<void> | undefined;
 
 // Function コンストラクタを使って require を取得することでバンドラの静的解析から
 // 完全に隠蔽する。実行時は createRequire で生成した require が利用される。
-function getNodeRequire(): NodeJS.Require {
+function getNodeRequire(
+  createRequire: typeof import("node:module").createRequire,
+): NodeJS.Require {
   // eslint-disable-next-line @typescript-eslint/no-implied-eval
   const factory = new Function(
     "url",
@@ -38,11 +35,19 @@ function getNodeRequire(): NodeJS.Require {
  * バンドル環境（esbuild）では同ディレクトリの index_bg.wasm を参照し、
  * 非バンドル環境では createRequire で node_modules から解決する。
  */
-function resolveWasmPath(): string {
+async function resolveWasmPath(
+  require: NodeJS.Require,
+): Promise<string> {
+  const [{ existsSync }, { dirname, join }, { fileURLToPath }] =
+    await Promise.all([
+      import("node:fs"),
+      import("node:path"),
+      import("node:url"),
+    ]);
   const dir = dirname(fileURLToPath(import.meta.url));
   const localPath = join(dir, "index_bg.wasm");
   if (existsSync(localPath)) return localPath;
-  return getNodeRequire().resolve(`${RESVG_PKG}/index_bg.wasm`);
+  return require.resolve(`${RESVG_PKG}/index_bg.wasm`);
 }
 
 /**
@@ -52,8 +57,13 @@ function resolveWasmPath(): string {
 function ensureWasmInitialized(): Promise<void> {
   if (!wasmInitPromise) {
     wasmInitPromise = (async () => {
-      const mod = getNodeRequire()(RESVG_PKG) as ResvgWasm;
-      const wasmPath = resolveWasmPath();
+      const [{ createRequire }, { readFile }] = await Promise.all([
+        import("node:module"),
+        import("node:fs/promises"),
+      ]);
+      const require = getNodeRequire(createRequire);
+      const mod = require(RESVG_PKG) as ResvgWasm;
+      const wasmPath = await resolveWasmPath(require);
       const wasmBuffer = await readFile(wasmPath);
       await mod.initWasm(wasmBuffer);
       resvgModule = mod;
