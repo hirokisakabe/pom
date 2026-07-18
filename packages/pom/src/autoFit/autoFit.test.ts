@@ -6,7 +6,10 @@ import { reduceGapAndPadding } from "./strategies/reduceGapAndPadding.ts";
 import { uniformScale } from "./strategies/uniformScale.ts";
 import { autoFitSlide } from "./autoFit.ts";
 import { createBuildContext } from "../buildContext.ts";
-import type { POMNode } from "../types.ts";
+import { extractLayoutResults } from "../calcYogaLayout/types.ts";
+import { freeYogaTree } from "../shared/freeYogaTree.ts";
+import { toPositioned } from "../toPositioned/toPositioned.ts";
+import type { POMNode, PositionedNode } from "../types.ts";
 
 // ===== walkTree =====
 describe("walkPOMTree", () => {
@@ -325,6 +328,13 @@ describe("uniformScale", () => {
 describe("autoFitSlide", () => {
   const slideSize = { w: 1280, h: 720 };
 
+  function maxPositionedLeafBottom(node: PositionedNode): number {
+    if (!("children" in node)) {
+      return node.y + node.h;
+    }
+    return Math.max(...node.children.map(maxPositionedLeafBottom));
+  }
+
   it("オーバーフローしないコンテンツは変更しない", async () => {
     const node: POMNode = {
       type: "vstack",
@@ -389,5 +399,43 @@ describe("autoFitSlide", () => {
     expect(ctx.diagnostics.items.length).toBeGreaterThan(0);
     expect(ctx.diagnostics.items[0].code).toBe("AUTOFIT_OVERFLOW");
     expect(ctx.diagnostics.items[0].message).toContain("autoFit");
+  });
+
+  it("Layer の配置境界と Yoga content height が乖離する現行挙動を再現する", async () => {
+    const node: POMNode = {
+      type: "layer",
+      children: [
+        { type: "shape", shapeType: "rect", x: 0, y: 0, h: 357 },
+        { type: "shape", shapeType: "rect", x: 0, y: 0, h: 357 },
+        {
+          type: "text",
+          text: "COPYRIGHT 2026",
+          x: 0,
+          y: 674,
+          w: 100,
+          fontSize: 10,
+          letterSpacing: 3,
+        },
+      ],
+    };
+    const ctx = createBuildContext("fallback");
+    const map = await autoFitSlide(node, slideSize, ctx);
+
+    try {
+      const positioned = await toPositioned(
+        node,
+        ctx,
+        extractLayoutResults(map),
+      );
+      expect(maxPositionedLeafBottom(positioned)).toBe(700);
+      expect(ctx.diagnostics.items).toEqual([
+        expect.objectContaining({
+          code: "AUTOFIT_OVERFLOW",
+          message: expect.stringContaining("content height (740px)"),
+        }),
+      ]);
+    } finally {
+      freeYogaTree(map);
+    }
   });
 });
