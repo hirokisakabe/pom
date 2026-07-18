@@ -1,28 +1,63 @@
 ---
 name: pom-slide
-description: Generate pom presentation slides from natural language. Applies design principles (color palette, typography scale, spacing), honors a pom-theme.json brand theme when present, creates a pom XML file, performs a rendered self-review loop, and optionally launches a live preview with pom-cli.
+description: Generate or incrementally edit pom presentation slides from natural language. Use for creating a pom XML deck, updating selected slides while preserving the rest, replacing all slides, or inserting a slide. Applies design principles, honors pom-theme.json, validates the full deck, performs a rendered self-review loop, and reuses or launches a pom-cli preview.
 license: MIT
 allowed-tools: Write,Edit,Read,Bash
 metadata:
-  version: "1.3.1"
+  version: "1.4.0"
 ---
 
-自然言語の指示から pom XML スライドを生成し、ファイルに保存する。デザイン原則（配色・タイポグラフィ・余白・アーキタイプ）に基づいて初版の質を高め、`/pom-theme` skill が生成したテーマファイル（`pom-theme.json`）があればブランド配色・フォントを適用する。レンダリング結果を自分で見て修正するセルフレビューを行ったうえで、pom-cli がインストール済みの場合はプレビューサーバーを起動する。
+自然言語の指示から pom XML スライドを新規生成または部分編集し、ファイルに保存する。デザイン原則（配色・タイポグラフィ・余白・アーキタイプ）に基づいて初版の質を高め、既存デッキの編集では対象外 slide と theme を保持する。`/pom-theme` skill が生成したテーマファイル（`pom-theme.json`）があればブランド配色・フォントを適用する。strict validation とレンダリング結果のセルフレビューを行ったうえで、pom-cli の既存 preview server を再利用または起動する。
 
 ## 手順
 
 ### 1. 入力の解釈
 
-ユーザーの指示からスライドの内容・枚数・テーマを把握する。
+ユーザーの指示からスライドの内容・枚数・テーマを把握する。既存の pom XML が指定されている、またはデフォルトの `slides.pom.xml` が存在し、ユーザーが更新・やり直し・追加を求めている場合は、Step 2 の既存 XML 編集フローへ進む。既存ファイルがあっても、ユーザーが新しいデッキの作成を求めているなら上書きせず、保存先を確認または別名にする。
 
 明示されていない場合のデフォルト:
 
 - 枚数: 指示の内容量に適した枚数（3〜8 枚程度）
 - ファイル名: `slides.pom.xml`
 
-### 2. デザイン方針の決定
+### 2. 既存 `slides.pom.xml` の編集（incremental edit）
 
-XML を書き始める前に、デッキ全体のデザイントークン（配色・タイポグラフィ・余白）を決める。場当たり的に色やサイズを選ばず、ここで決めた値だけを使ってデッキ全体を組む。
+既存の pom XML を編集するときは、最初に対象ファイル全体を `Read` し、トップレベルの `<Theme>` と各 `<Slide>` の現在の順序・内容を把握する。ユーザーの指示を次の 3 ケースのいずれかに分類してから編集する。曖昧な場合は、対象 slide や挿入位置を勝手に広げず確認する。
+
+#### N 枚目だけ更新
+
+- 指定された 1-based の N 枚目の `<Slide>` だけを書き換える
+- 対象外の `<Slide>` は内容も順序も保持し、トップレベルの `<Theme>` 宣言もそのまま保持する
+- ユーザーが明示していない限り、デッキ全体の配色・フォント・共通レイアウトを再設計しない。更新 slide は既存デッキのデザイントークンと視覚言語に合わせる
+
+#### 全体をやり直す
+
+- 全 `<Slide>` を再生成する
+- ユーザーが指定した入力ファイル名・保存ファイル名は維持する
+- 既存の theme 利用方針を維持する。トップレベルの `<Theme>` を使っているデッキではその宣言とトークン参照方針を引き継ぎ、`pom-theme.json` を使っている場合は再度読み込み、theme を使っていない場合はユーザーの指示なしに利用方針を切り替えない
+- ユーザーが theme やファイル名の変更も明示した場合だけ、その指定を優先する
+
+#### 1 枚追加
+
+- ユーザーが位置を指定した場合はその 1-based の位置へ、指定がなければ末尾へ新しい `<Slide>` を 1 つ挿入する
+- 既存の `<Slide>` の内容と相対順序、およびトップレベルの `<Theme>` 宣言を保持する
+- 追加 slide は既存デッキのデザイントークン、タイポグラフィ、外周余白、共通ヘッダなどに合わせる
+
+#### 共通の validation・自己修正ループ
+
+編集後は部分的な XML 断片ではなく、保存したファイル全体を strict validator に通す。
+
+1. `pom build <ファイル名> -o /tmp/pom-validation.pptx` を実行する。pom-cli を使えないがライブラリを呼べる環境では、同等の `buildPptx(xml, slideSize, { strict: true })` を使ってよい
+2. diagnostics の slide 番号とノード情報を確認し、変更対象に起因する diagnostics がなくなるまで再検証する
+3. validation が変更・追加した slide の問題で失敗した場合は、該当する `<Slide>` だけを自己修正し、ファイル全体を再検証する。対象外 slide や `<Theme>` をついでに変更しない
+4. 全体再生成では diagnostics が示す slide だけを順に修正し、strict validation が成功するまで再検証する。部分更新で対象外 slide の既存問題だけが残った場合は、無断で修正せず、全体 validation は失敗した旨と残った diagnostics を記録する
+5. 変更対象の diagnostics がなくなったら Step 6 のセルフレビューへ進む。初版生成では従来どおり全 slide を、incremental edit では変更・追加した slide を中心にレンダリングする。ただし validator は常にファイル全体へ実行する
+
+このセクションは編集対象と機械検証の範囲を決める。デザイン原則は Step 3、XML の仕様は Step 4、画像による見た目の確認は Step 6 に従う。
+
+### 3. デザイン方針の決定
+
+新規生成または全体再生成では、XML を書き始める前にデッキ全体のデザイントークン（配色・タイポグラフィ・余白）を決める。場当たり的に色やサイズを選ばず、ここで決めた値だけを使ってデッキ全体を組む。N 枚目だけの更新または 1 枚追加ではトークンを選び直さず、Step 2 で読み取った既存デッキの方針を引き継ぐ。
 
 #### テーマファイルの確認
 
@@ -271,9 +306,9 @@ CSS / HTML で出来ても PPTX 仕様にない表現がいくつかある。次
 
 これらは `pom-slide` で「無理に再現しようとして崩れる」より「最初から代替レシピで組む」方が結果が綺麗になる。
 
-### 3. pom XML の生成
+### 4. pom XML の生成
 
-Step 2 で決めたデザイントークンとアーキタイプを全スライドに適用しつつ、以下のリファレンスに従って有効な pom XML を生成する。
+Step 3 で決めたデザイントークンとアーキタイプを全スライドに適用しつつ、以下のリファレンスに従って有効な pom XML を生成する。
 
 ---
 
@@ -1007,14 +1042,14 @@ Building emits warnings (`diagnostics`) for layout problems that can be detected
 
 ---
 
-### 4. ファイルへの保存
+### 5. ファイルへの保存
 
 `Write` ツールを使い、生成した XML をファイルに書き出す。
 
 - デフォルトのファイル名: `slides.pom.xml`
 - ユーザーが別のファイル名を指定した場合はそれに従う
 
-### 5. セルフレビュー（レンダリング → 自己批評 → 修正）
+### 6. セルフレビュー（レンダリング → 自己批評 → 修正）
 
 保存した XML をレンダリングして画像として確認し、デザイン上の問題を修正するループ。スライド外へのはみ出しと要素同士の重なりは build 時の警告（`NODE_OUT_OF_BOUNDS` / `NODE_OVERLAP`）として機械的に検出されるため、画像批評は警告では拾えない項目（階層・余白バランス・密度など）に集中する。
 
@@ -1024,7 +1059,7 @@ Building emits warnings (`diagnostics`) for layout problems that can be detected
 
 #### ループ手順
 
-1. **レンダリング**: `pom render <保存したファイル名> -o /tmp/pom-review` で全スライドの PNG（`slide-01.png` 形式）を出力する。2 周目以降は `--slides 2,5` のように修正したスライドだけを再レンダリングしてよい
+1. **レンダリング**: 新規生成・全体再生成では `pom render <保存したファイル名> -o /tmp/pom-review` で全スライドの PNG（`slide-01.png` 形式）を出力する。N 枚目だけの更新・1 枚追加では、初回から `pom render <保存したファイル名> -o /tmp/pom-review --slides 2,5` のように変更した slide 番号だけを出力する。新規生成・全体再生成の 2 周目以降も、修正した slide だけを再レンダリングしてよい
 2. **ビルド警告の対応**: `pom render` / `pom build` は、はみ出し・重なりがあると `[NODE_OUT_OF_BOUNDS]` / `[NODE_OVERLAP]` の警告メッセージとともに失敗する。メッセージにはスライド番号・ノード（タグ / id / ルートからのパス）・はみ出し方向が含まれるので、該当ノードを修正して 1 に戻る。意図的な重なりは `Layer` / `zIndex` / 負 margin のいずれかで表現すれば警告されない
 3. **批評**: 各 PNG を `Read` ツールで読み、下のチェックリストで全スライドを評価する
 4. **修正**: 問題があれば XML を修正して 1 に戻る
@@ -1043,7 +1078,7 @@ Building emits warnings (`diagnostics`) for layout problems that can be detected
 - **余白**: 外周 padding が確保されているか。要素が窮屈になっていないか、一部だけ不自然に空いていないか
 - **整列**: 揃うべき左端・上端が揃っているか。並べたカードの幅が均等か。アクセントバー・番号・アイコンと隣のテキストの揃え（`alignItems="center"` が基本。視覚的に浮く場合は `end` を試す）
 - **階層**: タイトルが一目で本文と区別できるか。視線の流れ（左上 → 右下）が自然か
-- **配色**: Step 2 で決めたパレットから逸脱した色が混入していないか。テキストと背景のコントラストが十分か
+- **配色**: Step 3 で決めたパレットから逸脱した色が混入していないか。テキストと背景のコントラストが十分か
 - **密度**: 詰め込みすぎのスライドがないか（あれば 2 枚に分割する）
 - **一貫性**: スライド間で外周 padding・タイトル位置・配色が統一されているか
 
@@ -1055,24 +1090,28 @@ Building emits warnings (`diagnostics`) for layout problems that can be detected
 - 修正ループを 3 周した（3 周しても残る問題は、完了報告で残課題として明記する）
 - 同じ問題への修正を 2 回試みても改善しなかった（その項目は残課題として報告し、他の問題の修正は続ける）
 
-### 6. プレビューの起動（オプション）
+### 7. プレビューの起動（オプション）
 
-`Bash` ツールで pom-cli の有無を確認し、インストール済みであれば Step 4 で決定したファイル名を使ってプレビューサーバーをバックグラウンドで起動する。`pom preview` は常駐プロセスであるため、`run_in_background: true`（Claude Code）または `&` サフィックスを必ず使う。
+`Bash` ツールで pom-cli の有無を確認する。最初に process list や待受ポートを調べ、対象ファイルの `pom preview` がすでに起動中なら、その server と URL をそのまま再利用する。preview はファイル変更を監視して自動更新するため、incremental edit のたびに重複起動しない。
+
+起動中の server がなく、pom-cli がインストール済みであれば Step 5 で決定したファイル名を使ってプレビューサーバーをバックグラウンドで起動する。`pom preview` は常駐プロセスであるため、`run_in_background: true`（Claude Code）または `&` サフィックスを必ず使う。
 
 ```bash
 if command -v pom >/dev/null 2>&1; then
-  pom preview <Step 4 で決定したファイル名> &
+  pom preview <Step 5 で決定したファイル名> &
 fi
 ```
 
 pom-cli がない場合はスキップしてその旨を伝える。
 
-### 7. 完了報告
+### 8. 完了報告
 
 以下を報告する:
 
 - 保存したファイル名
-- 生成したスライドの枚数と各スライドのタイトル
+- 生成または編集したスライドの枚数と各スライドのタイトル。incremental edit では実施したケースと対象 slide も明記する
+- strict validation の結果（対象外 slide の既存問題が残った場合はその内容）
 - セルフレビューの結果: 実施した修正の概要と残課題（スキップした場合はその理由）
-- pom-cli が見つかった場合: プレビューサーバーが http://localhost:3000 で起動中であること
+- preview server の起動または再利用に成功した場合: 実際に確認した URL（port 3000 とは限らない）
+- preview server の起動に失敗した場合: 未起動であることとエラーの概要
 - pom-cli がない場合: `npm install -g @hirokisakabe/pom-cli` でインストールできることを案内する
