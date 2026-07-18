@@ -75,7 +75,6 @@
   },
   "devDependencies": {
     "@size-limit/file": "^12.1.0",
-    "@types/node": "^26.1.0",
     "@types/opentype.js": "^1.3.10",
     "@types/pngjs": "6.0.5",
     "@vitest/coverage-v8": "^4.1.10",
@@ -91,6 +90,7 @@
   "dependencies": {
     "@pptx-glimpse/document": "0.9.1",
     "@resvg/resvg-wasm": "^2.6.2",
+    "@types/node": "^26.1.0",
     "fast-xml-parser": "^5.10.0",
     "image-size": "2.0.2",
     "jszip": "^3.10.1",

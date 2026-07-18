@@ -73,12 +73,22 @@ function downloadInBrowser(fileName: string, bytes: Uint8Array): void {
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = fileName;
-  document.body.append(anchor);
-  anchor.click();
-  setTimeout(() => {
-    anchor.remove();
-    URL.revokeObjectURL(url);
-  }, 0);
+  const cleanup = () => {
+    try {
+      anchor.remove();
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  };
+  let cleanupScheduled = false;
+  try {
+    document.body.append(anchor);
+    anchor.click();
+    setTimeout(cleanup, 0);
+    cleanupScheduled = true;
+  } finally {
+    if (!cleanupScheduled) cleanup();
+  }
 }
 
 export function createWritablePptx(

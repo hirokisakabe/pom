@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import JSZip from "jszip";
 import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -6,7 +6,12 @@ import { join } from "node:path";
 import { buildPptx } from "./buildPptx.ts";
 import { DiagnosticsError } from "./diagnostics.ts";
 import * as measureTextModule from "./calcYogaLayout/measureText.ts";
-import { createWritablePptx } from "./renderPptx/writablePptx.ts";
+import {
+  createWritablePptx,
+  type PptxOutputType,
+  type PptxWriteOptions,
+  type PptxWriteOutput,
+} from "./renderPptx/writablePptx.ts";
 
 const ONE_BY_ONE_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lU9qJwAAAABJRU5ErkJggg==",
@@ -91,6 +96,25 @@ describe("buildPptx diagnostics", () => {
     const result = await buildPptx(xml, slideSize, { autoFit: false });
     expect(result.diagnostics.length).toBeGreaterThan(0);
     expect(result.diagnostics[0].code).toBe("IMAGE_MEASURE_FAILED");
+  });
+
+  it("同じURL画像を複数箇所で使っても一度だけ取得する", async () => {
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        new Response(ONE_BY_ONE_PNG, {
+          headers: { "content-type": "image/png" },
+        }),
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      const url = "https://example.com/shared.png";
+      const xml = `<Slide><HStack><Image src="${url}" w="100" h="100"/><Image src="${url}" w="100" h="100"/></HStack></Slide>`;
+      await buildPptx(xml, slideSize, { autoFit: false });
+      expect(fetchMock).toHaveBeenCalledOnce();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it("strict: true で diagnostics がある場合 DiagnosticsError をスロー", async () => {
@@ -286,6 +310,12 @@ describe("buildPptx output facade", () => {
     expect(nodeBuffer.subarray(0, 2)).toEqual(Buffer.from([0x50, 0x4b]));
     expect(stream.slice(0, 2)).toEqual(new Uint8Array([0x50, 0x4b]));
     expect(await pptx.write({ outputType: "base64" })).toMatch(/^UEs/);
+    expectTypeOf(nodeBuffer).toEqualTypeOf<Buffer>();
+
+    const options: PptxWriteOptions = { outputType: "uint8array" };
+    expectTypeOf(pptx.write(options)).toEqualTypeOf<
+      Promise<PptxWriteOutput<PptxOutputType | undefined>>
+    >();
   });
 
   it("writeFile は拡張子を補ってファイルへ保存する", async () => {
@@ -346,6 +376,37 @@ describe("buildPptx output facade", () => {
       expect(revokeObjectURL).toHaveBeenCalledWith("blob:presentation");
     } finally {
       vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("ブラウザ保存のクリック失敗時にも anchor と Object URL を解放する", async () => {
+    const remove = vi.fn();
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal("document", {
+      createElement: vi.fn(() => ({
+        href: "",
+        download: "",
+        click: vi.fn(() => {
+          throw new Error("click failed");
+        }),
+        remove,
+      })),
+      body: { append: vi.fn() },
+    });
+    vi.stubGlobal("URL", {
+      createObjectURL: vi.fn(() => "blob:presentation"),
+      revokeObjectURL,
+    });
+
+    try {
+      const { pptx } = await buildPptx(xml, slideSize, { autoFit: false });
+      await expect(pptx.writeFile("browser-output")).rejects.toThrow(
+        "click failed",
+      );
+      expect(remove).toHaveBeenCalledOnce();
+      expect(revokeObjectURL).toHaveBeenCalledWith("blob:presentation");
+    } finally {
       vi.unstubAllGlobals();
     }
   });

@@ -155,13 +155,13 @@ type SlideNumberOptions = {
 };
 ```
 
-マスターの `background.image` と `MasterImageObject.src` には HTTP(S) URL も指定できます。取得に失敗した場合は `IMAGE_MEASURE_FAILED` diagnostic を返し、既定サイズを使って生成を継続します。
+マスターの `background.image` と `MasterImageObject.src` には HTTP(S) URL も指定できます。取得に失敗した場合は `IMAGE_MEASURE_FAILED` diagnostic を返し、明示された配置サイズを保った透明のフォールバック画像で生成を継続します。
 
 ## Features
 
 - **True PowerPoint Master**: Uses `@pptx-glimpse/document` authoring APIs to create a real master slide that is editable in PowerPoint
 - **Static Objects**: Define text, images, rectangles, and lines with absolute coordinates (in pixels)
-- **Background**: Set solid color, image path, or base64-encoded image as the slide background
+- **Background**: Set a solid color, image path, HTTP(S) URL, or base64-encoded image as the slide background
 - **Page Number**: Automatic page numbering using a PowerPoint slide-number field
 - **Margin**: Define content margins in pixels
 
