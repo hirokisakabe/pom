@@ -5,8 +5,16 @@ import {
   shapeOutline,
   solidShapeFill,
 } from "./glimpseShape.ts";
+import { toColorInput } from "../pptxAuthoring.ts";
 
 describe("glimpse shape helpers", () => {
+  it("3桁色を6桁RGBへ展開する", () => {
+    expect(toColorInput("000")).toMatchObject({ hex: "000000" });
+    expect(toColorInput("333")).toMatchObject({ hex: "333333" });
+    expect(toColorInput("#ABC")).toMatchObject({ hex: "AABBCC" });
+    expect(toColorInput("AABBCC")).toMatchObject({ hex: "AABBCC" });
+  });
+
   it("solid / none fill を glimpse writer input に変換する", () => {
     expect(solidShapeFill("#ff00aa")).toEqual({
       kind: "solid",

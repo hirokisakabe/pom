@@ -8,13 +8,13 @@ export const pxToPt = (px: number) => (px * 72) / PX_PER_IN;
 /**
  * px を DrawingML の EMU (English Metric Unit) に変換する。
  * 1 inch = 914400 EMU、96 DPI 基準で 1 px = 9525 EMU。
- * `<a:glow rad="...">` など EMU を直接埋め込む XML 後処理で使う。
+ * DrawingML の位置・サイズ指定で使う。
  */
 export const pxToEmu = (px: number) => (px * EMU_PER_IN) / PX_PER_IN;
 
 /**
- * px 単位の矩形を pptxgenjs の位置オプション (inch 単位の x/y/w/h) に
- * まとめて変換する。addShape / addText 等のオプションへ spread して使う。
+ * px 単位の矩形を互換用の位置オプション (inch 単位の x/y/w/h) に
+ * まとめて変換する。
  */
 export const rectPxToIn = (rect: {
   x: number;

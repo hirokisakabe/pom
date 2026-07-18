@@ -9,11 +9,8 @@ import {
 } from "@pptx-glimpse/document";
 import type { BorderStyle, ShadowStyle, TextGlow } from "../../types.ts";
 import { parseGradient } from "../../shared/gradient.ts";
-import {
-  toColorInput,
-  type CustomGeometryXmlInput,
-} from "../glimpseTextBoxes.ts";
-import { pxToEmu, rectPxToIn } from "../units.ts";
+import { toColorInput, type CustomGeometryXmlInput } from "../pptxAuthoring.ts";
+import { pxToEmu } from "../units.ts";
 import type { RenderContext } from "../types.ts";
 
 type ShapeBoundsPx = { x: number; y: number; w: number; h: number };
@@ -34,11 +31,6 @@ export type GlimpseShapeStyleOptions = {
   zeroHeight?: boolean;
   customGeometry?: CustomGeometryXmlInput;
 };
-
-const TRANSPARENT_MARKER_STYLE = {
-  fill: { color: "FFFFFF", transparency: 100 },
-  line: { color: "FFFFFF", transparency: 100 },
-} as const;
 
 function positiveEmu(valuePx: number) {
   return asEmu(Math.max(1, Math.round(pxToEmu(valuePx))));
@@ -89,7 +81,7 @@ export function backgroundShapeFill(
 function dashStyle(
   dashType: BorderStyle["dashType"],
 ): SourceDashStyle | undefined {
-  return dashType as SourceDashStyle | undefined;
+  return dashType;
 }
 
 export function shapeOutline(
@@ -130,21 +122,12 @@ export function arrowEndpoint(
 export function addGlimpseShape(
   ctx: RenderContext,
   input: AddShapeInput,
-  markerBounds: ShapeBoundsPx,
+  bounds: ShapeBoundsPx,
   options?: GlimpseShapeStyleOptions & { name?: string },
 ): void {
-  const marker = ctx.buildContext.glimpseTextBoxes.registerShape(input, {
+  ctx.buildContext.pptxAuthoring.registerShape(input, {
     ...options,
-    zeroWidth: markerBounds.w === 0,
-    zeroHeight: markerBounds.h === 0,
-  });
-  ctx.slide.addShape(ctx.pptx.ShapeType.rect, {
-    ...rectPxToIn({
-      ...markerBounds,
-      w: Math.max(markerBounds.w, 1),
-      h: Math.max(markerBounds.h, 1),
-    }),
-    ...TRANSPARENT_MARKER_STYLE,
-    objectName: marker,
+    zeroWidth: bounds.w === 0,
+    zeroHeight: bounds.h === 0,
   });
 }

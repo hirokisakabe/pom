@@ -8,9 +8,9 @@ async function buildSlideXml(xml: string): Promise<string> {
     { w: 1280, h: 720 },
     { autoFit: false },
   );
-  const buffer = (await pptx.write({
+  const buffer = await pptx.write({
     outputType: "uint8array",
-  })) as Uint8Array;
+  });
   const zip = await JSZip.loadAsync(buffer);
   return zip.file("ppt/slides/slide1.xml")!.async("text");
 }
@@ -71,6 +71,7 @@ describe("renderBackgroundAndBorder の辺ごと border", () => {
     expect(slideXml).toContain("<a:gradFill");
     expect(slideXml).toContain("<a:outerShdw");
     expect(slideXml).toContain('<a:prstGeom prst="roundRect">');
+    expect(slideXml).toContain('<a:gd name="adj" fmla="val 12000"/>');
   });
 
   it("背景付きルートノード (slide.background 最適化パス) でも辺ごとの border が描画される", async () => {
@@ -93,7 +94,7 @@ describe("renderBackgroundAndBorder の辺ごと border", () => {
     expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
   });
 
-  it("backgroundImage と背景色・一律 border の分割描画でも glimpse marker は残らない", async () => {
+  it("backgroundImage と背景色・一律 border を正しい描画順で分割する", async () => {
     const xml = `<Slide><VStack w="100%" h="max">
       <Text w="200" h="100" backgroundColor="F8FAFC" backgroundImage.src="https://example.com/bg.png" border.color="FF0000" border.width="3">test</Text>
     </VStack></Slide>`;

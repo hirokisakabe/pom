@@ -16,9 +16,9 @@ describe("buildPptx with Shape glow", () => {
       <Shape shapeType="ellipse" w="100" h="100" fill.color="FF0000" glow.size="12" glow.opacity="0.5" glow.color="00FF00"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     // 12 px = 114300 EMU (12 * 9525)
@@ -33,7 +33,7 @@ describe("buildPptx with Shape glow", () => {
       <Shape shapeType="ellipse" w="100" h="100" fill.color="FF0000" glow.size="8" glow.color="00FF00"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.stream({ compression: true })) as Uint8Array;
+    const buffer = await pptx.stream();
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain("<a:effectLst><a:glow");
@@ -44,7 +44,7 @@ describe("buildPptx with Shape glow", () => {
       <Shape shapeType="ellipse" w="100" h="100" fill.color="FF0000" glow.size="8" glow.color="00FF00"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const blob = (await pptx.write()) as Blob;
+    const blob = await pptx.write();
     const slideXml = await readSlideXml(await blob.arrayBuffer());
 
     expect(slideXml).toContain("<a:effectLst><a:glow");
@@ -55,12 +55,12 @@ describe("buildPptx with Shape glow", () => {
       <Shape shapeType="rect" w="100" h="100" outline.size="3" outline.color="0088CC"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
-    // 3 px = 2.25 pt → 28575 EMU (pptxgenjs が w 属性に EMU を入れる)
+    // 3 px = 2.25 pt → 28575 EMU
     // outline.color が ln 要素内の solidFill に反映されることを確認
     expect(slideXml).toMatch(/<a:ln[^>]*w="28575"/);
     expect(slideXml).toContain('<a:srgbClr val="0088CC"/>');
@@ -71,24 +71,24 @@ describe("buildPptx with Shape glow", () => {
       <Shape shapeType="rect" w="100" h="100" line.color="111111" line.width="1" outline.size="5" outline.color="EEEEEE"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain('<a:srgbClr val="EEEEEE"/>');
     expect(slideXml).not.toContain('<a:srgbClr val="111111"/>');
   });
 
-  it("複数 Shape で同じ glow を指定した場合に effectLst が複数出力され、marker は残らない", async () => {
+  it("複数 Shape で同じ glow を指定した場合に effectLst が複数出力される", async () => {
     const xml = `<Slide><VStack w="100%" h="max">
       <Shape shapeType="ellipse" w="50" h="50" fill.color="AAAAAA" glow.size="8" glow.color="FF0000"/>
       <Shape shapeType="ellipse" w="50" h="50" fill.color="BBBBBB" glow.size="8" glow.color="FF0000"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml.match(/<a:effectLst><a:glow/g)).toHaveLength(2);
@@ -100,9 +100,9 @@ describe("buildPptx with Shape glow", () => {
       <Shape shapeType="rect" w="100" h="100" fill.color="ABCDEF"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).not.toContain("<a:effectLst><a:glow");
@@ -114,9 +114,9 @@ describe("buildPptx with Shape glow", () => {
       <Shape shapeType="ellipse" text="Hi" w="100" h="100" fill.color="FF0000" glow.size="10" glow.color="00FFFF"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain("<a:effectLst><a:glow");
@@ -128,9 +128,9 @@ describe("buildPptx with Shape glow", () => {
       <Icon name="star" variant="circle-filled" bgColor="FF0000" glow.size="8" glow.color="FFFF00" outline.size="2" outline.color="00AAFF"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain("<a:effectLst><a:glow");
@@ -161,9 +161,9 @@ describe("buildPptx with Shape glow", () => {
       <Shape shapeType="ellipse" w="100" h="100" backgroundGradient="linear-gradient(90deg, #FF0000, #0000FF)" glow.size="8" glow.color="00FF00"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain("<a:gradFill");
@@ -176,7 +176,7 @@ describe("buildPptx with Shape glow", () => {
       <Shape shapeType="ellipse" w="100" h="100" fill.color="FF0000" glow.size="8" glow.color="00FF00"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.stream({ compression: true })) as Uint8Array;
+    const buffer = await pptx.stream();
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain("<a:t>Hello</a:t>");
@@ -192,9 +192,9 @@ describe("buildPptx with Shape glow", () => {
         glow.size="8" glow.color="00FF00"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     // 該当 shape の <p:spPr> に effectLst は 1 つだけ存在し、その中に
@@ -216,9 +216,9 @@ describe("buildPptx with Shape glow", () => {
       <Shape shapeType="rect" w="100" h="100" line.width="2" outline.color="AABBCC"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     // outline.color で AABBCC、line.width=2px → 1.5pt → 19050 EMU
@@ -231,9 +231,9 @@ describe("buildPptx with Shape glow", () => {
       <Shape shapeType="rect" w="100" h="100" line.color="112233" outline.size="4"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     // outline.size=4px → 3pt → 38100 EMU、line.color の 112233 を維持
@@ -246,9 +246,9 @@ describe("buildPptx with Shape glow", () => {
       <Icon name="star" color="111111" variant="circle-outlined" outline.color="AABBCC"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     // outline.color で AABBCC、太さは variant default の 1.5pt → 19050 EMU を維持

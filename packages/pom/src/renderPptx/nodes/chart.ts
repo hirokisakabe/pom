@@ -1,9 +1,9 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { asEmu } from "@pptx-glimpse/document";
+import { asEmu, asOoxmlPercent, asPt } from "@pptx-glimpse/document";
 import { pxToEmu } from "../units.ts";
 import { getContentArea } from "../utils/contentArea.ts";
-import { addGlimpseGraphicFrameMarker } from "../utils/glimpseGraphicFrame.ts";
+import { toColorInput } from "../pptxAuthoring.ts";
 
 type ChartPositionedNode = Extract<PositionedNode, { type: "chart" }>;
 
@@ -77,41 +77,112 @@ export function renderChartNode(
           (_value, index) => chartColors[index % chartColors.length],
         )
       : undefined;
-  const marker = ctx.buildContext.glimpseTextBoxes.registerChart(
-    {
-      chartType: node.chartType,
-      series: series.map((item, index) => ({
-        name: item.name,
-        categories: item.labels,
-        values: item.values,
-        color: chartColors[index % chartColors.length],
-      })),
-      offsetX: asEmu(Math.round(pxToEmu(content.x))),
-      offsetY: asEmu(Math.round(pxToEmu(content.y))),
-      width: asEmu(Math.round(pxToEmu(Math.max(content.w, 1)))),
-      height: asEmu(Math.round(pxToEmu(Math.max(content.h, 1)))),
-      title:
-        !isSparkline && node.showTitle
-          ? node.title || "Chart Title"
+  ctx.buildContext.pptxAuthoring.registerChart({
+    chartType: node.chartType,
+    series: series.map((item, index) => ({
+      name: item.name,
+      categories: item.labels,
+      values: item.values,
+      color: chartColors[index % chartColors.length],
+      dataPoints:
+        index === 0
+          ? pointColors?.map((color, pointIndex) => ({
+              index: pointIndex,
+              fill: { kind: "solid", color: toColorInput(color)! },
+            }))
           : undefined,
-      showLegend: isSparkline ? false : (node.showLegend ?? false),
-      radarStyle: node.chartType === "radar" ? node.radarStyle : undefined,
-      categoryAxis: isSparkline
-        ? { hidden: true, lineVisible: false, gridLinesVisible: false }
+      marker:
+        node.chartType === "line" || node.chartType === "radar"
+          ? {
+              symbol: "circle",
+              size: 6,
+              fill: {
+                kind: "solid",
+                color: toColorInput(chartColors[index % chartColors.length])!,
+              },
+            }
+          : undefined,
+    })),
+    offsetX: asEmu(Math.round(pxToEmu(content.x))),
+    offsetY: asEmu(Math.round(pxToEmu(content.y))),
+    width: asEmu(Math.round(pxToEmu(Math.max(content.w, 1)))),
+    height: asEmu(Math.round(pxToEmu(Math.max(content.h, 1)))),
+    title:
+      !isSparkline && node.showTitle ? node.title || "Chart Title" : undefined,
+    titleStyle:
+      !isSparkline && node.showTitle
+        ? {
+            fontFace: "Arial",
+            fontSize: asPt(18),
+            color: toColorInput("000000"),
+            bold: false,
+            italic: false,
+          }
         : undefined,
-      valueAxis: isSparkline
-        ? { hidden: true, lineVisible: false, gridLinesVisible: false }
-        : undefined,
-      plotLayout: isSparkline ? { x: 0, y: 0, width: 1, height: 1 } : undefined,
-    },
-    { pointColors },
-  );
-  addGlimpseGraphicFrameMarker(ctx, marker, content);
+    displayBlanksAs: "span",
+    roundedCorners: !isSparkline,
+    chartArea: isSparkline
+      ? {
+          fill: {
+            kind: "solid",
+            color: {
+              ...toColorInput("FFFFFF")!,
+              transforms: [{ kind: "alpha", value: asOoxmlPercent(0) }],
+            },
+          },
+        }
+      : { fill: { kind: "none" }, outline: { fill: { kind: "none" } } },
+    plotArea: isSparkline
+      ? {
+          fill: {
+            kind: "solid",
+            color: {
+              ...toColorInput("FFFFFF")!,
+              transforms: [{ kind: "alpha", value: asOoxmlPercent(0) }],
+            },
+          },
+        }
+      : { fill: { kind: "none" }, outline: { fill: { kind: "none" } } },
+    showLegend: isSparkline ? false : (node.showLegend ?? false),
+    radarStyle: node.chartType === "radar" ? node.radarStyle : undefined,
+    categoryAxis: isSparkline
+      ? { hidden: true, lineVisible: false, gridLinesVisible: false }
+      : {
+          majorTickMark: "outside",
+          labelPosition: "low",
+          numberFormat: { formatCode: "General", sourceLinked: true },
+          showMultiLevelLabels: false,
+          textStyle: {
+            fontFace: "Arial",
+            fontSize: asPt(12),
+            color: toColorInput("000000"),
+          },
+        },
+    valueAxis: isSparkline
+      ? { hidden: true, lineVisible: false, gridLinesVisible: false }
+      : {
+          majorTickMark: "outside",
+          labelPosition: "nextTo",
+          numberFormat: { formatCode: "General", sourceLinked: false },
+          majorGridline: {
+            width: asEmu(12700),
+            fill: { kind: "solid", color: toColorInput("888888")! },
+          },
+          textStyle: {
+            fontFace: "Arial",
+            fontSize: asPt(12),
+            color: toColorInput("000000"),
+          },
+        },
+    plotLayout: isSparkline
+      ? { coordinateMode: "edge", x: 0, y: 0, width: 1, height: 1 }
+      : undefined,
+  });
 }
 
 /**
  * glimpse の native writer は全系列で同じ category 軸と同じ点数を要求する。
- * pptxgenjs が受理していた不揃いな入力も生成を継続できるよう、位置ベースで
+ * 従来受理していた不揃いな入力も生成を継続できるよう、位置ベースで
  * category を共有し、欠けた値を 0 で補う。
  */
 function normalizeChartSeries(data: ChartPositionedNode["data"]) {

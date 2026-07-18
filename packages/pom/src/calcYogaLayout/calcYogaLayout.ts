@@ -56,7 +56,7 @@ async function prefetchAllImageSizes(
   node: POMNode,
   ctx: BuildContext,
 ): Promise<void> {
-  const imageSources = collectImageSources(node);
+  const imageSources = [...new Set(collectImageSources(node))];
   await Promise.all(
     imageSources.map((src) =>
       prefetchImageSize(

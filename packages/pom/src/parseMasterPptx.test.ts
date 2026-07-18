@@ -13,7 +13,7 @@ async function generatePptxBuffer(
   const result = await buildPptx(xml, slideSize, {
     master: masterBackground ? { background: masterBackground } : undefined,
   });
-  return (await result.pptx.write({ outputType: "uint8array" })) as Uint8Array;
+  return await result.pptx.write({ outputType: "uint8array" });
 }
 
 describe("parseMasterPptx", () => {
@@ -96,9 +96,9 @@ describe("buildPptx with masterPptx option", () => {
     );
 
     // 生成された PPTX を再パースして背景を確認
-    const outputBuffer = (await result.pptx.write({
+    const outputBuffer = await result.pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const bg = await parseMasterPptx(outputBuffer);
     expect(bg).toEqual({ color: "FF0000" });
   });

@@ -1,7 +1,7 @@
 import { asEmu } from "@pptx-glimpse/document";
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { toColorInput } from "../glimpseTextBoxes.ts";
+import { toColorInput } from "../pptxAuthoring.ts";
 import { pxToEmu } from "../units.ts";
 import {
   addGlimpsePicture,
@@ -60,7 +60,7 @@ export function renderIconNode(
     addGlimpseShape(
       ctx,
       {
-        preset: shapeType,
+        geometry: { kind: "preset", preset: shapeType },
         ...createShapeBoundsInput(bounds),
         rotation: createShapeRotationInput(node.rotate),
         fill: isFilled ? solidShapeFill(colorValue) : noneShapeFill(),

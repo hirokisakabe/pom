@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   createTextOptions,
   calcGlyphCenteringShiftPx,
@@ -6,11 +6,11 @@ import {
   convertOutline,
 } from "./textOptions.ts";
 import { renderTextNode } from "./nodes/text.ts";
-import { GlimpseTextBoxRegistry } from "./glimpseTextBoxes.ts";
+import { PptxAuthoringRegistry } from "./pptxAuthoring.ts";
 import type { RenderContext } from "./types.ts";
 import { pxToIn, pxToPt } from "./units.ts";
 
-function firstShapeXml(registry: GlimpseTextBoxRegistry): string {
+function firstShapeXml(registry: PptxAuthoringRegistry): string {
   const entry = registry.entries[0];
   expect(entry?.kind).toBe("shape");
   return entry && entry.kind === "shape" ? entry.xml : "";
@@ -153,12 +153,9 @@ describe("calcGlyphCenteringShiftPx", () => {
 
 describe("renderTextNode (runs 分岐)", () => {
   it("run に fontSize 指定があれば run 単位で適用され、未指定なら親 Text の fontSize を継承する", () => {
-    const addShape = vi.fn();
-    const registry = new GlimpseTextBoxRegistry();
+    const registry = new PptxAuthoringRegistry();
     const ctx = {
-      slide: { addShape },
-      pptx: { ShapeType: { rect: "rect" } },
-      buildContext: { glimpseTextBoxes: registry },
+      buildContext: { pptxAuthoring: registry },
     } as unknown as RenderContext;
 
     renderTextNode(
@@ -175,22 +172,15 @@ describe("renderTextNode (runs 分岐)", () => {
       ctx,
     );
 
-    expect(addShape).toHaveBeenCalledTimes(1);
-    expect(addShape.mock.calls[0][1]).toMatchObject({
-      objectName: "pom-text:0",
-    });
     const xml = firstShapeXml(registry);
     expect(xml).toContain('<a:rPr sz="3900">');
     expect(xml).toContain('<a:rPr sz="1350">');
   });
 
   it("runs ありの Text でノード単位の glow / outline が各 run に適用される", () => {
-    const addShape = vi.fn();
-    const registry = new GlimpseTextBoxRegistry();
+    const registry = new PptxAuthoringRegistry();
     const ctx = {
-      slide: { addShape },
-      pptx: { ShapeType: { rect: "rect" } },
-      buildContext: { glimpseTextBoxes: registry },
+      buildContext: { pptxAuthoring: registry },
     } as unknown as RenderContext;
 
     renderTextNode(
@@ -208,7 +198,6 @@ describe("renderTextNode (runs 分岐)", () => {
       ctx,
     );
 
-    expect(addShape).toHaveBeenCalledTimes(1);
     const xml = firstShapeXml(registry);
     expect(xml.match(/<a:glow rad="76200">/g)).toHaveLength(2);
     expect(xml.match(/<a:alpha val="50000"\/>/g)).toHaveLength(2);
@@ -217,12 +206,9 @@ describe("renderTextNode (runs 分岐)", () => {
   });
 
   it("href を持つ run は underline 未指定時に旧 addText と同じ既定 underline を出力する", () => {
-    const addShape = vi.fn();
-    const registry = new GlimpseTextBoxRegistry();
+    const registry = new PptxAuthoringRegistry();
     const ctx = {
-      slide: { addShape },
-      pptx: { ShapeType: { rect: "rect" } },
-      buildContext: { glimpseTextBoxes: registry },
+      buildContext: { pptxAuthoring: registry },
     } as unknown as RenderContext;
 
     renderTextNode(
@@ -247,12 +233,9 @@ describe("renderTextNode (runs 分岐)", () => {
   });
 
   it("Text glow の opacity 未指定時は既定値 0.75 を XML に反映する", () => {
-    const addShape = vi.fn();
-    const registry = new GlimpseTextBoxRegistry();
+    const registry = new PptxAuthoringRegistry();
     const ctx = {
-      slide: { addShape },
-      pptx: { ShapeType: { rect: "rect" } },
-      buildContext: { glimpseTextBoxes: registry },
+      buildContext: { pptxAuthoring: registry },
     } as unknown as RenderContext;
 
     renderTextNode(

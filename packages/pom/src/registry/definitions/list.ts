@@ -36,7 +36,7 @@ function applyListYogaStyle(
   const fontMetricsRatio = measureFontLineHeightRatio(fontWeight);
   const lineHeight = fontMetricsRatio * spacingMultiple;
 
-  // バレット/番号のインデント幅（pptxgenjs DEF_BULLET_MARGIN = 27pt = 36px @96dpi）
+  // バレット/番号の互換インデント幅（27pt = 36px @96dpi）
   const bulletIndentPx = 36;
 
   yn.setMeasureFunc((width, widthMode) => {

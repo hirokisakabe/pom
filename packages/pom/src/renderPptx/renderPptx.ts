@@ -1,33 +1,16 @@
-// pptxgenjs の型定義
-type PptxGenJSInstance = import("pptxgenjs").default;
-
-// pptxgenjs は CJS パッケージのため動的 import で読み込む
-async function loadPptxGenJS(): Promise<new () => PptxGenJSInstance> {
-  const pptxModule = await import("pptxgenjs");
-  // CJS default export の解決: module.default.default (ESM wrapper) または module.default
-  /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return */
-  const mod = pptxModule as any;
-  return mod.default?.default ?? mod.default ?? mod;
-  /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return */
-}
-type SlideMasterProps = Parameters<PptxGenJSInstance["defineSlideMaster"]>[0];
-type ImageProps = {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  path?: string;
-  data?: string;
-};
-import type {
-  PositionedNode,
-  SlideMasterOptions,
-  MasterObject,
-} from "../types.ts";
+import {
+  addEmptySlideFromLayout,
+  addSlideNumber,
+  asEmu,
+  asPt,
+  createPptx,
+  type AddTextBoxRunPropertiesInput,
+  type CreatePptxBackground,
+} from "@pptx-glimpse/document";
+import type { PositionedNode, SlideMasterOptions } from "../types.ts";
 import type { BuildContext } from "../buildContext.ts";
 import type { RenderContext, NodeBounds } from "./types.ts";
-import { pxToIn, pxToPt } from "./units.ts";
-import { convertUnderline, convertStrike } from "./textOptions.ts";
+import { pxToEmu, pxToPt } from "./units.ts";
 import { getImageData } from "../shared/measureImage.ts";
 import { resolveBoxSpacing } from "../shared/boxSpacing.ts";
 import {
@@ -35,10 +18,18 @@ import {
   renderBorderOnly,
 } from "./utils/backgroundBorder.ts";
 import { getNodeDef } from "../registry/index.ts";
+import { toColorInput } from "./pptxAuthoring.ts";
+import { createGlimpseRunProperties } from "./utils/glimpseTextBox.ts";
+import {
+  createShapeBoundsInput,
+  noneShapeFill,
+  shapeOutline,
+  solidShapeFill,
+} from "./utils/glimpseShape.ts";
+import { imageBytesFromSource } from "./utils/glimpsePicture.ts";
+import { createWritablePptx } from "./writablePptx.ts";
 
 type SlidePx = { w: number; h: number };
-
-const DEFAULT_MASTER_NAME = "POM_MASTER";
 
 function buildIdPositionMap(
   node: PositionedNode,
@@ -78,179 +69,212 @@ function sortByZIndex<T extends { zIndex?: number }>(children: T[]): T[] {
   return [...children].sort((a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0));
 }
 
-/**
- * MasterObject を pptxgenjs の objects 形式に変換する
- */
-function convertMasterObject(
-  obj: MasterObject,
-): SlideMasterProps["objects"] extends (infer T)[] | undefined ? T : never {
-  switch (obj.type) {
-    case "text":
-      return {
-        text: {
-          text: obj.text,
-          options: {
-            x: pxToIn(obj.x),
-            y: pxToIn(obj.y),
-            w: pxToIn(obj.w),
-            h: pxToIn(obj.h),
-            fontSize: obj.fontSize ? pxToPt(obj.fontSize) : undefined,
-            fontFace: obj.fontFamily,
-            color: obj.color,
-            bold: obj.bold,
-            italic: obj.italic,
-            underline: convertUnderline(obj.underline),
-            strike: convertStrike(obj.strike),
-            highlight: obj.highlight,
-            align: obj.textAlign,
-          },
-        },
-      };
-    case "image": {
-      const imageProps: ImageProps = {
-        x: pxToIn(obj.x),
-        y: pxToIn(obj.y),
-        w: pxToIn(obj.w),
-        h: pxToIn(obj.h),
-      };
-      // src が data URI かパスかを判定
-      if (obj.src.startsWith("data:")) {
-        imageProps.data = obj.src;
-      } else {
-        imageProps.path = obj.src;
-      }
-      return { image: imageProps };
-    }
-    case "rect":
-      return {
-        rect: {
-          x: pxToIn(obj.x),
-          y: pxToIn(obj.y),
-          w: pxToIn(obj.w),
-          h: pxToIn(obj.h),
-          fill: obj.fill
-            ? { color: obj.fill.color, transparency: obj.fill.transparency }
-            : undefined,
-          line: obj.border
-            ? {
-                color: obj.border.color,
-                width: obj.border.width,
-                dashType: obj.border.dashType,
-              }
-            : undefined,
-        },
-      };
-    case "line":
-      return {
-        line: {
-          x: pxToIn(obj.x),
-          y: pxToIn(obj.y),
-          w: pxToIn(obj.w),
-          h: pxToIn(obj.h),
-          line: obj.line
-            ? {
-                color: obj.line.color,
-                width: obj.line.width,
-                dashType: obj.line.dashType,
-              }
-            : { color: "000000", width: 1 },
-        },
-      };
+function masterBackground(
+  master: SlideMasterOptions | undefined,
+  buildContext: BuildContext,
+): CreatePptxBackground | undefined {
+  const background = master?.background;
+  if (!background) return undefined;
+  if ("color" in background) {
+    return { kind: "solid", color: toColorInput(background.color)! };
   }
-}
-
-/**
- * SlideMasterOptions から pptxgenjs の defineSlideMaster を呼び出す
- */
-function defineSlideMasterFromOptions(
-  pptx: PptxGenJSInstance,
-  master: SlideMasterOptions,
-): string {
-  const masterName = master.title || DEFAULT_MASTER_NAME;
-
-  const masterProps: SlideMasterProps = {
-    title: masterName,
+  if ("data" in background) {
+    return { kind: "image", bytes: imageBytesFromSource("", background.data) };
+  }
+  const src = "path" in background ? background.path : background.image;
+  return {
+    kind: "image",
+    bytes: imageBytesFromSource(
+      src,
+      getImageData(src, buildContext.imageDataCache),
+    ),
   };
+}
 
-  // background の変換
-  if (master.background) {
-    if ("color" in master.background) {
-      masterProps.background = { color: master.background.color };
-    } else if ("path" in master.background) {
-      masterProps.background = { path: master.background.path };
-    } else if ("data" in master.background) {
-      masterProps.background = { data: master.background.data };
-    } else if ("image" in master.background) {
-      masterProps.background = { path: master.background.image };
+function masterBounds(obj: { x: number; y: number; w: number; h: number }) {
+  return createShapeBoundsInput(obj);
+}
+
+function masterTextRunProperties(
+  obj: Extract<
+    NonNullable<SlideMasterOptions["objects"]>[number],
+    { type: "text" }
+  >,
+): AddTextBoxRunPropertiesInput {
+  const properties = createGlimpseRunProperties({
+    fontSize: obj.fontSize,
+    fontFace: obj.fontFamily,
+    color: obj.color,
+    bold: obj.bold,
+    italic: obj.italic,
+    underline: obj.underline,
+    strike: obj.strike,
+    highlight: obj.highlight,
+  });
+  return {
+    ...properties,
+    fontFace: obj.fontFamily === undefined ? undefined : properties.fontFace,
+    fontSize: obj.fontSize === undefined ? undefined : properties.fontSize,
+  };
+}
+
+function addMasterContent(
+  buildContext: BuildContext,
+  master: SlideMasterOptions,
+): void {
+  const target = buildContext.pptxAuthoring.source.slideMasters[0]?.handle;
+  if (!target)
+    throw new Error("createPptx did not create a slide master handle");
+  buildContext.pptxAuthoring.selectSlide(target);
+  for (const obj of master.objects ?? []) {
+    switch (obj.type) {
+      case "text":
+        buildContext.pptxAuthoring.registerTextBox({
+          ...masterBounds(obj),
+          body: {
+            anchor: "middle",
+            marginLeft: asEmu(91440),
+            marginRight: asEmu(91440),
+            marginTop: asEmu(91440),
+            marginBottom: asEmu(91440),
+          },
+          paragraphs: [
+            {
+              properties: {
+                align: obj.textAlign,
+                marginLeft: asEmu(0),
+                indent: asEmu(0),
+                bullet: { type: "none" },
+              },
+              runs: [
+                {
+                  text: obj.text,
+                  properties: masterTextRunProperties(obj),
+                },
+              ],
+            },
+          ],
+        });
+        break;
+      case "image":
+        buildContext.pptxAuthoring.registerPicture({
+          ...masterBounds(obj),
+          bytes: imageBytesFromSource(
+            obj.src,
+            getImageData(obj.src, buildContext.imageDataCache),
+          ),
+        });
+        break;
+      case "rect":
+        buildContext.pptxAuthoring.registerShape(
+          {
+            ...masterBounds(obj),
+            geometry: { kind: "preset", preset: "rect" },
+            fill: obj.fill
+              ? solidShapeFill(obj.fill.color ?? "FFFFFF")
+              : noneShapeFill(),
+            outline: obj.border ? shapeOutline(obj.border) : undefined,
+          },
+          {
+            fillColor: obj.fill?.color,
+            fillOpacity:
+              obj.fill?.transparency === undefined
+                ? undefined
+                : 1 - obj.fill.transparency / 100,
+          },
+        );
+        break;
+      case "line":
+        buildContext.pptxAuthoring.registerShape({
+          ...masterBounds(obj),
+          geometry: { kind: "preset", preset: "line" },
+          fill: noneShapeFill(),
+          outline: shapeOutline(obj.line ?? { color: "000000", width: 1 }),
+        });
+        break;
     }
   }
-
-  // margin の変換 (px -> inches)
-  if (master.margin !== undefined) {
-    const margin = resolveBoxSpacing(master.margin);
-    masterProps.margin = [
-      pxToIn(margin.top),
-      pxToIn(margin.right),
-      pxToIn(margin.bottom),
-      pxToIn(margin.left),
-    ];
-  }
-
-  // objects の変換
-  if (master.objects && master.objects.length > 0) {
-    masterProps.objects = master.objects.map((obj) => convertMasterObject(obj));
-  }
-
-  // slideNumber の変換
   if (master.slideNumber) {
-    masterProps.slideNumber = {
-      x: pxToIn(master.slideNumber.x),
-      y: pxToIn(master.slideNumber.y),
-      w: master.slideNumber.w ? pxToIn(master.slideNumber.w) : undefined,
-      h: master.slideNumber.h ? pxToIn(master.slideNumber.h) : undefined,
-      fontSize: master.slideNumber.fontSize
-        ? pxToPt(master.slideNumber.fontSize)
-        : undefined,
-      fontFace: master.slideNumber.fontFamily,
-      color: master.slideNumber.color,
-    };
+    const value = master.slideNumber;
+    buildContext.pptxAuthoring.replaceSource(
+      addSlideNumber(buildContext.pptxAuthoring.source, target, {
+        offsetX: asEmu(Math.round(pxToEmu(value.x))),
+        offsetY: asEmu(Math.round(pxToEmu(value.y))),
+        width:
+          value.w === undefined
+            ? asEmu(800000)
+            : asEmu(Math.round(pxToEmu(value.w))),
+        height:
+          value.h === undefined
+            ? asEmu(300000)
+            : asEmu(Math.round(pxToEmu(value.h))),
+        properties: {
+          fontFace: value.fontFamily,
+          fontSize: value.fontSize ? asPt(pxToPt(value.fontSize)) : undefined,
+          color: toColorInput(value.color),
+        },
+      }),
+    );
   }
-
-  pptx.defineSlideMaster(masterProps);
-  return masterName;
 }
 
 /**
- * PositionedNode ツリーを PptxGenJS スライドに変換する
+ * PositionedNode ツリーを glimpse の PPTX source model に変換する
  * @param pages PositionedNode ツリーの配列（各要素が1ページ）
  * @param slidePx スライド全体のサイズ（px）
  * @param master スライドマスターオプション（省略可能）
- * @returns PptxGenJS インスタンス
+ * @returns PPTX の write / writeFile / stream 互換 facade
  */
-export async function renderPptx(
+export function renderPptx(
   pages: PositionedNode[],
   slidePx: SlidePx,
   buildContext: BuildContext,
   master?: SlideMasterOptions,
 ) {
-  const slideIn = { w: pxToIn(slidePx.w), h: pxToIn(slidePx.h) }; // layout(=px) → PptxGenJS(=inch) への最終変換
-
-  const PptxGenJS = await loadPptxGenJS();
-  const pptx = new PptxGenJS();
-
-  pptx.defineLayout({ name: "custom", width: slideIn.w, height: slideIn.h });
-  pptx.layout = "custom";
-
-  // マスターが指定されている場合、defineSlideMaster を呼び出す
-  const masterName = master
-    ? defineSlideMasterFromOptions(pptx, master)
-    : undefined;
+  const margin =
+    master?.margin === undefined ? undefined : resolveBoxSpacing(master.margin);
+  let source = createPptx({
+    slideSize: {
+      width: asEmu(Math.round(pxToEmu(slidePx.w))),
+      height: asEmu(Math.round(pxToEmu(slidePx.h))),
+    },
+    slideMaster: {
+      name: master?.title ?? "POM_MASTER",
+      background: masterBackground(master, buildContext),
+    },
+    slideLayout: {
+      name: "POM_LAYOUT",
+      margin: margin
+        ? {
+            top: asEmu(Math.round(pxToEmu(margin.top))),
+            right: asEmu(Math.round(pxToEmu(margin.right))),
+            bottom: asEmu(Math.round(pxToEmu(margin.bottom))),
+            left: asEmu(Math.round(pxToEmu(margin.left))),
+          }
+        : undefined,
+    },
+  });
+  buildContext.pptxAuthoring.initialize(source, margin !== undefined);
+  if (master) addMasterContent(buildContext, master);
 
   for (const [pageIndex, data] of pages.entries()) {
-    // マスターが指定されている場合は masterName を使用
-    const slide = masterName ? pptx.addSlide({ masterName }) : pptx.addSlide();
+    if (pageIndex > 0) {
+      const layoutPartPath =
+        buildContext.pptxAuthoring.source.slideLayouts[0]?.partPath;
+      if (!layoutPartPath)
+        throw new Error("createPptx did not create a slide layout");
+      source = addEmptySlideFromLayout(buildContext.pptxAuthoring.source, {
+        layoutPartPath,
+      });
+      buildContext.pptxAuthoring.replaceSource(source);
+    }
+    const slideHandle =
+      buildContext.pptxAuthoring.source.slides[pageIndex]?.handle;
+    if (!slideHandle)
+      throw new Error(`slide handle was not found: ${pageIndex + 1}`);
+    buildContext.pptxAuthoring.selectSlide(slideHandle);
     const idPositionMap = buildIdPositionMap(data, buildContext.diagnostics);
-    const ctx: RenderContext = { slide, pptx, buildContext, idPositionMap };
+    const ctx: RenderContext = { buildContext, idPositionMap };
 
     // ルートノードの backgroundColor はスライドの background プロパティとして適用
     // これにより、マスタースライドのオブジェクトを覆い隠さない
@@ -264,21 +288,19 @@ export async function renderPptx(
       : undefined;
     const rootHasOpacity =
       !isLinelike && "opacity" in data && data.opacity !== undefined;
-    const rootGradientMarker =
+    const rootGradientApplied =
       rootBackgroundGradient && !rootHasOpacity
-        ? buildContext.glimpseTextBoxes.registerSlideBackgroundGradient(
+        ? buildContext.pptxAuthoring.setSlideBackgroundGradient(
             rootBackgroundGradient,
-            pageIndex + 1,
           )
-        : undefined;
-    if (rootGradientMarker) {
-      slide.background = { color: rootGradientMarker };
-    } else if (
+        : false;
+    if (
+      !rootGradientApplied &&
       rootBackgroundColor &&
       !rootBackgroundGradient &&
       !rootHasOpacity
     ) {
-      slide.background = { color: rootBackgroundColor };
+      buildContext.pptxAuthoring.setSlideBackgroundSolid(rootBackgroundColor);
     }
 
     // ルートノードの backgroundImage はスライドの background プロパティとして適用
@@ -289,11 +311,9 @@ export async function renderPptx(
         rootBackgroundImage.src,
         buildContext.imageDataCache,
       );
-      if (cachedData) {
-        slide.background = { data: cachedData };
-      } else {
-        slide.background = { path: rootBackgroundImage.src };
-      }
+      buildContext.pptxAuthoring.setSlideBackgroundImage(
+        imageBytesFromSource(rootBackgroundImage.src, cachedData),
+      );
     }
 
     /**
@@ -308,7 +328,7 @@ export async function renderPptx(
         if (
           isRoot &&
           (rootBackgroundImage ||
-            ((rootBackgroundColor || rootGradientMarker) && !rootHasOpacity))
+            ((rootBackgroundColor || rootGradientApplied) && !rootHasOpacity))
         ) {
           // border のみ描画（backgroundColor/backgroundImage はスキップ）
           renderBorderOnly(node, ctx);
@@ -347,5 +367,5 @@ export async function renderPptx(
     renderNode(data, true); // ルートノードとして処理
   }
 
-  return pptx;
+  return createWritablePptx(() => buildContext.pptxAuthoring.source);
 }

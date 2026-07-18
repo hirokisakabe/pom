@@ -249,7 +249,7 @@ export function renderTreeNode(
     addGlimpseShape(
       ctx,
       {
-        preset: shapeType,
+        geometry: { kind: "preset", preset: shapeType },
         ...createShapeBoundsInput({ x: drawX, y: drawY, w: drawW, h: drawH }),
         fill: solidShapeFill(color),
         outline: shapeOutline({ color: "333333", width: 1 * sf }),

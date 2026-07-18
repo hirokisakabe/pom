@@ -6,15 +6,16 @@ import {
 } from "../../shared/tableUtils.ts";
 import {
   asEmu,
+  asOoxmlPercent,
   asPt,
   type AddTableCellInput,
   type AddTableRowInput,
   type AddTableRunInput,
+  type SourceDashStyle,
 } from "@pptx-glimpse/document";
 import { pxToEmu, pxToPt } from "../units.ts";
 import { getContentArea } from "../utils/contentArea.ts";
-import { addGlimpseGraphicFrameMarker } from "../utils/glimpseGraphicFrame.ts";
-import { cleanHex, type TableRunCompatibility } from "../glimpseTextBoxes.ts";
+import { cleanHex, toColorInput } from "../pptxAuthoring.ts";
 import { resolveSubSup } from "../textOptions.ts";
 
 type TablePositionedNode = Extract<PositionedNode, { type: "table" }>;
@@ -32,52 +33,16 @@ export function renderTableNode(
         dash: toTableDash(node.cellBorder.dashType),
       }
     : undefined;
-  const marker = ctx.buildContext.glimpseTextBoxes.registerTable(
-    {
-      offsetX: asEmu(Math.round(pxToEmu(content.x))),
-      offsetY: asEmu(Math.round(pxToEmu(content.y))),
-      width: asEmu(Math.round(pxToEmu(Math.max(content.w, 1)))),
-      height: asEmu(Math.round(pxToEmu(Math.max(content.h, 1)))),
-      columnWidths: resolveColumnWidths(node, content.w).map((width) =>
-        asEmu(Math.round(pxToEmu(Math.max(width, 1)))),
-      ),
-      rows: buildTableRows(node, rowHeights, border),
-    },
-    {
-      runProperties: buildTableRunCompatibility(node),
-      borderDash: node.cellBorder?.dashType,
-    },
-  );
-  addGlimpseGraphicFrameMarker(ctx, marker, content);
-}
-
-function buildTableRunCompatibility(
-  node: TablePositionedNode,
-): TableRunCompatibility[] {
-  return node.rows.flatMap((row) =>
-    row.cells.flatMap((cell) => {
-      const runs = cell.runs?.length ? cell.runs : [{ text: cell.text }];
-      return runs.map((run) => {
-        const underline = run.underline ?? cell.underline;
-        const subSup = resolveSubSup(run, cell);
-        return {
-          strike: run.strike ?? cell.strike,
-          baseline: subSup.subscript
-            ? "subscript"
-            : subSup.superscript
-              ? "superscript"
-              : undefined,
-          highlight: run.highlight ?? cell.highlight,
-          underlineStyle:
-            typeof underline === "object"
-              ? (underline.style ?? "sng")
-              : undefined,
-          underlineColor:
-            typeof underline === "object" ? underline.color : undefined,
-        } satisfies TableRunCompatibility;
-      });
-    }),
-  );
+  ctx.buildContext.pptxAuthoring.registerTable({
+    offsetX: asEmu(Math.round(pxToEmu(content.x))),
+    offsetY: asEmu(Math.round(pxToEmu(content.y))),
+    width: asEmu(Math.round(pxToEmu(Math.max(content.w, 1)))),
+    height: asEmu(Math.round(pxToEmu(Math.max(content.h, 1)))),
+    columnWidths: resolveColumnWidths(node, content.w).map((width) =>
+      asEmu(Math.round(pxToEmu(Math.max(width, 1)))),
+    ),
+    rows: buildTableRows(node, rowHeights, border),
+  });
 }
 
 function buildTableRows(
@@ -87,7 +52,7 @@ function buildTableRows(
     | {
         width: ReturnType<typeof asEmu>;
         color: string;
-        dash: "solid" | "dash" | "dot" | "dashDot" | undefined;
+        dash: SourceDashStyle | undefined;
       }
     | undefined,
 ): AddTableRowInput[] {
@@ -108,6 +73,10 @@ function buildTableRows(
         runs: buildTableRuns(cell),
         fill: cleanHex(cell.backgroundColor),
         align: cell.textAlign ?? "left",
+        marginLeft: asEmu(0),
+        marginRight: asEmu(0),
+        marginTop: asEmu(0),
+        marginBottom: asEmu(0),
         borders: border
           ? { top: border, right: border, bottom: border, left: border }
           : undefined,
@@ -142,24 +111,41 @@ function buildTableRuns(
   cell: TablePositionedNode["rows"][number]["cells"][number],
 ): AddTableRunInput[] {
   const runs = cell.runs?.length ? cell.runs : [{ text: cell.text }];
-  return runs.map((run) => ({
-    text: run.text,
-    properties: {
+  return runs.flatMap((run) => {
+    const underline = run.underline ?? cell.underline;
+    const subSup = resolveSubSup(run, cell);
+    const properties = {
       fontSize: asPt(pxToPt(run.fontSize ?? cell.fontSize ?? 18)),
       fontFace: run.fontFamily ?? cell.fontFamily,
       color: cleanHex(run.color ?? cell.color),
       bold: run.bold ?? cell.bold,
       italic: run.italic ?? cell.italic,
-      underline: Boolean(run.underline ?? cell.underline),
-    },
-    hyperlink: run.href,
-  }));
+      underline:
+        typeof underline === "object"
+          ? {
+              style: underline.style,
+              color: toColorInput(underline.color),
+            }
+          : Boolean(underline),
+      strike: run.strike ?? cell.strike,
+      baseline: subSup.subscript
+        ? { type: "percent" as const, value: asOoxmlPercent(-40000) }
+        : subSup.superscript
+          ? { type: "percent" as const, value: asOoxmlPercent(30000) }
+          : undefined,
+      highlight: toColorInput(run.highlight ?? cell.highlight),
+    };
+    const lines = run.text.replace(/\r*\n/g, "\n").split("\n");
+    return lines.map((line, index) => ({
+      text: index === 0 ? line : `\n${line}`,
+      properties,
+      hyperlink: run.href,
+    }));
+  });
 }
 
 function toTableDash(
   dash: NonNullable<TablePositionedNode["cellBorder"]>["dashType"],
-): "solid" | "dash" | "dot" | "dashDot" | undefined {
-  if (dash === "solid" || dash === "dash" || dash === "dashDot") return dash;
-  if (dash === "sysDot") return "dot";
-  return dash ? "dash" : undefined;
+): SourceDashStyle | undefined {
+  return dash;
 }

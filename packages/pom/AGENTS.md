@@ -12,7 +12,7 @@ When adding new properties or features, update the following files:
 2. **Coercion rules**: `packages/pom/src/parseXml/coercionRules.ts` - Add attribute coercion rules
 3. **XML parser**: `packages/pom/src/parseXml/parseXml.ts` - Add XML tag/attribute conversion logic
 4. **Node registry**: `packages/pom/src/registry/definitions/` - Add node definition to the registry
-5. **Rendering**: Under `packages/pom/src/renderPptx/` - Implement pptxgenjs conversion
+5. **Rendering**: Under `packages/pom/src/renderPptx/` - Implement `@pptx-glimpse/document` authoring conversion
 6. **VRT test data**: `packages/pom/vrt/lib/generatePptx.ts` - Add test cases for the new feature
 7. **Update VRT baseline**: Run `pnpm run vrt:docker:update` (from `packages/pom/`)
 8. **Documentation updates**:

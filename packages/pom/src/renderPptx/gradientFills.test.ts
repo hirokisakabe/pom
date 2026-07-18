@@ -17,17 +17,19 @@ describe("buildPptx with backgroundGradient", () => {
       <Text w="200" h="100" backgroundGradient="linear-gradient(45deg, #FF0000 0%, #0000FF 100%)" text=""></Text>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
+    expect(slideXml).toContain("<a:gradFill><a:gsLst>");
     expect(slideXml).toContain(
-      '<a:gradFill flip="none" rotWithShape="1"><a:gsLst>' +
-        '<a:gs pos="0"><a:srgbClr val="FF0000"/></a:gs>' +
-        '<a:gs pos="100000"><a:srgbClr val="0000FF"/></a:gs>' +
-        '</a:gsLst><a:lin ang="18900000" scaled="0"/></a:gradFill>',
+      '<a:gs pos="0"><a:srgbClr val="FF0000"/></a:gs>',
     );
+    expect(slideXml).toContain(
+      '<a:gs pos="100000"><a:srgbClr val="0000FF"/></a:gs>',
+    );
+    expect(slideXml).toContain('<a:lin ang="18900000" scaled="1"/>');
   });
 
   it("backgroundGradient 単独でも stream 経路で gradFill として出力される", async () => {
@@ -35,7 +37,7 @@ describe("buildPptx with backgroundGradient", () => {
       <Shape shapeType="rect" w="200" h="100" backgroundGradient="linear-gradient(45deg, #FF0000 0%, #0000FF 100%)"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.stream({ compression: true })) as Uint8Array;
+    const buffer = await pptx.stream();
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain("<a:gradFill");
@@ -47,7 +49,7 @@ describe("buildPptx with backgroundGradient", () => {
       <Shape shapeType="rect" w="200" h="100" backgroundGradient="linear-gradient(45deg, #FF0000 0%, #0000FF 100%)"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const blob = (await pptx.write()) as Blob;
+    const blob = await pptx.write();
     const slideXml = await readSlideXml(await blob.arrayBuffer());
 
     expect(slideXml).toContain("<a:gradFill");
@@ -59,16 +61,16 @@ describe("buildPptx with backgroundGradient", () => {
       <Text fontSize="24">test</Text>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toMatch(/<p:bgPr><a:gradFill/);
-    expect(slideXml).toContain('<a:lin ang="0" scaled="0"/>');
+    expect(slideXml).toContain('<a:lin ang="0" scaled="1"/>');
   });
 
-  it("ルート backgroundGradient の marker 色は別スライドの通常背景色を置換しない", async () => {
+  it("ルート backgroundGradient は別スライドの通常背景色へ影響しない", async () => {
     const xml = `
       <Slide><VStack w="100%" h="max" backgroundGradient="linear-gradient(to right, #11998E, #38EF7D)">
         <Text fontSize="24">gradient</Text>
@@ -77,9 +79,9 @@ describe("buildPptx with backgroundGradient", () => {
         <Text fontSize="24">solid</Text>
       </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const zip = await JSZip.loadAsync(buffer);
     const slide1Xml = await zip.file("ppt/slides/slide1.xml")!.async("text");
     const slide2Xml = await zip.file("ppt/slides/slide2.xml")!.async("text");
@@ -94,9 +96,9 @@ describe("buildPptx with backgroundGradient", () => {
       <Text w="200" h="100" backgroundGradient="linear-gradient(#FF0000, #0000FF)" opacity="0.5" text=""></Text>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain(
@@ -109,9 +111,9 @@ describe("buildPptx with backgroundGradient", () => {
       <Text w="200" h="100" backgroundColor="ABCDEF" backgroundGradient="linear-gradient(#FF0000, #0000FF)" text=""></Text>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain("<a:gradFill");
@@ -129,9 +131,9 @@ describe("buildPptx with backgroundGradient", () => {
       <Text w="200" h="100" backgroundGradient="linear-gradient(90deg, #AA0000, #BB0000)" text=""></Text>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const zip = await JSZip.loadAsync(buffer);
     const slide1Xml = await zip.file("ppt/slides/slide1.xml")!.async("text");
     const slide2Xml = await zip.file("ppt/slides/slide2.xml")!.async("text");
@@ -170,9 +172,9 @@ describe("buildPptx with backgroundGradient", () => {
       <Text fontSize="24">test</Text>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).not.toContain("<a:gradFill");
@@ -194,19 +196,15 @@ describe("buildPptx with backgroundGradient", () => {
         <Text w="200" h="100" backgroundGradient="radial-gradient(circle at center, #FF0000 0%, #0000FF 100%)" text=""></Text>
       </VStack></Slide>`;
       const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-      const buffer = (await pptx.write({
+      const buffer = await pptx.write({
         outputType: "uint8array",
-      })) as Uint8Array;
+      });
       const slideXml = await readSlideXml(buffer);
 
       // 中心 50% 50% → fillToRect l=t=r=b=50000
+      expect(slideXml).toContain("<a:gradFill><a:gsLst>");
       expect(slideXml).toContain(
-        '<a:gradFill flip="none" rotWithShape="1"><a:gsLst>' +
-          '<a:gs pos="0"><a:srgbClr val="FF0000"/></a:gs>' +
-          '<a:gs pos="100000"><a:srgbClr val="0000FF"/></a:gs>' +
-          '</a:gsLst><a:path path="circle">' +
-          '<a:fillToRect l="50000" t="50000" r="50000" b="50000"/>' +
-          "</a:path></a:gradFill>",
+        '<a:path path="circle"><a:fillToRect l="50000" t="50000" r="50000" b="50000"/></a:path>',
       );
     });
 
@@ -215,9 +213,9 @@ describe("buildPptx with backgroundGradient", () => {
         <Text w="200" h="100" backgroundGradient="radial-gradient(circle at top right, #FF0000, #0000FF)" text=""></Text>
       </VStack></Slide>`;
       const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-      const buffer = (await pptx.write({
+      const buffer = await pptx.write({
         outputType: "uint8array",
-      })) as Uint8Array;
+      });
       const slideXml = await readSlideXml(buffer);
 
       // top right = (100%, 0%) → l=100000 t=0 r=0 b=100000
@@ -231,9 +229,9 @@ describe("buildPptx with backgroundGradient", () => {
         <Text w="200" h="100" backgroundGradient="radial-gradient(ellipse at 25% 75%, #11998E, #38EF7D)" text=""></Text>
       </VStack></Slide>`;
       const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-      const buffer = (await pptx.write({
+      const buffer = await pptx.write({
         outputType: "uint8array",
-      })) as Uint8Array;
+      });
       const slideXml = await readSlideXml(buffer);
 
       // 25% 75% → l=25000 t=75000 r=75000 b=25000
@@ -247,9 +245,9 @@ describe("buildPptx with backgroundGradient", () => {
         <Text w="200" h="100" backgroundGradient="radial-gradient(#FF0000, #0000FF)" text=""></Text>
       </VStack></Slide>`;
       const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-      const buffer = (await pptx.write({
+      const buffer = await pptx.write({
         outputType: "uint8array",
-      })) as Uint8Array;
+      });
       const slideXml = await readSlideXml(buffer);
 
       expect(slideXml).toContain('<a:path path="circle">');
@@ -263,9 +261,9 @@ describe("buildPptx with backgroundGradient", () => {
         <Text fontSize="24">test</Text>
       </VStack></Slide>`;
       const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-      const buffer = (await pptx.write({
+      const buffer = await pptx.write({
         outputType: "uint8array",
-      })) as Uint8Array;
+      });
       const slideXml = await readSlideXml(buffer);
 
       expect(slideXml).toMatch(/<p:bgPr><a:gradFill/);
@@ -277,9 +275,9 @@ describe("buildPptx with backgroundGradient", () => {
         <Text w="200" h="100" backgroundGradient="radial-gradient(circle, #FF0000, #0000FF)" opacity="0.4" text=""></Text>
       </VStack></Slide>`;
       const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-      const buffer = (await pptx.write({
+      const buffer = await pptx.write({
         outputType: "uint8array",
-      })) as Uint8Array;
+      });
       const slideXml = await readSlideXml(buffer);
 
       expect(slideXml).toContain(
@@ -294,9 +292,9 @@ describe("buildPptx with backgroundGradient", () => {
         <Text w="200" h="100" backgroundGradient="radial-gradient(circle at center, #112233, #445566)" text=""></Text>
       </VStack></Slide>`;
       const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-      const buffer = (await pptx.write({
+      const buffer = await pptx.write({
         outputType: "uint8array",
-      })) as Uint8Array;
+      });
       const slideXml = await readSlideXml(buffer);
 
       expect(slideXml.match(/<a:gradFill/g)).toHaveLength(2);
@@ -324,9 +322,9 @@ describe("buildPptx with textGradient", () => {
       <Text fontSize="32" textGradient="linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)">Hello</Text>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     // text run 内に gradFill が描画される (a:rPr 配下)
@@ -345,9 +343,9 @@ describe("buildPptx with textGradient", () => {
       <Text fontSize="24" color="FF0000" textGradient="linear-gradient(#0000FF, #00FF00)">x</Text>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     // gradient のカラーストップが出力される
@@ -364,9 +362,9 @@ describe("buildPptx with textGradient", () => {
       <Text fontSize="24" textGradient="linear-gradient(90deg, #11998E, #38EF7D)">A<Span color="FF0000">B</Span>C</Text>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     // 3 つの text run 全てが gradient で塗られる
@@ -385,9 +383,9 @@ describe("buildPptx with textGradient", () => {
             textGradient="linear-gradient(90deg, #38BDF8, #A78BFA)">Hi</Text>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = (await pptx.write({
+    const buffer = await pptx.write({
       outputType: "uint8array",
-    })) as Uint8Array;
+    });
     const slideXml = await readSlideXml(buffer);
 
     // それぞれのカラーストップが出力される

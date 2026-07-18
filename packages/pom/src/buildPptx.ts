@@ -8,9 +8,10 @@ import type { Diagnostic } from "./diagnostics.ts";
 import { DiagnosticsError } from "./diagnostics.ts";
 import { parseMasterPptx } from "./parseMasterPptx.ts";
 import { parseXml } from "./parseXml/parseXml.ts";
-import { patchPptxWriteForGlimpseTextBoxes } from "./renderPptx/glimpseTextBoxes.ts";
 import { renderPptx } from "./renderPptx/renderPptx.ts";
+import type { WritablePptx } from "./renderPptx/writablePptx.ts";
 import { freeYogaTree } from "./shared/freeYogaTree.ts";
+import { prefetchImageSize } from "./shared/measureImage.ts";
 import { toPositioned } from "./toPositioned/toPositioned.ts";
 import { PositionedNode, SlideMasterOptions } from "./types.ts";
 import { validatePositioned } from "./validatePositioned/validatePositioned.ts";
@@ -18,7 +19,7 @@ import { validatePositioned } from "./validatePositioned/validatePositioned.ts";
 export type { TextMeasurementMode };
 
 export interface BuildPptxResult {
-  pptx: import("pptxgenjs").default;
+  pptx: WritablePptx;
   diagnostics: Diagnostic[];
 }
 
@@ -77,10 +78,34 @@ export async function buildPptx(
     }
   }
 
-  const pptx = await renderPptx(positionedPages, slideSize, ctx, master);
+  const masterImageSources = [
+    ...new Set(
+      [
+        master?.background && "image" in master.background
+          ? master.background.image
+          : undefined,
+        ...(master?.objects
+          ?.filter((object) => object.type === "image")
+          .map((object) => object.src) ?? []),
+      ].filter((source): source is string =>
+        Boolean(
+          source?.startsWith("https://") || source?.startsWith("http://"),
+        ),
+      ),
+    ),
+  ];
+  await Promise.all(
+    masterImageSources.map((source) =>
+      prefetchImageSize(
+        source,
+        ctx.imageSizeCache,
+        ctx.imageDataCache,
+        ctx.diagnostics,
+      ),
+    ),
+  );
 
-  // glimpse writer で生成した Text / Shape / Picture XML で marker shape を置換する
-  patchPptxWriteForGlimpseTextBoxes(pptx, ctx.glimpseTextBoxes);
+  const pptx = renderPptx(positionedPages, slideSize, ctx, master);
 
   const diagnostics = ctx.diagnostics.items;
 

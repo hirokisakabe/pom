@@ -38,7 +38,7 @@ export function getContentArea(node: {
 }
 
 /**
- * コンテンツ描画領域を pptxgenjs の位置オプション (inch 単位の x/y/w/h)
+ * コンテンツ描画領域を互換用の位置オプション (inch 単位の x/y/w/h)
  * として返す。コンテンツを領域いっぱいに描画する renderer はこれを
  * addShape / addText 等のオプションへ spread するだけでよい。
  */

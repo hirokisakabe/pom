@@ -1,11 +1,8 @@
 import type { PositionedNode } from "../../types.ts";
 import { getImageData } from "../../shared/measureImage.ts";
 import type { RenderContext } from "../types.ts";
-import { rectPxToIn } from "../units.ts";
 import {
   BORDER_SIDES,
-  convertBorderLine,
-  convertShadow,
   hasVisibleBorder,
   resolvePerSideBorders,
   resolveRectRadius,
@@ -61,37 +58,11 @@ export function renderBackgroundAndBorder(
 
   // borderRadius がある場合は roundRect を使用し、rectRadius を計算
   const shapeType = borderRadius ? "roundRect" : "rect";
-  const legacyShapeType = borderRadius
-    ? ctx.pptx.ShapeType.roundRect
-    : ctx.pptx.ShapeType.rect;
   const rectRadius = resolveRectRadius(borderRadius, node.w, node.h);
 
   // backgroundImage がない場合は従来通り1回の addShape で処理
   if (!hasBackgroundImage) {
     if (hasBackground || hasUniformBorder || hasShadow) {
-      if (hasShadow && !backgroundGradient) {
-        ctx.slide.addShape(legacyShapeType, {
-          ...rectPxToIn(node),
-          fill: hasBackground
-            ? {
-                color: backgroundColor,
-                transparency:
-                  node.opacity !== undefined
-                    ? (1 - node.opacity) * 100
-                    : undefined,
-              }
-            : { type: "none" },
-          line: hasUniformBorder
-            ? convertBorderLine(border, "000000")
-            : { type: "none" },
-          rectRadius,
-          shadow: convertShadow(shadow),
-        });
-
-        renderPerSideBorderLines(node, perSideBorders, ctx);
-        return;
-      }
-
       const fill = hasBackground
         ? backgroundShapeFill(backgroundColor, backgroundGradient)
         : noneShapeFill();
@@ -103,7 +74,7 @@ export function renderBackgroundAndBorder(
       addGlimpseShape(
         ctx,
         {
-          preset: shapeType,
+          geometry: { kind: "preset", preset: shapeType },
           ...createShapeBoundsInput(node),
           fill,
           outline: line,
@@ -131,7 +102,7 @@ export function renderBackgroundAndBorder(
     addGlimpseShape(
       ctx,
       {
-        preset: shapeType,
+        geometry: { kind: "preset", preset: shapeType },
         ...createShapeBoundsInput(node),
         fill: backgroundShapeFill(backgroundColor, backgroundGradient),
         outline: noShapeOutline(),
@@ -166,25 +137,10 @@ export function renderBackgroundAndBorder(
 
   // 3. ボーダー
   if (hasUniformBorder || hasShadow) {
-    if (hasShadow) {
-      ctx.slide.addShape(legacyShapeType, {
-        ...rectPxToIn(node),
-        fill: { type: "none" },
-        line: hasUniformBorder
-          ? convertBorderLine(border, "000000")
-          : { type: "none" },
-        rectRadius,
-        shadow: convertShadow(shadow),
-      });
-
-      renderPerSideBorderLines(node, perSideBorders, ctx);
-      return;
-    }
-
     addGlimpseShape(
       ctx,
       {
-        preset: shapeType,
+        geometry: { kind: "preset", preset: shapeType },
         ...createShapeBoundsInput(node),
         fill: noneShapeFill(),
         outline: hasUniformBorder
@@ -247,7 +203,7 @@ export function renderBorderOnly(
   addGlimpseShape(
     ctx,
     {
-      preset: shapeType,
+      geometry: { kind: "preset", preset: shapeType },
       ...createShapeBoundsInput(node),
       fill: noneShapeFill(),
       outline: shapeOutline(border, "000000"),
@@ -286,7 +242,7 @@ function renderPerSideBorderLines(
     addGlimpseShape(
       ctx,
       {
-        preset: "line",
+        geometry: { kind: "preset", preset: "line" },
         ...createShapeBoundsInput(edges[side]),
         fill: noneShapeFill(),
         outline: shapeOutline(style, "000000"),

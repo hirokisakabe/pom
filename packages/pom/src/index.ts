@@ -1,5 +1,11 @@
 export { buildPptx } from "./buildPptx.ts";
 export type { BuildPptxResult, TextMeasurementMode } from "./buildPptx.ts";
+export type {
+  PptxOutputType,
+  PptxWriteFileOptions,
+  PptxWriteOptions,
+  WritablePptx,
+} from "./renderPptx/writablePptx.ts";
 export { DiagnosticsError } from "./diagnostics.ts";
 export type { Diagnostic, DiagnosticCode } from "./diagnostics.ts";
 export { extractThemeTokensFromPptx } from "./extractThemeTokensFromPptx.ts";

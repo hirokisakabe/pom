@@ -69,7 +69,7 @@ Returns a `BuildPptxResult` object:
 
 | Field         | Type           | Description                                 |
 | ------------- | -------------- | ------------------------------------------- |
-| `pptx`        | pptxgenjs      | The generated presentation instance         |
+| `pptx`        | `WritablePptx` | The generated presentation output facade    |
 | `diagnostics` | `Diagnostic[]` | Warnings collected during the build process |
 
 ```typescript
@@ -83,6 +83,8 @@ if (diagnostics.length > 0) {
   console.warn("Build warnings:", diagnostics);
 }
 ```
+
+`WritablePptx` は PPTX 出力専用の facade です。以前の戻り値に含まれていた pptxgenjs の編集 API は提供しません。スライド内容は XML、マスター内容は `SlideMasterOptions` で指定してください。
 
 ### Diagnostic Codes
 

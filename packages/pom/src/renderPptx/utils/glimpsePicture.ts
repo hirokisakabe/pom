@@ -8,7 +8,7 @@ import {
 } from "@pptx-glimpse/document";
 import type { ShadowStyle } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToEmu, rectPxToIn } from "../units.ts";
+import { pxToEmu } from "../units.ts";
 
 type PictureBoundsPx = { x: number; y: number; w: number; h: number };
 type ImageSizing = {
@@ -19,12 +19,8 @@ type ImageSizing = {
   y?: number;
 };
 
-const TRANSPARENT_MARKER_STYLE = {
-  fill: { color: "FFFFFF", transparency: 100 },
-  line: { color: "FFFFFF", transparency: 100 },
-} as const;
 const FALLBACK_PNG =
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lU9qJwAAAABJRU5ErkJggg==";
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 
 function dataToBytes(data: string): Uint8Array {
   const base64 = data.includes(",") ? data.split(",").at(-1) : data;
@@ -154,17 +150,8 @@ export function addGlimpsePicture(
     rotation: createPictureRotationInput(options?.rotate),
     crop: sizingResult.crop,
   };
-  const marker = ctx.buildContext.glimpseTextBoxes.registerPicture(input, {
+  ctx.buildContext.pptxAuthoring.registerPicture(input, {
     name: options?.name,
     shadow: options?.shadow,
-  });
-  ctx.slide.addShape(ctx.pptx.ShapeType.rect, {
-    ...rectPxToIn({
-      ...sizingResult.bounds,
-      w: Math.max(sizingResult.bounds.w, 1),
-      h: Math.max(sizingResult.bounds.h, 1),
-    }),
-    ...TRANSPARENT_MARKER_STYLE,
-    objectName: marker,
   });
 }

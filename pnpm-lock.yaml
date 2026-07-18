@@ -178,11 +178,14 @@ importers:
   packages/pom:
     dependencies:
       '@pptx-glimpse/document':
-        specifier: 0.7.0
-        version: 0.7.0
+        specifier: 0.9.1
+        version: 0.9.1
       '@resvg/resvg-wasm':
         specifier: ^2.6.2
         version: 2.6.2
+      '@types/node':
+        specifier: ^26.1.0
+        version: 26.1.0
       fast-xml-parser:
         specifier: ^5.10.0
         version: 5.10.0
@@ -195,9 +198,6 @@ importers:
       opentype.js:
         specifier: ^2.0.0
         version: 2.0.0
-      pptxgenjs:
-        specifier: 4.0.1
-        version: 4.0.1
       yoga-layout:
         specifier: 3.2.1
         version: 3.2.1
@@ -208,9 +208,6 @@ importers:
       '@size-limit/file':
         specifier: ^12.1.0
         version: 12.1.0(size-limit@12.1.0(jiti@2.7.0))
-      '@types/node':
-        specifier: ^26.1.0
-        version: 26.1.0
       '@types/opentype.js':
         specifier: ^1.3.10
         version: 1.3.10
@@ -319,6 +316,9 @@ importers:
       '@types/markdown-it':
         specifier: ^14.1.2
         version: 14.1.2
+      '@types/node':
+        specifier: ^26.1.0
+        version: 26.1.0
       '@vitest/coverage-v8':
         specifier: ^4.1.10
         version: 4.1.10(vitest@4.1.10)
@@ -2080,6 +2080,10 @@ packages:
 
   '@pptx-glimpse/document@0.7.0':
     resolution: {integrity: sha512-4DsXVsDFErl/XwHNk3A+Wso6TnMaFfev/Bks8a3j2O6vcnp0u9dzcPSpq4xM4Q/MtOcMtfLS2CQ1ggLt/awHjQ==}
+    engines: {node: '>=22'}
+
+  '@pptx-glimpse/document@0.9.1':
+    resolution: {integrity: sha512-d3tLpOUQ7XqlFeh1K5s1S3drpuuUX0dJMAWiqDsIn5Gs0wEZHQoNC9TY8lZhdT8wXO/1jgsmcwhMQH6NnfZ3YQ==}
     engines: {node: '>=22'}
 
   '@quansync/fs@1.0.0':
@@ -6635,9 +6639,6 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  pptxgenjs@4.0.1:
-    resolution: {integrity: sha512-TeJISr8wouAuXw4C1F/mC33xbZs/FuEG6nH9FG1Zj+nuPcGMP5YRHl6X+j3HSUnS1f3at6k75ZZXPMZlA5Lj9A==}
-
   prebuild-install@7.1.3:
     resolution: {integrity: sha512-8Mf2cbV7x1cXPUILADGI3wuhfqWvtiLA1iclTDbFRZkgRQS0NqsPZphna9V+HyTEadheuPmjaJMsbzKQFOzLug==}
     engines: {node: '>=10'}
@@ -9700,6 +9701,11 @@ snapshots:
   '@polka/url@1.0.0-next.29': {}
 
   '@pptx-glimpse/document@0.7.0':
+    dependencies:
+      fast-xml-parser: 5.10.0
+      fflate: 0.8.3
+
+  '@pptx-glimpse/document@0.9.1':
     dependencies:
       fast-xml-parser: 5.10.0
       fflate: 0.8.3
@@ -14914,13 +14920,6 @@ snapshots:
       fast-xml-parser: 5.10.0
       fflate: 0.8.3
       opentype.js: 1.3.4
-
-  pptxgenjs@4.0.1:
-    dependencies:
-      '@types/node': 22.20.0
-      https: 1.0.0
-      image-size: 1.2.1
-      jszip: 3.10.1
 
   prebuild-install@7.1.3:
     dependencies:
