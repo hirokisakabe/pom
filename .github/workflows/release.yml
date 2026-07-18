@@ -100,6 +100,13 @@ jobs:
         working-directory: packages/pom-vscode
         run: pnpm run test:run
 
+      - name: Test showcase samples (pom-vscode)
+        if: steps.pom-vscode-check.outputs.changed == 'true'
+        working-directory: packages/pom-vscode
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: pnpm run test:showcase
+
       - name: Build (pom-vscode)
         if: steps.pom-vscode-check.outputs.changed == 'true'
         working-directory: packages/pom-vscode
