@@ -1,6 +1,6 @@
 # AGENTS.md
 
-pom (PowerPoint Object Model) — TypeScript library for declaratively describing PowerPoint presentations. Calculates Flexbox-style layouts with yoga-layout and generates PPTX files with pptxgenjs.
+pom (PowerPoint Object Model) — TypeScript library for declaratively describing PowerPoint presentations. Calculates Flexbox-style layouts with yoga-layout and generates PPTX files with `@pptx-glimpse/document`.
 
 ## Agent Instructions の配置方針
 
@@ -14,7 +14,7 @@ pom (PowerPoint Object Model) — TypeScript library for declaratively describin
 
 ## Tech Stack
 
-TypeScript 5.x, yoga-layout 3.2.1, pptxgenjs 4.0.1, opentype.js 1.3.x, fast-xml-parser 5.x, zod 4.x, Vitest, ESLint, Prettier, pnpm workspace
+TypeScript 5.x, yoga-layout 3.2.1, @pptx-glimpse/document 0.9.1, opentype.js 1.3.x, fast-xml-parser 5.x, zod 4.x, Vitest, ESLint, Prettier, pnpm workspace
 
 ## Behavioral Principles
 
@@ -62,6 +62,7 @@ Existing PPTX reading and structural round-trip work should treat `@pptx-glimpse
 
 - `buildPptx(xml, slideSize, options?)` — XML string → PPTX
 - `BuildPptxResult`, `ParseXmlError`, `DiagnosticsError`, `Diagnostic`, `DiagnosticCode`
+- `WritablePptx` — `buildPptx()` の出力 facade (`write` / `writeFile` / `stream`)
 - `TextMeasurementMode` (`"opentype"` | `"fallback"` | `"auto"`), `SlideMasterOptions`
 - `extractThemeTokensFromPptx(buffer)` — PPTX bytes → `ThemeTokens[]` (`slideMaster` 配下の表示 layout 順に、text / background / primary / secondary / accent3..6 を 6 桁大文字 hex で返す)
 - `ThemeTokens`, `FALLBACK_THEME_TOKENS`

@@ -84,6 +84,8 @@ if (diagnostics.length > 0) {
 }
 ```
 
+`WritablePptx` は PPTX 出力専用の facade です。以前の戻り値に含まれていた pptxgenjs の編集 API は提供しません。スライド内容は XML、マスター内容は `SlideMasterOptions` で指定してください。
+
 ### Diagnostic Codes
 
 Each `Diagnostic` has a `code` and a human-readable `message`. Diagnostics are warnings — the build itself completes unless `strict: true` is set.
