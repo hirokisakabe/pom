@@ -28,6 +28,17 @@ interface OverflowResult {
   /** スライド高さ / コンテンツ高さ（オーバーフロー時 < 1） */
   targetRatio: number;
   map: YogaNodeMap;
+  furthestNode?: ContentHeightResult["furthestNode"];
+}
+
+interface ContentHeightResult {
+  contentHeight: number;
+  furthestNode?: {
+    type: POMNode["type"];
+    top: number;
+    height: number;
+    bottom: number;
+  };
 }
 
 /**
@@ -39,43 +50,107 @@ async function measureOverflow(
   ctx: BuildContext,
 ): Promise<OverflowResult> {
   const map = await calcYogaLayout(node, slideSize, ctx);
-  const contentHeight = calcContentHeight(map, node);
+  const { contentHeight, furthestNode } = calcContentHeight(map, node);
   const isOverflowing = contentHeight > slideSize.h * OVERFLOW_TOLERANCE;
   const targetRatio = isOverflowing ? slideSize.h / contentHeight : 1;
-  return { contentHeight, isOverflowing, targetRatio, map };
+  return { contentHeight, isOverflowing, targetRatio, map, furthestNode };
 }
 
 /**
- * Yoga レイアウト結果からコンテンツの占有高さを算出する。
+ * Yoga レイアウトと Layer の絶対座標からコンテンツの占有高さを算出する。
  *
- * ルートの yogaNode の子要素の (top + height) の最大値を計算し、
- * ルートの padding.bottom を加算してコンテンツの占有高さとする。
+ * 描画時と同じ規則で各ノードの (y + h) を再帰的に計算し、ルートの
+ * padding.bottom を加算する。Layer では absolute child の y、Line では
+ * y1/y2 を使うため、Yoga の通常フローによる過大計測を避けられる。
  * h="max" や flexGrow の影響を受けず、正確なコンテンツ高さを返す。
  */
-function calcContentHeight(map: YogaNodeMap, node: POMNode): number {
+function calcContentHeight(
+  map: YogaNodeMap,
+  node: POMNode,
+): ContentHeightResult {
   const rootYoga = map.get(node);
   if (!rootYoga) {
     throw new Error("YogaNode not found in map for root node");
   }
 
-  const childCount = rootYoga.getChildCount();
-  if (childCount === 0) {
-    return rootYoga.getComputedHeight();
+  const rootLayout = rootYoga.getComputedLayout();
+  const furthestNode = findFurthestChild(map, node, rootLayout.top);
+  if (!furthestNode) {
+    return { contentHeight: rootYoga.getComputedHeight() };
   }
 
-  let maxBottom = 0;
-  for (let i = 0; i < childCount; i++) {
-    const child = rootYoga.getChild(i);
-    const childLayout = child.getComputedLayout();
-    const bottom = childLayout.top + childLayout.height;
-    if (bottom > maxBottom) {
-      maxBottom = bottom;
+  const paddingBottom = rootYoga.getComputedPadding(2); // EDGE_BOTTOM = 2
+  return {
+    contentHeight: furthestNode.bottom + paddingBottom,
+    furthestNode,
+  };
+}
+
+function findFurthestChild(
+  map: YogaNodeMap,
+  parent: POMNode,
+  parentY: number,
+): ContentHeightResult["furthestNode"] {
+  if (!("children" in parent) || !Array.isArray(parent.children)) {
+    return undefined;
+  }
+
+  let furthest: ContentHeightResult["furthestNode"];
+  for (const child of parent.children as POMNode[]) {
+    const candidate = measureNodeBounds(map, child, parent, parentY);
+    if (candidate && (!furthest || candidate.bottom > furthest.bottom)) {
+      furthest = candidate;
     }
   }
+  return furthest;
+}
 
-  // ルートの paddingBottom を加算
-  const paddingBottom = rootYoga.getComputedPadding(2); // EDGE_BOTTOM = 2
-  return maxBottom + paddingBottom;
+function measureNodeBounds(
+  map: YogaNodeMap,
+  node: POMNode,
+  parent: POMNode,
+  parentY: number,
+): ContentHeightResult["furthestNode"] {
+  if (node.type === "line") {
+    // Line の端点は通常はスライド絶対座標。Layer 直下だけ Layer 相対になる。
+    const offsetY =
+      parent.type === "layer" ? parentY + getLayerChildY(node) : 0;
+    const top = offsetY + Math.min(node.y1, node.y2);
+    const height = Math.abs(node.y2 - node.y1);
+    return { type: node.type, top, height, bottom: top + height };
+  }
+
+  const yogaNode = map.get(node);
+  if (!yogaNode) {
+    throw new Error(`YogaNode not found in map for ${node.type} node`);
+  }
+  const layout = yogaNode.getComputedLayout();
+  const top =
+    parent.type === "layer"
+      ? parentY + getLayerChildY(node)
+      : parentY + layout.top;
+
+  let furthest: ContentHeightResult["furthestNode"];
+  // Layer の Yoga height は absolute children の通常フロー合計なので、
+  // 明示サイズがある場合だけコンテナ自身の描画境界として採用する。
+  if (node.type !== "layer" || node.h !== undefined) {
+    furthest = {
+      type: node.type,
+      top,
+      height: layout.height,
+      bottom: top + layout.height,
+    };
+  }
+
+  const descendant = findFurthestChild(map, node, top);
+  if (descendant && (!furthest || descendant.bottom > furthest.bottom)) {
+    furthest = descendant;
+  }
+  return furthest;
+}
+
+function getLayerChildY(node: POMNode): number {
+  return (node as POMNode & { y?: number }).y ?? 0;
 }
 
 /**
@@ -121,9 +196,12 @@ async function finalizeLayout(
 ): Promise<YogaNodeMap> {
   const result = await measureOverflow(node, slideSize, ctx);
   if (result.isOverflowing) {
+    const detail = result.furthestNode
+      ? ` Furthest node: ${result.furthestNode.type} at y=${Math.round(result.furthestNode.top)}px with height=${Math.round(result.furthestNode.height)}px (bottom=${Math.round(result.furthestNode.bottom)}px).`
+      : "";
     ctx.diagnostics.add(
       "AUTOFIT_OVERFLOW",
-      `autoFit: content height (${Math.round(result.contentHeight)}px) exceeds slide height (${slideSize.h}px) after all adjustments.`,
+      `autoFit: content height (${Math.round(result.contentHeight)}px) exceeds slide height (${slideSize.h}px) after all adjustments.${detail}`,
     );
   }
   freeYogaTree(result.map);
