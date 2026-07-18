@@ -64,6 +64,7 @@ function applyListYogaStyle(
         fontWeight,
       },
       ctx.textMeasurementMode,
+      ctx.fontRegistry,
     );
 
     return {

@@ -63,7 +63,7 @@ Existing PPTX reading and structural round-trip work should treat `@pptx-glimpse
 - `buildPptx(xml, slideSize, options?)` — XML string → PPTX
 - `BuildPptxResult`, `ParseXmlError`, `DiagnosticsError`, `Diagnostic`, `DiagnosticCode`
 - `WritablePptx` — `buildPptx()` の出力 facade (`write` / `writeFile` / `stream`)
-- `TextMeasurementMode` (`"opentype"` | `"fallback"` | `"auto"`), `SlideMasterOptions`
+- `TextMeasurementMode` (`"opentype"` | `"fallback"` | `"auto"`), `FontInput` (`ArrayBuffer` / `Uint8Array` の layout measurement 用 font data), `SlideMasterOptions`
 - `extractThemeTokensFromPptx(buffer)` — PPTX bytes → `ThemeTokens[]` (`slideMaster` 配下の表示 layout 順に、text / background / primary / secondary / accent3..6 を 6 桁大文字 hex で返す)
 - `ThemeTokens`, `FALLBACK_THEME_TOKENS`
 - `extractSlideMastersAsPptx(buffer)` — PPTX bytes → PPTX bytes (`Promise<ArrayBuffer>`)。各 slideMaster 配下の表示 layout ごとに空白スライド 1 枚だけを持つ PPTX に変換する。列挙順は `extractThemeTokensFromPptx` と同一なので、両者の出力配列を zip してスライドとテーマをペアにできる

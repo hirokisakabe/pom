@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { measureText } from "./measureText.ts";
+import { FontRegistry } from "./fontLoader.ts";
+import {
+  CUSTOM_FONT_BOLD,
+  CUSTOM_FONT_REGULAR,
+  CUSTOM_FONT_WITHOUT_ALIAS,
+} from "../testFixtures/customFont.ts";
 
 describe("measureText", () => {
   describe("フォントファミリーによる計測方法の切り替え", () => {
@@ -148,6 +154,193 @@ describe("measureText", () => {
       );
 
       expect(spaced.heightPx).toBeGreaterThan(base.heightPx);
+    });
+  });
+
+  describe("custom font registry", () => {
+    it("alias を case-insensitive に解決して実 advance width を使う", () => {
+      const registry = new FontRegistry([CUSTOM_FONT_REGULAR]);
+      const custom = measureText(
+        "Hello World",
+        Number.POSITIVE_INFINITY,
+        { fontFamily: "cUsToM fIxTuRe", fontSizePx: 24 },
+        "auto",
+        registry,
+      );
+      const bundled = measureText("Hello World", Number.POSITIVE_INFINITY, {
+        fontFamily: "Noto Sans JP",
+        fontSizePx: 24,
+      });
+
+      expect(custom).toEqual(bundled);
+
+      const interRegistry = new FontRegistry([
+        { ...CUSTOM_FONT_REGULAR, name: "Inter" },
+      ]);
+      expect(interRegistry.hasFont("inter", "normal")).toBe(true);
+    });
+
+    it("name 未指定時は font 内部の family 名で解決する", () => {
+      const registry = new FontRegistry([CUSTOM_FONT_WITHOUT_ALIAS]);
+      const custom = measureText(
+        "Hello World",
+        Number.POSITIVE_INFINITY,
+        { fontFamily: "Noto Sans CJK JP", fontSizePx: 24 },
+        "auto",
+        registry,
+      );
+      const bundled = measureText("Hello World", Number.POSITIVE_INFINITY, {
+        fontFamily: "Noto Sans JP",
+        fontSizePx: 24,
+      });
+
+      expect(custom).toEqual(bundled);
+    });
+
+    it("custom metrics を wrapping に使う", () => {
+      const registry = new FontRegistry([CUSTOM_FONT_REGULAR]);
+      const unwrapped = measureText(
+        "Hello World",
+        Number.POSITIVE_INFINITY,
+        { fontFamily: "Custom Fixture", fontSizePx: 24 },
+        "auto",
+        registry,
+      );
+      const wrapped = measureText(
+        "Hello World",
+        unwrapped.widthPx - 11,
+        { fontFamily: "Custom Fixture", fontSizePx: 24 },
+        "auto",
+        registry,
+      );
+
+      expect(wrapped.heightPx).toBeGreaterThan(unwrapped.heightPx);
+    });
+
+    it("bold face を使い、未登録時は regular face に戻る", () => {
+      const regularOnly = new FontRegistry([CUSTOM_FONT_REGULAR]);
+      const withBold = new FontRegistry([
+        CUSTOM_FONT_REGULAR,
+        CUSTOM_FONT_BOLD,
+      ]);
+      const options = {
+        fontFamily: "Custom Fixture",
+        fontSizePx: 48,
+        fontWeight: "bold" as const,
+      };
+      const regularFallback = measureText(
+        "WWW Hello",
+        Number.POSITIVE_INFINITY,
+        options,
+        "auto",
+        regularOnly,
+      );
+      const bold = measureText(
+        "WWW Hello",
+        Number.POSITIVE_INFINITY,
+        options,
+        "auto",
+        withBold,
+      );
+      const regular = measureText(
+        "WWW Hello",
+        Number.POSITIVE_INFINITY,
+        { ...options, fontWeight: "normal" },
+        "auto",
+        regularOnly,
+      );
+
+      expect(regularFallback).toEqual(regular);
+      expect(bold.widthPx).not.toBe(regular.widthPx);
+    });
+
+    it("weight 未指定時は font metadata から bold を判定する", () => {
+      const registry = new FontRegistry([
+        { ...CUSTOM_FONT_BOLD, weight: undefined },
+        CUSTOM_FONT_REGULAR,
+      ]);
+      const inferred = measureText(
+        "WWW Hello",
+        Number.POSITIVE_INFINITY,
+        {
+          fontFamily: "Custom Fixture",
+          fontSizePx: 48,
+          fontWeight: "bold",
+        },
+        "auto",
+        registry,
+      );
+      const bundledBold = measureText("WWW Hello", Number.POSITIVE_INFINITY, {
+        fontFamily: "Noto Sans JP",
+        fontSizePx: 48,
+        fontWeight: "bold",
+      });
+      const inferredRegular = measureText(
+        "WWW Hello",
+        Number.POSITIVE_INFINITY,
+        {
+          fontFamily: "Custom Fixture",
+          fontSizePx: 48,
+          fontWeight: "normal",
+        },
+        "auto",
+        registry,
+      );
+      const bundledRegular = measureText(
+        "WWW Hello",
+        Number.POSITIVE_INFINITY,
+        { fontFamily: "Noto Sans JP", fontSizePx: 48 },
+      );
+
+      expect(inferred).toEqual(bundledBold);
+      expect(inferredRegular).toEqual(bundledRegular);
+    });
+
+    it.each([600, 800, 900])(
+      "numeric weight %i は bold face を選択する",
+      (weight) => {
+        const registry = new FontRegistry([
+          CUSTOM_FONT_REGULAR,
+          { ...CUSTOM_FONT_BOLD, weight: 600 },
+        ]);
+        const custom = measureText(
+          "WWW Hello",
+          Number.POSITIVE_INFINITY,
+          {
+            fontFamily: "Custom Fixture",
+            fontSizePx: 48,
+            fontWeight: weight,
+          },
+          "auto",
+          registry,
+        );
+        const bundledBold = measureText("WWW Hello", Number.POSITIVE_INFINITY, {
+          fontFamily: "Noto Sans JP",
+          fontSizePx: 48,
+          fontWeight: "bold",
+        });
+
+        expect(custom).toEqual(bundledBold);
+      },
+    );
+
+    it("fallback mode は登録済み font も heuristic で計測する", () => {
+      const registry = new FontRegistry([CUSTOM_FONT_REGULAR]);
+      const customFallback = measureText(
+        "Hello World",
+        Number.POSITIVE_INFINITY,
+        { fontFamily: "Custom Fixture", fontSizePx: 24 },
+        "fallback",
+        registry,
+      );
+      const unregisteredFallback = measureText(
+        "Hello World",
+        Number.POSITIVE_INFINITY,
+        { fontFamily: "Unregistered", fontSizePx: 24 },
+        "fallback",
+      );
+
+      expect(customFallback).toEqual(unregisteredFallback);
     });
   });
 });

@@ -57,18 +57,29 @@ const resvgModulePlugin = {
     build.onLoad({ filter: /renderIcon\.js$/ }, async (args) => {
       if (!args.path.endsWith(targetSuffix)) return undefined;
       let contents = await fs.promises.readFile(args.path, "utf8");
-      const original = contents;
-      // 動的 require を静的 require に書き換え
-      contents = contents.replace(
-        /const mod = getNodeRequire\(\)\(RESVG_PKG\)/,
-        'const mod = require("@resvg/resvg-wasm")',
-      );
-      if (contents === original) {
+      const dynamicModulePattern =
+        /const mod = (?:getNodeRequire\(\)\(RESVG_PKG\)|require\(RESVG_PKG\))/;
+      if (!dynamicModulePattern.test(contents)) {
         throw new Error(
           "Failed to patch renderIcon.js: dynamic require pattern not found. " +
             "The upstream code in @hirokisakabe/pom may have changed.",
         );
       }
+      // 現行の renderIcon.js は Node 用 resolver を `require` というローカル変数に
+      // 保持する。そのままでは下の静的 require も shadow されるため、先に改名する。
+      contents = contents.replace(
+        /const require = getNodeRequire\(createRequire\);/,
+        "const nodeRequire = getNodeRequire(createRequire);",
+      );
+      contents = contents.replace(
+        /resolveWasmPath\(require\)/g,
+        "resolveWasmPath(nodeRequire)",
+      );
+      // 動的 require を静的 require に書き換え
+      contents = contents.replace(
+        dynamicModulePattern,
+        'const mod = require("@resvg/resvg-wasm")',
+      );
       // このプラグインが先に処理するため importMetaPlugin が適用されない。
       // CJS バンドルで import.meta.url が空になる問題を同様に解消する。
       // fileURLToPath(import.meta.url) → __filename（既にパスなので変換不要）

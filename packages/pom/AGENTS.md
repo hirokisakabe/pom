@@ -61,9 +61,9 @@ Text width measurement uses `opentype.js`. The Noto Sans JP font is bundled with
 - `packages/pom/src/calcYogaLayout/fontLoader.ts` - Font loading (opentype.js)
 - `packages/pom/src/calcYogaLayout/fonts/` - Bundled fonts (Base64)
 - The `textMeasurement` option in `buildPptx` allows explicit specification of the measurement method
-  - `"opentype"`: Always measure with opentype.js (default)
+  - `"opentype"`: Always measure with opentype.js; unregistered fonts use bundled Noto Sans JP metrics
   - `"fallback"`: Always use fallback calculation (CJK characters = 1em, alphanumeric = 0.5em)
-  - `"auto"`: Measure with opentype.js (default)
+  - `"auto"`: Measure bundled or registered fonts with opentype.js and use fallback for unregistered fonts (default)
 
 ### Unit Conversion
 

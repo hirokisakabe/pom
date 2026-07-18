@@ -1,11 +1,15 @@
-import { describe, expect, expectTypeOf, it, vi } from "vitest";
+import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import JSZip from "jszip";
 import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildPptx } from "./buildPptx.ts";
+import { buildPptx, type FontInput } from "./buildPptx.ts";
 import { DiagnosticsError } from "./diagnostics.ts";
 import * as measureTextModule from "./calcYogaLayout/measureText.ts";
+import {
+  CUSTOM_FONT_BOLD,
+  CUSTOM_FONT_REGULAR,
+} from "./testFixtures/customFont.ts";
 import {
   createWritablePptx,
   type PptxOutputType,
@@ -17,6 +21,15 @@ const ONE_BY_ONE_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lU9qJwAAAABJRU5ErkJggg==",
   "base64",
 );
+
+type GlimpseCompatibleFontBuffer = {
+  name?: string;
+  data: ArrayBuffer | Uint8Array;
+};
+
+expectTypeOf<GlimpseCompatibleFontBuffer>().toMatchTypeOf<FontInput>();
+
+afterEach(() => vi.restoreAllMocks());
 
 describe("buildPptx 並列実行", () => {
   const slideSize = { w: 1280, h: 720 };
@@ -79,6 +92,78 @@ describe("buildPptx 並列実行", () => {
 
     expect(result1.pptx).toBeDefined();
     expect(result2.pptx).toBeDefined();
+  });
+
+  it("異なる custom font registry で並列実行しても干渉しない", async () => {
+    const spy = vi.spyOn(measureTextModule, "measureText");
+    const regularXml = `<Slide><Text fontFamily="Parallel Regular">WWW Hello</Text></Slide>`;
+    const boldXml = `<Slide><Text fontFamily="Parallel Bold">WWW Hello</Text></Slide>`;
+
+    await Promise.all([
+      buildPptx(regularXml, slideSize, {
+        autoFit: false,
+        fonts: [{ ...CUSTOM_FONT_REGULAR, name: "Parallel Regular" }],
+      }),
+      buildPptx(boldXml, slideSize, {
+        autoFit: false,
+        fonts: [
+          {
+            ...CUSTOM_FONT_BOLD,
+            name: "Parallel Bold",
+            weight: "normal",
+          },
+        ],
+      }),
+    ]);
+
+    const regularCall = spy.mock.calls.find(
+      ([, , options]) => options.fontFamily === "Parallel Regular",
+    );
+    const boldCall = spy.mock.calls.find(
+      ([, , options]) => options.fontFamily === "Parallel Bold",
+    );
+    expect(regularCall?.[4]).toBeDefined();
+    expect(boldCall?.[4]).toBeDefined();
+    expect(regularCall?.[4]).not.toBe(boldCall?.[4]);
+    expect(regularCall?.[4]?.hasFont("Parallel Regular", "normal")).toBe(true);
+    expect(boldCall?.[4]?.hasFont("Parallel Bold", "normal")).toBe(true);
+    expect(regularCall?.[4]?.hasFont("Parallel Bold", "normal")).toBe(false);
+    expect(boldCall?.[4]?.hasFont("Parallel Regular", "normal")).toBe(false);
+
+    spy.mockRestore();
+  });
+});
+
+describe("buildPptx custom fonts", () => {
+  it("Text / Ul / Ol / Shape の計測経路へ registry を渡す", async () => {
+    const spy = vi.spyOn(measureTextModule, "measureText");
+    const xml = `<Slide><VStack>
+      <Text fontFamily="Custom Fixture">Text</Text>
+      <Ul fontFamily="Custom Fixture"><Li>Ul</Li></Ul>
+      <Ol fontFamily="Custom Fixture"><Li>Ol</Li></Ol>
+      <Shape shapeType="rect" text="Shape" fontFamily="Custom Fixture" />
+    </VStack></Slide>`;
+
+    await buildPptx(
+      xml,
+      { w: 1280, h: 720 },
+      {
+        autoFit: false,
+        fonts: [CUSTOM_FONT_REGULAR],
+      },
+    );
+
+    const customCalls = spy.mock.calls.filter(
+      ([, , options]) => options.fontFamily === "Custom Fixture",
+    );
+    expect(customCalls).toHaveLength(4);
+    for (const expectedText of ["Text", "Ul", "Ol", "Shape"]) {
+      expect(customCalls.some(([text]) => text === expectedText)).toBe(true);
+    }
+    expect(
+      customCalls.every((call) => call[4]?.hasFont("Custom Fixture", "normal")),
+    ).toBe(true);
+    spy.mockRestore();
   });
 });
 

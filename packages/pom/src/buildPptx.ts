@@ -2,6 +2,7 @@ import { autoFitSlide } from "./autoFit/autoFit.ts";
 import { createBuildContext } from "./buildContext.ts";
 import { calcYogaLayout } from "./calcYogaLayout/calcYogaLayout.ts";
 import type { TextMeasurementMode } from "./calcYogaLayout/measureText.ts";
+import type { FontInput } from "./calcYogaLayout/fontLoader.ts";
 import type { YogaNodeMap } from "./calcYogaLayout/types.ts";
 import { extractLayoutResults } from "./calcYogaLayout/types.ts";
 import type { Diagnostic } from "./diagnostics.ts";
@@ -16,7 +17,7 @@ import { toPositioned } from "./toPositioned/toPositioned.ts";
 import { PositionedNode, SlideMasterOptions } from "./types.ts";
 import { validatePositioned } from "./validatePositioned/validatePositioned.ts";
 
-export type { TextMeasurementMode };
+export type { FontInput, TextMeasurementMode };
 
 export interface BuildPptxResult {
   pptx: WritablePptx;
@@ -30,11 +31,15 @@ export async function buildPptx(
     master?: SlideMasterOptions;
     masterPptx?: ArrayBuffer | Uint8Array;
     textMeasurement?: TextMeasurementMode;
+    fonts?: FontInput[];
     autoFit?: boolean;
     strict?: boolean;
   },
 ): Promise<BuildPptxResult> {
-  const ctx = createBuildContext(options?.textMeasurement ?? "auto");
+  const ctx = createBuildContext(
+    options?.textMeasurement ?? "auto",
+    options?.fonts,
+  );
 
   const nodes = parseXml(xml);
   const positionedPages: PositionedNode[] = [];
