@@ -10,6 +10,7 @@ import { extractLayoutResults } from "../calcYogaLayout/types.ts";
 import { freeYogaTree } from "../shared/freeYogaTree.ts";
 import { toPositioned } from "../toPositioned/toPositioned.ts";
 import type { POMNode, PositionedNode } from "../types.ts";
+import { parseXml } from "../parseXml/parseXml.ts";
 
 // ===== walkTree =====
 describe("walkPOMTree", () => {
@@ -332,7 +333,8 @@ describe("autoFitSlide", () => {
     if (!("children" in node)) {
       return node.y + node.h;
     }
-    return Math.max(...node.children.map(maxPositionedLeafBottom));
+    const children = node.children as PositionedNode[];
+    return Math.max(...children.map(maxPositionedLeafBottom));
   }
 
   it("オーバーフローしないコンテンツは変更しない", async () => {
@@ -401,23 +403,16 @@ describe("autoFitSlide", () => {
     expect(ctx.diagnostics.items[0].message).toContain("autoFit");
   });
 
-  it("Layer の配置境界と Yoga content height が乖離する現行挙動を再現する", async () => {
-    const node: POMNode = {
-      type: "layer",
-      children: [
-        { type: "shape", shapeType: "rect", x: 0, y: 0, h: 357 },
-        { type: "shape", shapeType: "rect", x: 0, y: 0, h: 357 },
-        {
-          type: "text",
-          text: "COPYRIGHT 2026",
-          x: 0,
-          y: 674,
-          w: 100,
-          fontSize: 10,
-          letterSpacing: 3,
-        },
-      ],
-    };
+  it("Layer + letterSpacing 付き Text が境界内なら警告を出さない", async () => {
+    const [node] = parseXml(`
+      <Slide>
+        <Layer>
+          <Shape shapeType="rect" x="0" y="0" h="357" />
+          <Shape shapeType="rect" x="0" y="0" h="357" />
+          <Text x="0" y="674" w="100" fontSize="10" letterSpacing="3">COPYRIGHT 2026</Text>
+        </Layer>
+      </Slide>
+    `);
     const ctx = createBuildContext("fallback");
     const map = await autoFitSlide(node, slideSize, ctx);
 
@@ -428,10 +423,36 @@ describe("autoFitSlide", () => {
         extractLayoutResults(map),
       );
       expect(maxPositionedLeafBottom(positioned)).toBe(700);
+      expect(ctx.diagnostics.items).toEqual([]);
+    } finally {
+      freeYogaTree(map);
+    }
+  });
+
+  it("Layer の実 overflow では原因ノードと計測値を警告に含める", async () => {
+    const [node] = parseXml(`
+      <Slide>
+        <Layer>
+          <Text x="0" y="710" w="100" fontSize="10" letterSpacing="3">COPYRIGHT 2026</Text>
+        </Layer>
+      </Slide>
+    `);
+    const ctx = createBuildContext("fallback");
+    const map = await autoFitSlide(node, slideSize, ctx);
+
+    try {
+      const positioned = await toPositioned(
+        node,
+        ctx,
+        extractLayoutResults(map),
+      );
+      expect(maxPositionedLeafBottom(positioned)).toBe(736);
       expect(ctx.diagnostics.items).toEqual([
         expect.objectContaining({
           code: "AUTOFIT_OVERFLOW",
-          message: expect.stringContaining("content height (740px)"),
+          message: expect.stringContaining(
+            "Furthest node: text at y=710px with height=26px (bottom=736px)",
+          ),
         }),
       ]);
     } finally {
