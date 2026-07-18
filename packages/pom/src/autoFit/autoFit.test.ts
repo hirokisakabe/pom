@@ -484,11 +484,13 @@ describe("autoFitSlide", () => {
     }
   });
 
-  it("Layer 内 Line の実境界を overflow diagnostic に含める", async () => {
+  it("ネストした Layer 内 Line の実境界を overflow diagnostic に含める", async () => {
     const [node] = parseXml(`
       <Slide>
         <Layer>
-          <Line x1="0" y1="0" x2="100" y2="730" />
+          <Layer x="0" y="100">
+            <Line x1="0" y1="0" x2="100" y2="630" />
+          </Layer>
         </Layer>
       </Slide>
     `);
@@ -499,8 +501,25 @@ describe("autoFitSlide", () => {
       expect(ctx.diagnostics.items).toHaveLength(1);
       expect(ctx.diagnostics.items[0].code).toBe("AUTOFIT_OVERFLOW");
       expect(ctx.diagnostics.items[0].message).toContain(
-        "Furthest node: line at y=0px with height=730px (bottom=730px)",
+        "Furthest node: line at y=100px with height=630px (bottom=730px)",
       );
+    } finally {
+      freeYogaTree(map);
+    }
+  });
+
+  it("空コンテナ自身が境界外なら overflow と判定する", async () => {
+    const [node] = parseXml(`
+      <Slide>
+        <VStack h="730" />
+      </Slide>
+    `);
+    const ctx = createBuildContext("fallback");
+    const map = await autoFitSlide(node, slideSize, ctx);
+
+    try {
+      expect(ctx.diagnostics.items).toHaveLength(1);
+      expect(ctx.diagnostics.items[0].code).toBe("AUTOFIT_OVERFLOW");
     } finally {
       freeYogaTree(map);
     }
