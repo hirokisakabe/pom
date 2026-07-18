@@ -149,6 +149,16 @@ describe("buildPptx diagnostics", () => {
     expect(result.pptx).toBeDefined();
   });
 
+  it("Arrow が connector 非対応 node を参照する場合 ARROW_REF_NOT_CONNECTABLE が記録される", async () => {
+    const xml = `<Slide><Layer id="container" w="1280" h="720"><Shape id="target" x="100" y="100" w="120" h="40" shapeType="rect"/><Arrow x="0" y="0" from="container" to="target" /></Layer></Slide>`;
+    const result = await buildPptx(xml, slideSize, { autoFit: false });
+    expect(result.diagnostics).toContainEqual({
+      code: "ARROW_REF_NOT_CONNECTABLE",
+      message:
+        'Arrow: ID "container" does not reference a connector-compatible Shape or Text node',
+    });
+  });
+
   it("Theme トークン参照を含む XML をビルドできる", async () => {
     const xml = `
       <Theme surface="1E293B" accent="38BDF8" textMain="F8FAFC" />

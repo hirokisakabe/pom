@@ -6,6 +6,7 @@ import {
   type AddShapeOutlineInput,
   type SourceArrowEndpoint,
   type SourceDashStyle,
+  type SourceHandle,
 } from "@pptx-glimpse/document";
 import type { BorderStyle, ShadowStyle, TextGlow } from "../../types.ts";
 import { parseGradient } from "../../shared/gradient.ts";
@@ -124,8 +125,8 @@ export function addGlimpseShape(
   input: AddShapeInput,
   bounds: ShapeBoundsPx,
   options?: GlimpseShapeStyleOptions & { name?: string },
-): void {
-  ctx.buildContext.pptxAuthoring.registerShape(input, {
+): SourceHandle {
+  return ctx.buildContext.pptxAuthoring.registerShape(input, {
     ...options,
     zeroWidth: bounds.w === 0,
     zeroHeight: bounds.h === 0,

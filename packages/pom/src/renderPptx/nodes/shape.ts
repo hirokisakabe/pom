@@ -106,7 +106,7 @@ export function renderShapeNode(
       ? 1 - node.fill.transparency / 100
       : undefined;
 
-  addGlimpseShape(
+  const handle = addGlimpseShape(
     ctx,
     {
       geometry: { kind: "preset", preset: node.shapeType },
@@ -140,4 +140,7 @@ export function renderShapeNode(
       dashType: lineSpec?.dashType,
     },
   );
+  if (node.id && ctx.idNodeMap.get(node.id) === node) {
+    ctx.connectorTargetMap.set(node.id, { handle, bounds: boundsPx });
+  }
 }

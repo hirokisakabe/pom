@@ -31,21 +31,26 @@ import { createWritablePptx } from "./writablePptx.ts";
 
 type SlidePx = { w: number; h: number };
 
-function buildIdPositionMap(
+function buildIdMaps(
   node: PositionedNode,
   diagnostics: import("../buildContext.ts").BuildContext["diagnostics"],
-): Map<string, NodeBounds> {
-  const map = new Map<string, NodeBounds>();
+): {
+  positions: Map<string, NodeBounds>;
+  nodes: Map<string, PositionedNode>;
+} {
+  const positions = new Map<string, NodeBounds>();
+  const nodes = new Map<string, PositionedNode>();
 
   function traverse(n: PositionedNode) {
     if (n.id) {
-      if (map.has(n.id)) {
+      if (positions.has(n.id)) {
         diagnostics.add(
           "DUPLICATE_NODE_ID",
           `Duplicate node id "${n.id}" — only the first occurrence will be used for Arrow references`,
         );
       } else {
-        map.set(n.id, { x: n.x, y: n.y, w: n.w, h: n.h });
+        positions.set(n.id, { x: n.x, y: n.y, w: n.w, h: n.h });
+        nodes.set(n.id, n);
       }
     }
     if (n.type === "vstack" || n.type === "hstack" || n.type === "layer") {
@@ -56,7 +61,7 @@ function buildIdPositionMap(
   }
 
   traverse(node);
-  return map;
+  return { positions, nodes };
 }
 
 /**
@@ -273,8 +278,14 @@ export function renderPptx(
     if (!slideHandle)
       throw new Error(`slide handle was not found: ${pageIndex + 1}`);
     buildContext.pptxAuthoring.selectSlide(slideHandle);
-    const idPositionMap = buildIdPositionMap(data, buildContext.diagnostics);
-    const ctx: RenderContext = { buildContext, idPositionMap };
+    const idMaps = buildIdMaps(data, buildContext.diagnostics);
+    const ctx: RenderContext = {
+      buildContext,
+      idPositionMap: idMaps.positions,
+      idNodeMap: idMaps.nodes,
+      connectorTargetMap: new Map(),
+    };
+    const deferredArrows: Extract<PositionedNode, { type: "arrow" }>[] = [];
 
     // ルートノードの backgroundColor はスライドの background プロパティとして適用
     // これにより、マスタースライドのオブジェクトを覆い隠さない
@@ -321,8 +332,15 @@ export function renderPptx(
      * @param isRoot ルートノードかどうか（ルートノードの background は slide.background で処理済み）
      */
     function renderNode(node: PositionedNode, isRoot = false) {
-      // line/arrow ノードは backgroundColor/border を持たないため、background/border の描画をスキップ
-      if (node.type !== "line" && node.type !== "arrow") {
+      // Native connector は接続先の authored shape handle が必要なため、
+      // 通常ノードをすべて追加した後にまとめて描画する。
+      if (node.type === "arrow") {
+        deferredArrows.push(node);
+        return;
+      }
+
+      // Arrow は上で defer 済み。Line は backgroundColor/border を持たない。
+      if (node.type !== "line") {
         // ルートノードの backgroundColor/backgroundImage は既に slide.background に適用済みなのでスキップ
         // ただし opacity がある場合は slide.background では透過を表現できないため通常描画
         if (
@@ -365,7 +383,19 @@ export function renderPptx(
     }
 
     renderNode(data, true); // ルートノードとして処理
+    for (const arrow of deferredArrows) {
+      renderArrowNodeFromRegistry(arrow, ctx);
+    }
   }
 
   return createWritablePptx(() => buildContext.pptxAuthoring.source);
+}
+
+function renderArrowNodeFromRegistry(
+  node: Extract<PositionedNode, { type: "arrow" }>,
+  ctx: RenderContext,
+): void {
+  const def = getNodeDef("arrow");
+  if (!def.render) throw new Error("No render function registered for Arrow");
+  def.render(node, ctx);
 }

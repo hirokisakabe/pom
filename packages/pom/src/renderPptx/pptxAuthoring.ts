@@ -1,5 +1,6 @@
 import {
   addChart,
+  addConnector,
   addPicture,
   addShape,
   addTable,
@@ -12,6 +13,7 @@ import {
   createPptx,
   setSlideBackground,
   type AddChartInput,
+  type AddConnectorInput,
   type AddPictureInput,
   type AddShapeColorInput,
   type AddShapeCustomGeometryPathCommandInput,
@@ -431,6 +433,7 @@ export class PptxAuthoringRegistry {
   private pictureCount = 0;
   private tableCount = 0;
   private chartCount = 0;
+  private connectorCount = 0;
 
   constructor() {
     const source = createPptx();
@@ -471,9 +474,9 @@ export class PptxAuthoringRegistry {
     return this.currentSlideHandle;
   }
 
-  register(node: TextPositionedNode): void {
+  register(node: TextPositionedNode): SourceHandle {
     const textOptions = createTextOptions(node);
-    this.registerTextBox({
+    return this.registerTextBox({
       offsetX: asEmu(Math.round(textOptions.x * EMU_PER_IN)),
       offsetY: asEmu(Math.round(textOptions.y * EMU_PER_IN)),
       width: asEmu(Math.round(textOptions.w * EMU_PER_IN)),
@@ -501,25 +504,47 @@ export class PptxAuthoringRegistry {
       name?: string;
       hyperlinks?: readonly (string | undefined)[];
     },
-  ): void {
+  ): SourceHandle {
     const name = options?.name ?? `Text ${++this.textCount}`;
     this.currentSource = addTextBox(
       this.source,
       this.target,
       applyHyperlinks({ ...input, name }, options?.hyperlinks),
     );
+    return this.latestTargetShapeHandle();
   }
 
   registerShape(
     input: AddShapeInput,
     options?: GlimpseShapeXmlOptions & { name?: string },
-  ): void {
+  ): SourceHandle {
     const name = options?.name ?? `Shape ${++this.shapeCount}`;
     this.currentSource = addShape(
       this.source,
       this.target,
       enrichShapeInput({ ...input, name }, options),
     );
+    return this.latestTargetShapeHandle();
+  }
+
+  registerConnector(input: AddConnectorInput): SourceHandle {
+    const name = input.name ?? `Connector ${++this.connectorCount}`;
+    this.currentSource = addConnector(this.source, this.target, {
+      ...input,
+      name,
+    });
+    return this.latestTargetShapeHandle();
+  }
+
+  private latestTargetShapeHandle(): SourceHandle {
+    const target = [
+      ...this.source.slides,
+      ...this.source.slideLayouts,
+      ...this.source.slideMasters,
+    ].find((candidate) => candidate.partPath === this.target.partPath);
+    const handle = target?.shapes.at(-1)?.handle;
+    if (!handle) throw new Error("authored shape handle was not found");
+    return handle;
   }
 
   registerPicture(
