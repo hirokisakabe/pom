@@ -4,7 +4,7 @@
   "ignoreBinaries": ["eslint", "knip", "prettier", "tsc", "vitest"],
   "ignoreDependencies": ["vitest", "sharp"],
   "vitest": {
-    "config": ["vitest.config.ts"]
+    "config": ["vitest.config.ts", "vitest.showcase.config.ts"]
   },
   "rules": {
     "exports": "warn"
