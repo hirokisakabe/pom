@@ -48,10 +48,10 @@ metadata:
 編集後は部分的な XML 断片ではなく、保存したファイル全体を strict validator に通す。
 
 1. `pom build <ファイル名> -o /tmp/pom-validation.pptx` を実行する。pom-cli を使えないがライブラリを呼べる環境では、同等の `buildPptx(xml, slideSize, { strict: true })` を使ってよい
-2. 成功するまで diagnostics の slide 番号とノード情報を確認する
+2. diagnostics の slide 番号とノード情報を確認し、変更対象に起因する diagnostics がなくなるまで再検証する
 3. validation が変更・追加した slide の問題で失敗した場合は、該当する `<Slide>` だけを自己修正し、ファイル全体を再検証する。対象外 slide や `<Theme>` をついでに変更しない
-4. 全体再生成では diagnostics が示す slide だけを順に修正して再検証する。部分更新で対象外 slide の既存問題が報告された場合は、無断で修正せず残課題として報告する
-5. strict validation が成功したら Step 6 のセルフレビューへ進む。初版生成では従来どおり全 slide を、incremental edit では変更・追加した slide を中心にレンダリングする。ただし validator は常にファイル全体へ実行する
+4. 全体再生成では diagnostics が示す slide だけを順に修正し、strict validation が成功するまで再検証する。部分更新で対象外 slide の既存問題だけが残った場合は、無断で修正せず、全体 validation は失敗した旨と残った diagnostics を記録する
+5. 変更対象の diagnostics がなくなったら Step 6 のセルフレビューへ進む。初版生成では従来どおり全 slide を、incremental edit では変更・追加した slide を中心にレンダリングする。ただし validator は常にファイル全体へ実行する
 
 このセクションは編集対象と機械検証の範囲を決める。デザイン原則は Step 3、XML の仕様は Step 4、画像による見た目の確認は Step 6 に従う。
 
@@ -1059,7 +1059,7 @@ Building emits warnings (`diagnostics`) for layout problems that can be detected
 
 #### ループ手順
 
-1. **レンダリング**: `pom render <保存したファイル名> -o /tmp/pom-review` で全スライドの PNG（`slide-01.png` 形式）を出力する。2 周目以降は `--slides 2,5` のように修正したスライドだけを再レンダリングしてよい
+1. **レンダリング**: 新規生成・全体再生成では `pom render <保存したファイル名> -o /tmp/pom-review` で全スライドの PNG（`slide-01.png` 形式）を出力する。N 枚目だけの更新・1 枚追加では、初回から `pom render <保存したファイル名> -o /tmp/pom-review --slides 2,5` のように変更した slide 番号だけを出力する。新規生成・全体再生成の 2 周目以降も、修正した slide だけを再レンダリングしてよい
 2. **ビルド警告の対応**: `pom render` / `pom build` は、はみ出し・重なりがあると `[NODE_OUT_OF_BOUNDS]` / `[NODE_OVERLAP]` の警告メッセージとともに失敗する。メッセージにはスライド番号・ノード（タグ / id / ルートからのパス）・はみ出し方向が含まれるので、該当ノードを修正して 1 に戻る。意図的な重なりは `Layer` / `zIndex` / 負 margin のいずれかで表現すれば警告されない
 3. **批評**: 各 PNG を `Read` ツールで読み、下のチェックリストで全スライドを評価する
 4. **修正**: 問題があれば XML を修正して 1 に戻る
@@ -1112,5 +1112,6 @@ pom-cli がない場合はスキップしてその旨を伝える。
 - 生成または編集したスライドの枚数と各スライドのタイトル。incremental edit では実施したケースと対象 slide も明記する
 - strict validation の結果（対象外 slide の既存問題が残った場合はその内容）
 - セルフレビューの結果: 実施した修正の概要と残課題（スキップした場合はその理由）
-- pom-cli が見つかった場合: プレビューサーバーが http://localhost:3000 で起動中であること
+- preview server の起動または再利用に成功した場合: 実際に確認した URL（port 3000 とは限らない）
+- preview server の起動に失敗した場合: 未起動であることとエラーの概要
 - pom-cli がない場合: `npm install -g @hirokisakabe/pom-cli` でインストールできることを案内する
