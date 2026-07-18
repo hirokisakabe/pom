@@ -97,6 +97,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:showcase": "vitest run --config vitest.showcase.config.ts",
     "test:integration": "node esbuild.mjs --test && vscode-test",
     "test:vsix": "node esbuild.mjs --test && vsce package --no-dependencies && node run-vsix-test.mjs",
     "test:vsix:clean": "rm -f *.vsix"

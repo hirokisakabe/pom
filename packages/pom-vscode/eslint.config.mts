@@ -10,6 +10,7 @@ export default defineSharedConfig({
     "eslint.config.mts",
     "esbuild.mjs",
     "vitest.config.ts",
+    "vitest.showcase.config.ts",
     ".vscode-test.mjs",
     "run-vsix-test.mjs",
   ],

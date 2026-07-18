@@ -64,6 +64,11 @@ jobs:
       - name: Test with coverage
         working-directory: packages/pom-vscode
         run: pnpm run test:coverage
+      - name: Test showcase samples
+        working-directory: packages/pom-vscode
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: pnpm run test:showcase
 
       - name: Cache main branch coverage
         if: github.event_name == 'push'
