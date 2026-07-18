@@ -8,7 +8,7 @@ function decodeBase64(base64: string): Uint8Array<ArrayBuffer> {
   for (let index = 0; index < binary.length; index++) {
     bytes[index] = binary.charCodeAt(index);
   }
-  return bytes as Uint8Array<ArrayBuffer>;
+  return bytes;
 }
 
 export const CUSTOM_FONT_REGULAR: FontInput = {

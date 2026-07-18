@@ -40,7 +40,9 @@ function normalizeWeight(weight: FontInput["weight"], font?: Font): FontWeight {
     return "normal";
   }
 
-  const metadataWeight = font?.tables?.os2?.usWeightClass;
+  const metadataWeight = (
+    font?.tables?.os2 as { usWeightClass?: unknown } | undefined
+  )?.usWeightClass;
   if (typeof metadataWeight === "number") {
     return metadataWeight >= 600 ? "bold" : "normal";
   }

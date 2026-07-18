@@ -35,9 +35,7 @@ function getNodeRequire(
  * バンドル環境（esbuild）では同ディレクトリの index_bg.wasm を参照し、
  * 非バンドル環境では createRequire で node_modules から解決する。
  */
-async function resolveWasmPath(
-  require: NodeJS.Require,
-): Promise<string> {
+async function resolveWasmPath(require: NodeJS.Require): Promise<string> {
   const [{ existsSync }, { dirname, join }, { fileURLToPath }] =
     await Promise.all([
       import("node:fs"),
