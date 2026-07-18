@@ -6,6 +6,12 @@ import { join } from "node:path";
 import { buildPptx } from "./buildPptx.ts";
 import { DiagnosticsError } from "./diagnostics.ts";
 import * as measureTextModule from "./calcYogaLayout/measureText.ts";
+import { createWritablePptx } from "./renderPptx/writablePptx.ts";
+
+const ONE_BY_ONE_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lU9qJwAAAABJRU5ErkJggg==",
+  "base64",
+);
 
 describe("buildPptx 並列実行", () => {
   const slideSize = { w: 1280, h: 720 };
@@ -182,6 +188,86 @@ describe("buildPptx SlideMaster margin", () => {
   });
 });
 
+describe("buildPptx SlideMaster authoring", () => {
+  it("master objects・URL画像・既定サイズのslideNumberをOOXMLへ出力する", async () => {
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        new Response(ONE_BY_ONE_PNG, {
+          headers: { "content-type": "image/png" },
+        }),
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      const { pptx, diagnostics } = await buildPptx(
+        `<Slide><Text>Hello</Text></Slide>`,
+        { w: 1280, h: 720 },
+        {
+          autoFit: false,
+          master: {
+            background: { image: "https://example.com/background.png" },
+            objects: [
+              {
+                type: "text",
+                text: "Master title",
+                x: 10,
+                y: 10,
+                w: 200,
+                h: 30,
+                color: "333",
+              },
+              {
+                type: "image",
+                src: "https://example.com/logo.png",
+                x: 10,
+                y: 50,
+                w: 40,
+                h: 40,
+              },
+              {
+                type: "rect",
+                x: 0,
+                y: 0,
+                w: 100,
+                h: 20,
+                fill: { color: "ABC", transparency: 25 },
+                border: { color: "000", width: 1, dashType: "dash" },
+              },
+              {
+                type: "line",
+                x: 0,
+                y: 100,
+                w: 100,
+                h: 0,
+                line: { color: "333", width: 2 },
+              },
+            ],
+            slideNumber: { x: 1100, y: 680, color: "333" },
+          },
+        },
+      );
+      const zip = await JSZip.loadAsync(
+        await pptx.write({ outputType: "uint8array" }),
+      );
+      const masterXml = await zip
+        .file("ppt/slideMasters/slideMaster1.xml")!
+        .async("text");
+
+      expect(diagnostics).toEqual([]);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(masterXml).toContain("333333");
+      expect(masterXml).toContain("AABBCC");
+      expect(masterXml).toContain('<a:prstDash val="dash"/>');
+      expect(masterXml).toContain("<p:pic>");
+      expect(masterXml).toContain('type="slidenum"');
+      expect(masterXml).toMatch(/cx="800000" cy="300000"/);
+      expect(zip.file(/^ppt\/media\//)).toHaveLength(2);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
 describe("buildPptx output facade", () => {
   const xml = `<Slide><Text>Hello</Text></Slide>`;
   const slideSize = { w: 1280, h: 720 };
@@ -211,5 +297,14 @@ describe("buildPptx output facade", () => {
     expect((await readFile(`${fileName}.pptx`)).subarray(0, 2)).toEqual(
       Buffer.from([0x50, 0x4b]),
     );
+  });
+
+  it("write と stream の同期シリアライズ例外を rejected Promise にする", async () => {
+    const pptx = createWritablePptx(() => {
+      throw new Error("serialize failed");
+    });
+
+    await expect(pptx.write()).rejects.toThrow("serialize failed");
+    await expect(pptx.stream()).rejects.toThrow("serialize failed");
   });
 });

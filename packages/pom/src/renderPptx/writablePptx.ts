@@ -10,12 +10,10 @@ export type PptxOutputType =
 
 export type PptxWriteOptions = {
   outputType?: PptxOutputType;
-  compression?: boolean;
 };
 
 export type PptxWriteFileOptions = {
-  fileName: string;
-  compression?: boolean;
+  fileName?: string;
 };
 
 export interface WritablePptx {
@@ -28,12 +26,12 @@ export interface WritablePptx {
   write(options: PptxWriteOptions & { outputType: "blob" }): Promise<Blob>;
   write(
     options: PptxWriteOptions & { outputType: "nodebuffer" },
-  ): Promise<Buffer>;
+  ): Promise<Uint8Array>;
   write(
     options: PptxWriteOptions & { outputType: "uint8array" },
   ): Promise<Uint8Array>;
   write(options?: PptxWriteOptions): Promise<Blob>;
-  stream(options?: { compression?: boolean }): Promise<Uint8Array>;
+  stream(): Promise<Uint8Array>;
   writeFile(options?: PptxWriteFileOptions | string): Promise<string>;
 }
 
@@ -70,40 +68,44 @@ function downloadInBrowser(fileName: string, bytes: Uint8Array): void {
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = fileName;
+  document.body.append(anchor);
   anchor.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => {
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }, 0);
 }
 
 export function createWritablePptx(
   getSource: () => PptxSourceModel,
 ): WritablePptx {
   function write(options?: PptxWriteOptions): Promise<unknown> {
-    const bytes = writePptx(getSource());
-    switch (options?.outputType) {
-      case "arraybuffer":
-        return Promise.resolve(toArrayBuffer(bytes));
-      case "base64":
-        return Promise.resolve(toBase64(bytes));
-      case "binarystring":
-        return Promise.resolve(toBinaryString(bytes));
-      case "nodebuffer":
-        return Promise.resolve(Buffer.from(bytes));
-      case "uint8array":
-        return Promise.resolve(bytes);
-      case "blob":
-      case undefined:
-        return Promise.resolve(
-          new Blob([toArrayBuffer(bytes)], {
+    return Promise.resolve().then(() => {
+      const bytes = writePptx(getSource());
+      switch (options?.outputType) {
+        case "arraybuffer":
+          return toArrayBuffer(bytes);
+        case "base64":
+          return toBase64(bytes);
+        case "binarystring":
+          return toBinaryString(bytes);
+        case "nodebuffer":
+          return Buffer.from(bytes);
+        case "uint8array":
+          return bytes;
+        case "blob":
+        case undefined:
+          return new Blob([toArrayBuffer(bytes)], {
             type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-          }),
-        );
-    }
+          });
+      }
+    });
   }
 
   return {
     write: write as WritablePptx["write"],
     stream() {
-      return Promise.resolve(writePptx(getSource()));
+      return Promise.resolve().then(() => writePptx(getSource()));
     },
     async writeFile(options) {
       const fileName = normalizeFileName(

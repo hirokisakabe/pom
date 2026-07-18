@@ -240,7 +240,7 @@ describe("renderTextNode", () => {
       { w: 1280, h: 720 },
       buildContext,
     );
-    const buffer = await pptx.stream({ compression: true });
+    const buffer = await pptx.stream();
     const zip = await JSZip.loadAsync(buffer);
     const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
 

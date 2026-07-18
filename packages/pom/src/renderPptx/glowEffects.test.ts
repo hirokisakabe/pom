@@ -33,7 +33,7 @@ describe("buildPptx with Shape glow", () => {
       <Shape shapeType="ellipse" w="100" h="100" fill.color="FF0000" glow.size="8" glow.color="00FF00"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = await pptx.stream({ compression: true });
+    const buffer = await pptx.stream();
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain("<a:effectLst><a:glow");
@@ -176,7 +176,7 @@ describe("buildPptx with Shape glow", () => {
       <Shape shapeType="ellipse" w="100" h="100" fill.color="FF0000" glow.size="8" glow.color="00FF00"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = await pptx.stream({ compression: true });
+    const buffer = await pptx.stream();
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain("<a:t>Hello</a:t>");

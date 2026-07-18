@@ -37,7 +37,7 @@ describe("buildPptx with backgroundGradient", () => {
       <Shape shapeType="rect" w="200" h="100" backgroundGradient="linear-gradient(45deg, #FF0000 0%, #0000FF 100%)"/>
     </VStack></Slide>`;
     const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-    const buffer = await pptx.stream({ compression: true });
+    const buffer = await pptx.stream();
     const slideXml = await readSlideXml(buffer);
 
     expect(slideXml).toContain("<a:gradFill");

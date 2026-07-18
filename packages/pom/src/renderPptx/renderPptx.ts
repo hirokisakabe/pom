@@ -71,6 +71,7 @@ function sortByZIndex<T extends { zIndex?: number }>(children: T[]): T[] {
 
 function masterBackground(
   master: SlideMasterOptions | undefined,
+  buildContext: BuildContext,
 ): CreatePptxBackground | undefined {
   const background = master?.background;
   if (!background) return undefined;
@@ -81,7 +82,13 @@ function masterBackground(
     return { kind: "image", bytes: imageBytesFromSource("", background.data) };
   }
   const src = "path" in background ? background.path : background.image;
-  return { kind: "image", bytes: imageBytesFromSource(src) };
+  return {
+    kind: "image",
+    bytes: imageBytesFromSource(
+      src,
+      getImageData(src, buildContext.imageDataCache),
+    ),
+  };
 }
 
 function masterBounds(obj: { x: number; y: number; w: number; h: number }) {
@@ -152,7 +159,10 @@ function addMasterContent(
       case "image":
         buildContext.pptxAuthoring.registerPicture({
           ...masterBounds(obj),
-          bytes: imageBytesFromSource(obj.src),
+          bytes: imageBytesFromSource(
+            obj.src,
+            getImageData(obj.src, buildContext.imageDataCache),
+          ),
         });
         break;
       case "rect":
@@ -190,8 +200,14 @@ function addMasterContent(
       addSlideNumber(buildContext.pptxAuthoring.source, target, {
         offsetX: asEmu(Math.round(pxToEmu(value.x))),
         offsetY: asEmu(Math.round(pxToEmu(value.y))),
-        width: asEmu(Math.round(pxToEmu(value.w ?? 100))),
-        height: asEmu(Math.round(pxToEmu(value.h ?? 30))),
+        width:
+          value.w === undefined
+            ? asEmu(800000)
+            : asEmu(Math.round(pxToEmu(value.w))),
+        height:
+          value.h === undefined
+            ? asEmu(300000)
+            : asEmu(Math.round(pxToEmu(value.h))),
         properties: {
           fontFace: value.fontFamily,
           fontSize: value.fontSize ? asPt(pxToPt(value.fontSize)) : undefined,
@@ -224,7 +240,7 @@ export function renderPptx(
     },
     slideMaster: {
       name: master?.title ?? "POM_MASTER",
-      background: masterBackground(master),
+      background: masterBackground(master, buildContext),
     },
     slideLayout: {
       name: "POM_LAYOUT",

@@ -49,7 +49,10 @@ interface GlimpseTextRun {
 }
 
 export function cleanHex(color: string | undefined): string | undefined {
-  return color?.replace(/^#/, "").toUpperCase();
+  const hex = color?.replace(/^#/, "").toUpperCase();
+  return hex?.length === 3
+    ? [...hex].map((character) => character.repeat(2)).join("")
+    : hex;
 }
 
 export function toColorInput(
@@ -345,10 +348,7 @@ function enrichShapeInput(
       ? {
           ...input.geometry,
           adjustValues: {
-            adj: Math.round(
-              (options.rectRadius * EMU_PER_IN * 100000) /
-                Math.min(input.width, input.height),
-            ),
+            adj: Math.round(options.rectRadius * 50000),
           },
         }
       : input.geometry;

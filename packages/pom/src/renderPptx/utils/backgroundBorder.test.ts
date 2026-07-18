@@ -71,6 +71,7 @@ describe("renderBackgroundAndBorder の辺ごと border", () => {
     expect(slideXml).toContain("<a:gradFill");
     expect(slideXml).toContain("<a:outerShdw");
     expect(slideXml).toContain('<a:prstGeom prst="roundRect">');
+    expect(slideXml).toContain('<a:gd name="adj" fmla="val 12000"/>');
   });
 
   it("背景付きルートノード (slide.background 最適化パス) でも辺ごとの border が描画される", async () => {
