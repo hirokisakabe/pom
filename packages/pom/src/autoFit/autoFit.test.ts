@@ -447,14 +447,11 @@ describe("autoFitSlide", () => {
         extractLayoutResults(map),
       );
       expect(maxPositionedLeafBottom(positioned)).toBe(736);
-      expect(ctx.diagnostics.items).toEqual([
-        expect.objectContaining({
-          code: "AUTOFIT_OVERFLOW",
-          message: expect.stringContaining(
-            "Furthest node: text at y=710px with height=26px (bottom=736px)",
-          ),
-        }),
-      ]);
+      expect(ctx.diagnostics.items).toHaveLength(1);
+      expect(ctx.diagnostics.items[0].code).toBe("AUTOFIT_OVERFLOW");
+      expect(ctx.diagnostics.items[0].message).toContain(
+        "Furthest node: text at y=710px with height=26px (bottom=736px)",
+      );
     } finally {
       freeYogaTree(map);
     }
