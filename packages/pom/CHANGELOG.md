@@ -1,5 +1,19 @@
 # @hirokisakabe/pom
 
+## 10.0.0
+
+### Major Changes
+
+- [#954](https://github.com/hirokisakabe/pom/pull/954) [`e5abe7b`](https://github.com/hirokisakabe/pom/commit/e5abe7b7452f54a469d00b999978357c5001bbc7) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - PPTX 全体を `@pptx-glimpse/document` の package writer で生成し、`pptxgenjs` 依存と marker 置換後処理を削除しました。
+
+  `buildPptx()` が返す `pptx` は pptxgenjs インスタンスではなく、`write` / `writeFile` / `stream` を提供する `WritablePptx` になります。出力以外の pptxgenjs API を戻り値から利用していた場合は、XML または `SlideMasterOptions` で生成内容を指定してください。
+
+  `write()` は `arraybuffer` / `base64` / `binarystring` / `blob` / `nodebuffer` / `uint8array` をサポートし、出力形式を省略した場合は `Blob` を返します。`nodebuffer` は Node.js 専用です。従来の `compression` オプションと `stream()` の引数は提供しません。
+
+### Patch Changes
+
+- [#950](https://github.com/hirokisakabe/pom/pull/950) [`3f28c15`](https://github.com/hirokisakabe/pom/commit/3f28c1515d601a4852f1b73e6a826a6fa8215ed7) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Table と Chart の PPTX 生成を `@pptx-glimpse/document` の native writer へ移行しました。
+
 ## 9.1.2
 
 ### Patch Changes
