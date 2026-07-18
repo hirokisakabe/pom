@@ -135,7 +135,7 @@ function renderHorizontalProcessArrow(
     addGlimpseShape(
       ctx,
       {
-        preset: "rect",
+        geometry: { kind: "preset", preset: "rect" },
         ...createShapeBoundsInput({
           x: stepX,
           y: stepY,
@@ -233,7 +233,7 @@ function renderVerticalProcessArrow(
     addGlimpseShape(
       ctx,
       {
-        preset: "rect",
+        geometry: { kind: "preset", preset: "rect" },
         ...createShapeBoundsInput({
           x: stepX,
           y: stepY,

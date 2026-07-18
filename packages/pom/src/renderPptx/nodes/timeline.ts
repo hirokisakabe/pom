@@ -167,7 +167,7 @@ function renderHorizontalTimeline(
     addGlimpseShape(
       ctx,
       {
-        preset: "ellipse",
+        geometry: { kind: "preset", preset: "ellipse" },
         ...createShapeBoundsInput({
           x: cx - nodeRadius,
           y: cy - nodeRadius,
@@ -301,7 +301,7 @@ function renderVerticalTimeline(
     addGlimpseShape(
       ctx,
       {
-        preset: "ellipse",
+        geometry: { kind: "preset", preset: "ellipse" },
         ...createShapeBoundsInput({
           x: cx - nodeRadius,
           y: cy - nodeRadius,

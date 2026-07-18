@@ -142,7 +142,7 @@ export function renderMatrixNode(
     addGlimpseShape(
       ctx,
       {
-        preset: "ellipse",
+        geometry: { kind: "preset", preset: "ellipse" },
         ...createShapeBoundsInput({
           x: itemX - itemSize / 2,
           y: itemY - itemSize / 2,

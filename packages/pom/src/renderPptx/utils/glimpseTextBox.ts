@@ -2,6 +2,7 @@ import {
   asEmu,
   asHundredthPt,
   asOoxmlAngle,
+  asOoxmlPercent,
   asPt,
   type AddTextBoxInput,
   type AddTextBoxParagraphInput,
@@ -10,8 +11,8 @@ import {
 } from "@pptx-glimpse/document";
 import type { Underline } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToEmu, pxToPt, rectPxToIn } from "../units.ts";
-import { toColorInput } from "../glimpseTextBoxes.ts";
+import { pxToEmu, pxToPt } from "../units.ts";
+import { toColorInput } from "../pptxAuthoring.ts";
 
 type TextBoundsPx = { x: number; y: number; w: number; h: number };
 
@@ -38,6 +39,7 @@ export type GlimpseTextBoxOptions = GlimpseTextRunStyle & {
   rotate?: number;
   autoFit?: boolean;
   margin?: number;
+  bullet?: ListBulletOptions;
 };
 
 export type ListBulletOptions =
@@ -47,11 +49,6 @@ export type ListBulletOptions =
       scheme?: string;
       startAt?: number;
     };
-
-const TRANSPARENT_MARKER_STYLE = {
-  fill: { color: "FFFFFF", transparency: 100 },
-  line: { color: "FFFFFF", transparency: 100 },
-} as const;
 
 function toUnderlineInput(underline: Underline | undefined) {
   if (underline === undefined || underline === false) return undefined;
@@ -74,9 +71,9 @@ export function createGlimpseRunProperties(
     underline: toUnderlineInput(style.underline),
     strike: style.strike,
     baseline: style.subscript
-      ? "subscript"
+      ? { type: "percent", value: asOoxmlPercent(-40000) }
       : style.superscript
-        ? "superscript"
+        ? { type: "percent", value: asOoxmlPercent(30000) }
         : undefined,
     highlight: toColorInput(style.highlight),
   };
@@ -137,35 +134,46 @@ function textBoxInput(
       marginTop: margin,
       marginBottom: margin,
       anchor: options.valign,
+      autoFit: options.autoFit ? "shape" : undefined,
     },
     paragraphs,
   };
 }
 
-function withShapeAutofit(xml: string): string {
-  const selfClosing = xml.replace(
-    /<a:bodyPr\b([^>]*)\/>/,
-    (_match, attrs: string) => `<a:bodyPr${attrs}><a:spAutoFit/></a:bodyPr>`,
-  );
-  if (selfClosing !== xml) return selfClosing;
-  return xml.replace(
-    /(<a:bodyPr\b[^>]*>)([\s\S]*?)(<\/a:bodyPr>)/,
-    (_match, open: string, body: string, close: string) => {
-      if (body.includes("<a:spAutoFit/>")) return `${open}${body}${close}`;
-      return `${open}<a:spAutoFit/>${body}${close}`;
+function withListProperties(
+  paragraphs: readonly AddTextBoxParagraphInput[],
+  options: GlimpseTextBoxOptions,
+): readonly AddTextBoxParagraphInput[] {
+  if (!options.bullet) return paragraphs;
+  const bullet =
+    options.bullet.kind === "bullet"
+      ? {
+          type: "character" as const,
+          character: "•",
+          size: asOoxmlPercent(100000),
+        }
+      : {
+          type: "auto-number" as const,
+          scheme: isSupportedAutoNumScheme(options.bullet.scheme)
+            ? options.bullet.scheme
+            : "arabicPeriod",
+          startAt: options.bullet.startAt ?? 1,
+          fontFace: "+mj-lt",
+          size: asOoxmlPercent(100000),
+        };
+  return paragraphs.map((paragraph) => ({
+    ...paragraph,
+    properties: {
+      ...paragraph.properties,
+      marginLeft: asEmu(342900),
+      indent: asEmu(-342900),
+      lineSpacing: {
+        type: "percent",
+        value: asOoxmlPercent(Math.round((options.lineHeight ?? 1.3) * 100000)),
+      },
+      bullet,
     },
-  );
-}
-
-function composeXmlTransform(
-  autoFit: boolean | undefined,
-  transform: ((xml: string) => string) | undefined,
-) {
-  if (!autoFit) return transform;
-  return (xml: string) => {
-    const fitted = withShapeAutofit(xml);
-    return transform ? transform(fitted) : fitted;
-  };
+  }));
 }
 
 export function addGlimpseTextBox(
@@ -174,43 +182,22 @@ export function addGlimpseTextBox(
   options: GlimpseTextBoxOptions & {
     paragraphs?: readonly AddTextBoxParagraphInput[];
     hyperlinks?: readonly (string | undefined)[];
-    xmlTransform?: (xml: string) => string;
   } = {},
 ): void {
-  const paragraphs =
+  const paragraphs = withListProperties(
     options.paragraphs ??
-    createGlimpseParagraphs(options.text ?? "", options, {
-      align: options.align,
-      lineHeight: options.lineHeight,
-    });
-  const marker = ctx.buildContext.glimpseTextBoxes.registerTextBox(
+      createGlimpseParagraphs(options.text ?? "", options, {
+        align: options.align,
+        lineHeight: options.lineHeight,
+      }),
+    options,
+  );
+  ctx.buildContext.pptxAuthoring.registerTextBox(
     textBoxInput(bounds, options, paragraphs),
     {
       hyperlinks: options.hyperlinks,
-      xmlTransform: composeXmlTransform(options.autoFit, options.xmlTransform),
     },
   );
-  ctx.slide.addShape(ctx.pptx.ShapeType.rect, {
-    ...rectPxToIn({
-      ...bounds,
-      w: Math.max(bounds.w, 1),
-      h: Math.max(bounds.h, 1),
-    }),
-    ...TRANSPARENT_MARKER_STYLE,
-    objectName: marker,
-  });
-}
-
-function bulletXml(options: ListBulletOptions): string {
-  if (options.kind === "bullet") {
-    return '<a:buSzPct val="100000"/><a:buChar char="&#x2022;"/>';
-  }
-  const scheme = isSupportedAutoNumScheme(options.scheme)
-    ? options.scheme
-    : "arabicPeriod";
-  return `<a:buSzPct val="100000"/><a:buFont typeface="+mj-lt"/><a:buAutoNum type="${scheme}" startAt="${
-    options.startAt ?? 1
-  }"/>`;
 }
 
 function isSupportedAutoNumScheme(
@@ -227,56 +214,4 @@ function isSupportedAutoNumScheme(
     value === "alphaUcParenR" ||
     value === "arabicPlain"
   );
-}
-
-function withoutParagraphIndentAttrs(attrs: string): string {
-  return attrs.replace(/\s(?:indent|marL)="[^"]*"/g, "");
-}
-
-export function listBulletXmlTransform(
-  options: ListBulletOptions & { lineHeight?: number },
-) {
-  const lineSpacing = `<a:lnSpc><a:spcPct val="${Math.round(
-    (options.lineHeight ?? 1.3) * 100000,
-  )}"/></a:lnSpc>`;
-  const paragraphBody = `${lineSpacing}${bulletXml(options)}`;
-  return (xml: string): string => {
-    const expanded = xml.replace(
-      /<a:pPr([^>]*)\/>/g,
-      (_match, attrs: string) =>
-        `<a:pPr${withoutParagraphIndentAttrs(attrs)} marL="342900" indent="-342900">${paragraphBody}</a:pPr>`,
-    );
-    return expanded.replace(
-      /<a:pPr([^>]*)>([\s\S]*?)<\/a:pPr>/g,
-      (match: string, attrs: string, body: string) => {
-        if (!body.includes("<a:buNone/>")) return match;
-        return `<a:pPr${withoutParagraphIndentAttrs(attrs)} marL="342900" indent="-342900">${body.replace(
-          /(?:<a:lnSpc>[\s\S]*?<\/a:lnSpc>)?<a:buNone\/>/,
-          paragraphBody,
-        )}</a:pPr>`;
-      },
-    );
-  };
-}
-
-export function listLineSpacingXmlTransform(options: { lineHeight?: number }) {
-  const lineSpacing = `<a:lnSpc><a:spcPct val="${Math.round(
-    (options.lineHeight ?? 1.3) * 100000,
-  )}"/></a:lnSpc>`;
-  const paragraphBody = `${lineSpacing}<a:buNone/>`;
-  return (xml: string): string => {
-    const expanded = xml.replace(
-      /<a:pPr([^>]*)\/>/g,
-      (_match, attrs: string) => `<a:pPr${attrs}>${paragraphBody}</a:pPr>`,
-    );
-    return expanded.replace(
-      /<a:pPr([^>]*)>([\s\S]*?)<\/a:pPr>/g,
-      (_match: string, attrs: string, body: string) => {
-        const nextBody = body
-          .replace(/<a:lnSpc>[\s\S]*?<\/a:lnSpc>/, "")
-          .replace(/<a:buNone\/>/, "");
-        return `<a:pPr${attrs}>${paragraphBody}${nextBody}</a:pPr>`;
-      },
-    );
-  };
 }

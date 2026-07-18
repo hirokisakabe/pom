@@ -69,7 +69,7 @@ Returns a `BuildPptxResult` object:
 
 | Field         | Type           | Description                                 |
 | ------------- | -------------- | ------------------------------------------- |
-| `pptx`        | pptxgenjs      | The generated presentation instance         |
+| `pptx`        | `WritablePptx` | The generated presentation output facade    |
 | `diagnostics` | `Diagnostic[]` | Warnings collected during the build process |
 
 ```typescript

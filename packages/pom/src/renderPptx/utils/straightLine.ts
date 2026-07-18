@@ -1,7 +1,7 @@
 /**
- * 2 点間の直線を pptxgenjs の line shape に変換する共通描画処理。
+ * 2 点間の直線を line shape に変換する共通描画処理。
  *
- * pptxgenjs の line shape は左上座標 (x, y) + サイズ (w, h) で表現され、
+ * line shape は左上座標 (x, y) + サイズ (w, h) で表現され、
  * 線の向き (始点→終点) は flipH / flipV で表すため、端点座標からの
  * 変換ロジックを Line / Arrow ノードで共有する。
  */
@@ -18,7 +18,7 @@ import {
 } from "./glimpseShape.ts";
 
 /**
- * boolean | LineArrowOptions から pptxgenjs の arrow type を取得
+ * boolean | LineArrowOptions から arrow type を取得
  */
 export function resolveArrowType(
   arrow: LineArrow | undefined,
@@ -75,7 +75,7 @@ export function addStraightLine(
   addGlimpseShape(
     ctx,
     {
-      preset: "line",
+      geometry: { kind: "preset", preset: "line" },
       ...createShapeBoundsInput({ x: minX, y: minY, w: lineW, h: lineH }),
       fill: noneShapeFill(),
       outline: {

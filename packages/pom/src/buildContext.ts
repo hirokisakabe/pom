@@ -1,6 +1,6 @@
 import type { TextMeasurementMode } from "./calcYogaLayout/measureText.ts";
 import { DiagnosticCollector } from "./diagnostics.ts";
-import { GlimpseTextBoxRegistry } from "./renderPptx/glimpseTextBoxes.ts";
+import { PptxAuthoringRegistry } from "./renderPptx/pptxAuthoring.ts";
 
 export interface BuildContext {
   textMeasurementMode: TextMeasurementMode;
@@ -8,7 +8,7 @@ export interface BuildContext {
   imageDataCache: Map<string, string>;
   iconRasterCache: Map<string, string>;
   diagnostics: DiagnosticCollector;
-  glimpseTextBoxes: GlimpseTextBoxRegistry;
+  pptxAuthoring: PptxAuthoringRegistry;
 }
 
 export function createBuildContext(
@@ -20,6 +20,6 @@ export function createBuildContext(
     imageDataCache: new Map(),
     iconRasterCache: new Map(),
     diagnostics: new DiagnosticCollector(),
-    glimpseTextBoxes: new GlimpseTextBoxRegistry(),
+    pptxAuthoring: new PptxAuthoringRegistry(),
   };
 }

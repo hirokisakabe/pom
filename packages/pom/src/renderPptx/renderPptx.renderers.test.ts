@@ -6,10 +6,9 @@
  * public な出力挙動が変わっていないことを保証する。
  */
 import JSZip from "jszip";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { renderPptx } from "./renderPptx.ts";
 import { createBuildContext } from "../buildContext.ts";
-import { patchPptxWriteForGlimpseTextBoxes } from "./glimpseTextBoxes.ts";
 import type { PositionedNode } from "../types.ts";
 
 const ONE_BY_ONE_PNG =
@@ -27,11 +26,10 @@ async function renderPagePptxZip(page: PositionedNode) {
 
 async function renderPageSlideXmlWithContext(page: PositionedNode) {
   const buildContext = createBuildContext();
-  const pptx = await renderPptx([page], { w: 1280, h: 720 }, buildContext);
-  patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
-  const buffer = (await pptx.write({
+  const pptx = renderPptx([page], { w: 1280, h: 720 }, buildContext);
+  const buffer = await pptx.write({
     outputType: "uint8array",
-  })) as Uint8Array;
+  });
   const zip = await JSZip.loadAsync(buffer);
   return {
     zip,
@@ -43,7 +41,7 @@ async function renderPageSlideXmlWithContext(page: PositionedNode) {
 function extractChartPointColors(chartXml: string) {
   return (chartXml.match(/<c:dPt>[\s\S]*?<\/c:dPt>/g) ?? []).map(
     (dataPointXml) =>
-      dataPointXml.match(/<a:srgbClr val="([0-9A-F]{6})"\/>/)?.[1],
+      dataPointXml.match(/<a:srgbClr val="([0-9A-F]{6})"(?:\/>|>)/)?.[1],
   );
 }
 
@@ -224,9 +222,9 @@ describe("renderTextNode", () => {
     expect(relsXml).toContain('TargetMode="External"');
   });
 
-  it("pptx.stream でも glimpse text box XML に置換する", async () => {
+  it("pptx.stream でも glimpse package を出力する", async () => {
     const buildContext = createBuildContext();
-    const pptx = await renderPptx(
+    const pptx = renderPptx(
       [
         vstackPage([
           {
@@ -242,9 +240,7 @@ describe("renderTextNode", () => {
       { w: 1280, h: 720 },
       buildContext,
     );
-    patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
-
-    const buffer = (await pptx.stream({ compression: true })) as Uint8Array;
+    const buffer = await pptx.stream({ compression: true });
     const zip = await JSZip.loadAsync(buffer);
     const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
 
@@ -252,9 +248,9 @@ describe("renderTextNode", () => {
     expect(slideXml).not.toContain("pom-text:");
   });
 
-  it("pptx.write の default output でも glimpse text box XML に置換する", async () => {
+  it("pptx.write の default output でも glimpse package を出力する", async () => {
     const buildContext = createBuildContext();
-    const pptx = await renderPptx(
+    const pptx = renderPptx(
       [
         vstackPage([
           {
@@ -270,85 +266,12 @@ describe("renderTextNode", () => {
       { w: 1280, h: 720 },
       buildContext,
     );
-    patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
-
-    const blob = (await pptx.write()) as Blob;
+    const blob = await pptx.write();
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
     const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
 
     expect(slideXml).toContain("<a:t>blob output</a:t>");
     expect(slideXml).not.toContain("pom-text:");
-  });
-
-  it("browser writeFile helper が無い場合は marker を残さず利用案内エラーにする", async () => {
-    const buildContext = createBuildContext();
-    buildContext.glimpseTextBoxes.register({
-      type: "text",
-      text: "browser",
-      x: 0,
-      y: 0,
-      w: 160,
-      h: 40,
-    });
-    const originalWrite = vi.fn();
-    const pptx = {
-      write: originalWrite,
-      writeFile: vi.fn(),
-    } as unknown as Parameters<typeof patchPptxWriteForGlimpseTextBoxes>[0];
-
-    vi.stubGlobal("process", { platform: "browser", versions: {} });
-    try {
-      patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
-
-      await expect(pptx.writeFile({ fileName: "browser" })).rejects.toThrow(
-        "pptx.writeFile browser download helper is unavailable",
-      );
-      expect(originalWrite).not.toHaveBeenCalled();
-    } finally {
-      vi.unstubAllGlobals();
-    }
-  });
-
-  it("browser writeFile helper がある場合は置換済み blob を渡す", async () => {
-    const buildContext = createBuildContext();
-    buildContext.glimpseTextBoxes.register({
-      type: "text",
-      text: "browser",
-      x: 0,
-      y: 0,
-      w: 160,
-      h: 40,
-    });
-    const inputZip = new JSZip();
-    inputZip.file("ppt/slides/slide1.xml", "<p:sld/>");
-    const originalWrite = vi
-      .fn()
-      .mockResolvedValue(await inputZip.generateAsync({ type: "uint8array" }));
-    const writeFileToBrowser = vi.fn().mockResolvedValue("browser.pptx");
-    const pptx = {
-      write: originalWrite,
-      writeFile: vi.fn(),
-      writeFileToBrowser,
-    } as unknown as Parameters<typeof patchPptxWriteForGlimpseTextBoxes>[0];
-
-    vi.stubGlobal("process", { platform: "browser", versions: {} });
-    try {
-      patchPptxWriteForGlimpseTextBoxes(pptx, buildContext.glimpseTextBoxes);
-
-      const writeFileWithRuntimeOverload = (fileName: string) =>
-        (pptx.writeFile as unknown as (fileName: string) => Promise<string>)(
-          fileName,
-        );
-      await expect(writeFileWithRuntimeOverload("browser")).resolves.toBe(
-        "browser.pptx",
-      );
-      expect(writeFileToBrowser).toHaveBeenCalledWith(
-        "browser.pptx",
-        expect.any(Blob),
-      );
-    } finally {
-      vi.unstubAllGlobals();
-    }
   });
 });
 
@@ -476,7 +399,7 @@ describe("renderUlNode", () => {
     expect(slideXml).toContain('<a:off x="457200" y="4800600"/>');
     expect(slideXml).toContain('<a:ext cx="3200400" cy="1600200"/>');
     expect(slideXml).toContain('<a:rPr sz="1800">');
-    expect(slideXml).toContain('<a:buChar char="&#x2022;"/>');
+    expect(slideXml).toContain('<a:buChar char="•"/>');
     expect(slideXml).not.toContain("pom-text:");
   });
 
@@ -503,7 +426,7 @@ describe("renderUlNode", () => {
       ]),
     );
 
-    expect(slideXml.match(/<a:buChar char="&#x2022;"\/>/g)).toHaveLength(2);
+    expect(slideXml.match(/<a:buChar char="•"\/>/g)).toHaveLength(2);
     expect(textRunXml(slideXml, "link")).toContain('<a:srgbClr val="1D4ED8"/>');
     expect(slideXml).not.toMatch(
       /\s(?:indent|marL)="0"\s[^>]*(?:indent|marL)=/,
@@ -595,7 +518,7 @@ describe("renderFlowNode", () => {
 
     const connectorXml = findShapeXml(slideXml, '<a:prstGeom prst="line">');
     expect(connectorXml).toContain('<a:srgbClr val="DC2626"/>');
-    expect(connectorXml).toContain('<a:tailEnd type="triangle"/>');
+    expect(connectorXml).toMatch(/<a:tailEnd type="triangle"(?:\s[^>]*)?\/>/);
 
     expect(textRunXml(slideXml, "ok")).toContain('<a:srgbClr val="1D4ED8"/>');
     expect(slideXml).not.toContain("pom-shape:");
@@ -1043,7 +966,7 @@ describe("renderChartNode", () => {
     expect(chartXml).toContain("<c:valAx>");
     expect(chartXml).not.toContain('<c:delete val="1"/>');
     expect(chartXml).not.toContain("<c:manualLayout>");
-    expect(chartXml).toContain('<a:srgbClr val="123456"/>');
+    expect(chartXml).toContain('<a:srgbClr val="123456">');
     const chartRelationshipId = slideXml.match(
       /<c:chart\b[^>]*\br:id="([^"]+)"/,
     )?.[1];
@@ -1160,7 +1083,7 @@ describe("renderChartNode", () => {
     expect(chartXml).toContain('<c:h val="1"/>');
   });
 
-  it("既定 palette は pptxgenjs と同じ7色目以降も保持する", async () => {
+  it("既定 palette は7色目以降も保持する", async () => {
     const zip = await renderPagePptxZip(
       vstackPage([
         {
@@ -1180,8 +1103,8 @@ describe("renderChartNode", () => {
     );
 
     const chartXml = await zip.file("ppt/charts/chart1.xml")!.async("text");
-    expect(chartXml).toContain('<a:srgbClr val="628FC6"/>');
-    expect(chartXml).toContain('<a:srgbClr val="C86360"/>');
+    expect(chartXml).toContain('<a:srgbClr val="628FC6">');
+    expect(chartXml).toContain('<a:srgbClr val="C86360">');
   });
 
   it("単一系列 bar の複数色と pie の point 超過色をデータ点へ循環適用する", async () => {
@@ -1385,7 +1308,9 @@ describe("renderTableNode", () => {
     );
 
     expect(slideXml.match(/<a:tc(?:\s|>)/g)).toHaveLength(2);
-    expect(slideXml).toContain("<a:t>first</a:t></a:r><a:br/>");
+    expect(slideXml).toMatch(
+      /<a:t>first<\/a:t><\/a:r><a:br(?:\s*\/>|>.*?<\/a:br>)<a:r>/,
+    );
     expect(slideXml).toContain("<a:t>second</a:t>");
   });
 });
@@ -1483,7 +1408,7 @@ describe("renderLineNode / renderArrowNode", () => {
     expect(slideXml).toContain('<a:ext cx="1905000" cy="952500"/>');
     expect(slideXml).toContain('<a:prstGeom prst="line">');
     expect(slideXml).toContain('<a:srgbClr val="0000FF"/>');
-    expect(slideXml).toContain('<a:tailEnd type="triangle"/>');
+    expect(slideXml).toMatch(/<a:tailEnd type="triangle"(?:\s[^>]*)?\/>/);
     expect(slideXml).not.toContain("pom-shape:");
   });
 });

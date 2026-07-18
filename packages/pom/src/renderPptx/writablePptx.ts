@@ -1,0 +1,124 @@
+import { writePptx, type PptxSourceModel } from "@pptx-glimpse/document";
+
+export type PptxOutputType =
+  | "arraybuffer"
+  | "base64"
+  | "binarystring"
+  | "blob"
+  | "nodebuffer"
+  | "uint8array";
+
+export type PptxWriteOptions = {
+  outputType?: PptxOutputType;
+  compression?: boolean;
+};
+
+export type PptxWriteFileOptions = {
+  fileName: string;
+  compression?: boolean;
+};
+
+export interface WritablePptx {
+  write(
+    options: PptxWriteOptions & { outputType: "arraybuffer" },
+  ): Promise<ArrayBuffer>;
+  write(
+    options: PptxWriteOptions & { outputType: "base64" | "binarystring" },
+  ): Promise<string>;
+  write(options: PptxWriteOptions & { outputType: "blob" }): Promise<Blob>;
+  write(
+    options: PptxWriteOptions & { outputType: "nodebuffer" },
+  ): Promise<Buffer>;
+  write(
+    options: PptxWriteOptions & { outputType: "uint8array" },
+  ): Promise<Uint8Array>;
+  write(options?: PptxWriteOptions): Promise<Blob>;
+  stream(options?: { compression?: boolean }): Promise<Uint8Array>;
+  writeFile(options?: PptxWriteFileOptions | string): Promise<string>;
+}
+
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  return bytes.buffer.slice(
+    bytes.byteOffset,
+    bytes.byteOffset + bytes.byteLength,
+  ) as ArrayBuffer;
+}
+
+function toBinaryString(bytes: Uint8Array): string {
+  let result = "";
+  for (const byte of bytes) result += String.fromCharCode(byte);
+  return result;
+}
+
+function toBase64(bytes: Uint8Array): string {
+  if (typeof Buffer !== "undefined")
+    return Buffer.from(bytes).toString("base64");
+  return btoa(toBinaryString(bytes));
+}
+
+function normalizeFileName(fileName: string): string {
+  return fileName.toLowerCase().endsWith(".pptx")
+    ? fileName
+    : `${fileName}.pptx`;
+}
+
+function downloadInBrowser(fileName: string, bytes: Uint8Array): void {
+  const blob = new Blob([toArrayBuffer(bytes)], {
+    type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+export function createWritablePptx(
+  getSource: () => PptxSourceModel,
+): WritablePptx {
+  function write(options?: PptxWriteOptions): Promise<unknown> {
+    const bytes = writePptx(getSource());
+    switch (options?.outputType) {
+      case "arraybuffer":
+        return Promise.resolve(toArrayBuffer(bytes));
+      case "base64":
+        return Promise.resolve(toBase64(bytes));
+      case "binarystring":
+        return Promise.resolve(toBinaryString(bytes));
+      case "nodebuffer":
+        return Promise.resolve(Buffer.from(bytes));
+      case "uint8array":
+        return Promise.resolve(bytes);
+      case "blob":
+      case undefined:
+        return Promise.resolve(
+          new Blob([toArrayBuffer(bytes)], {
+            type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          }),
+        );
+    }
+  }
+
+  return {
+    write: write as WritablePptx["write"],
+    stream() {
+      return Promise.resolve(writePptx(getSource()));
+    },
+    async writeFile(options) {
+      const fileName = normalizeFileName(
+        typeof options === "string"
+          ? options
+          : (options?.fileName ?? "Presentation.pptx"),
+      );
+      const bytes = writePptx(getSource());
+      if (typeof document !== "undefined") {
+        downloadInBrowser(fileName, bytes);
+      } else {
+        const fs = await import("node:fs/promises");
+        await fs.writeFile(fileName, bytes);
+      }
+      return fileName;
+    },
+  };
+}

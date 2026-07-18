@@ -87,7 +87,7 @@ export function renderPyramidNode(
     addGlimpseShape(
       ctx,
       {
-        preset: "rect",
+        geometry: { kind: "preset", preset: "rect" },
         ...createShapeBoundsInput({
           x: bboxX,
           y: layerY,

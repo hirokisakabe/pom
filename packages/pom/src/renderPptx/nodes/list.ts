@@ -5,7 +5,6 @@ import { getContentArea } from "../utils/contentArea.ts";
 import {
   addGlimpseTextBox,
   createGlimpseRunProperties,
-  listBulletXmlTransform,
   type GlimpseTextRunStyle,
 } from "../utils/glimpseTextBox.ts";
 import {
@@ -125,10 +124,10 @@ export function renderUlNode(node: UlPositionedNode, ctx: RenderContext): void {
     highlight: node.highlight,
     paragraphs,
     hyperlinks,
-    xmlTransform: listBulletXmlTransform({
+    lineHeight: node.lineHeight,
+    bullet: {
       kind: "bullet",
-      lineHeight: node.lineHeight,
-    }),
+    },
   });
 }
 
@@ -154,11 +153,11 @@ export function renderOlNode(node: OlPositionedNode, ctx: RenderContext): void {
     highlight: node.highlight,
     paragraphs,
     hyperlinks,
-    xmlTransform: listBulletXmlTransform({
+    lineHeight: node.lineHeight,
+    bullet: {
       kind: "number",
       scheme: node.numberType,
       startAt: node.numberStartAt,
-      lineHeight: node.lineHeight,
-    }),
+    },
   });
 }

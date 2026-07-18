@@ -12,7 +12,7 @@ import { measureFontVerticalMetricsRatio } from "../calcYogaLayout/fontLoader.ts
 type TextNode = Extract<PositionedNode, { type: "text" }>;
 
 /**
- * underline プロパティを pptxgenjs 形式に変換する
+ * underline プロパティを描画用の形式に変換する
  */
 export function convertUnderline(
   underline: Underline | undefined,
@@ -27,7 +27,7 @@ export function convertUnderline(
 }
 
 /**
- * strike プロパティを pptxgenjs 形式に変換する
+ * strike プロパティを描画用の形式に変換する
  */
 export function convertStrike(
   strike: boolean | undefined,
@@ -53,10 +53,9 @@ export function resolveSubSup(
 }
 
 /**
- * glow プロパティを pptxgenjs 形式に変換する
- * size はユーザー入力 px、pptxgenjs の glow.size は pt。
- * pptxgenjs は省略時デフォルトを Object.assign で合成するため undefined を
- * 渡すとデフォルトが消える。ここで pom 側のデフォルトを確定させる。
+ * glow プロパティを描画用の形式に変換する。
+ * size はユーザー入力 px、描画用の glow.size は pt。
+ * ここで既存の出力互換性を保つデフォルトを確定させる。
  */
 export function convertGlow(
   glow: TextGlow | undefined,
@@ -70,8 +69,8 @@ export function convertGlow(
 }
 
 /**
- * outline プロパティを pptxgenjs 形式に変換する
- * size はユーザー入力 px、pptxgenjs の outline.size は pt
+ * outline プロパティを描画用の形式に変換する
+ * size はユーザー入力 px、描画用の outline.size は pt
  */
 export function convertOutline(
   outline: TextOutline | undefined,
@@ -144,7 +143,7 @@ export function createTextOptions(node: TextNode) {
     highlight: node.highlight,
     glow: convertGlow(node.glow),
     outline: convertOutline(node.outline),
-    // letterSpacing はユーザー入力 px、pptxgenjs の charSpacing は pt
+    // letterSpacing はユーザー入力 px、描画用の charSpacing は pt
     charSpacing:
       node.letterSpacing !== undefined ? pxToPt(node.letterSpacing) : undefined,
   };

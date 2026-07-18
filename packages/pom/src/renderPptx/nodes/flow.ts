@@ -152,7 +152,7 @@ export function renderFlowNode(
     addGlimpseShape(
       ctx,
       {
-        preset: item.shape,
+        geometry: { kind: "preset", preset: item.shape },
         ...createShapeBoundsInput({
           x: layout.x,
           y: layout.y,

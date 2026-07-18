@@ -1,4 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
+import JSZip from "jszip";
+import { mkdtemp, readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { buildPptx } from "./buildPptx.ts";
 import { DiagnosticsError } from "./diagnostics.ts";
 import * as measureTextModule from "./calcYogaLayout/measureText.ts";
@@ -155,24 +159,57 @@ describe("buildPptx SlideMaster margin", () => {
   async function getMasterMargin(
     margin:
       number | { top?: number; right?: number; bottom?: number; left?: number },
-  ): Promise<unknown> {
+  ): Promise<string> {
     const { pptx } = await buildPptx(xml, slideSize, {
       master: { title: "M1", margin },
     });
-    const layouts = (
-      pptx as unknown as { slideLayouts: { _name: string; _margin: unknown }[] }
-    ).slideLayouts;
-    return layouts.find((l) => l._name === "M1")?._margin;
+    const buffer = await pptx.write({ outputType: "uint8array" });
+    const zip = await JSZip.loadAsync(buffer);
+    const slideXml = await zip.file("ppt/slides/slide1.xml")!.async("text");
+    return slideXml.match(/<a:bodyPr\b([^>]*)/)?.[1] ?? "";
   }
 
-  it("number 指定は 4 辺等値の配列 (inch) として渡される", async () => {
-    // pptxgenjs では margin: n と [n, n, n, n] は同義 (全辺に適用)
-    expect(await getMasterMargin(96)).toEqual([1, 1, 1, 1]);
+  it("number 指定は 4 辺等値の EMU として layout 参照スライドへ反映される", async () => {
+    expect(await getMasterMargin(96)).toMatch(
+      /lIns="914400" rIns="914400" tIns="914400" bIns="914400"/,
+    );
   });
 
-  it("object 指定は未指定 edge を 0 として [top, right, bottom, left] で渡される", async () => {
-    expect(await getMasterMargin({ top: 96, left: 48 })).toEqual([
-      1, 0, 0, 0.5,
-    ]);
+  it("object 指定は未指定 edge を 0 として layout 参照スライドへ反映される", async () => {
+    expect(await getMasterMargin({ top: 96, left: 48 })).toMatch(
+      /lIns="457200" rIns="0" tIns="914400" bIns="0"/,
+    );
+  });
+});
+
+describe("buildPptx output facade", () => {
+  const xml = `<Slide><Text>Hello</Text></Slide>`;
+  const slideSize = { w: 1280, h: 720 };
+
+  it("write と stream で PPTX bytes を返す", async () => {
+    const { pptx } = await buildPptx(xml, slideSize, { autoFit: false });
+    const arrayBuffer = await pptx.write({ outputType: "arraybuffer" });
+    const uint8array = await pptx.write({ outputType: "uint8array" });
+    const nodeBuffer = await pptx.write({ outputType: "nodebuffer" });
+    const stream = await pptx.stream();
+
+    expect(new Uint8Array(arrayBuffer).slice(0, 2)).toEqual(
+      new Uint8Array([0x50, 0x4b]),
+    );
+    expect(uint8array.slice(0, 2)).toEqual(new Uint8Array([0x50, 0x4b]));
+    expect(nodeBuffer.subarray(0, 2)).toEqual(Buffer.from([0x50, 0x4b]));
+    expect(stream.slice(0, 2)).toEqual(new Uint8Array([0x50, 0x4b]));
+    expect(await pptx.write({ outputType: "base64" })).toMatch(/^UEs/);
+  });
+
+  it("writeFile は拡張子を補ってファイルへ保存する", async () => {
+    const { pptx } = await buildPptx(xml, slideSize, { autoFit: false });
+    const directory = await mkdtemp(join(tmpdir(), "pom-output-"));
+    const fileName = join(directory, "presentation");
+
+    expect(await pptx.writeFile(fileName)).toBe(`${fileName}.pptx`);
+    expect((await readFile(`${fileName}.pptx`)).subarray(0, 2)).toEqual(
+      Buffer.from([0x50, 0x4b]),
+    );
   });
 });

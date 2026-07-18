@@ -58,7 +58,7 @@ export async function prefetchImageSize(
       const arrayBuffer = await response.arrayBuffer();
       buffer = new Uint8Array(arrayBuffer);
 
-      // 画像データをBase64形式でキャッシュ（pptxgenjs用）
+      // 画像データを Base64 形式でキャッシュ（PPTX authoring 用）
       const contentType = response.headers.get("content-type") || "image/png";
       const base64 = Buffer.from(arrayBuffer).toString("base64");
       dataCache.set(src, `${contentType};base64,${base64}`);

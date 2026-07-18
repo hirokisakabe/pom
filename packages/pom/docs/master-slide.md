@@ -72,7 +72,7 @@ const { pptx } = await buildPptx(
           color: "1E293B",
         },
       ],
-      // Page number (automatically inserted by pptxgenjs)
+      // Page number (inserted as a PowerPoint slide-number field)
       slideNumber: {
         x: 1032,
         y: 682,
@@ -96,7 +96,7 @@ type SlideMasterOptions = {
   margin?:
     number | { top?: number; right?: number; bottom?: number; left?: number };
   objects?: MasterObject[]; // Static objects (absolute coordinates in px)
-  slideNumber?: SlideNumberOptions; // Page number using pptxgenjs built-in feature
+  slideNumber?: SlideNumberOptions; // PowerPoint slide-number field
 };
 
 type MasterObject =
@@ -157,10 +157,10 @@ type SlideNumberOptions = {
 
 ## Features
 
-- **True PowerPoint Master**: Uses pptxgenjs's `defineSlideMaster` to create a real master slide that is editable in PowerPoint
+- **True PowerPoint Master**: Uses `@pptx-glimpse/document` authoring APIs to create a real master slide that is editable in PowerPoint
 - **Static Objects**: Define text, images, rectangles, and lines with absolute coordinates (in pixels)
 - **Background**: Set solid color, image path, or base64-encoded image as the slide background
-- **Page Number**: Automatic page numbering using pptxgenjs built-in feature
+- **Page Number**: Automatic page numbering using a PowerPoint slide-number field
 - **Margin**: Define content margins in pixels
 
 ## Background Options
@@ -245,4 +245,4 @@ The path is resolved relative to the `.pom.md` file.
 
 - All coordinates and dimensions are specified in **pixels** (px)
 - Coordinates are converted internally to inches (96 DPI)
-- The `slideNumber` option uses pptxgenjs's built-in page number feature
+- The `slideNumber` option creates a PowerPoint slide-number field

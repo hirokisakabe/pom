@@ -10,7 +10,7 @@ import type { RenderContext } from "../types.ts";
 import { pxToPt } from "../units.ts";
 import { getContentArea } from "../utils/contentArea.ts";
 import { pxToEmu } from "../units.ts";
-import { toColorInput } from "../glimpseTextBoxes.ts";
+import { toColorInput } from "../pptxAuthoring.ts";
 import {
   addGlimpseShape,
   createShapeBoundsInput,
@@ -109,7 +109,7 @@ export function renderShapeNode(
   addGlimpseShape(
     ctx,
     {
-      preset: node.shapeType,
+      geometry: { kind: "preset", preset: node.shapeType },
       ...createShapeBoundsInput(boundsPx),
       rotation: createShapeRotationInput(node.rotate),
       fill: node.fill?.color
