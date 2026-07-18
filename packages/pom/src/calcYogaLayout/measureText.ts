@@ -143,7 +143,7 @@ function calculateResult(
 function normalizeFontWeight(
   weight: "normal" | "bold" | number | undefined,
 ): "normal" | "bold" {
-  if (weight === "bold" || weight === 700) {
+  if (weight === "bold" || (typeof weight === "number" && weight >= 600)) {
     return "bold";
   }
   return "normal";

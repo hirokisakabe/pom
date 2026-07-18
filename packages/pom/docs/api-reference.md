@@ -167,6 +167,14 @@ Controls how text width is measured for line breaking and layout. Accepts `"open
 Registers custom font data for layout measurement. Both `ArrayBuffer` and `Uint8Array` are accepted, so the same API works in Node.js and browsers.
 
 ```typescript
+interface FontInput {
+  name?: string;
+  data: ArrayBuffer | Uint8Array;
+  weight?: "normal" | "bold" | number;
+}
+```
+
+```typescript
 import type { FontInput } from "@hirokisakabe/pom";
 
 const fonts: FontInput[] = [

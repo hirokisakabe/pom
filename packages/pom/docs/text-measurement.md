@@ -61,7 +61,7 @@ The supplied bytes affect advance-width measurement and wrapping for `Text`, `Ul
 
 ### Why this matters
 
-Previously, layout measurement always used Noto Sans JP metrics even when a different `fontFamily` was specified for rendering. This caused layout misalignment because the measured widths did not match the rendered widths. Now, when a non-bundled font is specified, pom uses a font-independent heuristic instead, reducing the mismatch.
+Previously, layout measurement always used Noto Sans JP metrics even when a different `fontFamily` was specified for rendering. This caused layout misalignment because the measured widths did not match the rendered widths. Now, when an unregistered non-bundled font is specified, pom uses a font-independent heuristic instead, reducing the mismatch.
 
 ### Supported nodes
 

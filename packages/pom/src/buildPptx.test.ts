@@ -1,4 +1,4 @@
-import { describe, expect, expectTypeOf, it, vi } from "vitest";
+import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import JSZip from "jszip";
 import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -28,6 +28,8 @@ type GlimpseCompatibleFontBuffer = {
 };
 
 expectTypeOf<GlimpseCompatibleFontBuffer>().toMatchTypeOf<FontInput>();
+
+afterEach(() => vi.restoreAllMocks());
 
 describe("buildPptx 並列実行", () => {
   const slideSize = { w: 1280, h: 720 };
@@ -123,6 +125,8 @@ describe("buildPptx 並列実行", () => {
     expect(regularCall?.[4]).toBeDefined();
     expect(boldCall?.[4]).toBeDefined();
     expect(regularCall?.[4]).not.toBe(boldCall?.[4]);
+    expect(regularCall?.[4]?.hasFont("Parallel Regular", "normal")).toBe(true);
+    expect(boldCall?.[4]?.hasFont("Parallel Bold", "normal")).toBe(true);
     expect(regularCall?.[4]?.hasFont("Parallel Bold", "normal")).toBe(false);
     expect(boldCall?.[4]?.hasFont("Parallel Regular", "normal")).toBe(false);
 
@@ -153,6 +157,9 @@ describe("buildPptx custom fonts", () => {
       ([, , options]) => options.fontFamily === "Custom Fixture",
     );
     expect(customCalls).toHaveLength(4);
+    for (const expectedText of ["Text", "Ul", "Ol", "Shape"]) {
+      expect(customCalls.some(([text]) => text === expectedText)).toBe(true);
+    }
     expect(
       customCalls.every((call) => call[4]?.hasFont("Custom Fixture", "normal")),
     ).toBe(true);

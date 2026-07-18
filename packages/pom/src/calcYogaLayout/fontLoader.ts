@@ -29,7 +29,7 @@ const opentype =
 const fontCache = new Map<string, Font>();
 
 function normalizeFamilyName(fontFamily: string): string {
-  return fontFamily.trim().toLocaleLowerCase();
+  return fontFamily.trim().toLowerCase();
 }
 
 function normalizeWeight(weight: FontInput["weight"], font?: Font): FontWeight {

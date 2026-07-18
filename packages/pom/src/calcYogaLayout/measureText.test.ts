@@ -173,6 +173,11 @@ describe("measureText", () => {
       });
 
       expect(custom).toEqual(bundled);
+
+      const interRegistry = new FontRegistry([
+        { ...CUSTOM_FONT_REGULAR, name: "Inter" },
+      ]);
+      expect(interRegistry.hasFont("inter", "normal")).toBe(true);
     });
 
     it("name 未指定時は font 内部の family 名で解決する", () => {
@@ -251,8 +256,8 @@ describe("measureText", () => {
 
     it("weight 未指定時は font metadata から bold を判定する", () => {
       const registry = new FontRegistry([
-        CUSTOM_FONT_REGULAR,
         { ...CUSTOM_FONT_BOLD, weight: undefined },
+        CUSTOM_FONT_REGULAR,
       ]);
       const inferred = measureText(
         "WWW Hello",
@@ -270,9 +275,54 @@ describe("measureText", () => {
         fontSizePx: 48,
         fontWeight: "bold",
       });
+      const inferredRegular = measureText(
+        "WWW Hello",
+        Number.POSITIVE_INFINITY,
+        {
+          fontFamily: "Custom Fixture",
+          fontSizePx: 48,
+          fontWeight: "normal",
+        },
+        "auto",
+        registry,
+      );
+      const bundledRegular = measureText(
+        "WWW Hello",
+        Number.POSITIVE_INFINITY,
+        { fontFamily: "Noto Sans JP", fontSizePx: 48 },
+      );
 
       expect(inferred).toEqual(bundledBold);
+      expect(inferredRegular).toEqual(bundledRegular);
     });
+
+    it.each([600, 800, 900])(
+      "numeric weight %i は bold face を選択する",
+      (weight) => {
+        const registry = new FontRegistry([
+          CUSTOM_FONT_REGULAR,
+          { ...CUSTOM_FONT_BOLD, weight: 600 },
+        ]);
+        const custom = measureText(
+          "WWW Hello",
+          Number.POSITIVE_INFINITY,
+          {
+            fontFamily: "Custom Fixture",
+            fontSizePx: 48,
+            fontWeight: weight,
+          },
+          "auto",
+          registry,
+        );
+        const bundledBold = measureText("WWW Hello", Number.POSITIVE_INFINITY, {
+          fontFamily: "Noto Sans JP",
+          fontSizePx: 48,
+          fontWeight: "bold",
+        });
+
+        expect(custom).toEqual(bundledBold);
+      },
+    );
 
     it("fallback mode は登録済み font も heuristic で計測する", () => {
       const registry = new FontRegistry([CUSTOM_FONT_REGULAR]);
