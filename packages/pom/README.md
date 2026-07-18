@@ -48,7 +48,7 @@
 - **Leaf Rotation** — `Text`, `Shape`, `Image`, and `Icon` support `rotate` in clockwise degrees at render time without affecting flex layout.
 - **Pixel Units** — Intuitive pixel-based sizing (internally converted to inches at 96 DPI).
 - **Master Slide** — Define headers, footers, and page numbers once — applied to all slides automatically.
-- **Accurate Text Measurement** — Text width measured with opentype.js and bundled Noto Sans JP fonts for consistent layout.
+- **Accurate Text Measurement** — Text width measured with opentype.js and bundled or caller-supplied font bytes for consistent layout in Node.js and browsers.
 
 ## Installation
 

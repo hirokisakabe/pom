@@ -8,6 +8,15 @@ import * as opentypeModule from "opentype.js";
 import { NOTO_SANS_JP_REGULAR_BASE64 } from "./fonts/notoSansJPRegular.ts";
 import { NOTO_SANS_JP_BOLD_BASE64 } from "./fonts/notoSansJPBold.ts";
 
+export interface FontInput {
+  name?: string;
+  data: ArrayBuffer | Uint8Array;
+  weight?: "normal" | "bold" | number;
+}
+
+type FontWeight = "normal" | "bold";
+type FontFaces = Partial<Record<FontWeight, Font>>;
+
 // opentype.js 2.0 は ESM ビルドで named export のみを提供する一方、
 // CJS UMD ビルドでは module.exports = factory() の動的構造のため
 // Node ESM から取り込むと named exports が静的解析できない。
@@ -18,6 +27,105 @@ const opentype =
 
 // フォントキャッシュ
 const fontCache = new Map<string, Font>();
+
+function normalizeFamilyName(fontFamily: string): string {
+  return fontFamily.trim().toLocaleLowerCase();
+}
+
+function normalizeWeight(weight: FontInput["weight"], font?: Font): FontWeight {
+  if (weight === "bold" || (typeof weight === "number" && weight >= 600)) {
+    return "bold";
+  }
+  if (weight === "normal" || typeof weight === "number") {
+    return "normal";
+  }
+
+  const metadataWeight = font?.tables?.os2?.usWeightClass;
+  if (typeof metadataWeight === "number") {
+    return metadataWeight >= 600 ? "bold" : "normal";
+  }
+
+  const subfamilyNames = getLocalizedNames(font, "fontSubfamily");
+  return subfamilyNames.some((name) => /\bbold\b/i.test(name))
+    ? "bold"
+    : "normal";
+}
+
+function getLocalizedNames(font: Font | undefined, key: string): string[] {
+  const results = new Set<string>();
+  const collectStrings = (value: unknown): void => {
+    if (typeof value === "string") {
+      if (value.length > 0) results.add(value);
+      return;
+    }
+    if (!value || typeof value !== "object") return;
+    for (const child of Object.values(value)) collectStrings(child);
+  };
+  const visit = (value: unknown): void => {
+    if (!value || typeof value !== "object") return;
+    const record = value as Record<string, unknown>;
+    if (key in record) collectStrings(record[key]);
+    for (const child of Object.values(record)) visit(child);
+  };
+
+  visit(font?.names);
+  return [...results];
+}
+
+function toArrayBuffer(data: ArrayBuffer | Uint8Array): ArrayBuffer {
+  if (data instanceof ArrayBuffer) return data;
+  return data.buffer.slice(
+    data.byteOffset,
+    data.byteOffset + data.byteLength,
+  ) as ArrayBuffer;
+}
+
+/** build ごとに独立した custom font face の registry。 */
+export class FontRegistry {
+  readonly #families = new Map<string, FontFaces>();
+
+  constructor(inputs: readonly FontInput[] = []) {
+    for (const input of inputs) {
+      const font = opentype.parse(toArrayBuffer(input.data));
+      const weight = normalizeWeight(input.weight, font);
+      const familyNames = new Set([
+        ...(input.name ? [input.name] : []),
+        ...getLocalizedNames(font, "fontFamily"),
+        ...getLocalizedNames(font, "preferredFamily"),
+      ]);
+
+      for (const familyName of familyNames) {
+        const key = normalizeFamilyName(familyName);
+        if (!key) continue;
+        const faces = this.#families.get(key) ?? {};
+        faces[weight] = font;
+        this.#families.set(key, faces);
+      }
+    }
+  }
+
+  hasFont(fontFamily: string, weight: FontWeight): boolean {
+    return this.resolve(fontFamily, weight) !== undefined;
+  }
+
+  measureTextWidth(
+    text: string,
+    fontFamily: string,
+    fontSizePx: number,
+    weight: FontWeight,
+  ): number | undefined {
+    return this.resolve(fontFamily, weight)?.getAdvanceWidth(text, fontSizePx, {
+      kerning: true,
+    });
+  }
+
+  private resolve(fontFamily: string, weight: FontWeight): Font | undefined {
+    const faces = this.#families.get(normalizeFamilyName(fontFamily));
+    if (!faces) return undefined;
+    if (weight === "bold") return faces.bold ?? faces.normal;
+    return faces.normal;
+  }
+}
 
 /**
  * Base64 文字列を ArrayBuffer に変換する
@@ -70,13 +178,13 @@ function getFont(weight: "normal" | "bold"): Font {
 }
 
 /** バンドル済みフォント名の一覧 */
-const BUNDLED_FONT_NAMES = new Set(["Noto Sans JP"]);
+const BUNDLED_FONT_NAMES = new Set([normalizeFamilyName("Noto Sans JP")]);
 
 /**
  * 指定されたフォントがバンドル済みかどうかを判定する
  */
 export function isBundledFont(fontFamily: string): boolean {
-  return BUNDLED_FONT_NAMES.has(fontFamily);
+  return BUNDLED_FONT_NAMES.has(normalizeFamilyName(fontFamily));
 }
 
 /**

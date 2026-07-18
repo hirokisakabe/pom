@@ -40,6 +40,7 @@ export const shapeNodeDef: NodeDefinition = {
             fontWeight,
           },
           ctx.textMeasurementMode,
+          ctx.fontRegistry,
         );
 
         return { width: widthPx, height: heightPx };

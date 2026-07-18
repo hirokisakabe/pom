@@ -1,6 +1,6 @@
 # Text Measurement
 
-pom uses `opentype.js` with bundled Noto Sans JP fonts to measure text width and determine line break positions. This approach works consistently across all Node.js environments, including serverless platforms like Vercel or AWS Lambda.
+pom uses `opentype.js` with bundled Noto Sans JP fonts or caller-supplied font bytes to measure text width and determine line break positions. This approach works consistently in Node.js and browsers, including serverless platforms like Vercel or AWS Lambda.
 
 ## textMeasurement Option
 
@@ -18,17 +18,46 @@ const { pptx } = await buildPptx(
 
 | Value        | Description                                                                            |
 | ------------ | -------------------------------------------------------------------------------------- |
-| `"opentype"` | Always use opentype.js for text width measurement (default)                            |
+| `"opentype"` | Always use opentype.js; an unregistered family uses bundled Noto Sans JP metrics       |
 | `"fallback"` | Always use fallback calculation (CJK characters = 1em, alphanumeric = 0.5em estimated) |
-| `"auto"`     | Use opentype.js (same as "opentype", default)                                          |
+| `"auto"`     | Use opentype.js for bundled or registered fonts; otherwise use fallback (default)      |
 
 ## Font Resolution Rules
 
 pom resolves the measurement method based on the `fontFamily` specified on each node:
 
 1. **Bundled font (`Noto Sans JP`)**: Uses opentype.js for accurate glyph-level measurement. This is the default when no `fontFamily` is specified.
-2. **Non-bundled fonts** (e.g., `Arial`, `Meiryo`): Automatically falls back to heuristic estimation (CJK characters = 1em, alphanumeric = 0.5em). This ensures layout does not use mismatched font metrics.
-3. **`textMeasurement: "fallback"`**: Forces heuristic estimation regardless of font family.
+2. **Registered custom fonts**: Uses that face's opentype advance widths. Family matching is case-insensitive. A requested bold face falls back to the registered regular face when necessary.
+3. **Unregistered fonts** (e.g., `Arial`, `Meiryo`): In `"auto"` mode, falls back to heuristic estimation (CJK characters = 1em, alphanumeric = 0.5em).
+4. **`textMeasurement: "fallback"`**: Forces heuristic estimation regardless of registered fonts.
+5. **`textMeasurement: "opentype"`**: Preserves the legacy behavior of using bundled Noto Sans JP metrics when the requested family is not registered.
+
+## Custom Font Bytes
+
+Pass font bytes through the `fonts` build option. Its shape is compatible with pptx-glimpse font buffers and does not require a file-system API:
+
+```typescript
+import { buildPptx, type FontInput } from "@hirokisakabe/pom";
+
+const fonts: FontInput[] = [
+  { name: "Brand Sans", data: regularBytes },
+  { name: "Brand Sans", data: boldBytes, weight: 700 },
+];
+
+const { pptx } = await buildPptx(xml, { w: 1280, h: 720 }, { fonts });
+```
+
+```typescript
+interface FontInput {
+  name?: string;
+  data: ArrayBuffer | Uint8Array;
+  weight?: "normal" | "bold" | number;
+}
+```
+
+When `name` is present, it is registered as a family alias in addition to family names read from the font's names table. Without `name`, use the font's internal family name. If `weight` is omitted, pom reads the font metadata when possible and otherwise registers it as regular.
+
+The supplied bytes affect advance-width measurement and wrapping for `Text`, `Ul`, `Ol`, and `Shape`. They do not change custom-font vertical metrics, accurately combine per-`Span` font families, embed fonts in the PPTX, or install fonts in the viewing environment.
 
 ### Why this matters
 
@@ -42,7 +71,8 @@ Font resolution applies consistently to all text-bearing nodes: `Text`, `Ul`, `O
 
 - **All environments**: Default (`"auto"`) works fine - bundled fonts ensure consistent results
 - **Reduced bundle size**: Use `"fallback"` if you want to avoid loading bundled fonts (less accurate but smaller bundle)
-- **Custom fonts**: When using `fontFamily` other than `Noto Sans JP`, pom automatically uses fallback measurement to avoid metric mismatch
+- **Custom fonts with available bytes**: Register them through `fonts` and keep the default `"auto"` mode
+- **Custom fonts without available bytes**: Default `"auto"` uses heuristic measurement to avoid mismatched metrics
 
 ## Line Height and Rendering
 

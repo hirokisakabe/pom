@@ -14,6 +14,7 @@ async function buildPptx(
     master?: SlideMasterOptions;
     masterPptx?: ArrayBuffer | Uint8Array;
     textMeasurement?: TextMeasurementMode;
+    fonts?: FontInput[];
     autoFit?: boolean;
     strict?: boolean;
   },
@@ -60,6 +61,7 @@ The slide dimensions in pixels. Internally converted to inches at 96 DPI.
 | `master`          | `SlideMasterOptions`        | `undefined` | Slide master settings                                                                             |
 | `masterPptx`      | `ArrayBuffer \| Uint8Array` | `undefined` | Existing PPTX file to use as master (extracts background). See [Master Slide](./master-slide.md). |
 | `textMeasurement` | `TextMeasurementMode`       | `"auto"`    | Text width measurement method                                                                     |
+| `fonts`           | `FontInput[]`               | `[]`        | Custom font bytes used for text width measurement. See [Text Measurement](./text-measurement.md). |
 | `autoFit`         | `boolean`                   | `true`      | Auto-fit content when it overflows slides                                                         |
 | `strict`          | `boolean`                   | `false`     | Throw `DiagnosticsError` if any diagnostics are collected                                         |
 
@@ -160,6 +162,25 @@ const { pptx } = await buildPptx(
 
 Controls how text width is measured for line breaking and layout. Accepts `"opentype"`, `"fallback"`, or `"auto"` (default). See [Text Measurement](./text-measurement.md) for details on each mode.
 
+### fonts
+
+Registers custom font data for layout measurement. Both `ArrayBuffer` and `Uint8Array` are accepted, so the same API works in Node.js and browsers.
+
+```typescript
+import type { FontInput } from "@hirokisakabe/pom";
+
+const fonts: FontInput[] = [
+  { name: "My Font", data: regularFontBytes },
+  { name: "My Font", data: boldFontBytes, weight: "bold" },
+];
+
+const { pptx } = await buildPptx(xml, { w: 1280, h: 720 }, { fonts });
+```
+
+`name` is an optional family alias. The family names stored inside the font are always registered as well. When `weight` is omitted, pom uses font metadata when available and otherwise treats the face as regular. Family matching is case-insensitive, and bold text falls back to the registered regular face when no bold face is available.
+
+Custom font data is used only for advance-width measurement during layout. pom does not embed the font in the generated PPTX or install it in PowerPoint or the operating system; install or distribute the font separately where the presentation is viewed.
+
 ### autoFit
 
 When enabled (default), content that exceeds the slide height is automatically adjusted to fit. Adjustments are applied in priority order:
@@ -187,6 +208,7 @@ const { pptx } = await buildPptx(
 ```typescript
 import type {
   BuildPptxResult,
+  FontInput,
   TextMeasurementMode,
   Diagnostic,
   DiagnosticCode,

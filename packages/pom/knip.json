@@ -22,7 +22,7 @@
     "vitest"
   ],
   "vitest": {
-    "config": ["vitest.config.ts"]
+    "config": ["vitest.config.ts", "vitest.browser.config.ts"]
   },
   "rules": {
     "exports": "warn",

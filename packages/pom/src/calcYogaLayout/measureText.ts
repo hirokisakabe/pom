@@ -1,6 +1,7 @@
 import {
   measureTextWidth as measureTextWidthOpentype,
   isBundledFont,
+  type FontRegistry,
 } from "./fontLoader.ts";
 
 type MeasureOptions = {
@@ -156,6 +157,7 @@ export function measureText(
   maxWidthPx: number,
   opts: MeasureOptions,
   mode: TextMeasurementMode = "auto",
+  fontRegistry?: FontRegistry,
 ): {
   widthPx: number;
   heightPx: number;
@@ -170,7 +172,13 @@ export function measureText(
       case "fallback":
         return true;
       case "auto":
-        return !isBundledFont(opts.fontFamily);
+        return (
+          !isBundledFont(opts.fontFamily) &&
+          !fontRegistry?.hasFont(
+            opts.fontFamily,
+            normalizeFontWeight(opts.fontWeight),
+          )
+        );
     }
   })();
 
@@ -178,7 +186,7 @@ export function measureText(
     return measureTextFallback(text, maxWidthPx, opts);
   }
 
-  return measureTextWithOpentype(text, maxWidthPx, opts);
+  return measureTextWithOpentype(text, maxWidthPx, opts, fontRegistry);
 }
 
 /**
@@ -188,13 +196,20 @@ function measureTextWithOpentype(
   text: string,
   maxWidthPx: number,
   opts: MeasureOptions,
+  fontRegistry?: FontRegistry,
 ): { widthPx: number; heightPx: number } {
   const fontWeight = normalizeFontWeight(opts.fontWeight);
   const lines = wrapText(
     text,
     maxWidthPx,
     withLetterSpacing(
-      (t) => measureTextWidthOpentype(t, opts.fontSizePx, fontWeight),
+      (t) =>
+        fontRegistry?.measureTextWidth(
+          t,
+          opts.fontFamily,
+          opts.fontSizePx,
+          fontWeight,
+        ) ?? measureTextWidthOpentype(t, opts.fontSizePx, fontWeight),
       opts.letterSpacingPx,
     ),
   );
