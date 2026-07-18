@@ -51,9 +51,10 @@
     "@types/react": "^19",
     "@vitejs/plugin-react": "^6.0.3",
     "@vitest/coverage-v8": "^4.1.10",
-    "happy-dom": "^20.10.6",
-    "prettier": "^3.9.4",
+    "happy-dom": "^20.11.0",
+    "prettier": "^3.9.5",
     "tailwindcss": "^4",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
     "vitest": "^4.1.10"
   }
 }

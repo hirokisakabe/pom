@@ -12,8 +12,15 @@
     "scripts/docs-images/**/*.ts",
     "scripts/**/*.ts"
   ],
-  "ignoreBinaries": ["eslint", "knip", "prettier", "tsc", "vitest"],
-  "ignoreDependencies": ["vitest"],
+  "ignoreBinaries": [
+    "convert",
+    "eslint",
+    "knip",
+    "prettier",
+    "soffice",
+    "tsc",
+    "vitest"
+  ],
   "vitest": {
     "config": ["vitest.config.ts"]
   },
