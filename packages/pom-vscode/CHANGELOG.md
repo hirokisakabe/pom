@@ -1,5 +1,11 @@
 # pom-vscode
 
+## 0.4.1
+
+### Patch Changes
+
+- [#960](https://github.com/hirokisakabe/pom/pull/960) [`60cd1e5`](https://github.com/hirokisakabe/pom/commit/60cd1e5de556b7bc0bd3366091fe703ace608e19) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - 通常の統合テストを軽量 fixture に切り替え、展示用サンプルのプレビュー変換を専用テストとして分離しました。
+
 ## 0.4.0
 
 ### Minor Changes
