@@ -111,9 +111,11 @@ function measureNodeBounds(
   parent: POMNode,
   parentY: number,
 ): ContentHeightResult["furthestNode"] {
-  if (parent.type === "layer" && node.type === "line") {
-    const layerOffsetY = parentY + getLayerChildY(node);
-    const top = layerOffsetY + Math.min(node.y1, node.y2);
+  if (node.type === "line") {
+    // Line の端点は通常はスライド絶対座標。Layer 直下だけ Layer 相対になる。
+    const offsetY =
+      parent.type === "layer" ? parentY + getLayerChildY(node) : 0;
+    const top = offsetY + Math.min(node.y1, node.y2);
     const height = Math.abs(node.y2 - node.y1);
     return { type: node.type, top, height, bottom: top + height };
   }

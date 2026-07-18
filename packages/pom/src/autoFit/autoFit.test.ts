@@ -524,4 +524,25 @@ describe("autoFitSlide", () => {
       freeYogaTree(map);
     }
   });
+
+  it("通常コンテナ内 Line はスライド絶対座標で計測する", async () => {
+    const [node] = parseXml(`
+      <Slide>
+        <VStack>
+          <Line x1="0" y1="0" x2="100" y2="730" />
+        </VStack>
+      </Slide>
+    `);
+    const ctx = createBuildContext("fallback");
+    const map = await autoFitSlide(node, slideSize, ctx);
+
+    try {
+      expect(ctx.diagnostics.items).toHaveLength(1);
+      expect(ctx.diagnostics.items[0].message).toContain(
+        "Furthest node: line at y=0px with height=730px (bottom=730px)",
+      );
+    } finally {
+      freeYogaTree(map);
+    }
+  });
 });
