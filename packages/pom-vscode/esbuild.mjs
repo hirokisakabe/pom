@@ -60,7 +60,7 @@ const resvgModulePlugin = {
       const original = contents;
       // 動的 require を静的 require に書き換え
       contents = contents.replace(
-        /const mod = getNodeRequire\(\)\(RESVG_PKG\)/,
+        /const mod = (?:getNodeRequire\(\)\(RESVG_PKG\)|require\(RESVG_PKG\))/,
         'const mod = require("@resvg/resvg-wasm")',
       );
       if (contents === original) {
