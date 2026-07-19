@@ -24,6 +24,7 @@ interface SlidePreviewProps {
   svgs: string[];
   isLoading: boolean;
   diagnostics: PomEditorDiagnostic[] | null;
+  diagnosticNotice?: string | null;
   currentPage: number;
   onPageChange: (page: number) => void;
   onDiagnosticClick?: (diagnosticIndex: number) => void;
@@ -42,6 +43,7 @@ export function SlidePreview({
   svgs,
   isLoading,
   diagnostics,
+  diagnosticNotice,
   currentPage,
   onPageChange,
   onDiagnosticClick,
@@ -113,6 +115,20 @@ export function SlidePreview({
   if (diagnostics && diagnostics.length > 0) {
     return (
       <div style={frameStyle}>
+        {diagnosticNotice && (
+          <div
+            role="status"
+            style={{
+              padding: "10px 16px",
+              borderBottom: "1px solid #fde68a",
+              background: "#fffbeb",
+              color: "#92400e",
+              fontSize: 13,
+            }}
+          >
+            {diagnosticNotice}
+          </div>
+        )}
         <ul
           style={{
             overflow: "auto",
@@ -133,7 +149,7 @@ export function SlidePreview({
             >
               <button
                 type="button"
-                disabled={!diagnostic.line || !onDiagnosticClick}
+                disabled={!onDiagnosticClick}
                 onClick={() => onDiagnosticClick?.(index)}
                 style={{
                   display: "flex",
@@ -144,10 +160,7 @@ export function SlidePreview({
                   background: "transparent",
                   color: "inherit",
                   textAlign: "left",
-                  cursor:
-                    diagnostic.line && onDiagnosticClick
-                      ? "pointer"
-                      : "default",
+                  cursor: onDiagnosticClick ? "pointer" : "default",
                 }}
               >
                 <span aria-hidden="true" style={{ color: "#dc2626" }}>

@@ -10,9 +10,14 @@ import type { AstNode } from "./ast.ts";
 export interface PomAstEditorProps {
   xml: string;
   onChange: (xml: string) => void;
+  onRequestXmlMode?: () => void;
 }
 
-export function PomAstEditor({ xml, onChange }: PomAstEditorProps) {
+export function PomAstEditor({
+  xml,
+  onChange,
+  onRequestXmlMode,
+}: PomAstEditorProps) {
   const [ast, setAst] = useState<AstNode[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +51,25 @@ export function PomAstEditor({ xml, onChange }: PomAstEditorProps) {
           wordBreak: "break-word",
         }}
       >
-        {error}
+        <div>{error}</div>
+        {onRequestXmlMode && (
+          <button
+            type="button"
+            onClick={onRequestXmlMode}
+            style={{
+              marginTop: 12,
+              border: "1px solid #dc2626",
+              borderRadius: 6,
+              padding: "6px 8px",
+              background: "#fff",
+              color: "#b91c1c",
+              cursor: "pointer",
+              fontFamily: "sans-serif",
+            }}
+          >
+            Open XML editor
+          </button>
+        )}
       </div>
     );
   }
