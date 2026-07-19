@@ -201,4 +201,22 @@ describe("CLI preview App", () => {
       ),
     ).toBeTruthy();
   });
+
+  it("Save内容と一致するdocument通知を保存成功として反映する", async () => {
+    arrangeDocument();
+    vi.stubGlobal("EventSource", FakeEventSource);
+    render(<App />);
+    const editor = await screen.findByRole("textbox", { name: "XML editor" });
+    await waitFor(() => expect(FakeEventSource.instances).toHaveLength(1));
+    fireEvent.change(editor, { target: { value: "<Text>browser</Text>" } });
+
+    FakeEventSource.instances[0]?.emit({
+      xml: "<Text>browser</Text>",
+      revision: "revision-2",
+      filename: "slides.pom.xml",
+      editable: true,
+    });
+
+    expect(await screen.findByText("Saved")).toBeTruthy();
+  });
 });

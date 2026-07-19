@@ -176,8 +176,13 @@ describe("preview server", () => {
     watchState.callback?.();
     await fs.promises.writeFile(inputFile, "<Text>external after save</Text>");
     watchState.callback?.();
-    expect(onDocumentEvent).toHaveBeenCalledTimes(1);
-    expect(onDocumentEvent).toHaveBeenCalledWith(
+    expect(onDocumentEvent).toHaveBeenCalledTimes(2);
+    expect(onDocumentEvent).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ xml }),
+    );
+    expect(onDocumentEvent).toHaveBeenNthCalledWith(
+      2,
       expect.objectContaining({ xml: "<Text>external after save</Text>" }),
     );
     expect(generatePreview).not.toHaveBeenCalled();
@@ -202,6 +207,31 @@ describe("preview server", () => {
     await expect(response.json()).resolves.toMatchObject({ code: "conflict" });
     expect(await fs.promises.readFile(inputFile, "utf8")).toBe(
       "<Text>external</Text>",
+    );
+  });
+
+  it("同じrevisionからの同時Saveは一方だけを受け付ける", async () => {
+    await startServer();
+    const document = await fetch(`${baseUrl}/_api/document`).then(
+      (response) => response.json() as Promise<{ revision: string }>,
+    );
+    const save = (xml: string) =>
+      fetch(`${baseUrl}/_api/document`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ xml, revision: document.revision }),
+      });
+
+    const responses = await Promise.all([
+      save("<Text>first</Text>"),
+      save("<Text>second</Text>"),
+    ]);
+
+    expect(responses.map((response) => response.status).sort()).toEqual([
+      200, 409,
+    ]);
+    expect(["<Text>first</Text>", "<Text>second</Text>"]).toContain(
+      await fs.promises.readFile(inputFile, "utf8"),
     );
   });
 });

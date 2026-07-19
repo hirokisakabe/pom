@@ -263,8 +263,8 @@ export function createPreviewServer(
 ): http.Server {
   const verbose = options.verbose ?? false;
   const eventClients = new Set<http.ServerResponse>();
-  let ignoredWatchRevision: string | null = null;
-  let ignoredWatchTimer: NodeJS.Timeout | null = null;
+  const ignoredWatchRevisions = new Map<string, NodeJS.Timeout>();
+  let saveQueue = Promise.resolve();
   const clientScriptPath = fileURLToPath(
     new URL("./assets/preview.js", import.meta.url),
   );
@@ -277,13 +277,35 @@ export function createPreviewServer(
     }
   }
 
+  function ignoreNextWatch(revision: string): void {
+    const existing = ignoredWatchRevisions.get(revision);
+    if (existing) clearTimeout(existing);
+    const timer = setTimeout(() => {
+      ignoredWatchRevisions.delete(revision);
+    }, 1000);
+    ignoredWatchRevisions.set(revision, timer);
+  }
+
+  function stopIgnoringWatch(revision: string): void {
+    const timer = ignoredWatchRevisions.get(revision);
+    if (timer) clearTimeout(timer);
+    ignoredWatchRevisions.delete(revision);
+  }
+
+  function serializeSave<T>(save: () => Promise<T>): Promise<T> {
+    const result = saveQueue.then(save, save);
+    saveQueue = result.then(
+      () => undefined,
+      () => undefined,
+    );
+    return result;
+  }
+
   const watcher = watchInputFile(absInput, () => {
     try {
       const document = readPreviewDocument(absInput);
-      if (document.revision === ignoredWatchRevision) {
-        ignoredWatchRevision = null;
-        if (ignoredWatchTimer) clearTimeout(ignoredWatchTimer);
-        ignoredWatchTimer = null;
+      if (ignoredWatchRevisions.has(document.revision)) {
+        stopIgnoringWatch(document.revision);
         return;
       }
       sendDocumentEvent(document);
@@ -359,18 +381,14 @@ export function createPreviewServer(
         const revision = readStringField(body, "revision");
         try {
           const nextRevision = revisionOf(xml);
-          ignoredWatchRevision = nextRevision;
-          if (ignoredWatchTimer) clearTimeout(ignoredWatchTimer);
-          ignoredWatchTimer = setTimeout(() => {
-            ignoredWatchRevision = null;
-            ignoredWatchTimer = null;
-          }, 1000);
-          await savePreviewDocument(absInput, xml, revision);
+          ignoreNextWatch(nextRevision);
+          await serializeSave(() =>
+            savePreviewDocument(absInput, xml, revision),
+          );
           sendJson(res, 200, { revision: nextRevision });
+          sendDocumentEvent(readPreviewDocument(absInput));
         } catch (error) {
-          ignoredWatchRevision = null;
-          if (ignoredWatchTimer) clearTimeout(ignoredWatchTimer);
-          ignoredWatchTimer = null;
+          stopIgnoringWatch(revisionOf(xml));
           if (error instanceof SaveConflictError) {
             sendJson(res, 409, { code: "conflict", message: error.message });
           } else {
@@ -402,7 +420,8 @@ export function createPreviewServer(
   });
   server.on("close", () => {
     watcher.close();
-    if (ignoredWatchTimer) clearTimeout(ignoredWatchTimer);
+    for (const timer of ignoredWatchRevisions.values()) clearTimeout(timer);
+    ignoredWatchRevisions.clear();
     for (const client of eventClients) client.end();
     eventClients.clear();
   });

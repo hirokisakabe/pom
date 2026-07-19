@@ -61,6 +61,13 @@ export function App() {
         setExternalChange(true);
         return;
       }
+      if (updated.xml === xmlRef.current) {
+        savedXmlRef.current = updated.xml;
+        setSavedXml(updated.xml);
+        setDocument(updated);
+        setExternalChange(false);
+        return;
+      }
       if (xmlRef.current !== savedXmlRef.current) {
         setExternalChange(true);
         return;
