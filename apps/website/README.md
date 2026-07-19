@@ -18,10 +18,10 @@
 ## Website VRT
 
 The four primary views (`/` desktop/mobile, `/nodes` desktop, and
-`/playground` desktop) are compared with Playwright screenshots. The Docker
-image builds the production Next.js site before starting it, and pins the OS,
-Chromium, locale, timezone, color scheme, and device scale factor used for
-screenshots.
+`/playground` desktop) are compared at their fixed first viewport with
+Playwright screenshots. The Docker image builds the production Next.js site
+before starting it, and pins the OS, Chromium, locale, timezone, color scheme,
+and device scale factor used for screenshots.
 
 Run the comparison from this directory:
 
