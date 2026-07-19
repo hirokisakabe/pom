@@ -36,10 +36,10 @@ npm install -g @hirokisakabe/pom-cli    # install preview / build CLI
 Then ask your coding agent to create a deck:
 
 ```text
-/pom-slide Create a three-slide quarterly sales report
+Use the pom-slide skill to create a three-slide quarterly sales report.
 ```
 
-The skill writes `slides.pom.xml`, reviews the rendered slides, and starts live preview when `pom-cli` is available. Build the final deck with:
+In Claude Code, you can also invoke it as `/pom-slide`; in Codex and other agents, use the natural-language request above. The skill writes `slides.pom.xml`, reviews the rendered slides, and starts live preview when `pom-cli` is available. If preview does not start automatically, run `pom preview slides.pom.xml`. Build the final deck with:
 
 ```bash
 pom build slides.pom.xml -o slides.pptx
@@ -86,6 +86,8 @@ npm install -g @hirokisakabe/pom-cli    # live preview / build CLI
 [`skills`](https://github.com/vercel-labs/skills) auto-detects your installed agents (Claude Code, Codex, Cursor, and more) and places the skills for each. Note that `--all` installs every skill for every detected agent, scoped to the current project; pass `-g` for a user-level (global) install, or `--agent` / `--skill` to narrow the targets. To update the skills later, run `npx skills update`.
 
 **Usage — theme → design → preview:**
+
+The slash-command examples below apply to Claude Code. In Codex and other agents, make the same request in natural language and name the `pom-theme` or `pom-slide` skill.
 
 1. **Theme** (optional): onboard your brand assets with `/pom-theme`:
 

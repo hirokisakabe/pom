@@ -111,18 +111,26 @@ const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
 await pptx.writeFile({ fileName: "presentation.pptx" });`;
 
 export default async function LandingPage() {
-  const [highlightedCode, highlightedKitInstall, highlightedPreview] =
-    await Promise.all([
-      codeToHtml(codeExample, { lang: "typescript", theme: "github-dark" }),
-      codeToHtml(
-        `npx skills add hirokisakabe/pom --all\nnpm install -g @hirokisakabe/pom-cli`,
-        { lang: "bash", theme: "github-dark" },
-      ),
-      codeToHtml(
-        `/pom-slide Create a three-slide quarterly sales report\n\npom preview slides.pom.xml\npom build slides.pom.xml -o slides.pptx`,
-        { lang: "bash", theme: "github-dark" },
-      ),
-    ]);
+  const [
+    highlightedCode,
+    highlightedKitInstall,
+    highlightedPrompt,
+    highlightedBuild,
+  ] = await Promise.all([
+    codeToHtml(codeExample, { lang: "typescript", theme: "github-dark" }),
+    codeToHtml(
+      `npx skills add hirokisakabe/pom --all\nnpm install -g @hirokisakabe/pom-cli`,
+      { lang: "bash", theme: "github-dark" },
+    ),
+    codeToHtml(
+      `Use the pom-slide skill to create a three-slide quarterly sales report.`,
+      { lang: "text", theme: "github-dark" },
+    ),
+    codeToHtml(`pom build slides.pom.xml -o slides.pptx`, {
+      lang: "bash",
+      theme: "github-dark",
+    }),
+  ]);
 
   return (
     <div
@@ -237,17 +245,28 @@ export default async function LandingPage() {
           </div>
           <div>
             <p className="mb-2 text-sm font-medium text-gray-500">
-              2. Prompt, preview, and build
+              2. Ask your agent
             </p>
             <div
               className="overflow-x-auto rounded-lg font-[family-name:var(--font-geist-mono)] text-sm leading-relaxed [&_pre]:px-5 [&_pre]:py-4"
-              dangerouslySetInnerHTML={{ __html: highlightedPreview }}
+              dangerouslySetInnerHTML={{ __html: highlightedPrompt }}
+            />
+          </div>
+          <div>
+            <p className="mb-2 text-sm font-medium text-gray-500">
+              3. Build with pom CLI
+            </p>
+            <div
+              className="overflow-x-auto rounded-lg font-[family-name:var(--font-geist-mono)] text-sm leading-relaxed [&_pre]:px-5 [&_pre]:py-4"
+              dangerouslySetInnerHTML={{ __html: highlightedBuild }}
             />
           </div>
           <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-            Use <code>/pom-theme</code> first when you want to onboard brand
-            colors and typography. Continue editing the XML directly or with
-            follow-up prompts; the CLI refreshes the preview as it changes.
+            Requires Node.js 22+. In Claude Code, you can invoke the skill as
+            <code> /pom-slide</code>; in Codex and other agents, use the natural
+            language request above. Use the <code>pom-theme</code> skill first
+            to onboard brand colors and typography. If preview does not start
+            automatically, run <code>pom preview slides.pom.xml</code>.
           </p>
         </div>
       </section>
