@@ -2,8 +2,8 @@
  * 2 点間の直線を line shape に変換する共通描画処理。
  *
  * line shape は左上座標 (x, y) + サイズ (w, h) で表現され、
- * 線の向き (始点→終点) は flipH / flipV で表すため、端点座標からの
- * 変換ロジックを Line / Arrow ノードで共有する。
+ * 線の向き (始点→終点) は flipH / flipV で表す。arrow endpoint の
+ * 型変換だけは native connector の Arrow と共有する。
  */
 import type { LineArrow, LineNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";

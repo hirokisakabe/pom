@@ -714,7 +714,7 @@ Others:
 
 ### Arrow
 
-Connector between two nodes referenced by `id`. Draws a straight line between the center points of the referenced nodes. If a referenced ID is not found, a `ARROW_REF_NOT_FOUND` diagnostic is emitted.
+Native PowerPoint straight connector between two nodes referenced by `id`. `Text` and `Shape` nodes with `shapeType="rect"`, `roundRect`, or `ellipse` are supported targets; the connector attaches to the nearest cardinal connection sites (including shape rotation) and follows the targets when they move. If an ID is not found, `ARROW_REF_NOT_FOUND` is emitted. If it identifies another node type or unsupported shape geometry, `ARROW_REF_NOT_CONNECTABLE` is emitted.
 
 ```xml
 <Layer w="1280" h="720">

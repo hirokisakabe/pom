@@ -1,17 +1,21 @@
 import {
   addChart,
+  addConnector,
   addPicture,
   addShape,
   addTable,
   addTextBox,
+  reorderShapes,
   setSlideBackground,
   type AddChartInput,
+  type AddConnectorInput,
   type AddPictureInput,
   type AddShapeInput,
   type AddTableInput,
   type AddTextBoxInput,
   type PptxSourceModel,
   type SourceHandle,
+  type SourceShapeNode,
 } from "@pptx-glimpse/document";
 
 /** Mutable state needed only while authoring a PPTX. */
@@ -22,6 +26,7 @@ export class PptxAuthoringContext {
   private pictureCount = 0;
   private tableCount = 0;
   private chartCount = 0;
+  private connectorCount = 0;
 
   constructor(
     private currentSource: PptxSourceModel,
@@ -49,18 +54,39 @@ export class PptxAuthoringContext {
     return this.currentSlideHandle;
   }
 
-  addTextBox(input: AddTextBoxInput, name?: string): void {
+  addTextBox(input: AddTextBoxInput, name?: string): SourceHandle {
     this.currentSource = addTextBox(this.source, this.target, {
       ...input,
       name: name ?? `Text ${++this.textCount}`,
     });
+    return this.latestTargetShapeHandle();
   }
 
-  addShape(input: AddShapeInput, name?: string): void {
+  addShape(input: AddShapeInput, name?: string): SourceHandle {
     this.currentSource = addShape(this.source, this.target, {
       ...input,
       name: name ?? `Shape ${++this.shapeCount}`,
     });
+    return this.latestTargetShapeHandle();
+  }
+
+  addConnector(input: AddConnectorInput, name?: string): SourceHandle {
+    this.currentSource = addConnector(this.source, this.target, {
+      ...input,
+      name: name ?? `Connector ${++this.connectorCount}`,
+    });
+    return this.latestTargetShapeHandle();
+  }
+
+  currentTargetShapeHandles(): readonly SourceHandle[] {
+    return this.currentTargetShapes().map((shape) => {
+      if (!shape.handle) throw new Error("authored shape handle was not found");
+      return shape.handle;
+    });
+  }
+
+  reorderCurrentTargetShapes(handles: readonly SourceHandle[]): void {
+    this.currentSource = reorderShapes(this.source, this.target, handles);
   }
 
   addPicture(input: AddPictureInput, name?: string): void {
@@ -92,5 +118,22 @@ export class PptxAuthoringContext {
       this.target,
       background,
     );
+  }
+
+  private latestTargetShapeHandle(): SourceHandle {
+    const handle = this.currentTargetShapes().at(-1)?.handle;
+    if (!handle) throw new Error("authored shape handle was not found");
+    return handle;
+  }
+
+  private currentTargetShapes(): readonly SourceShapeNode[] {
+    const partPath = this.target.partPath;
+    const target = [
+      ...this.source.slides,
+      ...this.source.slideLayouts,
+      ...this.source.slideMasters,
+    ].find((candidate) => candidate.partPath === partPath);
+    if (!target) throw new Error("glimpse authoring target was not found");
+    return target.shapes;
   }
 }

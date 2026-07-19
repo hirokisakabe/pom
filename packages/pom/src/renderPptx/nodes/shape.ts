@@ -14,6 +14,10 @@ import {
   toColorInput,
 } from "../glimpseAdapter.ts";
 import {
+  cardinalConnectorSites,
+  supportsCardinalConnectorSites,
+} from "../utils/connectorSites.ts";
+import {
   addGlimpseShape,
   createShapeBoundsInput,
   createShapeRotationInput,
@@ -96,7 +100,7 @@ export function renderShapeNode(
       ? 1 - node.fill.transparency / 100
       : undefined;
 
-  addGlimpseShape(
+  const handle = addGlimpseShape(
     ctx,
     {
       geometry: { kind: "preset", preset: node.shapeType },
@@ -130,4 +134,15 @@ export function renderShapeNode(
       dashType: lineSpec?.dashType,
     },
   );
+  if (
+    node.id &&
+    ctx.idNodeMap.get(node.id) === node &&
+    supportsCardinalConnectorSites(node.shapeType)
+  ) {
+    ctx.connectorTargetMap.set(node.id, {
+      handle,
+      bounds: boundsPx,
+      sites: cardinalConnectorSites(boundsPx, node.rotate),
+    });
+  }
 }

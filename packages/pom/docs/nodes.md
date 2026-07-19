@@ -1083,9 +1083,10 @@ A node for drawing connectors between elements referenced by their `id` attribut
 | `dashType`                | `solid` / `dash` / `dashDot` / `lgDash` / `sysDash` etc.                             |
 | `beginArrow` / `endArrow` | `true` / `endArrow.type="triangle"` (type: none/arrow/triangle/diamond/oval/stealth) |
 
-The connector draws a straight line between the center points of the `from` and `to` nodes.
+The connector is stored as a native PowerPoint straight connector. It attaches to the nearest cardinal connection sites of the referenced shapes, so it follows them when they are moved in PowerPoint. `Text` nodes and `Shape` nodes whose `shapeType` is `rect`, `roundRect`, or `ellipse` can be connector targets. Rotation is reflected when choosing the nearest site.
 
 If either ID is not found on the slide, a `ARROW_REF_NOT_FOUND` diagnostic is emitted (build succeeds, connector is omitted).
+If an ID exists but belongs to another node type or an unsupported shape geometry, a `ARROW_REF_NOT_CONNECTABLE` diagnostic is emitted (build succeeds, connector is omitted).
 
 **Usage Example:**
 

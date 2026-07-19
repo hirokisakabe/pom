@@ -180,8 +180,8 @@ importers:
   packages/pom:
     dependencies:
       "@pptx-glimpse/document":
-        specifier: 0.9.1
-        version: 0.9.1
+        specifier: 0.12.0
+        version: 0.12.0
       "@resvg/resvg-wasm":
         specifier: ^2.6.2
         version: 2.6.2
@@ -3084,17 +3084,17 @@ packages:
         integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==,
       }
 
+  "@pptx-glimpse/document@0.12.0":
+    resolution:
+      {
+        integrity: sha512-TyGCtDuiXpGYKzRu70Tlx14U2aWZzde6mwv489R12wXl4IoYxCj3CEU0SpkTxYVaVfal+VzYhvL07I/W3yz+LA==,
+      }
+    engines: { node: ">=22" }
+
   "@pptx-glimpse/document@0.7.0":
     resolution:
       {
         integrity: sha512-4DsXVsDFErl/XwHNk3A+Wso6TnMaFfev/Bks8a3j2O6vcnp0u9dzcPSpq4xM4Q/MtOcMtfLS2CQ1ggLt/awHjQ==,
-      }
-    engines: { node: ">=22" }
-
-  "@pptx-glimpse/document@0.9.1":
-    resolution:
-      {
-        integrity: sha512-d3tLpOUQ7XqlFeh1K5s1S3drpuuUX0dJMAWiqDsIn5Gs0wEZHQoNC9TY8lZhdT8wXO/1jgsmcwhMQH6NnfZ3YQ==,
       }
     engines: { node: ">=22" }
 
@@ -15018,12 +15018,12 @@ snapshots:
 
   "@polka/url@1.0.0-next.29": {}
 
-  "@pptx-glimpse/document@0.7.0":
+  "@pptx-glimpse/document@0.12.0":
     dependencies:
       fast-xml-parser: 5.10.0
       fflate: 0.8.3
 
-  "@pptx-glimpse/document@0.9.1":
+  "@pptx-glimpse/document@0.7.0":
     dependencies:
       fast-xml-parser: 5.10.0
       fflate: 0.8.3

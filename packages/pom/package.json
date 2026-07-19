@@ -92,7 +92,7 @@
     "typescript": "npm:@typescript/typescript6@6.0.2"
   },
   "dependencies": {
-    "@pptx-glimpse/document": "0.9.1",
+    "@pptx-glimpse/document": "0.12.0",
     "@resvg/resvg-wasm": "^2.6.2",
     "@types/node": "^26.1.0",
     "fast-xml-parser": "^5.10.0",
