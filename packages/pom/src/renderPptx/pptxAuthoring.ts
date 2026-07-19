@@ -11,6 +11,7 @@ import {
   asOoxmlPercent,
   asPt,
   createPptx,
+  reorderShapes,
   setSlideBackground,
   type AddChartInput,
   type AddConnectorInput,
@@ -29,6 +30,7 @@ import {
   type AddTextBoxRunPropertiesInput,
   type PptxSourceModel,
   type SourceHandle,
+  type SourceShapeNode,
 } from "@pptx-glimpse/document";
 import { parseGradient, parseLinearGradient } from "../shared/gradient.ts";
 import type {
@@ -43,6 +45,10 @@ import { createTextOptions, resolveSubSup } from "./textOptions.ts";
 import { EMU_PER_IN, pxToEmu, pxToPt } from "./units.ts";
 
 type TextPositionedNode = Extract<PositionedNode, { type: "text" }>;
+type AuthoringTargetLocation = {
+  kind: "slide" | "layout" | "master";
+  index: number;
+};
 
 interface GlimpseTextRun {
   text: string;
@@ -427,6 +433,7 @@ function applyHyperlinks(
 export class PptxAuthoringRegistry {
   private currentSource: PptxSourceModel | undefined;
   private currentSlideHandle: SourceHandle | undefined;
+  private currentTargetLocation: AuthoringTargetLocation | undefined;
   private useLayoutTextMargins = false;
   private textCount = 0;
   private shapeCount = 0;
@@ -439,15 +446,43 @@ export class PptxAuthoringRegistry {
     const source = createPptx();
     this.currentSource = source;
     this.currentSlideHandle = source.slides[0]?.handle;
+    if (this.currentSlideHandle) {
+      this.currentTargetLocation = { kind: "slide", index: 0 };
+    }
   }
 
   initialize(source: PptxSourceModel, useLayoutTextMargins = false): void {
     this.currentSource = source;
+    this.currentSlideHandle = undefined;
+    this.currentTargetLocation = undefined;
     this.useLayoutTextMargins = useLayoutTextMargins;
   }
 
   selectSlide(handle: SourceHandle): void {
     this.currentSlideHandle = handle;
+    const partPath = handle.partPath;
+    const slideIndex = this.source.slides.findIndex(
+      (candidate) => candidate.partPath === partPath,
+    );
+    if (slideIndex >= 0) {
+      this.currentTargetLocation = { kind: "slide", index: slideIndex };
+      return;
+    }
+    const layoutIndex = this.source.slideLayouts.findIndex(
+      (candidate) => candidate.partPath === partPath,
+    );
+    if (layoutIndex >= 0) {
+      this.currentTargetLocation = { kind: "layout", index: layoutIndex };
+      return;
+    }
+    const masterIndex = this.source.slideMasters.findIndex(
+      (candidate) => candidate.partPath === partPath,
+    );
+    if (masterIndex >= 0) {
+      this.currentTargetLocation = { kind: "master", index: masterIndex };
+      return;
+    }
+    throw new Error("glimpse authoring target was not found");
   }
 
   get source(): PptxSourceModel {
@@ -536,15 +571,37 @@ export class PptxAuthoringRegistry {
     return this.latestTargetShapeHandle();
   }
 
+  currentTargetShapeHandles(): readonly SourceHandle[] {
+    return this.currentTargetShapes().map((shape) => {
+      if (!shape.handle) throw new Error("authored shape handle was not found");
+      return shape.handle;
+    });
+  }
+
+  /**
+   * Connector を接続先の後で authoring した後、shape tree を本来の描画順へ揃える。
+   */
+  reorderCurrentTargetShapes(handles: readonly SourceHandle[]): void {
+    this.currentSource = reorderShapes(this.source, this.target, handles);
+  }
+
   private latestTargetShapeHandle(): SourceHandle {
-    const target = [
-      ...this.source.slides,
-      ...this.source.slideLayouts,
-      ...this.source.slideMasters,
-    ].find((candidate) => candidate.partPath === this.target.partPath);
-    const handle = target?.shapes.at(-1)?.handle;
+    const handle = this.currentTargetShapes().at(-1)?.handle;
     if (!handle) throw new Error("authored shape handle was not found");
     return handle;
+  }
+
+  private currentTargetShapes(): readonly SourceShapeNode[] {
+    const location = this.currentTargetLocation;
+    if (!location) throw new Error("glimpse slide is not selected");
+    switch (location.kind) {
+      case "slide":
+        return this.source.slides[location.index]?.shapes ?? [];
+      case "layout":
+        return this.source.slideLayouts[location.index]?.shapes ?? [];
+      case "master":
+        return this.source.slideMasters[location.index]?.shapes ?? [];
+    }
   }
 
   registerPicture(

@@ -12,6 +12,10 @@ import { getContentArea } from "../utils/contentArea.ts";
 import { pxToEmu } from "../units.ts";
 import { toColorInput } from "../pptxAuthoring.ts";
 import {
+  cardinalConnectorSites,
+  supportsCardinalConnectorSites,
+} from "../utils/connectorSites.ts";
+import {
   addGlimpseShape,
   createShapeBoundsInput,
   createShapeRotationInput,
@@ -140,7 +144,15 @@ export function renderShapeNode(
       dashType: lineSpec?.dashType,
     },
   );
-  if (node.id && ctx.idNodeMap.get(node.id) === node) {
-    ctx.connectorTargetMap.set(node.id, { handle, bounds: boundsPx });
+  if (
+    node.id &&
+    ctx.idNodeMap.get(node.id) === node &&
+    supportsCardinalConnectorSites(node.shapeType)
+  ) {
+    ctx.connectorTargetMap.set(node.id, {
+      handle,
+      bounds: boundsPx,
+      sites: cardinalConnectorSites(boundsPx, node.rotate),
+    });
   }
 }

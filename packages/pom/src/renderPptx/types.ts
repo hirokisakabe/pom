@@ -1,6 +1,7 @@
 import type { SourceHandle } from "@pptx-glimpse/document";
 import type { PositionedNode } from "../types.ts";
 import type { BuildContext } from "../buildContext.ts";
+import type { ConnectorSite } from "./utils/connectorSites.ts";
 
 export type NodeBounds = { x: number; y: number; w: number; h: number };
 
@@ -33,6 +34,13 @@ export type RenderContext = {
   idPositionMap: Map<string, NodeBounds>;
   /** 重複 ID がある場合に最初の node だけを handle 登録するためのマップ */
   idNodeMap: Map<string, PositionedNode>;
-  /** Arrow が参照できる id → authored shape handle と実描画 bounds */
-  connectorTargetMap: Map<string, { handle: SourceHandle; bounds: NodeBounds }>;
+  /** Arrow が参照できる id → authored shape handle・bounds・接続点 */
+  connectorTargetMap: Map<
+    string,
+    {
+      handle: SourceHandle;
+      bounds: NodeBounds;
+      sites: readonly ConnectorSite[];
+    }
+  >;
 };

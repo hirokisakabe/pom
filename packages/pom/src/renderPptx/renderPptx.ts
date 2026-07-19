@@ -285,7 +285,10 @@ export function renderPptx(
       idNodeMap: idMaps.nodes,
       connectorTargetMap: new Map(),
     };
-    const deferredArrows: Extract<PositionedNode, { type: "arrow" }>[] = [];
+    const deferredArrows: {
+      node: Extract<PositionedNode, { type: "arrow" }>;
+      insertionIndex: number;
+    }[] = [];
 
     // ルートノードの backgroundColor はスライドの background プロパティとして適用
     // これにより、マスタースライドのオブジェクトを覆い隠さない
@@ -333,9 +336,13 @@ export function renderPptx(
      */
     function renderNode(node: PositionedNode, isRoot = false) {
       // Native connector は接続先の authored shape handle が必要なため、
-      // 通常ノードをすべて追加した後にまとめて描画する。
+      // 通常ノードをすべて追加した後に authoring し、最後にこの位置へ戻す。
       if (node.type === "arrow") {
-        deferredArrows.push(node);
+        deferredArrows.push({
+          node,
+          insertionIndex:
+            buildContext.pptxAuthoring.currentTargetShapeHandles().length,
+        });
         return;
       }
 
@@ -383,8 +390,35 @@ export function renderPptx(
     }
 
     renderNode(data, true); // ルートノードとして処理
+    const baseShapeOrder = [
+      ...buildContext.pptxAuthoring.currentTargetShapeHandles(),
+    ];
+    const authoredArrows: {
+      insertionIndex: number;
+      handle: (typeof baseShapeOrder)[number];
+    }[] = [];
     for (const arrow of deferredArrows) {
-      renderArrowNodeFromRegistry(arrow, ctx);
+      const beforeCount =
+        buildContext.pptxAuthoring.currentTargetShapeHandles().length;
+      renderArrowNodeFromRegistry(arrow.node, ctx);
+      const after = buildContext.pptxAuthoring.currentTargetShapeHandles();
+      if (after.length === beforeCount + 1) {
+        authoredArrows.push({
+          insertionIndex: arrow.insertionIndex,
+          handle: after.at(-1)!,
+        });
+      }
+    }
+    if (authoredArrows.length > 0) {
+      const orderedHandles: (typeof baseShapeOrder)[number][] = [];
+      for (let index = 0; index <= baseShapeOrder.length; index += 1) {
+        for (const arrow of authoredArrows) {
+          if (arrow.insertionIndex === index) orderedHandles.push(arrow.handle);
+        }
+        const baseHandle = baseShapeOrder[index];
+        if (baseHandle) orderedHandles.push(baseHandle);
+      }
+      buildContext.pptxAuthoring.reorderCurrentTargetShapes(orderedHandles);
     }
   }
 

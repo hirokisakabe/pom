@@ -1485,7 +1485,148 @@ describe("renderLineNode / renderArrowNode", () => {
     });
 
     expect(slideXml).toContain('<a:xfrm flipH="1" flipV="1">');
+    expect(slideXml).toContain('<a:stCxn id="1" idx="1"/>');
+    expect(slideXml).toContain('<a:endCxn id="2" idx="3"/>');
+  });
+
+  it("arrow: 縦横比が大きい Shape でも実距離が最短の site を選ぶ", async () => {
+    const slideXml = await renderPageSlideXml({
+      type: "layer",
+      x: 0,
+      y: 0,
+      w: 1280,
+      h: 720,
+      children: [
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "wide",
+          x: 0,
+          y: 0,
+          w: 1000,
+          h: 100,
+        },
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "target",
+          x: 750,
+          y: 100,
+          w: 100,
+          h: 100,
+        },
+        {
+          type: "arrow",
+          from: "wide",
+          to: "target",
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+        },
+      ],
+    });
+
+    expect(slideXml).toContain('<a:stCxn id="1" idx="3"/>');
+    expect(slideXml).toContain('<a:endCxn id="2" idx="1"/>');
+  });
+
+  it("arrow: 回転した Shape の画面上で最寄りの site index を選ぶ", async () => {
+    const slideXml = await renderPageSlideXml({
+      type: "layer",
+      x: 0,
+      y: 0,
+      w: 1280,
+      h: 720,
+      children: [
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "rotated",
+          x: 50,
+          y: 50,
+          w: 200,
+          h: 100,
+          rotate: 90,
+        },
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "target",
+          x: 400,
+          y: 50,
+          w: 100,
+          h: 100,
+        },
+        {
+          type: "arrow",
+          from: "rotated",
+          to: "target",
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+        },
+      ],
+    });
+
     expect(slideXml).toContain('<a:stCxn id="1" idx="0"/>');
-    expect(slideXml).toContain('<a:endCxn id="2" idx="2"/>');
+    expect(slideXml).toContain('<a:endCxn id="2" idx="1"/>');
+  });
+
+  it("arrow: 遅延 authoring 後も zIndex の前後関係を shape tree に維持する", async () => {
+    const slideXml = await renderPageSlideXml({
+      type: "layer",
+      x: 0,
+      y: 0,
+      w: 1280,
+      h: 720,
+      children: [
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "a",
+          x: 50,
+          y: 50,
+          w: 100,
+          h: 100,
+          zIndex: 0,
+        },
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "b",
+          x: 250,
+          y: 50,
+          w: 100,
+          h: 100,
+          zIndex: 0,
+        },
+        {
+          type: "arrow",
+          from: "a",
+          to: "b",
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+          zIndex: -1,
+        },
+        {
+          type: "arrow",
+          from: "a",
+          to: "b",
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+          zIndex: 1,
+        },
+      ],
+    });
+
+    expect(
+      Array.from(slideXml.matchAll(/<p:(sp|cxnSp)>/g), (match) => match[1]),
+    ).toEqual(["cxnSp", "sp", "sp", "cxnSp"]);
   });
 });

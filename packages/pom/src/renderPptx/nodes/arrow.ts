@@ -8,34 +8,27 @@ import {
   solidShapeFill,
 } from "../utils/glimpseShape.ts";
 import { resolveArrowType } from "../utils/straightLine.ts";
+import type { ConnectorSite } from "../utils/connectorSites.ts";
 
 type ArrowPositionedNode = Extract<PositionedNode, { type: "arrow" }>;
 
-type CardinalSite = {
-  index: 0 | 1 | 2 | 3;
-  x: number;
-  y: number;
-};
-
 function connectionSite(
-  bounds: { x: number; y: number; w: number; h: number },
+  sites: readonly ConnectorSite[],
   other: { x: number; y: number; w: number; h: number },
-): CardinalSite {
-  const centerX = bounds.x + bounds.w / 2;
-  const centerY = bounds.y + bounds.h / 2;
-  const dx = other.x + other.w / 2 - centerX;
-  const dy = other.y + other.h / 2 - centerY;
-  const horizontalDistance = Math.abs(dx) / Math.max(bounds.w, 1);
-  const verticalDistance = Math.abs(dy) / Math.max(bounds.h, 1);
-
-  if (horizontalDistance >= verticalDistance) {
-    return dx >= 0
-      ? { index: 3, x: bounds.x + bounds.w, y: centerY }
-      : { index: 1, x: bounds.x, y: centerY };
-  }
-  return dy >= 0
-    ? { index: 2, x: centerX, y: bounds.y + bounds.h }
-    : { index: 0, x: centerX, y: bounds.y };
+): ConnectorSite {
+  const otherCenterX = other.x + other.w / 2;
+  const otherCenterY = other.y + other.h / 2;
+  return sites.reduce((nearest, candidate) => {
+    const nearestDistance = Math.hypot(
+      nearest.x - otherCenterX,
+      nearest.y - otherCenterY,
+    );
+    const candidateDistance = Math.hypot(
+      candidate.x - otherCenterX,
+      candidate.y - otherCenterY,
+    );
+    return candidateDistance < nearestDistance ? candidate : nearest;
+  });
 }
 
 export function renderArrowNode(
@@ -66,13 +59,13 @@ export function renderArrowNode(
     const id = !fromTarget ? node.from : node.to;
     ctx.buildContext.diagnostics.add(
       "ARROW_REF_NOT_CONNECTABLE",
-      `Arrow: ID "${id}" does not reference a connector-compatible Shape or Text node`,
+      `Arrow: ID "${id}" does not reference a connector-compatible Shape geometry or Text node`,
     );
     return;
   }
 
-  const startSite = connectionSite(fromTarget.bounds, toTarget.bounds);
-  const endSite = connectionSite(toTarget.bounds, fromTarget.bounds);
+  const startSite = connectionSite(fromTarget.sites, toTarget.bounds);
+  const endSite = connectionSite(toTarget.sites, fromTarget.bounds);
   const minX = Math.min(startSite.x, endSite.x);
   const minY = Math.min(startSite.y, endSite.y);
 
