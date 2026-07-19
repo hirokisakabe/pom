@@ -1,6 +1,6 @@
 <h1 align="center">pom</h1>
 <p align="center">
-  AI-friendly PowerPoint generation with a Flexbox layout engine.
+  Prompt-to-PowerPoint with agent skills, an XML source, and a live-preview CLI.
 </p>
 
 <p align="center">
@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <b>pom (PowerPoint Object Model)</b> is a TypeScript library that converts XML into editable PowerPoint files (.pptx).
+  <b>pom kit</b> turns a prompt into editable PowerPoint files while keeping pom XML as the source of truth.
 </p>
 
 <p align="center">
@@ -24,51 +24,55 @@
 
 ---
 
-## Features
-
-- **AI Friendly** — Simple XML structure designed for LLM code generation.
-- **Declarative** — Describe slides as XML. No imperative API calls needed.
-- **Flexible Layout** — Flexbox-style layout with VStack / HStack, powered by yoga-layout.
-- **Rich Nodes** — 20 built-in node types: charts, flowcharts, tables, timelines, org trees, and more.
-- **Schema-validated** — XML input is validated with Zod schemas at runtime with clear error messages.
-- **PowerPoint Native** — Full access to native PowerPoint shape features (roundRect, ellipse, arrows, etc.).
-
-## Quick Start
+## Quick Start — pom kit
 
 > Requires Node.js 22+
 
 ```bash
-npm install @hirokisakabe/pom
+npx skills add hirokisakabe/pom --all   # install pom-slide and pom-theme
+npm install -g @hirokisakabe/pom-cli    # install preview / build CLI
 ```
 
-```typescript
-import { buildPptx } from "@hirokisakabe/pom";
+Then ask your coding agent to create a deck:
 
-const xml = `
-<Slide>
-  <VStack w="100%" h="max" padding="48" gap="24" alignItems="start">
-    <Text fontSize="48" bold="true">Presentation Title</Text>
-    <Text fontSize="24" color="666666">Subtitle</Text>
-  </VStack>
-</Slide>
-`;
+```text
+/pom-slide Create a three-slide quarterly sales report
+```
 
-const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-await pptx.writeFile({ fileName: "presentation.pptx" });
+The skill writes `slides.pom.xml`, reviews the rendered slides, and starts live preview when `pom-cli` is available. Build the final deck with:
+
+```bash
+pom build slides.pom.xml -o slides.pptx
 ```
 
 ## Packages
 
 This repository is a pnpm monorepo containing the following packages:
 
-| Package                                       | Description                                                  | npm                                                                                        |
-| --------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
-| [packages/pom](./packages/pom/)               | Core library — XML to PPTX conversion                        | [`@hirokisakabe/pom`](https://www.npmjs.com/package/@hirokisakabe/pom)                     |
-| [packages/pom-md](./packages/pom-md/)         | Markdown to pom XML converter                                | [`@hirokisakabe/pom-md`](https://www.npmjs.com/package/@hirokisakabe/pom-md)               |
-| [packages/pom-vscode](./packages/pom-vscode/) | VS Code extension for live preview                           | [Marketplace](https://marketplace.visualstudio.com/items?itemName=hirokisakabe.pom-vscode) |
-| [apps/website](./apps/website/)               | Documentation website ([pom.pptx.app](https://pom.pptx.app)) | —                                                                                          |
+| Package                                       | Role                                                                        | Distribution                                                                               |
+| --------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| [packages/pom-cli](./packages/pom-cli/)       | Primary CLI — preview, build, and render pom XML                            | [`@hirokisakabe/pom-cli`](https://www.npmjs.com/package/@hirokisakabe/pom-cli)             |
+| [packages/pom](./packages/pom/)               | Core library — parse, layout, and render pom XML to PPTX                    | [`@hirokisakabe/pom`](https://www.npmjs.com/package/@hirokisakabe/pom)                     |
+| [packages/pom-md](./packages/pom-md/)         | Markdown authoring surface that converts to pom XML                         | [`@hirokisakabe/pom-md`](https://www.npmjs.com/package/@hirokisakabe/pom-md)               |
+| [packages/pom-jsx](./packages/pom-jsx/)       | Typed JSX/TSX authoring surface that serializes to pom XML                  | [`@hirokisakabe/pom-jsx`](https://www.npmjs.com/package/@hirokisakabe/pom-jsx)             |
+| [packages/pom-editor](./packages/pom-editor/) | Visual AST editor component with pom XML input and output                   | [`@hirokisakabe/pom-editor`](https://www.npmjs.com/package/@hirokisakabe/pom-editor)       |
+| [packages/pom-vscode](./packages/pom-vscode/) | VS Code extension for pom XML / Markdown live preview                       | [Marketplace](https://marketplace.visualstudio.com/items?itemName=hirokisakabe.pom-vscode) |
+| [apps/website](./apps/website/)               | Documentation website and playground ([pom.pptx.app](https://pom.pptx.app)) | —                                                                                          |
 
-## pom kit — Agent Skills
+## How the authoring surfaces fit together
+
+**pom XML is the canonical, editable source passed to the layout and rendering pipeline.** Choose the authoring surface that fits your workflow:
+
+- **Agent skills (recommended)** — `pom-slide` generates and revises pom XML from prompts; `pom-theme` supplies reusable brand tokens and master settings. The generated XML, not the prompt, is the deck source of truth.
+- **XML** — Author the canonical format directly for maximum control, then preview or build it with `pom-cli`.
+- **Markdown** — `pom-md` converts approachable `.pom.md` content (plus optional `pomxml` fences) into pom XML before rendering.
+- **JSX/TSX** — `pom-jsx` serializes typed components and reusable layouts into pom XML before rendering.
+- **Visual editor** — `pom-editor` reads pom XML and emits updated pom XML after drag-and-drop structure edits.
+- **Library API** — `@hirokisakabe/pom` accepts pom XML via `buildPptx()` for advanced or programmatic integrations.
+
+Markdown, JSX, and the visual editor are alternative authoring surfaces, not deprecated paths or separate rendering models. They all converge on the same pom XML representation.
+
+## pom kit workflow
 
 The **pom kit** bundles two agent skills (`pom-theme`, `pom-slide`) and the `pom-cli` preview server. Installed into a coding agent such as [Claude Code](https://claude.ai/code), it gives you a prompt-to-PPTX workflow: onboard your brand, generate slides from natural language, and iterate in a live preview.
 
@@ -100,6 +104,39 @@ npm install -g @hirokisakabe/pom-cli    # live preview / build CLI
    The agent generates a `slides.pom.xml` file in the current directory, applying the theme if present, and self-reviews the rendered result.
 
 3. **Preview**: if `pom-cli` is installed, a live preview server starts automatically at `http://localhost:3000`. Edit the XML (yourself or via follow-up prompts) and the preview updates live. When you're happy, export the deck with `pom build slides.pom.xml -o slides.pptx`.
+
+## Programmatic library use
+
+Install the core library when you want to integrate pom into a TypeScript pipeline:
+
+```bash
+npm install @hirokisakabe/pom
+```
+
+```typescript
+import { buildPptx } from "@hirokisakabe/pom";
+
+const xml = `
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24" alignItems="start">
+    <Text fontSize="48" bold="true">Presentation Title</Text>
+    <Text fontSize="24" color="666666">Subtitle</Text>
+  </VStack>
+</Slide>
+`;
+
+const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+await pptx.writeFile({ fileName: "presentation.pptx" });
+```
+
+## Features
+
+- **AI Friendly** — Simple XML structure designed for LLM code generation.
+- **Declarative** — Describe slides as XML. No imperative API calls needed.
+- **Flexible Layout** — Flexbox-style layout with VStack / HStack, powered by yoga-layout.
+- **Rich Nodes** — 20 built-in node types: charts, flowcharts, tables, timelines, org trees, and more.
+- **Schema-validated** — XML input is validated with Zod schemas at runtime with clear error messages.
+- **PowerPoint Native** — Full access to native PowerPoint shape features (roundRect, ellipse, arrows, etc.).
 
 ## Documentation
 

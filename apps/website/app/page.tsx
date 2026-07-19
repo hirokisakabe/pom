@@ -111,16 +111,16 @@ const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
 await pptx.writeFile({ fileName: "presentation.pptx" });`;
 
 export default async function LandingPage() {
-  const [highlightedCode, highlightedInstall, highlightedGenerate] =
+  const [highlightedCode, highlightedKitInstall, highlightedPreview] =
     await Promise.all([
       codeToHtml(codeExample, { lang: "typescript", theme: "github-dark" }),
-      codeToHtml("npm install @hirokisakabe/pom", {
-        lang: "bash",
-        theme: "github-dark",
-      }),
       codeToHtml(
-        `const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });\nawait pptx.writeFile({ fileName: "presentation.pptx" });`,
-        { lang: "typescript", theme: "github-dark" },
+        `npx skills add hirokisakabe/pom --all\nnpm install -g @hirokisakabe/pom-cli`,
+        { lang: "bash", theme: "github-dark" },
+      ),
+      codeToHtml(
+        `/pom-slide Create a three-slide quarterly sales report\n\npom preview slides.pom.xml\npom build slides.pom.xml -o slides.pptx`,
+        { lang: "bash", theme: "github-dark" },
       ),
     ]);
 
@@ -156,28 +156,28 @@ export default async function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="flex flex-col items-center px-6 pt-24 pb-20 text-center">
-        <div className="mb-4 inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400">
-          npm install @hirokisakabe/pom
+      <section className="flex flex-col items-center px-6 pt-20 pb-16 text-center sm:pt-24 sm:pb-20">
+        <div className="mb-4 inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300">
+          pom kit · skills + CLI + XML
         </div>
         <h1 className="mb-6 max-w-3xl text-5xl leading-tight font-bold tracking-tight sm:text-6xl">
-          Declarative PowerPoint
+          Go from a prompt
           <br />
           <span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-violet-400">
-            from XML
+            to editable PowerPoint
           </span>
         </h1>
         <p className="mb-10 max-w-2xl text-lg text-gray-600 dark:text-gray-400">
-          Write XML. Get editable PPTX. pom turns declarative markup into native
-          PowerPoint slides with Flexbox layout, 20 built-in node types, and
-          first-class AI support.
+          Tell your coding agent what to present. pom skills generate the pom
+          XML source, and pom CLI previews and builds native, editable PPTX
+          files.
         </p>
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row">
           <Link
-            href="/nodes"
+            href="#quick-start"
             className="rounded-lg bg-gray-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
           >
-            Get Started
+            Install pom kit
           </Link>
           <Link
             href="/playground"
@@ -185,6 +185,70 @@ export default async function LandingPage() {
           >
             Try Playground
           </Link>
+        </div>
+        <div className="mt-14 grid w-full max-w-5xl grid-cols-1 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 text-left sm:grid-cols-5 dark:border-gray-800 dark:bg-gray-900">
+          {[
+            ["Prompt", "Describe the deck"],
+            ["Agent skills", "Design and review"],
+            ["pom XML", "Editable source of truth"],
+            ["pom CLI", "Preview and build"],
+            ["PPTX", "Native PowerPoint"],
+          ].map(([label, detail], index) => (
+            <div
+              key={label}
+              className="relative border-b border-gray-200 px-5 py-4 last:border-b-0 sm:border-r sm:border-b-0 sm:last:border-r-0 dark:border-gray-800"
+            >
+              <p className="mb-1 font-[family-name:var(--font-geist-mono)] text-xs font-semibold tracking-wide text-blue-600 uppercase dark:text-blue-400">
+                {String(index + 1).padStart(2, "0")} · {label}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {detail}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Quick Start */}
+      <section
+        id="quick-start"
+        className="mx-auto max-w-3xl scroll-mt-6 px-6 py-20"
+      >
+        <p className="mb-3 text-center font-[family-name:var(--font-geist-mono)] text-xs font-semibold tracking-widest text-blue-600 uppercase dark:text-blue-400">
+          Prompt → preview → PowerPoint
+        </p>
+        <h2 className="mb-4 text-center text-3xl font-bold">
+          Quick Start with pom kit
+        </h2>
+        <p className="mx-auto mb-10 max-w-2xl text-center text-gray-600 dark:text-gray-400">
+          Install the two agent skills and pom CLI, then ask your agent for a
+          deck. The generated <code>slides.pom.xml</code> stays under your
+          control as the editable source.
+        </p>
+        <div className="space-y-6">
+          <div>
+            <p className="mb-2 text-sm font-medium text-gray-500">
+              1. Install skills and CLI
+            </p>
+            <div
+              className="overflow-x-auto rounded-lg font-[family-name:var(--font-geist-mono)] text-sm [&_pre]:px-5 [&_pre]:py-4"
+              dangerouslySetInnerHTML={{ __html: highlightedKitInstall }}
+            />
+          </div>
+          <div>
+            <p className="mb-2 text-sm font-medium text-gray-500">
+              2. Prompt, preview, and build
+            </p>
+            <div
+              className="overflow-x-auto rounded-lg font-[family-name:var(--font-geist-mono)] text-sm leading-relaxed [&_pre]:px-5 [&_pre]:py-4"
+              dangerouslySetInnerHTML={{ __html: highlightedPreview }}
+            />
+          </div>
+          <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+            Use <code>/pom-theme</code> first when you want to onboard brand
+            colors and typography. Continue editing the XML directly or with
+            follow-up prompts; the CLI refreshes the preview as it changes.
+          </p>
         </div>
       </section>
 
@@ -207,14 +271,14 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Code Example */}
+      {/* Programmatic use */}
       <section className="mx-auto max-w-4xl px-6 py-20">
         <h2 className="mb-4 text-center text-3xl font-bold">
-          XML in, PPTX out
+          Programmatic library use
         </h2>
         <p className="mb-10 text-center text-gray-600 dark:text-gray-400">
-          Describe your slides in XML and generate native PowerPoint files with
-          a single function call.
+          Building a custom pipeline? Pass pom XML to <code>buildPptx</code>
+          directly for full TypeScript control.
         </p>
         <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
@@ -247,45 +311,6 @@ export default async function LandingPage() {
           >
             View all nodes in detail →
           </Link>
-        </div>
-      </section>
-
-      {/* Quick Start */}
-      <section className="mx-auto max-w-3xl px-6 py-20">
-        <h2 className="mb-10 text-center text-3xl font-bold">Quick Start</h2>
-        <div className="space-y-6">
-          <div>
-            <p className="mb-2 text-sm font-medium text-gray-500">1. Install</p>
-            <div
-              className="rounded-lg font-[family-name:var(--font-geist-mono)] text-sm [&_pre]:px-5 [&_pre]:py-4"
-              dangerouslySetInnerHTML={{ __html: highlightedInstall }}
-            />
-          </div>
-          <div>
-            <p className="mb-2 text-sm font-medium text-gray-500">
-              2. Generate
-            </p>
-            <div
-              className="overflow-x-auto rounded-lg font-[family-name:var(--font-geist-mono)] text-sm leading-relaxed [&_pre]:px-5 [&_pre]:py-4"
-              dangerouslySetInnerHTML={{ __html: highlightedGenerate }}
-            />
-          </div>
-          <div>
-            <p className="mb-2 text-sm font-medium text-gray-500">
-              3. For AI agents
-            </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Include{" "}
-              <a
-                href="/llm.txt"
-                className="font-medium text-blue-600 underline dark:text-blue-400"
-              >
-                llm.txt
-              </a>{" "}
-              in your system prompt for a compact XML reference designed for
-              LLMs.
-            </p>
-          </div>
         </div>
       </section>
 
