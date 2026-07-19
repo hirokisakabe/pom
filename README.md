@@ -36,10 +36,10 @@ npm install -g @hirokisakabe/pom-cli    # install preview / build CLI
 Then ask your coding agent to create a deck:
 
 ```text
-Use the pom-slide skill to create a three-slide quarterly sales report.
+Create a three-slide quarterly sales report with a title, chart, and summary.
 ```
 
-In Claude Code, you can also invoke it as `/pom-slide`; in Codex and other agents, use the natural-language request above. The skill writes `slides.pom.xml`, reviews the rendered slides, and starts live preview when `pom-cli` is available. If preview does not start automatically, run `pom preview slides.pom.xml`. Build the final deck with:
+This request matches the `pom-slide` description, so the agent can select it automatically. The skill writes `slides.pom.xml`, reviews the rendered slides, and starts live preview when `pom-cli` is available. If preview does not start automatically, run `pom preview slides.pom.xml`. Build the final deck with:
 
 ```bash
 pom build slides.pom.xml -o slides.pptx
@@ -79,11 +79,11 @@ The **pom kit** bundles two agent skills (`pom-theme`, `pom-slide`) and the `pom
 ```mermaid
 flowchart TD
     Prompt["Deck prompt"] --> Agent["Coding agent"]
-    Agent --> Slide["pom-slide skill"]
-
-    Brand["Brand assets / theme prompt"] --> Theme["pom-theme skill"]
-    Theme --> Config["pom-theme.json"]
-    Config --> Slide
+    Brand["Brand assets / theme prompt"] --> Agent
+    Agent -->|"matches slide request"| Slide["pom-slide skill"]
+    Agent -->|"matches theme request"| Theme["pom-theme skill"]
+    Theme --> Config["pom-theme.json<br/>(optional defaults)"]
+    Config -.-> Slide
 
     Slide --> XML["slides.pom.xml<br/>(source of truth)"]
     XML --> Preview["pom preview"]
@@ -92,7 +92,7 @@ flowchart TD
     Build --> PPTX["Editable PPTX"]
 ```
 
-The skills create and revise the XML; `pom-cli` consumes that same source for both the live preview and the final PowerPoint build.
+The agent can choose a skill by matching the request against each skill's description. `pom-theme` creates optional brand defaults; `pom-slide` creates and revises the XML. `pom-cli` consumes that same XML source for both the live preview and the final PowerPoint build.
 
 **Install (2 commands):**
 
@@ -101,29 +101,31 @@ npx skills add hirokisakabe/pom --all   # install all skills (pom-slide, pom-the
 npm install -g @hirokisakabe/pom-cli    # live preview / build CLI
 ```
 
-[`skills`](https://github.com/vercel-labs/skills) auto-detects your installed agents (Claude Code, Codex, Cursor, and more) and places the skills for each. Note that `--all` installs every skill for every detected agent, scoped to the current project; pass `-g` for a user-level (global) install, or `--agent` / `--skill` to narrow the targets. To update the skills later, run `npx skills update`.
+[`skills`](https://github.com/vercel-labs/skills) supports Claude Code, Codex, Cursor, and many other coding agents. The `--all` flag installs every skill for every agent target without prompts, scoped to the current project; pass `-g` for a user-level (global) install, or omit `--all` to choose skills and agents interactively. To update the skills later, run `npx skills update`.
 
 **Usage — theme → design → preview:**
 
-The slash-command examples below apply to Claude Code. In Codex and other agents, make the same request in natural language and name the `pom-theme` or `pom-slide` skill.
+The examples below rely on the agent selecting the relevant skill automatically. You do not need to name a skill in the request.
 
-1. **Theme** (optional): onboard your brand assets with `/pom-theme`:
-
-   ```
-   /pom-theme ブランドカラーは #0052CC。コーポレート向けのライトテーマで
-   ```
-
-   This saves a `pom-theme.json` (color palette + typography + SlideMaster settings) in the current directory. Subsequent `/pom-slide` runs automatically apply its colors, fonts, and background. The SlideMaster settings can also be passed directly to `buildPptx()` as the `master` option.
-
-2. **Design**: generate slides with `/pom-slide`:
+1. **Theme** (optional): ask the agent to onboard your brand assets:
 
    ```
-   /pom-slide 四半期の売上レポート。3 枚構成で、タイトル・グラフ・まとめを含む
+   ブランドカラーは #0052CC。pom 用のコーポレート向けライトテーマを作ってください。
    ```
 
-   The agent generates a `slides.pom.xml` file in the current directory, applying the theme if present, and self-reviews the rendered result.
+   `pom-theme` saves a `pom-theme.json` (color palette + typography + SlideMaster settings) in the current directory. Subsequent slide requests automatically apply its colors, fonts, and background. The SlideMaster settings can also be passed directly to `buildPptx()` as the `master` option.
+
+2. **Design**: describe the deck you want:
+
+   ```
+   四半期の売上レポートを 3 枚で作ってください。タイトル・グラフ・まとめを含めてください。
+   ```
+
+   `pom-slide` generates a `slides.pom.xml` file in the current directory, applies the theme if present, and self-reviews the rendered result.
 
 3. **Preview**: if `pom-cli` is installed, a live preview server starts automatically at `http://localhost:3000`. Edit the XML (yourself or via follow-up prompts) and the preview updates live. When you're happy, export the deck with `pom build slides.pom.xml -o slides.pptx`.
+
+Direct invocation is optional and agent-specific. Claude Code supports `/pom-theme` and `/pom-slide`; Codex CLI and the IDE extension let you mention a skill with `$` or choose one from `/skills`.
 
 ## Programmatic library use
 

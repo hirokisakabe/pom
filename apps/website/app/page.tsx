@@ -37,7 +37,7 @@ const features = [
   {
     title: "AI Friendly",
     description:
-      "Simple XML structure designed for LLM code generation. Include llm.txt in your system prompt for XML reference.",
+      "Describe the deck you want in natural language. The agent can select the installed skill when the request matches its description.",
     icon: "🤖",
   },
   {
@@ -123,7 +123,7 @@ export default async function LandingPage() {
       { lang: "bash", theme: "github-dark" },
     ),
     codeToHtml(
-      `Use the pom-slide skill to create a three-slide quarterly sales report.`,
+      `Create a three-slide quarterly sales report with a title, chart, and summary.`,
       { lang: "text", theme: "github-dark" },
     ),
     codeToHtml(`pom build slides.pom.xml -o slides.pptx`, {
@@ -176,9 +176,9 @@ export default async function LandingPage() {
           </span>
         </h1>
         <p className="mb-10 max-w-2xl text-lg text-gray-600 dark:text-gray-400">
-          Tell your coding agent what to present. pom skills generate the pom
-          XML source, and pom CLI previews and builds native, editable PPTX
-          files.
+          Tell your coding agent what to present. The pom-slide skill turns the
+          request into pom XML, and pom CLI previews and builds native, editable
+          PPTX files.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row">
           <Link
@@ -197,7 +197,7 @@ export default async function LandingPage() {
         <div className="mt-14 grid w-full max-w-5xl grid-cols-1 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 text-left sm:grid-cols-5 dark:border-gray-800 dark:bg-gray-900">
           {[
             ["Prompt", "Describe the deck"],
-            ["Agent skills", "Design and review"],
+            ["Agent skills", "Match, design, review"],
             ["pom XML", "Editable source of truth"],
             ["pom CLI", "Preview and build"],
             ["PPTX", "Native PowerPoint"],
@@ -262,11 +262,13 @@ export default async function LandingPage() {
             />
           </div>
           <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-            Requires Node.js 22+. In Claude Code, you can invoke the skill as
-            <code> /pom-slide</code>; in Codex and other agents, use the natural
-            language request above. Use the <code>pom-theme</code> skill first
-            to onboard brand colors and typography. If preview does not start
-            automatically, run <code>pom preview slides.pom.xml</code>.
+            Requires Node.js 22+. Agents can select installed skills
+            automatically when your request matches their descriptions, so you
+            do not need to name one. To onboard brand colors first, ask your
+            agent to create a pom theme from your brand assets. If needed, use
+            your agent&apos;s skill picker for direct invocation. If preview
+            does not start automatically, run{" "}
+            <code>pom preview slides.pom.xml</code>.
           </p>
         </div>
       </section>
