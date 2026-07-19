@@ -12,7 +12,7 @@
 
 ## Features
 
-- **Live Preview Server** — `pom preview` opens a browser, watches the source file, and rebuilds + reloads on every save (handles editor atomic writes like Vim).
+- **Browser Editor + Live Preview** — `pom preview` opens the shared `PomEditor`, with XML / AST editing, unsaved previews, and explicit conflict-safe saves for `.pom.xml` files.
 - **PPTX Build** — `pom build` converts `.pom.xml` / `.pom.md` to a `.pptx` file, with optional `--watch` mode for incremental rebuilds.
 - **PNG / SVG Render** — `pom render` rasterizes each slide to PNG (default) or SVG without LibreOffice, useful for slide-image previews in docs.
 - **Theme Extraction** — `pom theme extract` reads an existing `.pptx` and prints its theme colors as pom `ThemeTokens` JSON, for onboarding brand assets.
@@ -36,20 +36,22 @@ One command is all it takes — no global install required:
 npx @hirokisakabe/pom-cli preview slides.pom.xml
 ```
 
-This starts a local preview server, opens your browser automatically, and live-reloads the preview every time the file is saved. This also works well when invoked from agent skills or scripts.
+This starts a local editor and preview server and opens your browser automatically. The editor client is bundled with `pom-cli`, so it does not need a CDN or an internet connection. This also works well when invoked from agent skills or scripts.
 
 ## Usage
 
 ### Preview
 
-Starts a local preview server with live reload on file changes.
+Starts the browser editor and live preview server.
 
 ```bash
 pom preview slides.pom.xml
 pom preview slides.pom.md
 ```
 
-The browser opens http://localhost:3000 automatically. The page updates whenever the file is saved — including atomic saves performed by editors like Vim.
+The browser opens http://localhost:3000 automatically. For `.pom.xml` files, XML and AST edits are kept in the browser and immediately reflected in the preview. Use **Save** to write the current XML back to the input file. If another editor changed the file after it was loaded, Save is rejected instead of overwriting that change. Successful saves replace the file atomically.
+
+External file changes continue to update the browser when there are no unsaved browser edits. When unsaved edits exist, they are preserved and the toolbar reports the external change. `.pom.md` input remains preview-only because writing generated XML back to Markdown is outside the editor's scope.
 
 To suppress the automatic browser open (e.g. in CI or headless environments):
 
@@ -62,8 +64,6 @@ To use a different port (e.g. when 3000 is already in use):
 ```bash
 pom preview slides.pom.xml --port 3001
 ```
-
-Use the zoom buttons in the toolbar or press `+` / `-` to zoom in and out. The current zoom level is saved across sessions.
 
 To print per-step timing on stderr when each rebuild completes:
 

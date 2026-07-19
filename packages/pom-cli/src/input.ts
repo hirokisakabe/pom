@@ -14,6 +14,14 @@ export function loadInput(
   log: (msg: string) => void = () => {},
 ): LoadedInput {
   const content = fs.readFileSync(absInput, "utf-8");
+  return loadInputContent(absInput, content, log);
+}
+
+export function loadInputContent(
+  absInput: string,
+  content: string,
+  log: (msg: string) => void = () => {},
+): LoadedInput {
   const ext = path.extname(absInput);
 
   let xml: string;
