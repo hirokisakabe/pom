@@ -35,21 +35,26 @@ import { createWritablePptx } from "./writablePptx.ts";
 
 type SlidePx = { w: number; h: number };
 
-function buildIdPositionMap(
+function buildIdMaps(
   node: PositionedNode,
   diagnostics: import("../buildContext.ts").BuildContext["diagnostics"],
-): Map<string, NodeBounds> {
-  const map = new Map<string, NodeBounds>();
+): {
+  positions: Map<string, NodeBounds>;
+  nodes: Map<string, PositionedNode>;
+} {
+  const positions = new Map<string, NodeBounds>();
+  const nodes = new Map<string, PositionedNode>();
 
   function traverse(n: PositionedNode) {
     if (n.id) {
-      if (map.has(n.id)) {
+      if (positions.has(n.id)) {
         diagnostics.add(
           "DUPLICATE_NODE_ID",
           `Duplicate node id "${n.id}" — only the first occurrence will be used for Arrow references`,
         );
       } else {
-        map.set(n.id, { x: n.x, y: n.y, w: n.w, h: n.h });
+        positions.set(n.id, { x: n.x, y: n.y, w: n.w, h: n.h });
+        nodes.set(n.id, n);
       }
     }
     if (n.type === "vstack" || n.type === "hstack" || n.type === "layer") {
@@ -60,7 +65,7 @@ function buildIdPositionMap(
   }
 
   traverse(node);
-  return map;
+  return { positions, nodes };
 }
 
 /**
@@ -282,8 +287,18 @@ export function renderPptx(
         throw new Error(`slide handle was not found: ${pageIndex + 1}`);
       authoring.selectTarget(slideHandle);
     }
-    const idPositionMap = buildIdPositionMap(data, buildContext.diagnostics);
-    const ctx: RenderContext = { buildContext, authoring, idPositionMap };
+    const idMaps = buildIdMaps(data, buildContext.diagnostics);
+    const ctx: RenderContext = {
+      buildContext,
+      authoring,
+      idPositionMap: idMaps.positions,
+      idNodeMap: idMaps.nodes,
+      connectorTargetMap: new Map(),
+    };
+    const deferredArrows: {
+      node: Extract<PositionedNode, { type: "arrow" }>;
+      insertionIndex: number;
+    }[] = [];
 
     // ルートノードの backgroundColor はスライドの background プロパティとして適用
     // これにより、マスタースライドのオブジェクトを覆い隠さない
@@ -334,8 +349,18 @@ export function renderPptx(
      * @param isRoot ルートノードかどうか（ルートノードの background は slide.background で処理済み）
      */
     function renderNode(node: PositionedNode, isRoot = false) {
-      // line/arrow ノードは backgroundColor/border を持たないため、background/border の描画をスキップ
-      if (node.type !== "line" && node.type !== "arrow") {
+      // Native connector は接続先の authored shape handle が必要なため、
+      // 通常ノードをすべて追加した後に authoring し、最後にこの位置へ戻す。
+      if (node.type === "arrow") {
+        deferredArrows.push({
+          node,
+          insertionIndex: authoring.currentTargetShapeHandles().length,
+        });
+        return;
+      }
+
+      // Arrow は上で defer 済み。Line は backgroundColor/border を持たない。
+      if (node.type !== "line") {
         // ルートノードの backgroundColor/backgroundImage は既に slide.background に適用済みなのでスキップ
         // ただし opacity がある場合は slide.background では透過を表現できないため通常描画
         if (
@@ -378,7 +403,43 @@ export function renderPptx(
     }
 
     renderNode(data, true); // ルートノードとして処理
+    const baseShapeOrder = [...authoring.currentTargetShapeHandles()];
+    const authoredArrows: {
+      insertionIndex: number;
+      handle: (typeof baseShapeOrder)[number];
+    }[] = [];
+    for (const arrow of deferredArrows) {
+      const beforeCount = authoring.currentTargetShapeHandles().length;
+      renderArrowNodeFromRegistry(arrow.node, ctx);
+      const after = authoring.currentTargetShapeHandles();
+      if (after.length === beforeCount + 1) {
+        authoredArrows.push({
+          insertionIndex: arrow.insertionIndex,
+          handle: after.at(-1)!,
+        });
+      }
+    }
+    if (authoredArrows.length > 0) {
+      const orderedHandles: (typeof baseShapeOrder)[number][] = [];
+      for (let index = 0; index <= baseShapeOrder.length; index += 1) {
+        for (const arrow of authoredArrows) {
+          if (arrow.insertionIndex === index) orderedHandles.push(arrow.handle);
+        }
+        const baseHandle = baseShapeOrder[index];
+        if (baseHandle) orderedHandles.push(baseHandle);
+      }
+      authoring.reorderCurrentTargetShapes(orderedHandles);
+    }
   }
 
   return createWritablePptx(() => authoring.source);
+}
+
+function renderArrowNodeFromRegistry(
+  node: Extract<PositionedNode, { type: "arrow" }>,
+  ctx: RenderContext,
+): void {
+  const def = getNodeDef("arrow");
+  if (!def.render) throw new Error("No render function registered for Arrow");
+  def.render(node, ctx);
 }

@@ -1368,6 +1368,7 @@ describe("renderLineNode / renderArrowNode", () => {
     expect(slideXml).toContain('<a:ext cx="1905000" cy="476250"/>');
     expect(slideXml).toContain('<a:prstGeom prst="line">');
     expect(slideXml).toContain('<a:srgbClr val="00FF00"/>');
+    expect(slideXml).not.toContain("<p:cxnSp>");
     expect(slideXml).not.toContain("pom-shape:");
   });
 
@@ -1393,7 +1394,7 @@ describe("renderLineNode / renderArrowNode", () => {
     expect(slideXml).toContain('<a:prstDash val="lgDashDotDot"/>');
   });
 
-  it("arrow: 参照ノードの中心同士を結ぶ線を描画する", async () => {
+  it("arrow: authored shape handle と connection site を参照する native connector を描画する", async () => {
     const slideXml = await renderPageSlideXml({
       type: "layer",
       x: 0,
@@ -1401,6 +1402,20 @@ describe("renderLineNode / renderArrowNode", () => {
       w: 1280,
       h: 720,
       children: [
+        {
+          type: "arrow",
+          from: "a",
+          to: "b",
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+          color: "0000FF",
+          lineWidth: 2,
+          dashType: "lgDashDotDot",
+          beginArrow: { type: "diamond" },
+          endArrow: true,
+        },
         {
           type: "shape",
           shapeType: "rect",
@@ -1419,6 +1434,203 @@ describe("renderLineNode / renderArrowNode", () => {
           w: 100,
           h: 100,
         },
+      ],
+    });
+
+    expect(slideXml).toContain("<p:cxnSp>");
+    expect(slideXml).toContain('<a:stCxn id="1" idx="3"/>');
+    expect(slideXml).toContain('<a:endCxn id="2" idx="1"/>');
+    expect(slideXml).toContain('<a:prstGeom prst="straightConnector1">');
+    expect(slideXml).toContain('<a:ln w="19050">');
+    expect(slideXml).toContain('<a:srgbClr val="0000FF"/>');
+    expect(slideXml).toContain('<a:prstDash val="lgDashDotDot"/>');
+    expect(slideXml).toMatch(/<a:headEnd type="diamond"(?:\s[^>]*)?\/>/);
+    expect(slideXml).toMatch(/<a:tailEnd type="triangle"(?:\s[^>]*)?\/>/);
+    expect(slideXml).not.toContain('<a:prstGeom prst="line">');
+  });
+
+  it("arrow: Text の上下 connection site を解決する", async () => {
+    const slideXml = await renderPageSlideXml({
+      type: "layer",
+      x: 0,
+      y: 0,
+      w: 1280,
+      h: 720,
+      children: [
+        { type: "text", id: "top", text: "Top", x: 50, y: 50, w: 100, h: 40 },
+        {
+          type: "text",
+          id: "bottom",
+          text: "Bottom",
+          x: 50,
+          y: 200,
+          w: 100,
+          h: 40,
+        },
+        { type: "arrow", from: "top", to: "bottom", x: 0, y: 0, w: 0, h: 0 },
+      ],
+    });
+
+    expect(slideXml).toContain('<a:stCxn id="1" idx="2"/>');
+    expect(slideXml).toContain('<a:endCxn id="2" idx="0"/>');
+  });
+
+  it("arrow: 左向き・上向きの native connector に transform flip を設定する", async () => {
+    const slideXml = await renderPageSlideXml({
+      type: "layer",
+      x: 0,
+      y: 0,
+      w: 1280,
+      h: 720,
+      children: [
+        {
+          type: "shape",
+          shapeType: "ellipse",
+          id: "from",
+          x: 300,
+          y: 250,
+          w: 100,
+          h: 80,
+        },
+        {
+          type: "shape",
+          shapeType: "ellipse",
+          id: "to",
+          x: 100,
+          y: 50,
+          w: 100,
+          h: 80,
+        },
+        {
+          type: "arrow",
+          from: "from",
+          to: "to",
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+        },
+      ],
+    });
+
+    expect(slideXml).toContain('<a:xfrm flipH="1" flipV="1">');
+    expect(slideXml).toContain('<a:stCxn id="1" idx="1"/>');
+    expect(slideXml).toContain('<a:endCxn id="2" idx="3"/>');
+  });
+
+  it("arrow: 縦横比が大きい Shape でも実距離が最短の site を選ぶ", async () => {
+    const slideXml = await renderPageSlideXml({
+      type: "layer",
+      x: 0,
+      y: 0,
+      w: 1280,
+      h: 720,
+      children: [
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "wide",
+          x: 0,
+          y: 0,
+          w: 1000,
+          h: 100,
+        },
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "target",
+          x: 750,
+          y: 100,
+          w: 100,
+          h: 100,
+        },
+        {
+          type: "arrow",
+          from: "wide",
+          to: "target",
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+        },
+      ],
+    });
+
+    expect(slideXml).toContain('<a:stCxn id="1" idx="3"/>');
+    expect(slideXml).toContain('<a:endCxn id="2" idx="1"/>');
+  });
+
+  it("arrow: 回転した Shape の画面上で最寄りの site index を選ぶ", async () => {
+    const slideXml = await renderPageSlideXml({
+      type: "layer",
+      x: 0,
+      y: 0,
+      w: 1280,
+      h: 720,
+      children: [
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "rotated",
+          x: 50,
+          y: 50,
+          w: 200,
+          h: 100,
+          rotate: 90,
+        },
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "target",
+          x: 400,
+          y: 50,
+          w: 100,
+          h: 100,
+        },
+        {
+          type: "arrow",
+          from: "rotated",
+          to: "target",
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+        },
+      ],
+    });
+
+    expect(slideXml).toContain('<a:stCxn id="1" idx="0"/>');
+    expect(slideXml).toContain('<a:endCxn id="2" idx="1"/>');
+  });
+
+  it("arrow: 遅延 authoring 後も zIndex の前後関係を shape tree に維持する", async () => {
+    const slideXml = await renderPageSlideXml({
+      type: "layer",
+      x: 0,
+      y: 0,
+      w: 1280,
+      h: 720,
+      children: [
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "a",
+          x: 50,
+          y: 50,
+          w: 100,
+          h: 100,
+          zIndex: 0,
+        },
+        {
+          type: "shape",
+          shapeType: "rect",
+          id: "b",
+          x: 250,
+          y: 50,
+          w: 100,
+          h: 100,
+          zIndex: 0,
+        },
         {
           type: "arrow",
           from: "a",
@@ -1427,17 +1639,23 @@ describe("renderLineNode / renderArrowNode", () => {
           y: 0,
           w: 0,
           h: 0,
-          color: "0000FF",
-          endArrow: true,
+          zIndex: -1,
+        },
+        {
+          type: "arrow",
+          from: "a",
+          to: "b",
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
+          zIndex: 1,
         },
       ],
     });
 
-    expect(slideXml).toContain('<a:off x="952500" y="952500"/>');
-    expect(slideXml).toContain('<a:ext cx="1905000" cy="952500"/>');
-    expect(slideXml).toContain('<a:prstGeom prst="line">');
-    expect(slideXml).toContain('<a:srgbClr val="0000FF"/>');
-    expect(slideXml).toMatch(/<a:tailEnd type="triangle"(?:\s[^>]*)?\/>/);
-    expect(slideXml).not.toContain("pom-shape:");
+    expect(
+      Array.from(slideXml.matchAll(/<p:(sp|cxnSp)>/g), (match) => match[1]),
+    ).toEqual(["cxnSp", "sp", "sp", "cxnSp"]);
   });
 });
