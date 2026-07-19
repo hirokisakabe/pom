@@ -1,6 +1,6 @@
 {
   "name": "@hirokisakabe/pom-editor",
-  "version": "0.4.6",
+  "version": "0.5.0",
   "description": "Reusable browser editor for pom with XML, AST, preview, and diagnostics UI.",
   "type": "module",
   "main": "./dist/index.js",
