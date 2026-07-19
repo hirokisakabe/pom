@@ -219,4 +219,33 @@ describe("CLI preview App", () => {
 
     expect(await screen.findByText("Saved")).toBeTruthy();
   });
+
+  it("Save後に再編集してもSave内容の通知をexternal change扱いしない", async () => {
+    arrangeDocument();
+    vi.stubGlobal("EventSource", FakeEventSource);
+    let resolveSave: ((revision: string) => void) | undefined;
+    api.saveDocument.mockReturnValue(
+      new Promise<string>((resolve) => {
+        resolveSave = resolve;
+      }),
+    );
+    render(<App />);
+    const editor = await screen.findByRole("textbox", { name: "XML editor" });
+    await waitFor(() => expect(FakeEventSource.instances).toHaveLength(1));
+    fireEvent.change(editor, { target: { value: "<Text>saving</Text>" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    fireEvent.change(editor, { target: { value: "<Text>new edit</Text>" } });
+
+    FakeEventSource.instances[0]?.emit({
+      xml: "<Text>saving</Text>",
+      revision: "revision-2",
+      filename: "slides.pom.xml",
+      editable: true,
+    });
+    resolveSave?.("revision-2");
+
+    await waitFor(() =>
+      expect(screen.getByRole("status").textContent).toBe("Unsaved changes"),
+    );
+  });
 });

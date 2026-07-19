@@ -24,6 +24,7 @@ export function App() {
   const [externalChange, setExternalChange] = useState(false);
   const xmlRef = useRef("");
   const savedXmlRef = useRef("");
+  const pendingSaveXmlRef = useRef<string | null>(null);
   const eventGenerationRef = useRef(0);
 
   useEffect(() => {
@@ -68,6 +69,16 @@ export function App() {
         setExternalChange(false);
         return;
       }
+      if (
+        updated.xml === pendingSaveXmlRef.current ||
+        updated.xml === savedXmlRef.current
+      ) {
+        savedXmlRef.current = updated.xml;
+        setSavedXml(updated.xml);
+        setDocument(updated);
+        setExternalChange(false);
+        return;
+      }
       if (xmlRef.current !== savedXmlRef.current) {
         setExternalChange(true);
         return;
@@ -102,14 +113,21 @@ export function App() {
         document.editable
           ? async (value) => {
               const eventGeneration = eventGenerationRef.current;
-              const revision = await saveDocument(value, document.revision);
-              savedXmlRef.current = value;
-              setSavedXml(value);
-              setDocument((current) =>
-                current ? { ...current, revision } : current,
-              );
-              if (eventGenerationRef.current === eventGeneration) {
-                setExternalChange(false);
+              pendingSaveXmlRef.current = value;
+              try {
+                const revision = await saveDocument(value, document.revision);
+                savedXmlRef.current = value;
+                setSavedXml(value);
+                setDocument((current) =>
+                  current ? { ...current, revision } : current,
+                );
+                if (eventGenerationRef.current === eventGeneration) {
+                  setExternalChange(false);
+                }
+              } finally {
+                if (pendingSaveXmlRef.current === value) {
+                  pendingSaveXmlRef.current = null;
+                }
               }
             }
           : undefined
