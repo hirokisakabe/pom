@@ -1,6 +1,4 @@
 import {
-  addEmptySlideFromLayout,
-  addSlideNumber,
   asEmu,
   asPt,
   createPptx,
@@ -215,7 +213,7 @@ function addMasterContent(
   }
   if (master.slideNumber) {
     const value = master.slideNumber;
-    const source = addSlideNumber(authoring.source, target, {
+    authoring.addSlideNumber({
       offsetX: asEmu(Math.round(pxToEmu(value.x))),
       offsetY: asEmu(Math.round(pxToEmu(value.y))),
       width:
@@ -232,7 +230,6 @@ function addMasterContent(
         color: toColorInput(value.color),
       },
     });
-    authoring.replaceSource(source, target);
   }
 }
 
@@ -280,13 +277,10 @@ export function renderPptx(
       const layoutPartPath = authoring.source.slideLayouts[0]?.partPath;
       if (!layoutPartPath)
         throw new Error("createPptx did not create a slide layout");
-      const nextSource = addEmptySlideFromLayout(authoring.source, {
+      const slideHandle = authoring.addEmptySlideFromLayout({
         layoutPartPath,
       });
-      const slideHandle = nextSource.slides[pageIndex]?.handle;
-      if (!slideHandle)
-        throw new Error(`slide handle was not found: ${pageIndex + 1}`);
-      authoring.replaceSource(nextSource, slideHandle);
+      authoring.selectTarget(slideHandle);
     } else {
       const slideHandle = authoring.source.slides[pageIndex]?.handle;
       if (!slideHandle)

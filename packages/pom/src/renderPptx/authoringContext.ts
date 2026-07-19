@@ -1,18 +1,15 @@
 import {
-  addChart,
-  addConnector,
-  addPicture,
-  addShape,
-  addTable,
-  addTextBox,
-  reorderShapes,
-  setSlideBackground,
+  createPptxAuthoringSession,
   type AddChartInput,
   type AddConnectorInput,
+  type AddEmptySlideFromLayoutInput,
   type AddPictureInput,
   type AddShapeInput,
+  type AddSlideNumberInput,
   type AddTableInput,
   type AddTextBoxInput,
+  type PptxAuthoringSession,
+  type PptxAuthoringTarget,
   type PptxSourceModel,
   type SourceHandle,
   type SourceShapeNode,
@@ -20,7 +17,9 @@ import {
 
 /** Mutable state needed only while authoring a PPTX. */
 export class PptxAuthoringContext {
-  private currentSlideHandle: SourceHandle | undefined;
+  private readonly session: PptxAuthoringSession;
+  private currentTargetHandle: SourceHandle | undefined;
+  private currentTarget: PptxAuthoringTarget | undefined;
   private textCount = 0;
   private shapeCount = 0;
   private pictureCount = 0;
@@ -29,53 +28,52 @@ export class PptxAuthoringContext {
   private connectorCount = 0;
 
   constructor(
-    private currentSource: PptxSourceModel,
+    source: PptxSourceModel,
     readonly useLayoutTextMargins = false,
   ) {
-    this.currentSlideHandle = currentSource.slides[0]?.handle;
+    this.session = createPptxAuthoringSession(source);
+    const firstSlideHandle = source.slides[0]?.handle;
+    if (firstSlideHandle) this.selectTarget(firstSlideHandle);
   }
 
   selectTarget(handle: SourceHandle): void {
-    this.currentSlideHandle = handle;
+    this.currentTargetHandle = handle;
+    this.currentTarget = this.session.target(handle);
   }
 
   get source(): PptxSourceModel {
-    return this.currentSource;
+    return this.session.source;
   }
 
-  replaceSource(source: PptxSourceModel, target: SourceHandle): void {
-    this.currentSource = source;
-    this.currentSlideHandle = target;
+  addEmptySlideFromLayout(input: AddEmptySlideFromLayoutInput): SourceHandle {
+    return this.session.addEmptySlideFromLayout(input);
   }
 
-  private get target(): SourceHandle {
-    if (!this.currentSlideHandle)
+  private get target(): PptxAuthoringTarget {
+    if (!this.currentTarget)
       throw new Error("glimpse slide or master is not selected");
-    return this.currentSlideHandle;
+    return this.currentTarget;
   }
 
   addTextBox(input: AddTextBoxInput, name?: string): SourceHandle {
-    this.currentSource = addTextBox(this.source, this.target, {
+    return this.target.addTextBox({
       ...input,
       name: name ?? `Text ${++this.textCount}`,
     });
-    return this.latestTargetShapeHandle();
   }
 
   addShape(input: AddShapeInput, name?: string): SourceHandle {
-    this.currentSource = addShape(this.source, this.target, {
+    return this.target.addShape({
       ...input,
       name: name ?? `Shape ${++this.shapeCount}`,
     });
-    return this.latestTargetShapeHandle();
   }
 
   addConnector(input: AddConnectorInput, name?: string): SourceHandle {
-    this.currentSource = addConnector(this.source, this.target, {
+    return this.target.addConnector({
       ...input,
       name: name ?? `Connector ${++this.connectorCount}`,
     });
-    return this.latestTargetShapeHandle();
   }
 
   currentTargetShapeHandles(): readonly SourceHandle[] {
@@ -86,48 +84,43 @@ export class PptxAuthoringContext {
   }
 
   reorderCurrentTargetShapes(handles: readonly SourceHandle[]): void {
-    this.currentSource = reorderShapes(this.source, this.target, handles);
+    this.target.reorderShapes(handles);
   }
 
   addPicture(input: AddPictureInput, name?: string): void {
-    this.currentSource = addPicture(this.source, this.target, {
+    this.target.addPicture({
       ...input,
       name: name ?? `Picture ${++this.pictureCount}`,
     });
   }
 
   addTable(input: AddTableInput, name?: string): void {
-    this.currentSource = addTable(this.source, this.target, {
+    this.target.addTable({
       ...input,
       name: name ?? `Table ${++this.tableCount}`,
     });
   }
 
   addChart(input: AddChartInput, name?: string): void {
-    this.currentSource = addChart(this.source, this.target, {
+    this.target.addChart({
       ...input,
       name: name ?? `Chart ${++this.chartCount}`,
     });
   }
 
-  setSlideBackground(
-    background: Parameters<typeof setSlideBackground>[2],
-  ): void {
-    this.currentSource = setSlideBackground(
-      this.source,
-      this.target,
-      background,
-    );
+  addSlideNumber(input: AddSlideNumberInput): void {
+    this.target.addSlideNumber(input);
   }
 
-  private latestTargetShapeHandle(): SourceHandle {
-    const handle = this.currentTargetShapes().at(-1)?.handle;
-    if (!handle) throw new Error("authored shape handle was not found");
-    return handle;
+  setSlideBackground(
+    background: Parameters<PptxAuthoringTarget["setSlideBackground"]>[0],
+  ): void {
+    this.target.setSlideBackground(background);
   }
 
   private currentTargetShapes(): readonly SourceShapeNode[] {
-    const partPath = this.target.partPath;
+    const partPath = this.currentTargetHandle?.partPath;
+    if (!partPath) throw new Error("glimpse slide or master is not selected");
     const target = [
       ...this.source.slides,
       ...this.source.slideLayouts,
