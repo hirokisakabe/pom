@@ -180,8 +180,8 @@ importers:
   packages/pom:
     dependencies:
       "@pptx-glimpse/document":
-        specifier: 0.9.1
-        version: 0.9.1
+        specifier: 0.11.0
+        version: 0.11.0
       "@resvg/resvg-wasm":
         specifier: ^2.6.2
         version: 2.6.2
@@ -3091,10 +3091,10 @@ packages:
       }
     engines: { node: ">=22" }
 
-  "@pptx-glimpse/document@0.9.1":
+  "@pptx-glimpse/document@0.11.0":
     resolution:
       {
-        integrity: sha512-d3tLpOUQ7XqlFeh1K5s1S3drpuuUX0dJMAWiqDsIn5Gs0wEZHQoNC9TY8lZhdT8wXO/1jgsmcwhMQH6NnfZ3YQ==,
+        integrity: sha512-EbuViNYX8IVACDTLfWZLuvY4XWE1pOJxipjKOIwKLZevBqf0hKC1l/QlMGR/yVFScUhoHxz5jjKfRrPUPzeshg==,
       }
     engines: { node: ">=22" }
 
@@ -15023,7 +15023,7 @@ snapshots:
       fast-xml-parser: 5.10.0
       fflate: 0.8.3
 
-  "@pptx-glimpse/document@0.9.1":
+  "@pptx-glimpse/document@0.11.0":
     dependencies:
       fast-xml-parser: 5.10.0
       fflate: 0.8.3

@@ -27,7 +27,7 @@ export type NodeBounds = { x: number; y: number; w: number; h: number };
 export type RenderContext = {
   /** diagnostics や画像・グラデーションのキャッシュなど build 全体の状態 */
   buildContext: BuildContext;
-  /** PPTX source、current target、要素名採番を render 内に閉じ込める状態 */
+  /** PPTX authoring session、current target、要素名採番を render 内に閉じ込める状態 */
   authoring: PptxAuthoringContext;
   /** Arrow の from/to 参照解決に使う id → 絶対座標マップ */
   idPositionMap: Map<string, NodeBounds>;

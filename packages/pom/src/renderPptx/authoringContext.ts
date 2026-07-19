@@ -1,22 +1,22 @@
 import {
-  addChart,
-  addPicture,
-  addShape,
-  addTable,
-  addTextBox,
-  setSlideBackground,
+  createPptxAuthoringSession,
   type AddChartInput,
+  type AddEmptySlideFromLayoutInput,
   type AddPictureInput,
   type AddShapeInput,
+  type AddSlideNumberInput,
   type AddTableInput,
   type AddTextBoxInput,
+  type PptxAuthoringSession,
+  type PptxAuthoringTarget,
   type PptxSourceModel,
   type SourceHandle,
 } from "@pptx-glimpse/document";
 
 /** Mutable state needed only while authoring a PPTX. */
 export class PptxAuthoringContext {
-  private currentSlideHandle: SourceHandle | undefined;
+  private readonly session: PptxAuthoringSession;
+  private currentTarget: PptxAuthoringTarget | undefined;
   private textCount = 0;
   private shapeCount = 0;
   private pictureCount = 0;
@@ -24,73 +24,74 @@ export class PptxAuthoringContext {
   private chartCount = 0;
 
   constructor(
-    private currentSource: PptxSourceModel,
+    source: PptxSourceModel,
     readonly useLayoutTextMargins = false,
   ) {
-    this.currentSlideHandle = currentSource.slides[0]?.handle;
+    this.session = createPptxAuthoringSession(source);
+    const firstSlideHandle = source.slides[0]?.handle;
+    if (firstSlideHandle) this.selectTarget(firstSlideHandle);
   }
 
   selectTarget(handle: SourceHandle): void {
-    this.currentSlideHandle = handle;
+    this.currentTarget = this.session.target(handle);
   }
 
   get source(): PptxSourceModel {
-    return this.currentSource;
+    return this.session.source;
   }
 
-  replaceSource(source: PptxSourceModel, target: SourceHandle): void {
-    this.currentSource = source;
-    this.currentSlideHandle = target;
+  addEmptySlideFromLayout(input: AddEmptySlideFromLayoutInput): SourceHandle {
+    return this.session.addEmptySlideFromLayout(input);
   }
 
-  private get target(): SourceHandle {
-    if (!this.currentSlideHandle)
+  private get target(): PptxAuthoringTarget {
+    if (!this.currentTarget)
       throw new Error("glimpse slide or master is not selected");
-    return this.currentSlideHandle;
+    return this.currentTarget;
   }
 
   addTextBox(input: AddTextBoxInput, name?: string): void {
-    this.currentSource = addTextBox(this.source, this.target, {
+    this.target.addTextBox({
       ...input,
       name: name ?? `Text ${++this.textCount}`,
     });
   }
 
   addShape(input: AddShapeInput, name?: string): void {
-    this.currentSource = addShape(this.source, this.target, {
+    this.target.addShape({
       ...input,
       name: name ?? `Shape ${++this.shapeCount}`,
     });
   }
 
   addPicture(input: AddPictureInput, name?: string): void {
-    this.currentSource = addPicture(this.source, this.target, {
+    this.target.addPicture({
       ...input,
       name: name ?? `Picture ${++this.pictureCount}`,
     });
   }
 
   addTable(input: AddTableInput, name?: string): void {
-    this.currentSource = addTable(this.source, this.target, {
+    this.target.addTable({
       ...input,
       name: name ?? `Table ${++this.tableCount}`,
     });
   }
 
   addChart(input: AddChartInput, name?: string): void {
-    this.currentSource = addChart(this.source, this.target, {
+    this.target.addChart({
       ...input,
       name: name ?? `Chart ${++this.chartCount}`,
     });
   }
 
+  addSlideNumber(input: AddSlideNumberInput): void {
+    this.target.addSlideNumber(input);
+  }
+
   setSlideBackground(
-    background: Parameters<typeof setSlideBackground>[2],
+    background: Parameters<PptxAuthoringTarget["setSlideBackground"]>[0],
   ): void {
-    this.currentSource = setSlideBackground(
-      this.source,
-      this.target,
-      background,
-    );
+    this.target.setSlideBackground(background);
   }
 }
