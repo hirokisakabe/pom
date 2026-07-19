@@ -1,6 +1,6 @@
 <h1 align="center">pom-editor</h1>
 <p align="center">
-  Visual AST editor for <a href="https://www.npmjs.com/package/@hirokisakabe/pom">pom</a> — drag-and-drop reordering of slide node trees.
+  Reusable browser editor for <a href="https://www.npmjs.com/package/@hirokisakabe/pom">pom</a> — XML / AST editing, preview, diagnostics, and host actions.
 </p>
 
 <p align="center">
@@ -12,6 +12,7 @@
 
 ## Features
 
+- **Complete Browser Editor** — `PomEditor` provides XML / AST mode switching, debounced preview, diagnostics, Refresh, pagination, and optional host actions.
 - **Drag-and-Drop Structure Editing** — Reorder siblings, move nodes between `VStack` / `HStack` / `Layer` containers, pull container children up to the root, or nest a container inside another — all by dragging in the AST tree.
 - **Distinct "between" vs "inside" Drop Targets** — Dropping on the gap before/after a row inserts as a sibling; dropping on a container body itself nests the node inside.
 - **XML In / XML Out** — Accepts a pom XML string via `xml` and returns the updated XML via `onChange` after each edit, so it drops into any editor / preview layout.
@@ -29,6 +30,30 @@ npm install @hirokisakabe/pom-editor react
 `@hirokisakabe/pom` is pulled in automatically as a regular dependency — no separate install needed.
 
 ## Quick Start
+
+### Complete editor
+
+```tsx
+import { PomEditor } from "@hirokisakabe/pom-editor";
+
+<PomEditor
+  xml={xml}
+  onChange={setXml}
+  onPreview={async (nextXml, { signal }) => {
+    const response = await fetch("/api/preview", {
+      method: "POST",
+      body: JSON.stringify({ xml: nextXml }),
+      signal,
+    });
+    return response.json();
+  }}
+  onDownload={(nextXml) => downloadPptx(nextXml)}
+/>;
+```
+
+Preview generation and file operations stay in the host application. `onDownload`, `onSave`, and `onCopyPreview` are optional, and their actions only appear when the corresponding callback is provided.
+
+### Standalone AST editor
 
 ```tsx
 import { PomAstEditor } from "@hirokisakabe/pom-editor";
@@ -60,6 +85,20 @@ function App() {
 ```
 
 ## API
+
+### `<PomEditor />`
+
+| Prop            | Type                                                   | Description                                      |
+| --------------- | ------------------------------------------------------ | ------------------------------------------------ |
+| `xml`           | `string`                                               | Controlled pom XML source                        |
+| `onChange`      | `(xml: string) => void`                                | Receives XML and AST edits                       |
+| `onPreview`     | `(xml, { signal }) => Promise<{ svgs } \| { errors }>` | Host-provided preview adapter                    |
+| `onDownload`    | `(xml: string) => void \| Promise<void>`               | Optional Download action                         |
+| `onSave`        | `(xml: string) => void \| Promise<void>`               | Optional Save action                             |
+| `onCopyPreview` | `(svg: string) => void \| Promise<void>`               | Optional preview image copy action               |
+| `toolbarStart`  | `ReactNode`                                            | Host content before the standard toolbar actions |
+| `toolbarEnd`    | `ReactNode`                                            | Host content after the standard toolbar actions  |
+| `debounceMs`    | `number`                                               | Preview debounce delay (default: `500`)          |
 
 ### `<PomAstEditor xml onChange />`
 
