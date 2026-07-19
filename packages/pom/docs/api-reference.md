@@ -14,6 +14,7 @@ async function buildPptx(
     master?: SlideMasterOptions;
     masterPptx?: ArrayBuffer | Uint8Array;
     textMeasurement?: TextMeasurementMode;
+    fonts?: FontInput[];
     autoFit?: boolean;
     strict?: boolean;
   },
@@ -60,6 +61,7 @@ The slide dimensions in pixels. Internally converted to inches at 96 DPI.
 | `master`          | `SlideMasterOptions`        | `undefined` | Slide master settings                                                                             |
 | `masterPptx`      | `ArrayBuffer \| Uint8Array` | `undefined` | Existing PPTX file to use as master (extracts background). See [Master Slide](./master-slide.md). |
 | `textMeasurement` | `TextMeasurementMode`       | `"auto"`    | Text width measurement method                                                                     |
+| `fonts`           | `FontInput[]`               | `[]`        | Custom font bytes used for text width measurement. See [Text Measurement](./text-measurement.md). |
 | `autoFit`         | `boolean`                   | `true`      | Auto-fit content when it overflows slides                                                         |
 | `strict`          | `boolean`                   | `false`     | Throw `DiagnosticsError` if any diagnostics are collected                                         |
 
@@ -94,7 +96,7 @@ Each `Diagnostic` has a `code` and a human-readable `message`. Diagnostics are w
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `IMAGE_MEASURE_FAILED`        | Failed to measure an image's size. A default size is used.                                                                                                                                                                                                                                                                  |
 | `IMAGE_NOT_PREFETCHED`        | The size of a URL image was not prefetched. A default size is used.                                                                                                                                                                                                                                                         |
-| `AUTOFIT_OVERFLOW`            | Content still exceeds the slide height after all autoFit adjustments.                                                                                                                                                                                                                                                       |
+| `AUTOFIT_OVERFLOW`            | Content still exceeds the slide height after all autoFit adjustments. When available, the message identifies the furthest leaf node and reports its `y`, height, and bottom edge.                                                                                                                                           |
 | `SCALE_BELOW_THRESHOLD`       | A node's shrink scale factor fell below the minimum threshold. Content may overflow.                                                                                                                                                                                                                                        |
 | `MASTER_PPTX_PARSE_FAILED`    | Failed to parse the file passed as `masterPptx`.                                                                                                                                                                                                                                                                            |
 | `ARROW_REF_NOT_FOUND`         | An `Arrow`'s `from` / `to` id was not found on the slide.                                                                                                                                                                                                                                                                   |
@@ -161,6 +163,33 @@ const { pptx } = await buildPptx(
 
 Controls how text width is measured for line breaking and layout. Accepts `"opentype"`, `"fallback"`, or `"auto"` (default). See [Text Measurement](./text-measurement.md) for details on each mode.
 
+### fonts
+
+Registers custom font data for layout measurement. Both `ArrayBuffer` and `Uint8Array` are accepted, so the same API works in Node.js and browsers.
+
+```typescript
+interface FontInput {
+  name?: string;
+  data: ArrayBuffer | Uint8Array;
+  weight?: "normal" | "bold" | number;
+}
+```
+
+```typescript
+import type { FontInput } from "@hirokisakabe/pom";
+
+const fonts: FontInput[] = [
+  { name: "My Font", data: regularFontBytes },
+  { name: "My Font", data: boldFontBytes, weight: "bold" },
+];
+
+const { pptx } = await buildPptx(xml, { w: 1280, h: 720 }, { fonts });
+```
+
+`name` is an optional family alias. The family names stored inside the font are always registered as well. When `weight` is omitted, pom uses font metadata when available and otherwise treats the face as regular. Family matching is case-insensitive, and bold text falls back to the registered regular face when no bold face is available.
+
+Custom font data is used only for advance-width measurement during layout. pom does not embed the font in the generated PPTX or install it in PowerPoint or the operating system; install or distribute the font separately where the presentation is viewed.
+
 ### autoFit
 
 When enabled (default), content that exceeds the slide height is automatically adjusted to fit. Adjustments are applied in priority order:
@@ -188,6 +217,7 @@ const { pptx } = await buildPptx(
 ```typescript
 import type {
   BuildPptxResult,
+  FontInput,
   TextMeasurementMode,
   Diagnostic,
   DiagnosticCode,

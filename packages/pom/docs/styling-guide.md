@@ -66,7 +66,7 @@ The default font is **Noto Sans JP**, bundled with pom for accurate text measure
 <Text fontFamily="Noto Sans JP">Japanese text (default)</Text>
 ```
 
-> **Note:** Custom fonts must be installed on the system where the PPTX is opened. Noto Sans JP is the only font with built-in measurement support.
+> **Note:** Custom fonts must be installed on the system where the PPTX is opened. For `Text`, `Ul`, `Ol`, and `Shape`, pass font bytes through the `buildPptx` `fonts` option to use their advance widths for layout measurement. This does not embed or install the font.
 
 ### Font Size Guide
 

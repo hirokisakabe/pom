@@ -69,7 +69,7 @@ export function renderArrowNode(
   const minX = Math.min(startSite.x, endSite.x);
   const minY = Math.min(startSite.y, endSite.y);
 
-  ctx.buildContext.pptxAuthoring.registerConnector({
+  ctx.authoring.addConnector({
     preset: "straightConnector1",
     ...createShapeBoundsInput({
       x: minX,

@@ -1,5 +1,9 @@
 export { buildPptx } from "./buildPptx.ts";
-export type { BuildPptxResult, TextMeasurementMode } from "./buildPptx.ts";
+export type {
+  BuildPptxResult,
+  FontInput,
+  TextMeasurementMode,
+} from "./buildPptx.ts";
 export type {
   PptxOutputType,
   PptxWriteFileOptions,

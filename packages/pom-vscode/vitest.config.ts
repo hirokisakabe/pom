@@ -4,7 +4,12 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    exclude: ["src/test/**", "dist/test/**", "node_modules/**"],
+    exclude: [
+      "src/test/**",
+      "dist/test/**",
+      "node_modules/**",
+      "src/**/*.showcase.integration.test.ts",
+    ],
     coverage: {
       include: ["src/**/*.ts"],
       reporter: ["text", "html", "json", "json-summary"],

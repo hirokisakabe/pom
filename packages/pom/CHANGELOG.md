@@ -1,5 +1,15 @@
 # @hirokisakabe/pom
 
+## 10.1.0
+
+### Minor Changes
+
+- [#961](https://github.com/hirokisakabe/pom/pull/961) [`ce6fe6d`](https://github.com/hirokisakabe/pom/commit/ce6fe6dd96f3c38d1aaa54ffa34d8095b8421680) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - `buildPptx` の `fonts` オプションに `ArrayBuffer` / `Uint8Array` の font data を持つ `FontInput[]` を指定し、Text・Ul・Ol・Shape の幅と折り返しを実フォントの advance width で計測できるようにしました。
+
+### Patch Changes
+
+- [#958](https://github.com/hirokisakabe/pom/pull/958) [`78ee654`](https://github.com/hirokisakabe/pom/commit/78ee654d21504e61491053266eb6fe6ff8f91e16) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Layer 内の絶対配置要素を autoFit が通常フローとして過大計測する問題を修正し、overflow diagnostic に原因ノードの計測値を追加しました。
+
 ## 10.0.0
 
 ### Major Changes

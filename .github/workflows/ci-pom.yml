@@ -19,6 +19,7 @@ on:
       - "packages/pom/.dependency-cruiser.cjs"
       - "packages/pom/knip.json"
       - "packages/pom/vitest.config.ts"
+      - "packages/pom/vitest.browser.config.ts"
       - ".node-version"
       - ".github/workflows/ci-pom.yml"
   pull_request:
@@ -39,6 +40,7 @@ on:
       - "packages/pom/.dependency-cruiser.cjs"
       - "packages/pom/knip.json"
       - "packages/pom/vitest.config.ts"
+      - "packages/pom/vitest.browser.config.ts"
       - ".node-version"
       - ".github/workflows/ci-pom.yml"
 
@@ -67,6 +69,10 @@ jobs:
       - run: pnpm run typecheck
         working-directory: packages/pom
       - run: pnpm run test:coverage
+        working-directory: packages/pom
+      - run: pnpm exec playwright install --with-deps chromium
+        working-directory: packages/pom
+      - run: pnpm run test:browser
         working-directory: packages/pom
 
       - name: Cache main branch coverage

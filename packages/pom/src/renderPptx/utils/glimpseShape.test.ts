@@ -5,7 +5,7 @@ import {
   shapeOutline,
   solidShapeFill,
 } from "./glimpseShape.ts";
-import { toColorInput } from "../pptxAuthoring.ts";
+import { toColorInput } from "../glimpseAdapter.ts";
 
 describe("glimpse shape helpers", () => {
   it("3桁色を6桁RGBへ展開する", () => {

@@ -14,6 +14,7 @@ export default defineSharedConfig({
     "eslint.config.mts",
     ".dependency-cruiser.cjs",
     "vitest.config.ts",
+    "vitest.browser.config.ts",
     "tsdown.config.ts",
     ".size-limit.js",
   ],

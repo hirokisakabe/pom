@@ -18,7 +18,13 @@ import {
   renderBorderOnly,
 } from "./utils/backgroundBorder.ts";
 import { getNodeDef } from "../registry/index.ts";
-import { toColorInput } from "./pptxAuthoring.ts";
+import {
+  enrichPictureInput,
+  enrichShapeInput,
+  toColorInput,
+  toSlideBackgroundGradient,
+} from "./glimpseAdapter.ts";
+import { PptxAuthoringContext } from "./authoringContext.ts";
 import { createGlimpseRunProperties } from "./utils/glimpseTextBox.ts";
 import {
   createShapeBoundsInput,
@@ -125,16 +131,17 @@ function masterTextRunProperties(
 
 function addMasterContent(
   buildContext: BuildContext,
+  authoring: PptxAuthoringContext,
   master: SlideMasterOptions,
 ): void {
-  const target = buildContext.pptxAuthoring.source.slideMasters[0]?.handle;
+  const target = authoring.source.slideMasters[0]?.handle;
   if (!target)
     throw new Error("createPptx did not create a slide master handle");
-  buildContext.pptxAuthoring.selectSlide(target);
+  authoring.selectTarget(target);
   for (const obj of master.objects ?? []) {
     switch (obj.type) {
       case "text":
-        buildContext.pptxAuthoring.registerTextBox({
+        authoring.addTextBox({
           ...masterBounds(obj),
           body: {
             anchor: "middle",
@@ -162,35 +169,42 @@ function addMasterContent(
         });
         break;
       case "image":
-        buildContext.pptxAuthoring.registerPicture({
-          ...masterBounds(obj),
-          bytes: imageBytesFromSource(
-            obj.src,
-            getImageData(obj.src, buildContext.imageDataCache),
+        authoring.addPicture(
+          enrichPictureInput(
+            {
+              ...masterBounds(obj),
+              bytes: imageBytesFromSource(
+                obj.src,
+                getImageData(obj.src, buildContext.imageDataCache),
+              ),
+            },
+            undefined,
           ),
-        });
+        );
         break;
       case "rect":
-        buildContext.pptxAuthoring.registerShape(
-          {
-            ...masterBounds(obj),
-            geometry: { kind: "preset", preset: "rect" },
-            fill: obj.fill
-              ? solidShapeFill(obj.fill.color ?? "FFFFFF")
-              : noneShapeFill(),
-            outline: obj.border ? shapeOutline(obj.border) : undefined,
-          },
-          {
-            fillColor: obj.fill?.color,
-            fillOpacity:
-              obj.fill?.transparency === undefined
-                ? undefined
-                : 1 - obj.fill.transparency / 100,
-          },
+        authoring.addShape(
+          enrichShapeInput(
+            {
+              ...masterBounds(obj),
+              geometry: { kind: "preset", preset: "rect" },
+              fill: obj.fill
+                ? solidShapeFill(obj.fill.color ?? "FFFFFF")
+                : noneShapeFill(),
+              outline: obj.border ? shapeOutline(obj.border) : undefined,
+            },
+            {
+              fillColor: obj.fill?.color,
+              fillOpacity:
+                obj.fill?.transparency === undefined
+                  ? undefined
+                  : 1 - obj.fill.transparency / 100,
+            },
+          ),
         );
         break;
       case "line":
-        buildContext.pptxAuthoring.registerShape({
+        authoring.addShape({
           ...masterBounds(obj),
           geometry: { kind: "preset", preset: "line" },
           fill: noneShapeFill(),
@@ -201,25 +215,24 @@ function addMasterContent(
   }
   if (master.slideNumber) {
     const value = master.slideNumber;
-    buildContext.pptxAuthoring.replaceSource(
-      addSlideNumber(buildContext.pptxAuthoring.source, target, {
-        offsetX: asEmu(Math.round(pxToEmu(value.x))),
-        offsetY: asEmu(Math.round(pxToEmu(value.y))),
-        width:
-          value.w === undefined
-            ? asEmu(800000)
-            : asEmu(Math.round(pxToEmu(value.w))),
-        height:
-          value.h === undefined
-            ? asEmu(300000)
-            : asEmu(Math.round(pxToEmu(value.h))),
-        properties: {
-          fontFace: value.fontFamily,
-          fontSize: value.fontSize ? asPt(pxToPt(value.fontSize)) : undefined,
-          color: toColorInput(value.color),
-        },
-      }),
-    );
+    const source = addSlideNumber(authoring.source, target, {
+      offsetX: asEmu(Math.round(pxToEmu(value.x))),
+      offsetY: asEmu(Math.round(pxToEmu(value.y))),
+      width:
+        value.w === undefined
+          ? asEmu(800000)
+          : asEmu(Math.round(pxToEmu(value.w))),
+      height:
+        value.h === undefined
+          ? asEmu(300000)
+          : asEmu(Math.round(pxToEmu(value.h))),
+      properties: {
+        fontFace: value.fontFamily,
+        fontSize: value.fontSize ? asPt(pxToPt(value.fontSize)) : undefined,
+        color: toColorInput(value.color),
+      },
+    });
+    authoring.replaceSource(source, target);
   }
 }
 
@@ -238,7 +251,7 @@ export function renderPptx(
 ) {
   const margin =
     master?.margin === undefined ? undefined : resolveBoxSpacing(master.margin);
-  let source = createPptx({
+  const source = createPptx({
     slideSize: {
       width: asEmu(Math.round(pxToEmu(slidePx.w))),
       height: asEmu(Math.round(pxToEmu(slidePx.h))),
@@ -259,28 +272,31 @@ export function renderPptx(
         : undefined,
     },
   });
-  buildContext.pptxAuthoring.initialize(source, margin !== undefined);
-  if (master) addMasterContent(buildContext, master);
+  const authoring = new PptxAuthoringContext(source, margin !== undefined);
+  if (master) addMasterContent(buildContext, authoring, master);
 
   for (const [pageIndex, data] of pages.entries()) {
     if (pageIndex > 0) {
-      const layoutPartPath =
-        buildContext.pptxAuthoring.source.slideLayouts[0]?.partPath;
+      const layoutPartPath = authoring.source.slideLayouts[0]?.partPath;
       if (!layoutPartPath)
         throw new Error("createPptx did not create a slide layout");
-      source = addEmptySlideFromLayout(buildContext.pptxAuthoring.source, {
+      const nextSource = addEmptySlideFromLayout(authoring.source, {
         layoutPartPath,
       });
-      buildContext.pptxAuthoring.replaceSource(source);
+      const slideHandle = nextSource.slides[pageIndex]?.handle;
+      if (!slideHandle)
+        throw new Error(`slide handle was not found: ${pageIndex + 1}`);
+      authoring.replaceSource(nextSource, slideHandle);
+    } else {
+      const slideHandle = authoring.source.slides[pageIndex]?.handle;
+      if (!slideHandle)
+        throw new Error(`slide handle was not found: ${pageIndex + 1}`);
+      authoring.selectTarget(slideHandle);
     }
-    const slideHandle =
-      buildContext.pptxAuthoring.source.slides[pageIndex]?.handle;
-    if (!slideHandle)
-      throw new Error(`slide handle was not found: ${pageIndex + 1}`);
-    buildContext.pptxAuthoring.selectSlide(slideHandle);
     const idMaps = buildIdMaps(data, buildContext.diagnostics);
     const ctx: RenderContext = {
       buildContext,
+      authoring,
       idPositionMap: idMaps.positions,
       idNodeMap: idMaps.nodes,
       connectorTargetMap: new Map(),
@@ -302,19 +318,22 @@ export function renderPptx(
       : undefined;
     const rootHasOpacity =
       !isLinelike && "opacity" in data && data.opacity !== undefined;
-    const rootGradientApplied =
+    const rootGradient =
       rootBackgroundGradient && !rootHasOpacity
-        ? buildContext.pptxAuthoring.setSlideBackgroundGradient(
-            rootBackgroundGradient,
-          )
-        : false;
+        ? toSlideBackgroundGradient(rootBackgroundGradient)
+        : undefined;
+    const rootGradientApplied = rootGradient !== undefined;
+    if (rootGradient) authoring.setSlideBackground(rootGradient);
     if (
       !rootGradientApplied &&
       rootBackgroundColor &&
       !rootBackgroundGradient &&
       !rootHasOpacity
     ) {
-      buildContext.pptxAuthoring.setSlideBackgroundSolid(rootBackgroundColor);
+      authoring.setSlideBackground({
+        kind: "solid",
+        color: toColorInput(rootBackgroundColor)!,
+      });
     }
 
     // ルートノードの backgroundImage はスライドの background プロパティとして適用
@@ -325,9 +344,10 @@ export function renderPptx(
         rootBackgroundImage.src,
         buildContext.imageDataCache,
       );
-      buildContext.pptxAuthoring.setSlideBackgroundImage(
-        imageBytesFromSource(rootBackgroundImage.src, cachedData),
-      );
+      authoring.setSlideBackground({
+        kind: "image",
+        bytes: imageBytesFromSource(rootBackgroundImage.src, cachedData),
+      });
     }
 
     /**
@@ -340,8 +360,7 @@ export function renderPptx(
       if (node.type === "arrow") {
         deferredArrows.push({
           node,
-          insertionIndex:
-            buildContext.pptxAuthoring.currentTargetShapeHandles().length,
+          insertionIndex: authoring.currentTargetShapeHandles().length,
         });
         return;
       }
@@ -390,18 +409,15 @@ export function renderPptx(
     }
 
     renderNode(data, true); // ルートノードとして処理
-    const baseShapeOrder = [
-      ...buildContext.pptxAuthoring.currentTargetShapeHandles(),
-    ];
+    const baseShapeOrder = [...authoring.currentTargetShapeHandles()];
     const authoredArrows: {
       insertionIndex: number;
       handle: (typeof baseShapeOrder)[number];
     }[] = [];
     for (const arrow of deferredArrows) {
-      const beforeCount =
-        buildContext.pptxAuthoring.currentTargetShapeHandles().length;
+      const beforeCount = authoring.currentTargetShapeHandles().length;
       renderArrowNodeFromRegistry(arrow.node, ctx);
-      const after = buildContext.pptxAuthoring.currentTargetShapeHandles();
+      const after = authoring.currentTargetShapeHandles();
       if (after.length === beforeCount + 1) {
         authoredArrows.push({
           insertionIndex: arrow.insertionIndex,
@@ -418,11 +434,11 @@ export function renderPptx(
         const baseHandle = baseShapeOrder[index];
         if (baseHandle) orderedHandles.push(baseHandle);
       }
-      buildContext.pptxAuthoring.reorderCurrentTargetShapes(orderedHandles);
+      authoring.reorderCurrentTargetShapes(orderedHandles);
     }
   }
 
-  return createWritablePptx(() => buildContext.pptxAuthoring.source);
+  return createWritablePptx(() => authoring.source);
 }
 
 function renderArrowNodeFromRegistry(
