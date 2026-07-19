@@ -52,6 +52,7 @@ import { PomEditor } from "@hirokisakabe/pom-editor";
 ```
 
 Preview generation and file operations stay in the host application. `onDownload`, `onSave`, and `onCopyPreview` are optional, and their actions only appear when the corresponding callback is provided.
+SVG preview results are sanitized before they are inserted into the document.
 
 ### Standalone AST editor
 
@@ -99,6 +100,8 @@ function App() {
 | `toolbarStart`  | `ReactNode`                                            | Host content before the standard toolbar actions |
 | `toolbarEnd`    | `ReactNode`                                            | Host content after the standard toolbar actions  |
 | `debounceMs`    | `number`                                               | Preview debounce delay (default: `500`)          |
+| `className`     | `string`                                               | Optional class name for the editor root          |
+| `style`         | `CSSProperties`                                        | Optional inline style for the editor root        |
 
 ### `<PomAstEditor xml onChange />`
 

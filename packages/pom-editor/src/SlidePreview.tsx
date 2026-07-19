@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import DOMPurify from "dompurify";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { PomEditorDiagnostic } from "./PomEditor.tsx";
 
@@ -47,6 +48,16 @@ export function SlidePreview({
   onCopyPreview,
 }: SlidePreviewProps) {
   const totalPages = svgs.length;
+  const sanitizedSvgs = useMemo(
+    () =>
+      svgs.map((svg) =>
+        DOMPurify.sanitize(svg, {
+          USE_PROFILES: { svg: true, svgFilters: true },
+        }),
+      ),
+    [svgs],
+  );
+  const activePage = Math.min(Math.max(currentPage, 1), totalPages || 1);
   const [copyStatus, setCopyStatus] = useState<CopyStatus>("idle");
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -61,7 +72,9 @@ export function SlidePreview({
     if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
     setCopyStatus("copying");
     try {
-      await onCopyPreview(svgs[currentPage - 1]);
+      const svg = sanitizedSvgs[activePage - 1];
+      if (!svg) return;
+      await onCopyPreview(svg);
       setCopyStatus("success");
     } catch {
       setCopyStatus("error");
@@ -111,40 +124,52 @@ export function SlidePreview({
           {diagnostics.map((diagnostic, index) => (
             <li
               key={`${diagnostic.type}-${diagnostic.message}-${index}`}
-              onClick={() => {
-                if (diagnostic.line) onDiagnosticClick?.(index);
-              }}
               style={{
-                display: "flex",
-                gap: 12,
                 marginBottom: 8,
-                padding: 12,
                 border: "1px solid #fecaca",
                 borderRadius: 6,
                 background: "#fef2f2",
-                cursor:
-                  diagnostic.line && onDiagnosticClick ? "pointer" : "default",
               }}
             >
-              <span aria-hidden="true" style={{ color: "#dc2626" }}>
-                ●
-              </span>
-              <div style={{ minWidth: 0 }}>
-                <div
-                  style={{ color: "#dc2626", fontSize: 12, fontWeight: 600 }}
-                >
-                  {getErrorTypeLabel(diagnostic.type)}
+              <button
+                type="button"
+                disabled={!diagnostic.line || !onDiagnosticClick}
+                onClick={() => onDiagnosticClick?.(index)}
+                style={{
+                  display: "flex",
+                  width: "100%",
+                  gap: 12,
+                  padding: 12,
+                  border: 0,
+                  background: "transparent",
+                  color: "inherit",
+                  textAlign: "left",
+                  cursor:
+                    diagnostic.line && onDiagnosticClick
+                      ? "pointer"
+                      : "default",
+                }}
+              >
+                <span aria-hidden="true" style={{ color: "#dc2626" }}>
+                  ●
+                </span>
+                <div style={{ minWidth: 0 }}>
+                  <div
+                    style={{ color: "#dc2626", fontSize: 12, fontWeight: 600 }}
+                  >
+                    {getErrorTypeLabel(diagnostic.type)}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      overflowWrap: "anywhere",
+                      fontSize: 14,
+                    }}
+                  >
+                    {diagnostic.message}
+                  </div>
                 </div>
-                <div
-                  style={{
-                    marginTop: 4,
-                    overflowWrap: "anywhere",
-                    fontSize: 14,
-                  }}
-                >
-                  {diagnostic.message}
-                </div>
-              </div>
+              </button>
             </li>
           ))}
         </ul>
@@ -185,7 +210,7 @@ export function SlidePreview({
           className="pom-editor-slide-preview"
           data-testid="pom-slide-preview"
           style={{ width: "100%", height: "100%" }}
-          dangerouslySetInnerHTML={{ __html: svgs[currentPage - 1] }}
+          dangerouslySetInnerHTML={{ __html: sanitizedSvgs[activePage - 1] }}
         />
         <style>{`.pom-editor-slide-preview > svg { width: 100%; height: 100%; }`}</style>
         {onCopyPreview && (
@@ -223,20 +248,20 @@ export function SlidePreview({
           <button
             type="button"
             style={buttonStyle}
-            disabled={currentPage <= 1}
-            onClick={() => onPageChange(currentPage - 1)}
+            disabled={activePage <= 1}
+            onClick={() => onPageChange(activePage - 1)}
             aria-label="Previous page"
           >
             ‹
           </button>
           <span style={{ fontSize: 14 }}>
-            {currentPage} / {totalPages}
+            {activePage} / {totalPages}
           </span>
           <button
             type="button"
             style={buttonStyle}
-            disabled={currentPage >= totalPages}
-            onClick={() => onPageChange(currentPage + 1)}
+            disabled={activePage >= totalPages}
+            onClick={() => onPageChange(activePage + 1)}
             aria-label="Next page"
           >
             ›

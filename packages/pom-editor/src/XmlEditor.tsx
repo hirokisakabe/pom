@@ -3,12 +3,14 @@
 import { xml } from "@codemirror/lang-xml";
 import type { Diagnostic } from "@codemirror/lint";
 import { lintGutter, setDiagnostics } from "@codemirror/lint";
-import { EditorState } from "@codemirror/state";
+import { Annotation, EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { basicSetup } from "codemirror";
 import { useEffect, useRef } from "react";
 
 import type { PomEditorDiagnostic } from "./PomEditor.tsx";
+
+const externalValueUpdate = Annotation.define<boolean>();
 
 function errorTypeToSeverity(type: string): Diagnostic["severity"] {
   switch (type) {
@@ -55,7 +57,10 @@ export function XmlEditor({
         xml(),
         lintGutter(),
         EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
+          const isExternalUpdate = update.transactions.some((transaction) =>
+            transaction.annotation(externalValueUpdate),
+          );
+          if (update.docChanged && !isExternalUpdate) {
             onChangeRef.current(update.state.doc.toString());
           }
         }),
@@ -84,6 +89,7 @@ export function XmlEditor({
     if (currentDoc !== value) {
       view.dispatch({
         changes: { from: 0, to: currentDoc.length, insert: value },
+        annotations: externalValueUpdate.of(true),
       });
     }
   }, [value]);

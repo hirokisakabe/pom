@@ -96,14 +96,13 @@ describe("PomEditor", () => {
 
     await waitFor(() => expect(onPreview).toHaveBeenCalledTimes(1));
     const previewCall = onPreview.mock.calls.at(-1) as
-      | [string, { signal: AbortSignal }]
-      | undefined;
+      [string, { signal: AbortSignal }] | undefined;
     expect(previewCall?.[0]).toBe("<Text>second</Text>");
     expect(previewCall?.[1].signal).toBeInstanceOf(AbortSignal);
     expect(await screen.findByText("Preview")).toBeTruthy();
   });
 
-  it("DownloadとSaveはcallbackが指定された場合だけ表示する", () => {
+  it("DownloadとSaveはcallbackが指定された場合だけ表示する", async () => {
     const onDownload = vi.fn();
     const onSave = vi.fn();
     const onPreview = vi.fn().mockResolvedValue({ svgs: [] });
@@ -124,9 +123,9 @@ describe("PomEditor", () => {
       />,
     );
     fireEvent.click(screen.getByRole("button", { name: "Download" }));
+    await waitFor(() => expect(onDownload).toHaveBeenCalledWith("<Text />"));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    expect(onDownload).toHaveBeenCalledWith("<Text />");
-    expect(onSave).toHaveBeenCalledWith("<Text />");
+    await waitFor(() => expect(onSave).toHaveBeenCalledWith("<Text />"));
   });
 });

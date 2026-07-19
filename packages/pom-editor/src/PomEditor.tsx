@@ -144,6 +144,7 @@ export function PomEditor({
     action: "download" | "save",
     callback: (xml: string) => void | Promise<void>,
   ) {
+    if (runningAction !== null) return;
     setRunningAction(action);
     setDiagnostics(null);
     try {
@@ -164,12 +165,19 @@ export function PomEditor({
     const view = editorViewRef.current;
     const diagnostic = diagnostics?.[index];
     if (!view || !diagnostic?.line) return;
+    const requestedLine = Number.isFinite(diagnostic.line)
+      ? Math.trunc(diagnostic.line)
+      : 1;
     const line = view.state.doc.line(
-      Math.min(diagnostic.line, view.state.doc.lines),
+      Math.min(Math.max(requestedLine, 1), view.state.doc.lines),
     );
+    const requestedColumn = diagnostic.column
+      ? Math.max(Math.trunc(diagnostic.column) - 1, 0)
+      : 0;
+    const anchor = Math.min(line.from + requestedColumn, line.to);
     view.dispatch({
-      selection: { anchor: line.from },
-      effects: EditorView.scrollIntoView(line.from, { y: "center" }),
+      selection: { anchor },
+      effects: EditorView.scrollIntoView(anchor, { y: "center" }),
     });
     view.focus();
   }
@@ -244,7 +252,7 @@ export function PomEditor({
             type="button"
             style={toolbarButtonStyle}
             onClick={() => void runAction("download", onDownload)}
-            disabled={runningAction === "download"}
+            disabled={runningAction !== null}
           >
             Download
           </button>
@@ -254,7 +262,7 @@ export function PomEditor({
             type="button"
             style={toolbarButtonStyle}
             onClick={() => void runAction("save", onSave)}
-            disabled={runningAction === "save"}
+            disabled={runningAction !== null}
           >
             Save
           </button>

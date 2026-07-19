@@ -75,6 +75,7 @@ Existing PPTX reading and structural round-trip work should treat `@pptx-glimpse
 
 ### Public API (`@hirokisakabe/pom-editor`)
 
+- `PomEditor` — XML / AST editing、preview、diagnostics、共通toolbarを持つReactコンポーネント。preview生成とoptionalなDownload / Save処理はhost callbackへ委譲する。
 - `PomAstEditor` — React コンポーネント。`xml` と `onChange` props を受け取り、AST ツリーを表示して DnD でノードを並び替えると更新後の XML を返す。
 
 ### Key Internal Types
