@@ -76,6 +76,24 @@ Markdown, JSX, and the visual editor are alternative authoring surfaces, not dep
 
 The **pom kit** bundles two agent skills (`pom-theme`, `pom-slide`) and the `pom-cli` preview server. Installed into a coding agent such as [Claude Code](https://claude.ai/code), it gives you a prompt-to-PPTX workflow: onboard your brand, generate slides from natural language, and iterate in a live preview.
 
+```mermaid
+flowchart TD
+    Prompt["Deck prompt"] --> Agent["Coding agent"]
+    Agent --> Slide["pom-slide skill"]
+
+    Brand["Brand assets / theme prompt"] --> Theme["pom-theme skill"]
+    Theme --> Config["pom-theme.json"]
+    Config --> Slide
+
+    Slide --> XML["slides.pom.xml<br/>(source of truth)"]
+    XML --> Preview["pom preview"]
+    Preview --> Live["Live preview"]
+    XML --> Build["pom build"]
+    Build --> PPTX["Editable PPTX"]
+```
+
+The skills create and revise the XML; `pom-cli` consumes that same source for both the live preview and the final PowerPoint build.
+
 **Install (2 commands):**
 
 ```bash
