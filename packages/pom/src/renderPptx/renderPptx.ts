@@ -210,25 +210,24 @@ function addMasterContent(
   }
   if (master.slideNumber) {
     const value = master.slideNumber;
-    authoring.replaceSource(
-      addSlideNumber(authoring.source, target, {
-        offsetX: asEmu(Math.round(pxToEmu(value.x))),
-        offsetY: asEmu(Math.round(pxToEmu(value.y))),
-        width:
-          value.w === undefined
-            ? asEmu(800000)
-            : asEmu(Math.round(pxToEmu(value.w))),
-        height:
-          value.h === undefined
-            ? asEmu(300000)
-            : asEmu(Math.round(pxToEmu(value.h))),
-        properties: {
-          fontFace: value.fontFamily,
-          fontSize: value.fontSize ? asPt(pxToPt(value.fontSize)) : undefined,
-          color: toColorInput(value.color),
-        },
-      }),
-    );
+    const source = addSlideNumber(authoring.source, target, {
+      offsetX: asEmu(Math.round(pxToEmu(value.x))),
+      offsetY: asEmu(Math.round(pxToEmu(value.y))),
+      width:
+        value.w === undefined
+          ? asEmu(800000)
+          : asEmu(Math.round(pxToEmu(value.w))),
+      height:
+        value.h === undefined
+          ? asEmu(300000)
+          : asEmu(Math.round(pxToEmu(value.h))),
+      properties: {
+        fontFace: value.fontFamily,
+        fontSize: value.fontSize ? asPt(pxToPt(value.fontSize)) : undefined,
+        color: toColorInput(value.color),
+      },
+    });
+    authoring.replaceSource(source, target);
   }
 }
 
@@ -247,7 +246,7 @@ export function renderPptx(
 ) {
   const margin =
     master?.margin === undefined ? undefined : resolveBoxSpacing(master.margin);
-  let source = createPptx({
+  const source = createPptx({
     slideSize: {
       width: asEmu(Math.round(pxToEmu(slidePx.w))),
       height: asEmu(Math.round(pxToEmu(slidePx.h))),
@@ -276,15 +275,19 @@ export function renderPptx(
       const layoutPartPath = authoring.source.slideLayouts[0]?.partPath;
       if (!layoutPartPath)
         throw new Error("createPptx did not create a slide layout");
-      source = addEmptySlideFromLayout(authoring.source, {
+      const nextSource = addEmptySlideFromLayout(authoring.source, {
         layoutPartPath,
       });
-      authoring.replaceSource(source);
+      const slideHandle = nextSource.slides[pageIndex]?.handle;
+      if (!slideHandle)
+        throw new Error(`slide handle was not found: ${pageIndex + 1}`);
+      authoring.replaceSource(nextSource, slideHandle);
+    } else {
+      const slideHandle = authoring.source.slides[pageIndex]?.handle;
+      if (!slideHandle)
+        throw new Error(`slide handle was not found: ${pageIndex + 1}`);
+      authoring.selectTarget(slideHandle);
     }
-    const slideHandle = authoring.source.slides[pageIndex]?.handle;
-    if (!slideHandle)
-      throw new Error(`slide handle was not found: ${pageIndex + 1}`);
-    authoring.selectTarget(slideHandle);
     const idPositionMap = buildIdPositionMap(data, buildContext.diagnostics);
     const ctx: RenderContext = { buildContext, authoring, idPositionMap };
 

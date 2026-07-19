@@ -38,8 +38,9 @@ export class PptxAuthoringContext {
     return this.currentSource;
   }
 
-  replaceSource(source: PptxSourceModel): void {
+  replaceSource(source: PptxSourceModel, target: SourceHandle): void {
     this.currentSource = source;
+    this.currentSlideHandle = target;
   }
 
   private get target(): SourceHandle {
