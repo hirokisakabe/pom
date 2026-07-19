@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { buildPptx, DiagnosticsError } from "@hirokisakabe/pom";
 import { convertPptxToSvg } from "pptx-glimpse";
 import { EXTRA_FONT_MAPPING, resolveBundledFontsDir } from "./glimpse.ts";
-import { loadInput, type LoadedInput } from "./input.ts";
+import { loadInput, loadInputContent, type LoadedInput } from "./input.ts";
 import { watchInputFile } from "./watch.ts";
 
 const DEFAULT_PORT = 3000;
@@ -42,6 +42,8 @@ class SaveConflictError extends Error {
   }
 }
 
+class RequestTooLargeError extends Error {}
+
 function makeLog(verbose: boolean) {
   if (!verbose) return (_msg: string) => {};
   return (msg: string) => process.stderr.write(`[pom] ${msg}\n`);
@@ -73,7 +75,7 @@ function revisionOf(content: string): string {
 
 export function readPreviewDocument(absInput: string): PreviewDocument {
   const content = fs.readFileSync(absInput, "utf8");
-  const loaded = loadInput(absInput);
+  const loaded = loadInputContent(absInput, content);
   return {
     xml: loaded.xml,
     revision: revisionOf(content),
@@ -206,17 +208,21 @@ async function readJsonBody(req: http.IncomingMessage): Promise<unknown> {
   return new Promise((resolve, reject) => {
     let body = "";
     let bytes = 0;
+    let tooLarge = false;
     req.setEncoding("utf8");
     req.on("data", (chunk: string) => {
+      if (tooLarge) return;
       bytes += Buffer.byteLength(chunk);
       if (bytes > MAX_REQUEST_BYTES) {
-        reject(new Error("Request body is too large"));
-        req.destroy();
+        tooLarge = true;
+        body = "";
+        reject(new RequestTooLargeError("Request body is too large"));
         return;
       }
       body += chunk;
     });
     req.on("end", () => {
+      if (tooLarge) return;
       try {
         resolve(JSON.parse(body) as unknown);
       } catch (error) {
@@ -410,7 +416,7 @@ export function createPreviewServer(
       }
       sendJson(res, 404, { message: "Not found" });
     } catch (error) {
-      sendJson(res, 400, {
+      sendJson(res, error instanceof RequestTooLargeError ? 413 : 400, {
         message: error instanceof Error ? error.message : String(error),
       });
     }

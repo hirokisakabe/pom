@@ -158,6 +158,17 @@ describe("preview server", () => {
     expect(generatePreview).toHaveBeenCalledWith(xml);
   });
 
+  it("request body上限超過を413で返す", async () => {
+    await startServer();
+    const response = await fetch(`${baseUrl}/_api/preview`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ xml: "x".repeat(10 * 1024 * 1024) }),
+    });
+
+    expect(response.status).toBe(413);
+  });
+
   it("Save後のwatch通知を抑止し、後続のexternal changeだけを配信する", async () => {
     const onDocumentEvent = vi.fn();
     const generatePreview = await startServer(undefined, onDocumentEvent);
