@@ -30,11 +30,12 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc && node -e \"require('fs').chmodSync('dist/cli.js', '755')\"",
+    "build": "tsc -p tsconfig.build.json && pnpm run build:client && node -e \"require('fs').chmodSync('dist/cli.js', '755')\"",
+    "build:client": "esbuild client/main.tsx --bundle --format=iife --platform=browser --target=es2022 --inject:client/react-shim.ts --minify --outfile=dist/assets/preview.js",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "knip": "knip",
     "test": "vitest",
     "test:run": "vitest run"
@@ -46,6 +47,14 @@
     "pptx-glimpse": "^3.2.3"
   },
   "devDependencies": {
-    "@types/node": "^26.1.0"
+    "@hirokisakabe/pom-editor": "workspace:*",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^26.1.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "esbuild": "^0.28.1",
+    "jsdom": "^29.1.1",
+    "react": "^19",
+    "react-dom": "^19"
   }
 }

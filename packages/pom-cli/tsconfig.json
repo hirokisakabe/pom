@@ -6,13 +6,10 @@
     "target": "es2022",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "declaration": true,
-    "declarationMap": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
     "rewriteRelativeImportExtensions": true,
-    "types": ["node"]
+    "jsx": "react-jsx",
+    "types": ["node", "react", "react-dom"]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "include": ["src/**/*", "client/**/*"],
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
 }

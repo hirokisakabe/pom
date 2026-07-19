@@ -1,14 +1,46 @@
-import { spawn } from "child_process";
-import fs from "fs";
-import http from "http";
-import path from "path";
-import { buildPptx } from "@hirokisakabe/pom";
+import { spawn } from "node:child_process";
+import { createHash, randomUUID } from "node:crypto";
+import fs from "node:fs";
+import http from "node:http";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { buildPptx, DiagnosticsError } from "@hirokisakabe/pom";
 import { convertPptxToSvg } from "pptx-glimpse";
 import { EXTRA_FONT_MAPPING, resolveBundledFontsDir } from "./glimpse.ts";
-import { loadInput } from "./input.ts";
+import { loadInput, type LoadedInput } from "./input.ts";
 import { watchInputFile } from "./watch.ts";
 
 const DEFAULT_PORT = 3000;
+const MAX_REQUEST_BYTES = 10 * 1024 * 1024;
+
+interface PreviewDocument {
+  xml: string;
+  revision: string;
+  filename: string;
+  editable: boolean;
+}
+
+interface PreviewSuccess {
+  svgs: string[];
+}
+
+interface PreviewFailure {
+  errors: Array<{
+    type: string;
+    message: string;
+    line?: number;
+    column?: number;
+  }>;
+}
+
+type PreviewResult = PreviewSuccess | PreviewFailure;
+
+class SaveConflictError extends Error {
+  constructor() {
+    super("The file changed outside pom preview. Reload before saving.");
+    this.name = "SaveConflictError";
+  }
+}
 
 function makeLog(verbose: boolean) {
   if (!verbose) return (_msg: string) => {};
@@ -22,7 +54,6 @@ function openBrowser(url: string): void {
     cmd = "open";
     args = [url];
   } else if (process.platform === "win32") {
-    // 空文字はウィンドウタイトル。省略すると URL がタイトル扱いされる
     cmd = "cmd";
     args = ["/c", "start", "", url];
   } else {
@@ -36,330 +67,310 @@ function openBrowser(url: string): void {
   child.unref();
 }
 
-type SvgResult =
-  | { type: "success"; svgs: string[]; slideWidth: number }
-  | { type: "error"; message: string }
-  | { type: "empty" };
+function revisionOf(content: string): string {
+  return createHash("sha256").update(content).digest("hex");
+}
+
+export function readPreviewDocument(absInput: string): PreviewDocument {
+  const content = fs.readFileSync(absInput, "utf8");
+  const loaded = loadInput(absInput);
+  return {
+    xml: loaded.xml,
+    revision: revisionOf(content),
+    filename: path.basename(absInput),
+    editable: absInput.endsWith(".pom.xml"),
+  };
+}
+
+export async function atomicWriteFile(
+  target: string,
+  content: string,
+): Promise<void> {
+  const temp = path.join(
+    path.dirname(target),
+    `.${path.basename(target)}.${process.pid}.${randomUUID()}.tmp`,
+  );
+  const mode = (await fs.promises.stat(target)).mode;
+  try {
+    const handle = await fs.promises.open(temp, "wx", mode);
+    try {
+      await handle.writeFile(content, "utf8");
+      await handle.sync();
+    } finally {
+      await handle.close();
+    }
+    await fs.promises.rename(temp, target);
+  } catch (error) {
+    await fs.promises.unlink(temp).catch(() => {});
+    throw error;
+  }
+}
+
+export async function savePreviewDocument(
+  absInput: string,
+  xml: string,
+  expectedRevision: string,
+): Promise<string> {
+  if (!absInput.endsWith(".pom.xml")) {
+    throw new Error(
+      "Only .pom.xml files can be saved from the preview editor.",
+    );
+  }
+  const current = await fs.promises.readFile(absInput, "utf8");
+  if (revisionOf(current) !== expectedRevision) throw new SaveConflictError();
+  await atomicWriteFile(absInput, xml);
+  return revisionOf(xml);
+}
 
 async function generateSvgs(
-  inputFile: string,
+  xml: string,
+  context: Pick<LoadedInput, "slideWidth" | "slideHeight" | "masterPptxData">,
   verbose = false,
-): Promise<SvgResult> {
+): Promise<PreviewSuccess> {
+  if (!xml.trim()) return { svgs: [] };
   const log = makeLog(verbose);
-  const { xml, slideWidth, slideHeight, masterPptxData } = loadInput(
-    inputFile,
-    log,
-  );
-
-  if (!xml.trim()) {
-    return { type: "empty" };
-  }
-
   const t1 = Date.now();
   const { pptx } = await buildPptx(
     xml,
-    { w: slideWidth, h: slideHeight },
+    { w: context.slideWidth, h: context.slideHeight },
     {
       textMeasurement: "fallback",
-      ...(masterPptxData ? { masterPptx: masterPptxData } : {}),
+      ...(context.masterPptxData ? { masterPptx: context.masterPptxData } : {}),
     },
   );
   log(`Building PPTX... done (${Date.now() - t1}ms)`);
-
   const buffer = await pptx.write({ outputType: "uint8array" });
   if (!(buffer instanceof Uint8Array)) {
     throw new Error("Unexpected output type from pptx.write");
   }
-
-  const fontDirs = [resolveBundledFontsDir()];
-
   const t2 = Date.now();
-  // インライン SVG なのでネイティブ <text> + サブセットフォント埋め込みが使える。
-  // ブラウザのテキスト描画 (ヒンティング等) が効き、テキスト選択も可能になる
   const { slides } = await convertPptxToSvg(buffer, {
-    width: slideWidth,
-    fontDirs,
+    width: context.slideWidth,
+    fontDirs: [resolveBundledFontsDir()],
     fontMapping: EXTRA_FONT_MAPPING,
     skipSystemFonts: true,
     textOutput: "text",
   });
   log(`Converting to SVG... done (${Date.now() - t2}ms)`);
-
-  const svgs = slides.map((s) => s.svg);
-
-  return { type: "success", svgs, slideWidth };
+  return { svgs: slides.map((slide) => slide.svg) };
 }
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+function previewFailure(error: unknown): PreviewFailure {
+  if (error instanceof DiagnosticsError) {
+    return {
+      errors: error.diagnostics.map((diagnostic) => ({
+        type: diagnostic.code,
+        message: diagnostic.message,
+      })),
+    };
+  }
+  return {
+    errors: [
+      {
+        type: "unknown",
+        message: error instanceof Error ? error.message : String(error),
+      },
+    ],
+  };
 }
 
 function buildPreviewHtml(filename: string): string {
-  const safeFilename = escapeHtml(filename);
-  return `<!DOCTYPE html>
-<html>
+  const title = `pom — ${filename}`
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+  return `<!doctype html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>pom — ${safeFilename}</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: #0f0f13;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    color: #e2e2e8;
-    min-height: 100vh;
-  }
-  .toolbar {
-    position: sticky; top: 0; z-index: 100;
-    display: flex; align-items: center; gap: 12px;
-    padding: 0 20px; height: 48px;
-    background: #1a1a2e;
-    border-bottom: 1px solid #2d2d4e;
-  }
-  .app-name {
-    font-size: 13px; font-weight: 700;
-    color: #a78bfa; letter-spacing: 0.06em;
-    flex-shrink: 0;
-  }
-  .filename {
-    font-size: 12px; color: #94a3b8;
-    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
-    background: #0f172a; border: 1px solid #2d2d4e;
-    padding: 2px 8px; border-radius: 4px;
-    flex-shrink: 1; min-width: 0; overflow: hidden;
-    text-overflow: ellipsis; white-space: nowrap;
-  }
-  .zoom-controls { display: flex; gap: 4px; flex-shrink: 0; }
-  .zoom-btn {
-    padding: 4px 10px; font-size: 11px;
-    border: 1px solid #3d3d5e; border-radius: 4px;
-    background: #2d2d4e; color: #c4c4d4; cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-  }
-  .zoom-btn:hover { background: #3d3d6e; color: #e2e2f2; }
-  .zoom-btn.active { background: #7c3aed; color: #fff; border-color: #7c3aed; }
-  .zoom-hint { font-size: 11px; color: #3d3d5e; flex-shrink: 0; }
-  .status-group {
-    margin-left: auto; display: flex; align-items: center;
-    gap: 6px; flex-shrink: 0;
-  }
-  .status-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #f59e0b;
-    transition: background 0.3s, box-shadow 0.3s;
-  }
-  .status-dot.connected { background: #22c55e; box-shadow: 0 0 6px #22c55e88; }
-  .status-dot.warning   { background: #f59e0b; box-shadow: 0 0 6px #f59e0b88; }
-  .status-dot.error     { background: #ef4444; box-shadow: 0 0 6px #ef444488; }
-  .status-text { font-size: 12px; color: #94a3b8; }
-  .slides-container {
-    padding: 32px 20px;
-    display: flex; flex-direction: column;
-    align-items: center; gap: 32px;
-  }
-  .slide-wrapper { width: 100%; display: flex; justify-content: center; }
-  .slide-frame {
-    position: relative;
-    border-radius: 8px; overflow: hidden; background: #fff;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4);
-  }
-  .slide-frame svg { display: block; }
-  .slide-number {
-    position: absolute; bottom: 10px; right: 12px;
-    font-size: 11px; font-weight: 500;
-    color: rgba(255,255,255,0.8);
-    background: rgba(0,0,0,0.5);
-    padding: 2px 8px; border-radius: 3px;
-    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
-    pointer-events: none; user-select: none;
-  }
-  .loading-screen {
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    height: calc(100vh - 48px); gap: 16px;
-  }
-  .spinner {
-    width: 32px; height: 32px;
-    border: 3px solid #2d2d4e;
-    border-top-color: #7c3aed;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 13px; color: #555578; }
-  .empty-screen {
-    display: flex; align-items: center; justify-content: center;
-    height: calc(100vh - 48px);
-    font-size: 13px; color: #555578;
-  }
-  .error-screen { padding: 32px; display: flex; justify-content: center; }
-  .error-block {
-    max-width: 720px; width: 100%;
-    background: #1a0a0a; border: 1px solid #5c1a1a;
-    border-radius: 8px; overflow: hidden;
-  }
-  .error-header {
-    padding: 10px 16px; background: #2a0a0a;
-    border-bottom: 1px solid #5c1a1a;
-    font-size: 12px; font-weight: 600; color: #f87171;
-  }
-  .error-body {
-    padding: 14px 16px;
-    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
-    font-size: 12px; color: #fca5a5; line-height: 1.6;
-    white-space: pre-wrap; word-break: break-all;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${title}</title>
+  <style>*{box-sizing:border-box}html,body,#root{height:100%;margin:0}body{font-family:Inter,ui-sans-serif,system-ui,sans-serif}body>div[role=alert]{padding:24px;color:#b91c1c}</style>
 </head>
 <body>
-<div class="toolbar">
-  <span class="app-name">pom</span>
-  <span class="filename">${safeFilename}</span>
-  <div class="zoom-controls">
-    <button class="zoom-btn" data-zoom="fit">Fit</button>
-    <button class="zoom-btn" data-zoom="50">50%</button>
-    <button class="zoom-btn" data-zoom="75">75%</button>
-    <button class="zoom-btn" data-zoom="100">100%</button>
-    <button class="zoom-btn" data-zoom="150">150%</button>
-  </div>
-  <span class="zoom-hint">+ / −</span>
-  <div class="status-group">
-    <span class="status-dot warning" id="statusDot"></span>
-    <span class="status-text" id="statusText">Connecting...</span>
-  </div>
-</div>
-<div id="content">
-  <div class="loading-screen">
-    <div class="spinner"></div>
-    <span class="loading-text">Building preview...</span>
-  </div>
-</div>
-
-<script>
-(function() {
-  var ZOOM_STEPS = ['fit', '50', '75', '100', '150'];
-  var currentZoom = localStorage.getItem('pom-zoom') || 'fit';
-  var currentSlideWidth = 1280;
-
-  if (ZOOM_STEPS.indexOf(currentZoom) === -1) currentZoom = 'fit';
-  applyZoom(currentZoom);
-
-  document.querySelectorAll('.zoom-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      setZoom(this.getAttribute('data-zoom'));
-    });
-  });
-
-  document.addEventListener('keydown', function(e) {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    if (e.key === '+' || e.key === '=') {
-      var idx = ZOOM_STEPS.indexOf(currentZoom);
-      if (idx < ZOOM_STEPS.length - 1) setZoom(ZOOM_STEPS[idx + 1]);
-    } else if (e.key === '-') {
-      var idx = ZOOM_STEPS.indexOf(currentZoom);
-      if (idx > 0) setZoom(ZOOM_STEPS[idx - 1]);
-    }
-  });
-
-  function setZoom(zoom) {
-    localStorage.setItem('pom-zoom', zoom);
-    applyZoom(zoom);
-  }
-
-  function applyZoom(zoom) {
-    if (ZOOM_STEPS.indexOf(zoom) === -1) zoom = 'fit';
-    currentZoom = zoom;
-    document.querySelectorAll('.zoom-btn').forEach(function(b) {
-      b.classList.toggle('active', b.getAttribute('data-zoom') === zoom);
-    });
-    document.querySelectorAll('.slide-frame svg').forEach(function(svg) {
-      applySvgZoom(svg, zoom, currentSlideWidth);
-    });
-  }
-
-  function applySvgZoom(svg, zoom, slideWidth) {
-    var frame = svg.closest('.slide-frame');
-    if (zoom === 'fit') {
-      frame.style.width = '100%';
-      frame.style.maxWidth = slideWidth + 'px';
-      svg.style.width = '100%';
-      svg.style.height = 'auto';
-    } else {
-      var scale = parseInt(zoom) / 100;
-      frame.style.width = (slideWidth * scale) + 'px';
-      frame.style.maxWidth = '';
-      svg.style.width = (slideWidth * scale) + 'px';
-      svg.style.height = 'auto';
-    }
-  }
-
-  var statusDot = document.getElementById('statusDot');
-  var statusText = document.getElementById('statusText');
-  var content = document.getElementById('content');
-
-  function setStatus(state, text) {
-    statusDot.className = 'status-dot ' + state;
-    statusText.textContent = text;
-  }
-
-  var es = new EventSource('/_sse');
-
-  es.addEventListener('open', function() {
-    setStatus('connected', 'Connected');
-  });
-
-  es.addEventListener('update', function(e) {
-    var data = JSON.parse(e.data);
-    if (data.type === 'success') {
-      currentSlideWidth = data.slideWidth;
-      setStatus('connected', 'Updated ' + new Date().toLocaleTimeString());
-      var total = data.svgs.length;
-      var slideHtml = data.svgs.map(function(svg, i) {
-        return '<div class="slide-wrapper">' +
-          '<div class="slide-frame">' + svg +
-            '<span class="slide-number">' + (i + 1) + ' / ' + total + '</span>' +
-          '</div>' +
-        '</div>';
-      }).join('');
-      content.innerHTML = '<div class="slides-container">' + slideHtml + '</div>';
-      document.querySelectorAll('.slide-frame svg').forEach(function(svgEl) {
-        applySvgZoom(svgEl, currentZoom, currentSlideWidth);
-      });
-    } else if (data.type === 'error') {
-      setStatus('error', 'Error');
-      var escaped = data.message
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      content.innerHTML =
-        '<div class="error-screen">' +
-          '<div class="error-block">' +
-            '<div class="error-header">&#9888; Build Error</div>' +
-            '<pre class="error-body">' + escaped + '</pre>' +
-          '</div>' +
-        '</div>';
-    } else if (data.type === 'empty') {
-      setStatus('connected', 'No slides');
-      content.innerHTML = '<div class="empty-screen">No slides to preview</div>';
-    } else if (data.type === 'building') {
-      setStatus('warning', 'Building...');
-      content.innerHTML =
-        '<div class="loading-screen">' +
-          '<div class="spinner"></div>' +
-          '<span class="loading-text">Building preview...</span>' +
-        '</div>';
-    }
-  });
-
-  es.addEventListener('error', function() {
-    setStatus('error', 'Disconnected — retrying...');
-  });
-})();
-</script>
+  <div id="root">Loading editor...</div>
+  <script src="/_assets/preview.js" defer></script>
 </body>
 </html>`;
+}
+
+async function readJsonBody(req: http.IncomingMessage): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    let bytes = 0;
+    req.setEncoding("utf8");
+    req.on("data", (chunk: string) => {
+      bytes += Buffer.byteLength(chunk);
+      if (bytes > MAX_REQUEST_BYTES) {
+        reject(new Error("Request body is too large"));
+        req.destroy();
+        return;
+      }
+      body += chunk;
+    });
+    req.on("end", () => {
+      try {
+        resolve(JSON.parse(body) as unknown);
+      } catch (error) {
+        reject(error instanceof Error ? error : new Error(String(error)));
+      }
+    });
+    req.on("error", reject);
+  });
+}
+
+function readStringField(value: unknown, field: "xml" | "revision"): string {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    typeof (value as Record<string, unknown>)[field] !== "string"
+  ) {
+    throw new Error(`Expected a string ${field} field`);
+  }
+  return (value as Record<string, string>)[field];
+}
+
+function sendJson(
+  res: http.ServerResponse,
+  status: number,
+  value: unknown,
+): void {
+  res.writeHead(status, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+  });
+  res.end(JSON.stringify(value));
+}
+
+export interface PreviewServerOptions {
+  verbose?: boolean;
+  clientScript?: string;
+  generatePreview?: (xml: string) => Promise<PreviewResult>;
+}
+
+export function createPreviewServer(
+  absInput: string,
+  options: PreviewServerOptions = {},
+): http.Server {
+  const verbose = options.verbose ?? false;
+  const eventClients = new Set<http.ServerResponse>();
+  let ignoredWatchRevision: string | null = null;
+  const clientScriptPath = fileURLToPath(
+    new URL("./assets/preview.js", import.meta.url),
+  );
+
+  function sendDocumentEvent(document: PreviewDocument): void {
+    const data = JSON.stringify(document);
+    for (const client of eventClients) {
+      client.write(`event: document\ndata: ${data}\n\n`);
+    }
+  }
+
+  const watcher = watchInputFile(absInput, () => {
+    try {
+      const document = readPreviewDocument(absInput);
+      if (document.revision === ignoredWatchRevision) {
+        ignoredWatchRevision = null;
+        return;
+      }
+      sendDocumentEvent(document);
+    } catch (error) {
+      const data = JSON.stringify({
+        error: error instanceof Error ? error.message : String(error),
+      });
+      for (const client of eventClients) {
+        client.write(`event: document\ndata: ${data}\n\n`);
+      }
+    }
+  });
+
+  async function handleRequest(
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
+  ): Promise<void> {
+    try {
+      const url = new URL(req.url ?? "/", "http://localhost");
+      if (req.method === "GET" && url.pathname === "/") {
+        res.writeHead(200, {
+          "Content-Type": "text/html; charset=utf-8",
+          "Content-Security-Policy":
+            "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'",
+        });
+        res.end(buildPreviewHtml(path.basename(absInput)));
+        return;
+      }
+      if (req.method === "GET" && url.pathname === "/_assets/preview.js") {
+        const script =
+          options.clientScript ?? fs.readFileSync(clientScriptPath, "utf8");
+        res.writeHead(200, {
+          "Content-Type": "text/javascript; charset=utf-8",
+          "Cache-Control": "no-cache",
+        });
+        res.end(script);
+        return;
+      }
+      if (req.method === "GET" && url.pathname === "/_api/document") {
+        sendJson(res, 200, readPreviewDocument(absInput));
+        return;
+      }
+      if (req.method === "POST" && url.pathname === "/_api/preview") {
+        const body = await readJsonBody(req);
+        const xml = readStringField(body, "xml");
+        try {
+          const result = options.generatePreview
+            ? await options.generatePreview(xml)
+            : await generateSvgs(xml, loadInput(absInput), verbose);
+          sendJson(res, 200, result);
+        } catch (error) {
+          sendJson(res, 422, previewFailure(error));
+        }
+        return;
+      }
+      if (req.method === "PUT" && url.pathname === "/_api/document") {
+        const body = await readJsonBody(req);
+        const xml = readStringField(body, "xml");
+        const revision = readStringField(body, "revision");
+        try {
+          const nextRevision = await savePreviewDocument(
+            absInput,
+            xml,
+            revision,
+          );
+          ignoredWatchRevision = nextRevision;
+          sendJson(res, 200, { revision: nextRevision });
+        } catch (error) {
+          if (error instanceof SaveConflictError) {
+            sendJson(res, 409, { code: "conflict", message: error.message });
+          } else {
+            throw error;
+          }
+        }
+        return;
+      }
+      if (req.method === "GET" && url.pathname === "/_events") {
+        res.writeHead(200, {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        });
+        res.write(": connected\n\n");
+        eventClients.add(res);
+        req.on("close", () => eventClients.delete(res));
+        return;
+      }
+      sendJson(res, 404, { message: "Not found" });
+    } catch (error) {
+      sendJson(res, 400, {
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+  const server = http.createServer((req, res) => {
+    void handleRequest(req, res);
+  });
+  server.on("close", () => watcher.close());
+  return server;
 }
 
 export function runPreview(
@@ -367,134 +378,26 @@ export function runPreview(
   port: number = DEFAULT_PORT,
   options: { verbose?: boolean; open?: boolean } = {},
 ): void {
-  const verbose = options.verbose ?? false;
-  const log = makeLog(verbose);
   const absInput = path.resolve(inputFile);
-
   if (!fs.existsSync(absInput)) {
     throw new Error(`Input file not found: ${absInput}`);
   }
-
-  const clients: http.ServerResponse[] = [];
-  let currentResult: SvgResult = { type: "empty" };
-  let initialBuildDone = false;
-
-  function broadcast(result: SvgResult): void {
-    currentResult = result;
-    const data = JSON.stringify(result);
-    for (const client of clients) {
-      client.write(`event: update\ndata: ${data}\n\n`);
-    }
-  }
-
-  function broadcastBuilding(): void {
-    const data = JSON.stringify({ type: "building" });
-    for (const client of clients) {
-      client.write(`event: update\ndata: ${data}\n\n`);
-    }
-  }
-
-  let isBuilding = false;
-  let pendingRefresh = false;
-
-  function refresh(): void {
-    if (isBuilding) {
-      pendingRefresh = true;
-      return;
-    }
-    isBuilding = true;
-    pendingRefresh = false;
-    const totalStart = Date.now();
-    log("File changed, rebuilding...");
-    broadcastBuilding();
-    generateSvgs(absInput, verbose)
-      .then((result) => {
-        log(`Done (total: ${Date.now() - totalStart}ms)`);
-        broadcast(result);
-      })
-      .catch((err: unknown) => {
-        broadcast({
-          type: "error",
-          message: err instanceof Error ? err.message : String(err),
-        });
-      })
-      .finally(() => {
-        isBuilding = false;
-        if (pendingRefresh) refresh();
-      });
-  }
-
-  isBuilding = true;
-  const initialStart = Date.now();
-  generateSvgs(absInput, verbose)
-    .then((result) => {
-      currentResult = result;
-      log(`Initial build done (total: ${Date.now() - initialStart}ms)`);
-      broadcast(result);
-    })
-    .catch((err: unknown) => {
-      broadcast({
-        type: "error",
-        message: err instanceof Error ? err.message : String(err),
-      });
-    })
-    .finally(() => {
-      initialBuildDone = true;
-      isBuilding = false;
-      if (pendingRefresh) refresh();
-    });
-
-  watchInputFile(absInput, refresh);
-
-  const html = buildPreviewHtml(path.basename(absInput));
-
-  const server = http.createServer((req, res) => {
-    if (req.url === "/_sse") {
-      res.writeHead(200, {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
-        "Access-Control-Allow-Origin": "*",
-      });
-      res.write(": connected\n\n");
-
-      if (!initialBuildDone) {
-        res.write(
-          `event: update\ndata: ${JSON.stringify({ type: "building" })}\n\n`,
-        );
-      } else {
-        res.write(`event: update\ndata: ${JSON.stringify(currentResult)}\n\n`);
-      }
-
-      clients.push(res);
-      req.on("close", () => {
-        const idx = clients.indexOf(res);
-        if (idx !== -1) clients.splice(idx, 1);
-      });
-    } else {
-      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-      res.end(html);
-    }
-  });
-
-  server.on("error", (err: NodeJS.ErrnoException) => {
-    if (err.code === "EADDRINUSE") {
+  const server = createPreviewServer(absInput, { verbose: options.verbose });
+  server.on("error", (error: NodeJS.ErrnoException) => {
+    if (error.code === "EADDRINUSE") {
       console.error(
         `Port ${port} is already in use. Is another pom preview running?`,
       );
     } else {
-      console.error(`Server error: ${err.message}`);
+      console.error(`Server error: ${error.message}`);
     }
     process.exit(1);
   });
-
   server.listen(port, () => {
     const url = `http://localhost:${port}`;
     console.log(`Preview server: ${url}`);
     console.log(`Watching: ${absInput}`);
     console.log("Press Ctrl+C to stop");
-    if (options.open ?? true) {
-      openBrowser(url);
-    }
+    if (options.open ?? true) openBrowser(url);
   });
 }
