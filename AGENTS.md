@@ -14,7 +14,7 @@ pom (PowerPoint Object Model) — TypeScript library for declaratively describin
 
 ## Tech Stack
 
-TypeScript 5.x, yoga-layout 3.2.1, @pptx-glimpse/document 0.9.1, opentype.js 1.3.x, fast-xml-parser 5.x, zod 4.x, Vitest, ESLint, Prettier, pnpm workspace
+TypeScript 5.x, yoga-layout 3.2.1, @pptx-glimpse/document 0.11.0, opentype.js 1.3.x, fast-xml-parser 5.x, zod 4.x, Vitest, ESLint, Prettier, pnpm workspace
 
 ## Behavioral Principles
 
