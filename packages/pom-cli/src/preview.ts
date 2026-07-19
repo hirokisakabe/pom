@@ -247,6 +247,7 @@ export interface PreviewServerOptions {
   verbose?: boolean;
   clientScript?: string;
   generatePreview?: (xml: string) => Promise<PreviewResult>;
+  onDocumentEvent?: (document: PreviewDocument) => void;
 }
 
 export function createPreviewServer(
@@ -261,6 +262,7 @@ export function createPreviewServer(
   );
 
   function sendDocumentEvent(document: PreviewDocument): void {
+    options.onDocumentEvent?.(document);
     const data = JSON.stringify(document);
     for (const client of eventClients) {
       client.write(`event: document\ndata: ${data}\n\n`);

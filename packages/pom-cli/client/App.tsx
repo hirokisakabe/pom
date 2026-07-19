@@ -22,7 +22,9 @@ export function App() {
   const [savedXml, setSavedXml] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [externalChange, setExternalChange] = useState(false);
+  const xmlRef = useRef("");
   const savedXmlRef = useRef("");
+  const eventGenerationRef = useRef(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -31,6 +33,7 @@ export function App() {
         setDocument(loaded);
         setXml(loaded.xml);
         setSavedXml(loaded.xml);
+        xmlRef.current = loaded.xml;
         savedXmlRef.current = loaded.xml;
       })
       .catch((error: unknown) => {
@@ -45,23 +48,23 @@ export function App() {
     if (!document || typeof EventSource === "undefined") return;
     const source = new EventSource("/_events");
     source.addEventListener("document", (event) => {
+      eventGenerationRef.current += 1;
       const updated = JSON.parse((event as MessageEvent<string>).data) as
         PreviewDocument | { error: string };
       if ("error" in updated) {
         setExternalChange(true);
         return;
       }
-      setXml((currentXml) => {
-        if (currentXml !== savedXmlRef.current) {
-          setExternalChange(true);
-          return currentXml;
-        }
-        savedXmlRef.current = updated.xml;
-        setSavedXml(updated.xml);
-        setDocument(updated);
-        setExternalChange(false);
-        return updated.xml;
-      });
+      if (xmlRef.current !== savedXmlRef.current) {
+        setExternalChange(true);
+        return;
+      }
+      xmlRef.current = updated.xml;
+      savedXmlRef.current = updated.xml;
+      setXml(updated.xml);
+      setSavedXml(updated.xml);
+      setDocument(updated);
+      setExternalChange(false);
     });
     return () => source.close();
   }, [document?.filename]);
@@ -77,18 +80,24 @@ export function App() {
   return (
     <PomEditor
       xml={xml}
-      onChange={setXml}
+      onChange={(value) => {
+        xmlRef.current = value;
+        setXml(value);
+      }}
       onPreview={(value, { signal }) => generatePreview(value, signal)}
       onSave={
         document.editable
           ? async (value) => {
+              const eventGeneration = eventGenerationRef.current;
               const revision = await saveDocument(value, document.revision);
               savedXmlRef.current = value;
               setSavedXml(value);
               setDocument((current) =>
                 current ? { ...current, revision } : current,
               );
-              setExternalChange(false);
+              if (eventGenerationRef.current === eventGeneration) {
+                setExternalChange(false);
+              }
             }
           : undefined
       }

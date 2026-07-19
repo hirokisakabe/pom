@@ -67,9 +67,43 @@ vi.mock("@hirokisakabe/pom-editor", () => ({
 
 import { App } from "./App.tsx";
 
+type DocumentEvent = {
+  xml: string;
+  revision: string;
+  filename: string;
+  editable: boolean;
+};
+
+class FakeEventSource {
+  static instances: FakeEventSource[] = [];
+  private documentListener: ((event: MessageEvent<string>) => void) | null =
+    null;
+
+  constructor(_url: string) {
+    FakeEventSource.instances.push(this);
+  }
+
+  addEventListener(
+    type: string,
+    listener: (event: MessageEvent<string>) => void,
+  ) {
+    if (type === "document") this.documentListener = listener;
+  }
+
+  emit(document: DocumentEvent) {
+    this.documentListener?.(
+      new MessageEvent("document", { data: JSON.stringify(document) }),
+    );
+  }
+
+  close() {}
+}
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.unstubAllGlobals();
+  FakeEventSource.instances.length = 0;
 });
 
 function arrangeDocument() {
@@ -136,5 +170,35 @@ describe("CLI preview App", () => {
     expect((await screen.findByRole("alert")).textContent).toContain(
       "The file changed outside pom preview",
     );
+  });
+
+  it("Save処理中に届いたexternal change通知をsuccess responseで消さない", async () => {
+    arrangeDocument();
+    vi.stubGlobal("EventSource", FakeEventSource);
+    let resolveSave: ((revision: string) => void) | undefined;
+    api.saveDocument.mockReturnValue(
+      new Promise<string>((resolve) => {
+        resolveSave = resolve;
+      }),
+    );
+    render(<App />);
+    const editor = await screen.findByRole("textbox", { name: "XML editor" });
+    await waitFor(() => expect(FakeEventSource.instances).toHaveLength(1));
+    fireEvent.change(editor, { target: { value: "<Text>browser</Text>" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    FakeEventSource.instances[0]?.emit({
+      xml: "<Text>external</Text>",
+      revision: "external-revision",
+      filename: "slides.pom.xml",
+      editable: true,
+    });
+    resolveSave?.("revision-2");
+
+    expect(
+      await screen.findByText(
+        "External changes detected — Save will be blocked",
+      ),
+    ).toBeTruthy();
   });
 });

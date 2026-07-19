@@ -3,6 +3,18 @@ import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const watchState = vi.hoisted(() => ({
+  callback: null as (() => void) | null,
+}));
+
+vi.mock("./watch.ts", () => ({
+  watchInputFile: (_absPath: string, onChange: () => void) => {
+    watchState.callback = onChange;
+    return { close: vi.fn() };
+  },
+}));
+
 import {
   atomicWriteFile,
   createPreviewServer,
@@ -21,6 +33,7 @@ beforeEach(async () => {
   inputFile = path.join(tempDir, "slides.pom.xml");
   await fs.promises.writeFile(inputFile, INITIAL_XML);
   server = null;
+  watchState.callback = null;
 });
 
 afterEach(async () => {
@@ -35,10 +48,12 @@ afterEach(async () => {
 
 async function startServer(
   generatePreview = vi.fn().mockResolvedValue({ svgs: [] }),
+  onDocumentEvent?: ReturnType<typeof vi.fn>,
 ) {
   server = createPreviewServer(inputFile, {
     clientScript: "globalThis.__POM_PREVIEW_CLIENT__ = true;",
     generatePreview,
+    onDocumentEvent,
   });
   await new Promise<void>((resolve) => server?.listen(0, "127.0.0.1", resolve));
   const address = server.address();
@@ -101,8 +116,9 @@ describe("preview server", () => {
     expect(generatePreview).toHaveBeenCalledWith(xml);
   });
 
-  it("Save APIで対象fileを更新し、自身のwatchからpreview生成を重複実行しない", async () => {
-    const generatePreview = await startServer();
+  it("Save後のwatch通知を抑止し、後続のexternal changeだけを配信する", async () => {
+    const onDocumentEvent = vi.fn();
+    const generatePreview = await startServer(undefined, onDocumentEvent);
     const document = await fetch(`${baseUrl}/_api/document`).then(
       (response) => response.json() as Promise<{ revision: string }>,
     );
@@ -115,7 +131,13 @@ describe("preview server", () => {
 
     expect(response.status).toBe(200);
     expect(await fs.promises.readFile(inputFile, "utf8")).toBe(xml);
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    watchState.callback?.();
+    await fs.promises.writeFile(inputFile, "<Text>external after save</Text>");
+    watchState.callback?.();
+    expect(onDocumentEvent).toHaveBeenCalledTimes(1);
+    expect(onDocumentEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ xml: "<Text>external after save</Text>" }),
+    );
     expect(generatePreview).not.toHaveBeenCalled();
   });
 
