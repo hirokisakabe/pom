@@ -1,5 +1,17 @@
 # @hirokisakabe/pom
 
+## 10.2.0
+
+### Minor Changes
+
+- [#967](https://github.com/hirokisakabe/pom/pull/967) [`30e3cba`](https://github.com/hirokisakabe/pom/commit/30e3cbad973770c2f27d99cea18b14c2335d40c7) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Arrow を PowerPoint native connector として出力し、接続先の Shape / Text を移動したときに追従するようにしました。
+
+### Patch Changes
+
+- [#968](https://github.com/hirokisakabe/pom/pull/968) [`6bd917d`](https://github.com/hirokisakabe/pom/commit/6bd917d98833fd4a5e544c87c1c19a41fba36a9e) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - PPTX 生成を `@pptx-glimpse/document` の authoring session API へ移行し、連続 authoring の状態管理を簡素化しました。
+
+- [#963](https://github.com/hirokisakabe/pom/pull/963) [`a41f08f`](https://github.com/hirokisakabe/pom/commit/a41f08f3ac87966ceec9fb58e69e15f0053e3f7f) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - PPTX authoring の状態管理を render 固有 context に分離し、POM style の glimpse input 変換を純粋 helper に整理しました。
+
 ## 10.1.0
 
 ### Minor Changes
