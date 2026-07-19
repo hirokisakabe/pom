@@ -11,7 +11,11 @@
     "knip": "knip",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "vrt": "playwright test --config vrt/playwright.config.ts",
+    "vrt:update": "playwright test --config vrt/playwright.config.ts --update-snapshots",
+    "vrt:docker": "docker compose -f vrt/docker-compose.yml build vrt && docker compose -f vrt/docker-compose.yml run --rm vrt",
+    "vrt:docker:update": "docker compose -f vrt/docker-compose.yml build vrt-update && docker compose -f vrt/docker-compose.yml run --rm vrt-update"
   },
   "dependencies": {
     "@hirokisakabe/pom": "workspace:*",
@@ -38,6 +42,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

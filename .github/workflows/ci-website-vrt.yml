@@ -1,0 +1,58 @@
+name: CI - Website VRT
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "apps/website/**"
+      - "packages/pom/docs/**"
+      - "packages/pom-md/docs/**"
+      - "packages/pom-vscode/docs/**"
+      - "packages/pom/src/**"
+      - "packages/pom-editor/src/**"
+      - "package.json"
+      - "packages/pom/package.json"
+      - "packages/pom-editor/package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".npmrc"
+      - ".github/workflows/ci-website-vrt.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "apps/website/**"
+      - "packages/pom/docs/**"
+      - "packages/pom-md/docs/**"
+      - "packages/pom-vscode/docs/**"
+      - "packages/pom/src/**"
+      - "packages/pom-editor/src/**"
+      - "package.json"
+      - "packages/pom/package.json"
+      - "packages/pom-editor/package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".npmrc"
+      - ".github/workflows/ci-website-vrt.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  website-vrt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build website VRT image
+        run: docker compose -f apps/website/vrt/docker-compose.yml build vrt
+      - name: Compare website screenshots
+        run: docker compose -f apps/website/vrt/docker-compose.yml run --rm vrt
+      - name: Upload website VRT images on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-vrt-images
+          path: |
+            apps/website/vrt/expected/
+            apps/website/vrt/results/
+          if-no-files-found: warn
+          retention-days: 7

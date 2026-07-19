@@ -1,0 +1,20 @@
+services:
+  vrt:
+    build:
+      context: ../../..
+      dockerfile: apps/website/vrt/Dockerfile
+    image: pom-website-vrt:latest
+    volumes:
+      - ./expected:/app/apps/website/vrt/expected:ro
+      - ./results:/app/apps/website/vrt/results
+    command: pnpm run vrt
+
+  vrt-update:
+    build:
+      context: ../../..
+      dockerfile: apps/website/vrt/Dockerfile
+    image: pom-website-vrt:latest
+    volumes:
+      - ./expected:/app/apps/website/vrt/expected
+      - ./results:/app/apps/website/vrt/results
+    command: pnpm run vrt:update

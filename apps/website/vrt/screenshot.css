@@ -1,0 +1,14 @@
+*,
+*::before,
+*::after {
+  scroll-behavior: auto !important;
+}
+
+html {
+  scrollbar-width: none !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none !important;
+}
