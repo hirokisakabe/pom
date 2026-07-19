@@ -9,7 +9,11 @@ import {
 } from "@pptx-glimpse/document";
 import type { BorderStyle, ShadowStyle, TextGlow } from "../../types.ts";
 import { parseGradient } from "../../shared/gradient.ts";
-import { toColorInput, type CustomGeometryXmlInput } from "../pptxAuthoring.ts";
+import {
+  enrichShapeInput,
+  toColorInput,
+  type CustomGeometryXmlInput,
+} from "../glimpseAdapter.ts";
 import { pxToEmu } from "../units.ts";
 import type { RenderContext } from "../types.ts";
 
@@ -125,9 +129,12 @@ export function addGlimpseShape(
   bounds: ShapeBoundsPx,
   options?: GlimpseShapeStyleOptions & { name?: string },
 ): void {
-  ctx.buildContext.pptxAuthoring.registerShape(input, {
-    ...options,
-    zeroWidth: bounds.w === 0,
-    zeroHeight: bounds.h === 0,
-  });
+  ctx.authoring.addShape(
+    enrichShapeInput(input, {
+      ...options,
+      zeroWidth: bounds.w === 0,
+      zeroHeight: bounds.h === 0,
+    }),
+    options?.name,
+  );
 }

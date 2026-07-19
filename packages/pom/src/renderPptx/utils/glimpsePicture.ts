@@ -9,6 +9,7 @@ import {
 import type { ShadowStyle } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { pxToEmu } from "../units.ts";
+import { enrichPictureInput } from "../glimpseAdapter.ts";
 
 type PictureBoundsPx = { x: number; y: number; w: number; h: number };
 type ImageSizing = {
@@ -150,8 +151,8 @@ export function addGlimpsePicture(
     rotation: createPictureRotationInput(options?.rotate),
     crop: sizingResult.crop,
   };
-  ctx.buildContext.pptxAuthoring.registerPicture(input, {
-    name: options?.name,
-    shadow: options?.shadow,
-  });
+  ctx.authoring.addPicture(
+    enrichPictureInput(input, options?.shadow),
+    options?.name,
+  );
 }
