@@ -55,18 +55,6 @@ importers:
 
   apps/website:
     dependencies:
-      "@codemirror/lang-xml":
-        specifier: ^6.1.0
-        version: 6.1.0
-      "@codemirror/lint":
-        specifier: ^6.9.7
-        version: 6.9.7
-      "@codemirror/state":
-        specifier: ^6.7.1
-        version: 6.7.1
-      "@codemirror/view":
-        specifier: ^6.43.6
-        version: 6.43.6
       "@hirokisakabe/pom":
         specifier: workspace:*
         version: link:../../packages/pom
@@ -85,9 +73,6 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
-      codemirror:
-        specifier: ^6.0.2
-        version: 6.0.2
       fast-xml-parser:
         specifier: ^5.10.0
         version: 5.10.0
@@ -274,12 +259,30 @@ importers:
 
   packages/pom-editor:
     dependencies:
+      "@codemirror/lang-xml":
+        specifier: ^6.1.0
+        version: 6.1.0
+      "@codemirror/lint":
+        specifier: ^6.9.7
+        version: 6.9.7
+      "@codemirror/state":
+        specifier: ^6.7.1
+        version: 6.7.1
+      "@codemirror/view":
+        specifier: ^6.43.6
+        version: 6.43.6
       "@dnd-kit/core":
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       "@hirokisakabe/pom":
         specifier: workspace:*
         version: link:../pom
+      codemirror:
+        specifier: ^6.0.2
+        version: 6.0.2
+      dompurify:
+        specifier: ^3.3.3
+        version: 3.3.3
     devDependencies:
       "@testing-library/jest-dom":
         specifier: ^6.9.1

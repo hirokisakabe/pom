@@ -1,6 +1,6 @@
 # AGENTS.md — packages/pom-editor
 
-Visual DnD AST editor component for pom. Exports `PomAstEditor` — a React component that receives pom XML via `xml` prop, renders the AST as a draggable tree, and calls `onChange` with updated XML when nodes are reordered. リポジトリ共通ルールはルート `AGENTS.md` を参照。
+Reusable browser editor components for pom. Exports `PomEditor` for XML / AST editing, preview, diagnostics, and host-provided actions, plus the standalone `PomAstEditor` DnD tree component. リポジトリ共通ルールはルート `AGENTS.md` を参照。
 
 ```bash
 pnpm --filter @hirokisakabe/pom-editor run build       # TypeScript compilation

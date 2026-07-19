@@ -14,17 +14,12 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@codemirror/lang-xml": "^6.1.0",
-    "@codemirror/lint": "^6.9.7",
-    "@codemirror/state": "^6.7.1",
-    "@codemirror/view": "^6.43.6",
     "@hirokisakabe/pom": "workspace:*",
     "@hirokisakabe/pom-editor": "workspace:*",
     "@hono/zod-validator": "^0.8.0",
     "@vercel/analytics": "^2.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "codemirror": "^6.0.2",
     "fast-xml-parser": "^5.10.0",
     "hono": "^4.12.29",
     "lucide-react": "^1.24.0",
