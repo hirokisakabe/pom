@@ -85,6 +85,7 @@ export function readPreviewDocument(absInput: string): PreviewDocument {
 export async function atomicWriteFile(
   target: string,
   content: string,
+  expectedRevision?: string,
 ): Promise<void> {
   const temp = path.join(
     path.dirname(target),
@@ -98,6 +99,12 @@ export async function atomicWriteFile(
       await handle.sync();
     } finally {
       await handle.close();
+    }
+    if (expectedRevision !== undefined) {
+      const current = await fs.promises.readFile(target, "utf8");
+      if (revisionOf(current) !== expectedRevision) {
+        throw new SaveConflictError();
+      }
     }
     await fs.promises.rename(temp, target);
   } catch (error) {
@@ -118,7 +125,7 @@ export async function savePreviewDocument(
   }
   const current = await fs.promises.readFile(absInput, "utf8");
   if (revisionOf(current) !== expectedRevision) throw new SaveConflictError();
-  await atomicWriteFile(absInput, xml);
+  await atomicWriteFile(absInput, xml, expectedRevision);
   return revisionOf(xml);
 }
 
@@ -257,6 +264,7 @@ export function createPreviewServer(
   const verbose = options.verbose ?? false;
   const eventClients = new Set<http.ServerResponse>();
   let ignoredWatchRevision: string | null = null;
+  let ignoredWatchTimer: NodeJS.Timeout | null = null;
   const clientScriptPath = fileURLToPath(
     new URL("./assets/preview.js", import.meta.url),
   );
@@ -274,6 +282,8 @@ export function createPreviewServer(
       const document = readPreviewDocument(absInput);
       if (document.revision === ignoredWatchRevision) {
         ignoredWatchRevision = null;
+        if (ignoredWatchTimer) clearTimeout(ignoredWatchTimer);
+        ignoredWatchTimer = null;
         return;
       }
       sendDocumentEvent(document);
@@ -292,6 +302,20 @@ export function createPreviewServer(
     res: http.ServerResponse,
   ): Promise<void> {
     try {
+      const host = req.headers.host;
+      if (!host) throw new Error("Missing Host header");
+      const hostname = host.startsWith("[")
+        ? host.slice(1, host.indexOf("]"))
+        : host.split(":", 1)[0];
+      if (hostname !== "localhost" && hostname !== "127.0.0.1") {
+        sendJson(res, 403, { message: "Invalid Host header" });
+        return;
+      }
+      const origin = req.headers.origin;
+      if (origin && origin !== `http://${host}`) {
+        sendJson(res, 403, { message: "Invalid Origin header" });
+        return;
+      }
       const url = new URL(req.url ?? "/", "http://localhost");
       if (req.method === "GET" && url.pathname === "/") {
         res.writeHead(200, {
@@ -334,14 +358,19 @@ export function createPreviewServer(
         const xml = readStringField(body, "xml");
         const revision = readStringField(body, "revision");
         try {
-          const nextRevision = await savePreviewDocument(
-            absInput,
-            xml,
-            revision,
-          );
+          const nextRevision = revisionOf(xml);
           ignoredWatchRevision = nextRevision;
+          if (ignoredWatchTimer) clearTimeout(ignoredWatchTimer);
+          ignoredWatchTimer = setTimeout(() => {
+            ignoredWatchRevision = null;
+            ignoredWatchTimer = null;
+          }, 1000);
+          await savePreviewDocument(absInput, xml, revision);
           sendJson(res, 200, { revision: nextRevision });
         } catch (error) {
+          ignoredWatchRevision = null;
+          if (ignoredWatchTimer) clearTimeout(ignoredWatchTimer);
+          ignoredWatchTimer = null;
           if (error instanceof SaveConflictError) {
             sendJson(res, 409, { code: "conflict", message: error.message });
           } else {
@@ -371,7 +400,12 @@ export function createPreviewServer(
   const server = http.createServer((req, res) => {
     void handleRequest(req, res);
   });
-  server.on("close", () => watcher.close());
+  server.on("close", () => {
+    watcher.close();
+    if (ignoredWatchTimer) clearTimeout(ignoredWatchTimer);
+    for (const client of eventClients) client.end();
+    eventClients.clear();
+  });
   return server;
 }
 
@@ -395,7 +429,7 @@ export function runPreview(
     }
     process.exit(1);
   });
-  server.listen(port, () => {
+  server.listen(port, "127.0.0.1", () => {
     const url = `http://localhost:${port}`;
     console.log(`Preview server: ${url}`);
     console.log(`Watching: ${absInput}`);

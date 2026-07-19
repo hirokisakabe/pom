@@ -49,8 +49,14 @@ export function App() {
     const source = new EventSource("/_events");
     source.addEventListener("document", (event) => {
       eventGenerationRef.current += 1;
-      const updated = JSON.parse((event as MessageEvent<string>).data) as
-        PreviewDocument | { error: string };
+      let updated: PreviewDocument | { error: string };
+      try {
+        updated = JSON.parse((event as MessageEvent<string>).data) as
+          PreviewDocument | { error: string };
+      } catch {
+        setExternalChange(true);
+        return;
+      }
       if ("error" in updated) {
         setExternalChange(true);
         return;

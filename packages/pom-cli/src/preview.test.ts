@@ -88,6 +88,25 @@ describe("preview document save", () => {
       "<Text>external</Text>",
     );
   });
+
+  it("一時file作成中の外部変更もrename前の再検査で拒否する", async () => {
+    const revision = readPreviewDocument(inputFile).revision;
+    const originalReadFile = fs.promises.readFile.bind(fs.promises);
+    let targetReads = 0;
+    vi.spyOn(fs.promises, "readFile").mockImplementation(async (...args) => {
+      if (String(args[0]) === inputFile && ++targetReads === 2) {
+        await fs.promises.writeFile(inputFile, "<Text>external late</Text>");
+      }
+      return originalReadFile(...args);
+    });
+
+    await expect(
+      savePreviewDocument(inputFile, "<Text>browser</Text>", revision),
+    ).rejects.toThrow("changed outside pom preview");
+    expect(await originalReadFile(inputFile, "utf8")).toBe(
+      "<Text>external late</Text>",
+    );
+  });
 });
 
 describe("preview server", () => {
@@ -101,6 +120,29 @@ describe("preview server", () => {
     expect(html).toContain('<script src="/_assets/preview.js"');
     expect(html).not.toMatch(/https?:\/\/.*(?:jsdelivr|unpkg|cdnjs)/);
     expect(asset).toContain("__POM_PREVIEW_CLIENT__");
+  });
+
+  it("localhost以外のHostとcross-origin requestを拒否する", async () => {
+    await startServer();
+    const invalidHostStatus = await new Promise<number | undefined>(
+      (resolve, reject) => {
+        const request = http.get(
+          `${baseUrl}/_api/document`,
+          { headers: { Host: "example.com" } },
+          (response) => {
+            response.resume();
+            response.on("end", () => resolve(response.statusCode));
+          },
+        );
+        request.on("error", reject);
+      },
+    );
+    const invalidOrigin = await fetch(`${baseUrl}/_api/document`, {
+      headers: { Origin: "https://example.com" },
+    });
+
+    expect(invalidHostStatus).toBe(403);
+    expect(invalidOrigin.status).toBe(403);
   });
 
   it("編集中の未保存XMLをpreview APIへ渡す", async () => {
