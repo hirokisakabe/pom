@@ -65,13 +65,13 @@ pom render slides.pom.xml -o ./images --format svg
 pom render slides.pom.xml -o ./images --slides 2,5
 ```
 
-| Option               | Description                                   |
-| -------------------- | --------------------------------------------- |
-| `-o <dir>`           | Required output directory                     |
-| `--format <png       | svg>`                                         | Output format; default is `png`                                     |
-| `--slides <numbers>` | Render 1-based, comma-separated slide numbers |
-| `--text-output <path | text>`                                        | For SVG only: glyph paths or native text with embedded subset fonts |
-| `--verbose`          | Print build-step timing to stderr             |
+| Option                 | Description                                                      |
+| ---------------------- | ---------------------------------------------------------------- |
+| `-o <dir>`             | Required output directory                                        |
+| `--format <format>`    | Output format: `png` or `svg`; default is `png`                  |
+| `--slides <numbers>`   | Render 1-based, comma-separated slide numbers                    |
+| `--text-output <mode>` | For SVG only: `path` glyphs or native `text` with embedded fonts |
+| `--verbose`            | Print build-step timing to stderr                                |
 
 Output files are named `slide-01.png`, `slide-02.png`, and so on. Rendering uses the same pipeline as live preview and does not require LibreOffice.
 
