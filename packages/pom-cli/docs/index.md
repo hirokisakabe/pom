@@ -1,6 +1,6 @@
 # pom CLI
 
-`@hirokisakabe/pom-cli` previews, builds, and renders `.pom.xml` and `.pom.md` presentations. It is a tool around the shared pom model: Markdown input is converted to pom XML, and all commands use the same core layout and rendering pipeline as the TypeScript library, pom-vscode, and Playground.
+`@hirokisakabe/pom-cli` previews, builds, and renders `.pom.xml` and `.pom.md` presentations. It is a tool around the shared pom model: Markdown input is converted to pom XML, and the `preview`, `build`, and `render` commands use the same core layout and rendering pipeline as the TypeScript library, pom-vscode, and Playground.
 
 Requires Node.js 22 or later.
 

@@ -13,6 +13,8 @@ npm install @hirokisakabe/pom
 ```typescript
 import { buildPptx } from "@hirokisakabe/pom";
 
+const xml = `<Slide><Text>Hello from pom</Text></Slide>`;
+
 const { pptx, diagnostics } = await buildPptx(xml, {
   w: 1280,
   h: 720,

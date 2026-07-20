@@ -48,7 +48,7 @@ const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
 await pptx.writeFile({ fileName: "presentation.pptx" });
 ```
 
-`renderToXml` accepts a component, array, or Fragment. All pom node types are exported as PascalCase components with typed props. Numbers pass through as attribute values, `true` booleans serialize as `"true"`, false booleans are omitted, and objects or arrays are JSON-encoded.
+`renderToXml` accepts a JSX element, array, or Fragment. Supported pom node types are exported as PascalCase components with typed props. Numbers pass through as attribute values, `true` booleans serialize as `"true"`, false booleans are omitted, and objects or arrays are JSON-encoded.
 
 ## Multiple slides and reusable components
 
@@ -67,6 +67,6 @@ const xml = renderToXml(
 );
 ```
 
-Ordinary function components can encapsulate repeated layouts and accept typed children or data. The final result remains pom XML, so it can be previewed with [pom CLI](/pom-cli), inspected in [Playground](/playground), or passed to any core API.
+Ordinary function components can encapsulate repeated layouts and accept typed children or data. The final result remains pom XML, so it can be previewed with [pom CLI](/pom-cli), inspected in [Playground](/playground), passed to `buildPptx`, or parsed with `parseXml`.
 
 See [Choosing an Authoring Format](/authoring) for when to prefer JSX/TSX over raw XML, Markdown, or a visual editor. See [Nodes](/nodes) for the available presentation elements.

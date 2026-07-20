@@ -9,23 +9,23 @@ Every pom authoring surface produces or edits the same **pom XML** model. Choose
 | **JSX/TSX (`pom-jsx`)**          | Typed composition, loops, data mapping, reusable components                    | Requires a TypeScript JSX toolchain                           | [pom-jsx](/pom-jsx)                                 |
 | **Visual editor (`pom-editor`)** | Embedding XML/AST editing, drag-and-drop structure, and preview in a React app | The host supplies preview and file operations                 | [Embedding the Editor](/embedding-the-editor)       |
 
-## pom XML as the source of truth
+## pom XML as the shared IR and downstream source of truth
 
 pom XML is both a human-editable source format and the intermediate representation shared across the kit:
 
 ```text
 Markdown ──pom-md──┐
-JSX/TSX ──pom-jsx──├──▶ pom XML ──▶ PositionedNode ──▶ PPTX / SVG / PNG
+JSX/TSX ──pom-jsx──├──▶ pom XML ──▶ PositionedNode ──▶ PPTX ──▶ SVG / PNG
 AI prompt ─pom-slide─┘         ▲
 Visual editor ──────────────┘
 ```
 
-This lets a deck move between workflows. An agent can generate XML, a person can adjust its AST in the editor, pom-vscode or pom CLI can preview it, and the core library can render it without translating to a different presentation model.
+Once an authoring surface produces pom XML, downstream tools treat that XML as the source of truth. An agent can generate XML, a person can adjust its AST in the editor, pom-vscode or pom CLI can preview it, and the core library can render it without translating to a different presentation model. Conversion from Markdown or JSX/TSX is one-way: later XML edits are not synchronized back to the original authoring source.
 
 ## Tools use the same model
 
 - [pom CLI](/pom-cli) previews, builds, and renders `.pom.xml` or `.pom.md`; Markdown is converted to pom XML first.
-- [pom-vscode](/pom-vscode) previews and exports `.pom.xml` and `.pom.md` through the same core build pipeline.
+- [pom-vscode](/pom-vscode) previews `.pom.xml` and `.pom.md` files and exports them to PPTX through the same core build pipeline.
 - [Playground](/playground) lets you edit pom XML and inspect its output in the browser.
 
 The tools differ in interface and output workflow, not in their underlying presentation data model.

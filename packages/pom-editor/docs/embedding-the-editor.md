@@ -19,6 +19,15 @@ npm install @hirokisakabe/pom-editor react
 ```tsx
 import { useState } from "react";
 import { PomEditor } from "@hirokisakabe/pom-editor";
+import type { PomEditorPreviewResult } from "@hirokisakabe/pom-editor";
+
+function isPreviewResult(value: unknown): value is PomEditorPreviewResult {
+  if (typeof value !== "object" || value === null) return false;
+  return (
+    ("svgs" in value && Array.isArray(value.svgs)) ||
+    ("errors" in value && Array.isArray(value.errors))
+  );
+}
 
 export function PresentationEditor() {
   const [xml, setXml] = useState("<Slide><Text>Hello</Text></Slide>");
@@ -34,16 +43,21 @@ export function PresentationEditor() {
           body: JSON.stringify({ xml: nextXml }),
           signal,
         });
-        return response.json();
+        if (!response.ok) {
+          throw new Error(`Preview request failed: ${response.status}`);
+        }
+        const result: unknown = await response.json();
+        if (!isPreviewResult(result)) {
+          throw new Error("Preview endpoint returned an invalid response");
+        }
+        return result;
       }}
-      onDownload={(nextXml) => downloadPptx(nextXml)}
-      onSave={(nextXml) => saveXml(nextXml)}
     />
   );
 }
 ```
 
-The host application owns preview generation and file operations. `onDownload`, `onSave`, and `onCopyPreview` are optional; their toolbar actions appear only when callbacks are provided. SVG preview results are sanitized before insertion into the document.
+The host application owns preview generation and file operations. `onDownload`, `onSave`, and `onCopyPreview` are optional. Download and Save appear in the toolbar when their callbacks are provided; Copy appears over the preview when `onCopyPreview` is provided. SVG preview results are sanitized before insertion into the document.
 
 | Prop                                    | Purpose                                                                       |
 | --------------------------------------- | ----------------------------------------------------------------------------- |
@@ -79,6 +93,6 @@ Rows expose separate drop targets for sibling insertion and nesting inside `VSta
 
 ## Connect a preview backend
 
-The `onPreview` callback should send the current XML to a trusted server or worker that runs the pom build pipeline and converts the result to SVG. Keep rendering and filesystem access outside the browser component. The website Playground and pom CLI are examples of hosts built around this same separation.
+The `onPreview` callback should send the current XML to a trusted Node.js server or server-side worker that runs the pom build pipeline and converts the result to SVG. Keep rendering and filesystem access outside the browser component. The website Playground and pom CLI are examples of hosts built around this same separation.
 
 Compare the visual editor with other [authoring formats](/authoring), or see the [`@hirokisakabe/pom` API Reference](/api-reference) for implementing build and preview adapters.

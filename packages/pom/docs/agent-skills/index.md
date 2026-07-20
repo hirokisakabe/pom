@@ -1,8 +1,10 @@
 # Agent Skills
 
-The pom agent skills turn natural-language requests and brand assets into the same pom XML source used by the rest of the kit. They are designed for coding agents that support the open Agent Skills format.
+The pom agent skills connect natural-language requests and brand assets to the pom kit. `pom-slide` generates the pom XML source used by the rest of the kit, while `pom-theme` creates reusable theme settings that guide that generation. They are designed for coding agents that support the open Agent Skills format.
 
 ## Install
+
+Requires Node.js 22 or later when using pom CLI.
 
 Install both skills from the pom repository:
 
@@ -23,7 +25,7 @@ npm install -g @hirokisakabe/pom-cli
 | [pom-slide](/agent-skills/pom-slide) | Create, revise, or extend a presentation from natural language                   | `slides.pom.xml` (or a requested pom XML file) |
 | [pom-theme](/agent-skills/pom-theme) | Derive palette and typography from colors, a PPTX master, a website, or an image | `pom-theme.json`                               |
 
-Installed skills can be selected automatically when a request matches their description. You can also select a skill explicitly through your agent's skill picker.
+Installed skills can be selected automatically when a request matches their description. If your agent provides a skill picker, you can also select a skill explicitly.
 
 ## Typical branded-deck flow
 

@@ -25,4 +25,4 @@ When `pom-theme.json` exists in the working directory, `pom-slide` automatically
 
 ## Output and handoff
 
-The main output is pom XML, not an opaque generated presentation. You can continue editing it with an agent, [pom CLI](/pom-cli), [pom-vscode](/pom-vscode), the [Playground](/playground), or an embedded visual editor before producing the final PPTX.
+The main output is pom XML, not an opaque generated presentation. You can continue editing it with an agent, [pom CLI](/pom-cli), [pom-vscode](/pom-vscode), the [Playground](/playground), or [pom-editor](/embedding-the-editor) before producing the final PPTX.
