@@ -1,5 +1,11 @@
 # @hirokisakabe/pom-cli
 
+## 0.9.0
+
+### Minor Changes
+
+- [#977](https://github.com/hirokisakabe/pom/pull/977) [`cf4db3c`](https://github.com/hirokisakabe/pom/commit/cf4db3c63e2c0a1e9da03d2a94991bcc6f9e35cb) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Add the shared PomEditor to `pom preview`, including unsaved XML/AST previews, explicit atomic saves, and external-change conflict detection.
+
 ## 0.8.5
 
 ### Patch Changes
