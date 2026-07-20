@@ -17,6 +17,7 @@ let capturedHandlers: {
   onDragEnd?: (event: DragEvent) => void;
   onDragCancel?: () => void;
 } = {};
+let capturedAutoScroll: boolean | undefined;
 
 vi.mock("@dnd-kit/core", () => ({
   DndContext: ({
@@ -25,16 +26,20 @@ vi.mock("@dnd-kit/core", () => ({
     onDragOver,
     onDragEnd,
     onDragCancel,
+    autoScroll,
   }: {
     children: React.ReactNode;
+    autoScroll?: boolean;
     onDragStart?: typeof capturedHandlers.onDragStart;
     onDragOver?: typeof capturedHandlers.onDragOver;
     onDragEnd?: typeof capturedHandlers.onDragEnd;
     onDragCancel?: typeof capturedHandlers.onDragCancel;
   }) => {
     capturedHandlers = { onDragStart, onDragOver, onDragEnd, onDragCancel };
+    capturedAutoScroll = autoScroll;
     return <>{children}</>;
   },
+  DragOverlay: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   PointerSensor: class {},
   useSensor: () => ({}),
   useSensors: () => [],
@@ -60,6 +65,7 @@ import type { AstNode } from "./ast.ts";
 afterEach(() => {
   cleanup();
   capturedHandlers = {};
+  capturedAutoScroll = undefined;
 });
 
 // Two slides, each is a VStack with text children.
@@ -254,6 +260,24 @@ describe("AstTree DnD — inside drops (container nesting)", () => {
 });
 
 describe("AstTree DnD — visual feedback distinguishes inside vs between", () => {
+  it("before / after gap の見た目を広げずに 16px の drop hit area を提供する", () => {
+    render(<AstTree ast={makeAst()} onChange={vi.fn()} />);
+
+    for (const id of ["gap:0:0", "gap:0:2"]) {
+      const gap = screen.getByTestId(id);
+      expect(gap.style.height).toBe("16px");
+      expect(gap.style.marginTop).toBe("-7px");
+      expect(gap.style.marginBottom).toBe("-7px");
+      expect(gap.dataset.dropPlacement).toBe("between");
+      expect(gap.style.pointerEvents).toBe("none");
+    }
+
+    act(() => {
+      capturedHandlers.onDragStart?.({ active: { id: "1" } });
+    });
+    expect(screen.getByTestId("gap:0:0").style.pointerEvents).toBe("auto");
+  });
+
   it("inside drop ターゲットに対して container 本体が青ハイライトされる", () => {
     const onChange = vi.fn();
     render(<AstTree ast={makeAst()} onChange={onChange} />);
@@ -271,18 +295,21 @@ describe("AstTree DnD — visual feedback distinguishes inside vs between", () =
     expect(insideHighlighted!.style.outline).toBe("1px solid #2563eb");
   });
 
-  it("gap drop ターゲットに対して挿入インジケータが青で表示される", () => {
-    const onChange = vi.fn();
-    render(<AstTree ast={makeAst()} onChange={onChange} />);
+  it.each(["gap:0:0", "gap:0:2"])(
+    "%s drop ターゲットに対して挿入インジケータが青で表示される",
+    (gapId) => {
+      const onChange = vi.fn();
+      render(<AstTree ast={makeAst()} onChange={onChange} />);
 
-    act(() => {
-      capturedHandlers.onDragOver?.(dragTo("1", "gap:0:2"));
-    });
+      act(() => {
+        capturedHandlers.onDragOver?.(dragTo("1", gapId));
+      });
 
-    const gap = document.querySelector<HTMLElement>('[data-testid="gap:0:2"]');
-    expect(gap).not.toBeNull();
-    expect(gap!.style.backgroundColor).toBe("rgb(59, 130, 246)");
-  });
+      const indicator = screen.getByTestId(`${gapId}:indicator`);
+      expect(indicator.style.backgroundColor).toBe("rgb(37, 99, 235)");
+      expect(indicator.style.height).toBe("3px");
+    },
+  );
 
   it("inside と gap で異なる背景色が使われる (UI 上区別できる)", () => {
     const onChange = vi.fn();
@@ -299,13 +326,33 @@ describe("AstTree DnD — visual feedback distinguishes inside vs between", () =
     act(() => {
       capturedHandlers.onDragOver?.(dragTo("1", "gap:0:2"));
     });
-    const gap = document.querySelector<HTMLElement>('[data-testid="gap:0:2"]');
-    const gapBg = gap?.style.backgroundColor;
+    const gapBg = screen.getByTestId("gap:0:2:indicator").style.backgroundColor;
 
     // Different colors used for the two feedback modes.
     expect(insideBg).toBeTruthy();
     expect(gapBg).toBeTruthy();
     expect(insideBg).not.toBe(gapBg);
+  });
+});
+
+describe("AstTree DnD — drag overlay and scrolling", () => {
+  it("drag 中の node label を DragOverlay に表示する", () => {
+    render(<AstTree ast={makeAst()} onChange={vi.fn()} />);
+
+    expect(screen.queryByTestId("ast-drag-overlay")).toBeNull();
+    act(() => {
+      capturedHandlers.onDragStart?.({ active: { id: "1" } });
+    });
+
+    expect(screen.getByTestId("ast-drag-overlay").textContent).toContain(
+      'Text: "A"',
+    );
+  });
+
+  it("scroll container の edge auto-scroll を有効にする", () => {
+    render(<AstTree ast={makeAst()} onChange={vi.fn()} />);
+
+    expect(capturedAutoScroll).toBe(true);
   });
 });
 
