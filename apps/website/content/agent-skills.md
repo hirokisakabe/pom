@@ -4,6 +4,8 @@ pom ships two installable agent skills that connect natural-language work to the
 
 ## Install
 
+Requires Node.js 22 or later.
+
 Install both skills from the repository:
 
 ```bash
@@ -33,7 +35,7 @@ You normally do not need to name the skill: compatible agents select it when you
 
 ## pom-theme
 
-`pom-theme` creates `pom-theme.json` from brand colors, an existing PowerPoint master, a website, or an image. The file contains reusable color, typography, and slide-master choices that `pom-slide` applies automatically when both files are in the same working directory.
+`pom-theme` creates `pom-theme.json` from brand colors, an existing PowerPoint master, a website, or an image. When both files are in the same working directory, `pom-slide` automatically applies its tone, colors, typography, and slide background. Other `slideMaster` options in the theme file are available to direct API consumers.
 
 Typical flow:
 

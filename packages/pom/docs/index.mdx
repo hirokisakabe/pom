@@ -16,7 +16,7 @@ pom XML / pom-md / pom-jsx / pom-slide
                     |
                     v
 Rendering / Tools
-PPTX / SVG / PNG
+PositionedNode -> PPTX -> SVG / PNG
 pom-cli / pom-vscode / Playground
 ```
 
@@ -52,7 +52,7 @@ The [Getting Started guide](/getting-started#choose-an-authoring-surface) compar
 - A presentation is one or more top-level `<Slide>` elements, optionally preceded by a `<Theme>`.
 - Layout uses pixel units and Flexbox-style `VStack` / `HStack` containers.
 - The core pipeline is `parseXml` -> `calcYogaLayout` -> `toPositioned` -> `renderPptx`.
-- PPTX output uses native, editable PowerPoint shapes.
+- PPTX output uses native, editable PowerPoint objects where possible; image-based nodes such as `Image`, `Icon`, and `Svg` remain images.
 
 Continue with [Nodes](/nodes), [Layout System](/layout-system), and [Styling Guide](/styling-guide).
 

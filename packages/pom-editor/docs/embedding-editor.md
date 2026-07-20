@@ -32,7 +32,7 @@ import { PomEditor } from "@hirokisakabe/pom-editor";
 />;
 ```
 
-`PomEditor` is controlled through `xml` and `onChange`. It includes XML / AST modes, debounced preview, diagnostics, Refresh, and slide pagination. `onDownload`, `onSave`, and `onCopyPreview` are optional; their toolbar actions appear only when a callback is supplied. SVG previews are sanitized before insertion.
+`PomEditor` is controlled through `xml` and `onChange`. It includes XML / AST modes, debounced preview, diagnostics, Refresh, and slide pagination. `onDownload` and `onSave` add toolbar actions, while `onCopyPreview` adds a Copy button to the preview; each appears only when its callback is supplied. SVG previews are sanitized before insertion.
 
 | Prop                                    | Purpose                                                                     |
 | --------------------------------------- | --------------------------------------------------------------------------- |

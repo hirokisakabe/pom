@@ -46,7 +46,7 @@ const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
 await pptx.writeFile({ fileName: "presentation.pptx" });
 ```
 
-`renderToXml()` accepts a JSX element, Fragment, or array. Standard pom nodes are exported as PascalCase components with typed props. Ordinary function components can package reusable slide layouts, and inline components such as `B`, `I`, `U`, `A`, `Span`, and `Mark` work inside text.
+`renderToXml()` accepts a JSX element, Fragment, or array. pom-jsx's supported pom nodes are exported as PascalCase components with typed props. Ordinary function components can package reusable slide layouts, and inline components such as `B`, `I`, `U`, `A`, `Span`, and `Mark` work inside text.
 
 ## Multiple slides
 

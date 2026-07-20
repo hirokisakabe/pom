@@ -24,7 +24,7 @@ Keep a preview open while your coding agent edits `slides.pom.xml`:
 pom preview slides.pom.xml
 ```
 
-The browser updates when the file changes. The agent can focus on XML edits and validation while you assess the visual result and request another iteration. For `.pom.xml`, the browser also offers XML / AST editing and conflict-safe Save; `.pom.md` remains preview-only.
+When the browser has no unsaved edits, it updates as the file changes. If browser edits are pending, they are preserved and the toolbar reports the external change. The agent can focus on XML edits and validation while you assess the visual result and request another iteration. For `.pom.xml`, the browser also offers XML / AST editing and conflict-safe Save; `.pom.md` remains preview-only.
 
 This is the runtime loop used by [`pom-slide`](/agent-skills#pom-slide): prompt -> XML edit -> strict validation -> rendered review -> live preview.
 

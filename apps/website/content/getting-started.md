@@ -17,6 +17,8 @@ npm install -g @hirokisakabe/pom-cli
 
 ### 2. Ask your agent for a deck
 
+If the running agent does not discover the newly installed skills, restart its session first.
+
 For example:
 
 ```text

@@ -30,7 +30,7 @@ await pptx.writeFile({ fileName: "presentation.pptx" });
 
 ## Related APIs
 
-- `parseXml()` / `serializeXml()` provide validated XML and AST conversion. The browser-safe `@hirokisakabe/pom/clientApi` subpath exports only these APIs and `POMNode`.
+- `parseXml()` / `serializeXml()` provide validated XML and AST conversion. The browser-safe `@hirokisakabe/pom/clientApi` subpath also exports `POMNode` and `ParseXmlError`.
 - `extractThemeTokensFromPptx()` reads theme colors from existing PowerPoint files.
 - `extractSlideMastersAsPptx()` creates one blank slide per visible layout for master inspection.
 - `buildPptx(..., { strict: true })` throws when diagnostics are produced.
