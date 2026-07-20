@@ -141,7 +141,7 @@ export default async function LandingPage() {
         <span className="text-xl font-bold">pom</span>
         <nav className="flex items-center gap-6 text-sm">
           <Link
-            href="/nodes"
+            href="/getting-started"
             className="text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
           >
             Docs
@@ -182,10 +182,10 @@ export default async function LandingPage() {
         </p>
         <div className="flex flex-col gap-4 sm:flex-row">
           <Link
-            href="#quick-start"
+            href="/getting-started"
             className="rounded-lg bg-gray-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
           >
-            Install pom kit
+            Get Started
           </Link>
           <Link
             href="/playground"
@@ -270,6 +270,26 @@ export default async function LandingPage() {
             does not start automatically, run{" "}
             <code>pom preview slides.pom.xml</code>.
           </p>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium">
+            <Link
+              href="/getting-started"
+              className="text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Full Getting Started guide →
+            </Link>
+            <Link
+              href="/agent-skills"
+              className="text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Agent Skills docs →
+            </Link>
+            <Link
+              href="/pom-cli"
+              className="text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              pom CLI docs →
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -299,7 +319,14 @@ export default async function LandingPage() {
         </h2>
         <p className="mb-10 text-center text-gray-600 dark:text-gray-400">
           Building a custom pipeline? Pass pom XML to <code>buildPptx</code>
-          directly for full TypeScript control.
+          directly for full TypeScript control. Follow the{" "}
+          <Link
+            href="/getting-started#typescript-library"
+            className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            library Quick Start
+          </Link>
+          .
         </p>
         <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
@@ -343,7 +370,7 @@ export default async function LandingPage() {
           </span>
           <nav className="flex gap-6 text-sm">
             <Link
-              href="/nodes"
+              href="/getting-started"
               className="text-gray-500 transition-colors hover:text-gray-900 dark:hover:text-gray-100"
             >
               Docs
