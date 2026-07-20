@@ -233,6 +233,30 @@ describe("PomEditor", () => {
     expect(screen.getByTestId("pom-ast-editor")).toBeTruthy();
   });
 
+  it("XML modeの行なしdiagnosticには現在のmodeに合う案内を表示する", async () => {
+    render(
+      <PomEditor
+        xml="<Text />"
+        onChange={vi.fn()}
+        onPreview={vi.fn().mockResolvedValue({
+          errors: [{ type: "structure", message: "Slide is required" }],
+        })}
+        debounceMs={0}
+      />,
+    );
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Slide is required/ }),
+    );
+
+    expect(screen.getByRole("status").textContent).toContain(
+      "inspect the XML source manually",
+    );
+    expect(screen.getByRole("status").textContent).not.toContain(
+      "switch to XML mode",
+    );
+  });
+
   it("AST treeを構築できない場合もXML modeへ戻れる", () => {
     render(
       <PomEditor

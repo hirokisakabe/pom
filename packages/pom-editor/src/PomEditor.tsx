@@ -189,7 +189,9 @@ export function PomEditor({
     if (!diagnostic) return;
     if (!diagnostic.line) {
       setDiagnosticNotice(
-        "This error does not include a source line. Review its message and switch to XML mode to inspect the source.",
+        mode === "ast"
+          ? "This error does not include a source line. Review its message and switch to XML mode to inspect the source."
+          : "This error does not include a source line. Review its message and inspect the XML source manually.",
       );
       return;
     }
