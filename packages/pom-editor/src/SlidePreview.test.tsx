@@ -25,7 +25,7 @@ describe("SlidePreview", () => {
     expect(screen.getByText("Edit XML to see a preview")).toBeTruthy();
   });
 
-  it("diagnosticsを表示し、行情報がある項目をbuttonで通知する", () => {
+  it("行情報の有無にかかわらずdiagnosticの選択を通知する", () => {
     const diagnostics: PomEditorDiagnostic[] = [
       { type: "xml_syntax", message: "Tag is not closed", line: 3 },
       { type: "schema", message: "Invalid attribute" },
@@ -41,11 +41,8 @@ describe("SlidePreview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Tag is not closed/ }));
     expect(onDiagnosticClick).toHaveBeenCalledWith(0);
-    expect(
-      screen
-        .getByRole("button", { name: /Invalid attribute/ })
-        .hasAttribute("disabled"),
-    ).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: /Invalid attribute/ }));
+    expect(onDiagnosticClick).toHaveBeenCalledWith(1);
   });
 
   it("SVGをsanitizeして表示とcopy callbackへ渡す", () => {

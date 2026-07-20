@@ -105,10 +105,11 @@ function App() {
 
 ### `<PomAstEditor xml onChange />`
 
-| Prop       | Type                    | Description                                              |
-| ---------- | ----------------------- | -------------------------------------------------------- |
-| `xml`      | `string`                | pom XML string (one or more `<Slide>` elements)          |
-| `onChange` | `(xml: string) => void` | Called with updated XML after each drag-and-drop reorder |
+| Prop               | Type                    | Description                                                        |
+| ------------------ | ----------------------- | ------------------------------------------------------------------ |
+| `xml`              | `string`                | pom XML string (one or more `<Slide>` elements)                    |
+| `onChange`         | `(xml: string) => void` | Called with updated XML after each drag-and-drop reorder           |
+| `onRequestXmlMode` | `() => void`            | Optional callback shown after parse errors to return to XML source |
 
 Renders a tree of nodes from the parsed XML. Each row supports two drop targets:
 

@@ -72,7 +72,9 @@ export function PomEditor({
   const [diagnostics, setDiagnostics] = useState<PomEditorDiagnostic[] | null>(
     null,
   );
+  const [diagnosticNotice, setDiagnosticNotice] = useState<string | null>(null);
   const editorViewRef = useRef<EditorView | null>(null);
+  const pendingDiagnosticRef = useRef<PomEditorDiagnostic | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const onPreviewRef = useRef(onPreview);
@@ -87,6 +89,7 @@ export function PomEditor({
     abortControllerRef.current = controller;
     setIsLoading(true);
     setDiagnostics(null);
+    setDiagnosticNotice(null);
 
     try {
       const result = await onPreviewRef.current(xml, {
@@ -147,6 +150,7 @@ export function PomEditor({
     if (runningAction !== null) return;
     setRunningAction(action);
     setDiagnostics(null);
+    setDiagnosticNotice(null);
     try {
       await callback(xml);
     } catch (error) {
@@ -161,10 +165,8 @@ export function PomEditor({
     }
   }
 
-  function handleDiagnosticClick(index: number) {
-    const view = editorViewRef.current;
-    const diagnostic = diagnostics?.[index];
-    if (!view || !diagnostic?.line) return;
+  function focusDiagnostic(view: EditorView, diagnostic: PomEditorDiagnostic) {
+    if (!diagnostic.line) return;
     const requestedLine = Number.isFinite(diagnostic.line)
       ? Math.trunc(diagnostic.line)
       : 1;
@@ -180,6 +182,37 @@ export function PomEditor({
       effects: EditorView.scrollIntoView(anchor, { y: "center" }),
     });
     view.focus();
+  }
+
+  function handleDiagnosticClick(index: number) {
+    const diagnostic = diagnostics?.[index];
+    if (!diagnostic) return;
+    if (!diagnostic.line) {
+      setDiagnosticNotice(
+        mode === "ast"
+          ? "This error does not include a source line. Review its message and switch to XML mode to inspect the source."
+          : "This error does not include a source line. Review its message and inspect the XML source manually.",
+      );
+      return;
+    }
+
+    setDiagnosticNotice(null);
+    if (mode === "ast") {
+      pendingDiagnosticRef.current = diagnostic;
+      setMode("xml");
+      return;
+    }
+
+    const view = editorViewRef.current;
+    if (view) focusDiagnostic(view, diagnostic);
+  }
+
+  function handleXmlViewReady(view: EditorView) {
+    editorViewRef.current = view;
+    const pendingDiagnostic = pendingDiagnosticRef.current;
+    if (!pendingDiagnostic) return;
+    pendingDiagnosticRef.current = null;
+    focusDiagnostic(view, pendingDiagnostic);
   }
 
   return (
@@ -296,9 +329,7 @@ export function PomEditor({
               value={xml}
               onChange={onChange}
               diagnostics={diagnostics}
-              onViewReady={(view) => {
-                editorViewRef.current = view;
-              }}
+              onViewReady={handleXmlViewReady}
             />
           ) : (
             <div
@@ -312,7 +343,11 @@ export function PomEditor({
                 background: "#fff",
               }}
             >
-              <PomAstEditor xml={xml} onChange={onChange} />
+              <PomAstEditor
+                xml={xml}
+                onChange={onChange}
+                onRequestXmlMode={() => setMode("xml")}
+              />
             </div>
           )}
         </div>
@@ -320,9 +355,10 @@ export function PomEditor({
           svgs={svgs}
           isLoading={isLoading}
           diagnostics={diagnostics}
+          diagnosticNotice={diagnosticNotice}
           currentPage={currentPage}
           onPageChange={setCurrentPage}
-          onDiagnosticClick={mode === "xml" ? handleDiagnosticClick : undefined}
+          onDiagnosticClick={handleDiagnosticClick}
           onCopyPreview={onCopyPreview}
         />
       </div>
