@@ -1,0 +1,1 @@
+../../../packages/pom/docs/authoring.md

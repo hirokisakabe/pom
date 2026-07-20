@@ -1,0 +1,1 @@
+../../../../packages/pom/docs/agent-skills/_meta.ts

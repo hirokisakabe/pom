@@ -1,0 +1,1 @@
+../../../../packages/pom/docs/agent-skills/pom-slide.md

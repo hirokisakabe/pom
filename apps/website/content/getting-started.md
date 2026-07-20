@@ -1,0 +1,1 @@
+../../../packages/pom/docs/getting-started.md

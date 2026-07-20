@@ -1,0 +1,1 @@
+../../../packages/pom/docs/core-library.md
