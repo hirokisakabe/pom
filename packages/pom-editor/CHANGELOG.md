@@ -1,5 +1,11 @@
 # @hirokisakabe/pom-editor
 
+## 0.6.0
+
+### Minor Changes
+
+- [#980](https://github.com/hirokisakabe/pom/pull/980) [`bf25b9c`](https://github.com/hirokisakabe/pom/commit/bf25b9c813a040f2ab3470fe5a00171c6341f70b) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - AST モードの diagnostic から XML の該当行へ移動できるようにし、行情報がない error と parse 不能状態にも案内を追加しました。
+
 ## 0.5.0
 
 ### Minor Changes
