@@ -4,5 +4,5 @@ export default defineSharedConfig({
   tsconfigRootDir: import.meta.dirname,
   environment: "node",
   files: ["**/*.{ts,tsx,mts,cts}"],
-  ignores: ["**/*.test.ts", "eslint.config.mts", "vitest.config.ts"],
+  ignores: ["**/*.test.ts", "docs/**", "eslint.config.mts", "vitest.config.ts"],
 });
