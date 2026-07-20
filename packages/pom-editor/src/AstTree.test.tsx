@@ -269,7 +269,13 @@ describe("AstTree DnD — visual feedback distinguishes inside vs between", () =
       expect(gap.style.marginTop).toBe("-7px");
       expect(gap.style.marginBottom).toBe("-7px");
       expect(gap.dataset.dropPlacement).toBe("between");
+      expect(gap.style.pointerEvents).toBe("none");
     }
+
+    act(() => {
+      capturedHandlers.onDragStart?.({ active: { id: "1" } });
+    });
+    expect(screen.getByTestId("gap:0:0").style.pointerEvents).toBe("auto");
   });
 
   it("inside drop ターゲットに対して container 本体が青ハイライトされる", () => {

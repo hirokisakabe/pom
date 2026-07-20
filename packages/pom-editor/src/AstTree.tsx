@@ -119,6 +119,7 @@ function GapStrip({ parentId, index, depth }: GapStripProps) {
         marginLeft: `${depth * 16}px`,
         position: "relative",
         zIndex: isDragging ? 1 : undefined,
+        pointerEvents: isDragging ? "auto" : "none",
       }}
     >
       <div
