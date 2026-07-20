@@ -141,7 +141,7 @@ export default async function LandingPage() {
         <span className="text-xl font-bold">pom</span>
         <nav className="flex items-center gap-6 text-sm">
           <Link
-            href="/nodes"
+            href="/introduction"
             className="text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
           >
             Docs
@@ -182,7 +182,7 @@ export default async function LandingPage() {
         </p>
         <div className="flex flex-col gap-4 sm:flex-row">
           <Link
-            href="#quick-start"
+            href="/getting-started"
             className="rounded-lg bg-gray-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
           >
             Install pom kit
@@ -270,6 +270,26 @@ export default async function LandingPage() {
             does not start automatically, run{" "}
             <code>pom preview slides.pom.xml</code>.
           </p>
+          <div className="flex flex-wrap justify-center gap-5 pt-2 text-sm font-medium">
+            <Link
+              href="/getting-started"
+              className="text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Read Getting Started →
+            </Link>
+            <Link
+              href="/agent-skills"
+              className="text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Explore agent skills →
+            </Link>
+            <Link
+              href="/pom-cli"
+              className="text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Learn pom CLI →
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -343,7 +363,7 @@ export default async function LandingPage() {
           </span>
           <nav className="flex gap-6 text-sm">
             <Link
-              href="/nodes"
+              href="/introduction"
               className="text-gray-500 transition-colors hover:text-gray-900 dark:hover:text-gray-100"
             >
               Docs

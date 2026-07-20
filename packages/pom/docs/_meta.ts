@@ -1,5 +1,7 @@
 export default {
   index: "Introduction",
+  "pom-xml": "pom XML",
+  "pom-library": "@hirokisakabe/pom",
   nodes: "Nodes",
   "layout-system": "Layout System",
   "styling-guide": "Styling Guide",

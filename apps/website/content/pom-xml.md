@@ -1,0 +1,1 @@
+../../../packages/pom/docs/pom-xml.md

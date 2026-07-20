@@ -1,0 +1,1 @@
+../../../packages/pom-editor/docs/embedding-editor.md
