@@ -8,6 +8,12 @@ updates:
       time: "09:00"
       timezone: "Asia/Tokyo"
     open-pull-requests-limit: 5
+    ignore:
+      # Keep extension API types aligned with the minimum supported VS Code version.
+      - dependency-name: "@types/vscode"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
     groups:
       dev-dependencies:
         dependency-type: "development"
