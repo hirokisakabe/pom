@@ -1,5 +1,11 @@
 # @hirokisakabe/pom
 
+## 10.2.1
+
+### Patch Changes
+
+- [#986](https://github.com/hirokisakabe/pom/pull/986) [`9971cb2`](https://github.com/hirokisakabe/pom/commit/9971cb2fbb76f05f03a44181ac1a4525b5437a60) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Add package-owned documentation for the pom kit website information architecture.
+
 ## 10.2.0
 
 ### Minor Changes
