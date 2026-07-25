@@ -2,6 +2,7 @@ import fs from "node:fs";
 import http from "node:http";
 import os from "node:os";
 import path from "node:path";
+import { DiagnosticsError } from "@hirokisakabe/pom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const watchState = vi.hoisted(() => ({
@@ -49,11 +50,16 @@ afterEach(async () => {
 async function startServer(
   generatePreview = vi.fn().mockResolvedValue({ svgs: [] }),
   onDocumentEvent?: ReturnType<typeof vi.fn>,
+  exportOptions: {
+    generatePptx?: ReturnType<typeof vi.fn>;
+    renderImages?: ReturnType<typeof vi.fn>;
+  } = {},
 ) {
   server = createPreviewServer(inputFile, {
     clientScript: "globalThis.__POM_PREVIEW_CLIENT__ = true;",
     generatePreview,
     onDocumentEvent,
+    ...exportOptions,
   });
   await new Promise<void>((resolve) => server?.listen(0, "127.0.0.1", resolve));
   const address = server.address();
@@ -156,6 +162,141 @@ describe("preview server", () => {
 
     expect(response.status).toBe(200);
     expect(generatePreview).toHaveBeenCalledWith(xml);
+  });
+
+  it("編集中の未保存XMLからPPTXを生成して返す", async () => {
+    const generatePptx = vi.fn().mockResolvedValue(new Uint8Array([80, 75]));
+    await startServer(undefined, undefined, { generatePptx });
+    const xml = "<Text>unsaved PPTX</Text>";
+    const response = await fetch(`${baseUrl}/_api/export/pptx`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ xml }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain(
+      "presentationml.presentation",
+    );
+    expect(generatePptx).toHaveBeenCalledWith(xml);
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(
+      new Uint8Array([80, 75]),
+    );
+  });
+
+  it("PNG / SVGと現在 / 全スライド指定を画像render APIへ渡す", async () => {
+    const renderImages = vi
+      .fn()
+      .mockResolvedValueOnce([
+        { slideNumber: 2, data: new Uint8Array([1, 2, 3]) },
+      ])
+      .mockResolvedValueOnce([
+        { slideNumber: 1, data: "<svg>one</svg>" },
+        { slideNumber: 2, data: "<svg>two</svg>" },
+      ]);
+    await startServer(undefined, undefined, { renderImages });
+    const xml = "<Text>unsaved images</Text>";
+
+    const currentResponse = await fetch(`${baseUrl}/_api/export/images`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ xml, format: "png", slides: [2] }),
+    });
+    const allResponse = await fetch(`${baseUrl}/_api/export/images`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ xml, format: "svg" }),
+    });
+
+    expect(renderImages).toHaveBeenNthCalledWith(1, xml, {
+      format: "png",
+      slides: [2],
+    });
+    expect(renderImages).toHaveBeenNthCalledWith(2, xml, { format: "svg" });
+    await expect(currentResponse.json()).resolves.toMatchObject({
+      files: [
+        {
+          filename: "slides-slide-02.png",
+          mediaType: "image/png",
+          data: "AQID",
+        },
+      ],
+    });
+    await expect(allResponse.json()).resolves.toMatchObject({
+      files: [
+        { filename: "slides-slide-01.svg", mediaType: "image/svg+xml" },
+        { filename: "slides-slide-02.svg", mediaType: "image/svg+xml" },
+      ],
+    });
+  });
+
+  it("PPTX / 画像生成失敗時はdiagnosticsを422で返す", async () => {
+    const failure = new DiagnosticsError([
+      { code: "NODE_OVERLAP", message: "overlap" },
+    ]);
+    const generatePptx = vi.fn().mockRejectedValue(failure);
+    const renderImages = vi.fn().mockRejectedValue(failure);
+    await startServer(undefined, undefined, {
+      generatePptx,
+      renderImages,
+    });
+    const request = (pathname: string, body: object) =>
+      fetch(`${baseUrl}${pathname}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+    const pptxResponse = await request("/_api/export/pptx", {
+      xml: "<Text />",
+    });
+    const imageResponse = await request("/_api/export/images", {
+      xml: "<Text />",
+      format: "png",
+    });
+
+    expect(pptxResponse.status).toBe(422);
+    expect(imageResponse.status).toBe(422);
+    await expect(pptxResponse.json()).resolves.toMatchObject({
+      errors: [{ type: "NODE_OVERLAP", message: "overlap" }],
+    });
+    await expect(imageResponse.json()).resolves.toMatchObject({
+      errors: [{ type: "NODE_OVERLAP", message: "overlap" }],
+    });
+  });
+
+  it(".pom.md入力でも変換済みXMLからPPTX / 画像を出力できる", async () => {
+    inputFile = path.join(tempDir, "markdown.pom.md");
+    await fs.promises.writeFile(inputFile, "# Markdown slide");
+    const generatePptx = vi.fn().mockResolvedValue(new Uint8Array([80, 75]));
+    const renderImages = vi
+      .fn()
+      .mockResolvedValue([{ slideNumber: 1, data: "<svg />" }]);
+    await startServer(undefined, undefined, {
+      generatePptx,
+      renderImages,
+    });
+    const document = await fetch(`${baseUrl}/_api/document`).then(
+      (response) =>
+        response.json() as Promise<{ xml: string; editable: boolean }>,
+    );
+
+    const pptxResponse = await fetch(`${baseUrl}/_api/export/pptx`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ xml: document.xml }),
+    });
+    const imageResponse = await fetch(`${baseUrl}/_api/export/images`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ xml: document.xml, format: "svg" }),
+    });
+
+    expect(document.editable).toBe(false);
+    expect(pptxResponse.status).toBe(200);
+    expect(imageResponse.status).toBe(200);
+    expect(generatePptx).toHaveBeenCalledWith(document.xml);
+    expect(renderImages).toHaveBeenCalledWith(document.xml, { format: "svg" });
   });
 
   it("request body上限超過を413で返す", async () => {

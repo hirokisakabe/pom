@@ -11,6 +11,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PomEditorProps } from "@hirokisakabe/pom-editor";
 
 const api = vi.hoisted(() => ({
+  downloadPptx: vi.fn(),
+  exportImages: vi.fn(),
   generatePreview: vi.fn(),
   loadDocument: vi.fn(),
   saveDocument: vi.fn(),
@@ -43,6 +45,42 @@ vi.mock("@hirokisakabe/pom-editor", () => ({
         >
           Preview
         </button>
+        {props.onDownload && (
+          <button
+            type="button"
+            onClick={() => void props.onDownload?.(props.xml)}
+          >
+            Download PPTX
+          </button>
+        )}
+        {props.onExportImages && (
+          <>
+            <button
+              type="button"
+              onClick={() =>
+                void props.onExportImages?.(props.xml, {
+                  format: "png",
+                  scope: "current",
+                  currentSlide: 2,
+                })
+              }
+            >
+              Export current PNG
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                void props.onExportImages?.(props.xml, {
+                  format: "svg",
+                  scope: "all",
+                  currentSlide: 2,
+                })
+              }
+            >
+              Export all SVG
+            </button>
+          </>
+        )}
         {props.onSave && (
           <button
             type="button"
@@ -114,6 +152,8 @@ function arrangeDocument() {
     editable: true,
   });
   api.generatePreview.mockResolvedValue({ svgs: [] });
+  api.downloadPptx.mockResolvedValue(undefined);
+  api.exportImages.mockResolvedValue(undefined);
   api.saveDocument.mockResolvedValue("revision-2");
 }
 
@@ -139,6 +179,34 @@ describe("CLI preview App", () => {
       expect.any(AbortSignal),
     );
     expect(screen.getByRole("status").textContent).toBe("Unsaved changes");
+  });
+
+  it("未保存XMLをPPTXと現在 / 全スライド画像の出力APIへ渡す", async () => {
+    arrangeDocument();
+    render(<App />);
+    const editor = await screen.findByRole("textbox", { name: "XML editor" });
+    fireEvent.change(editor, {
+      target: { value: "<Text>unsaved export</Text>" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Download PPTX" }));
+    fireEvent.click(screen.getByRole("button", { name: "Export current PNG" }));
+    fireEvent.click(screen.getByRole("button", { name: "Export all SVG" }));
+
+    expect(api.downloadPptx).toHaveBeenCalledWith(
+      "<Text>unsaved export</Text>",
+      "slides.pom.xml",
+    );
+    expect(api.exportImages).toHaveBeenNthCalledWith(
+      1,
+      "<Text>unsaved export</Text>",
+      { format: "png", slides: [2] },
+    );
+    expect(api.exportImages).toHaveBeenNthCalledWith(
+      2,
+      "<Text>unsaved export</Text>",
+      { format: "svg" },
+    );
   });
 
   it("Saveへ編集中XMLと読込時revisionを渡し、成功後にSaved表示へ戻す", async () => {
