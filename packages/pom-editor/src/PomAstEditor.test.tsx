@@ -26,6 +26,25 @@ describe("PomAstEditor", () => {
     );
   });
 
+  it("装飾付き Text の inline edit は本文全体を plain text に置換する", () => {
+    const onChange = vi.fn();
+    render(
+      <PomAstEditor
+        xml="<Slide><Text>Before <B>bold</B></Text></Slide>"
+        onChange={onChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Text: Before bold" }));
+    const input = screen.getByRole("textbox", { name: "Text を編集" });
+    fireEvent.change(input, { target: { value: "Edited" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(onChange).toHaveBeenCalledWith(
+      '<Slide>\n  <Text text="Edited" />\n</Slide>',
+    );
+  });
+
   it("parse不能時にerrorとXML modeへ戻る導線を表示する", () => {
     const onRequestXmlMode = vi.fn();
     render(

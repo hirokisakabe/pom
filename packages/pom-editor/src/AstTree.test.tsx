@@ -460,6 +460,31 @@ describe("AstTree content editing", () => {
     expect(screen.getByRole("button", { name: "Text: A" })).toBeTruthy();
   });
 
+  it("編集中に外部から本文が変わった場合は stale draft を破棄する", () => {
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <AstTree ast={makeAst()} onChange={onChange} />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Text: A" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Text を編集" }), {
+      target: { value: "Stale draft" },
+    });
+
+    const updatedAst = makeAst();
+    updatedAst[0].children![0] = {
+      ...updatedAst[0].children![0],
+      node: { type: "text", text: "External update" },
+    };
+    rerender(<AstTree ast={updatedAst} onChange={onChange} />);
+
+    expect(screen.queryByRole("textbox", { name: "Text を編集" })).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Text: External update" }),
+    ).toBeTruthy();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it("空 Text にクリック可能な placeholder を表示する", () => {
     const emptyText = {
       id: "empty",

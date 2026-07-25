@@ -421,7 +421,11 @@ function Row({ astNode, onTextChange }: RowProps) {
         isDragging={isDragging}
       />
       {astNode.node.type === "text" ? (
-        <TextContent astNode={astNode} onTextChange={onTextChange} />
+        <TextContent
+          key={`${astNode.id}:${astNode.node.text}`}
+          astNode={astNode}
+          onTextChange={onTextChange}
+        />
       ) : (
         <span
           style={{
@@ -478,9 +482,14 @@ function findAstNode(nodes: AstNode[], id: string): AstNode | null {
 function replaceText(nodes: AstNode[], id: string, text: string): AstNode[] {
   return nodes.map((node) => {
     if (node.id === id) {
+      const updatedNode = {
+        ...node.node,
+        text,
+      } as POMNode & { runs?: unknown };
+      delete updatedNode.runs;
       return {
         ...node,
-        node: { ...node.node, text } as POMNode,
+        node: updatedNode,
       };
     }
     if (node.children) {
