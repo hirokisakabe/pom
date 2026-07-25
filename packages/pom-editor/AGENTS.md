@@ -1,6 +1,6 @@
 # AGENTS.md — packages/pom-editor
 
-Reusable browser editor components for pom. Exports `PomEditor` for XML / AST editing, preview, diagnostics, and host-provided actions, plus the standalone `PomAstEditor` DnD tree component. リポジトリ共通ルールはルート `AGENTS.md` を参照。
+Reusable browser editor components for pom. Exports `PomEditor` for XML / AST editing, preview, diagnostics, and host-provided actions. The AST tree remains an internal component. リポジトリ共通ルールはルート `AGENTS.md` を参照。
 
 ```bash
 pnpm --filter @hirokisakabe/pom-editor run build       # TypeScript compilation

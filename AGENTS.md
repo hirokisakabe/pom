@@ -44,7 +44,7 @@ Root: `pnpm --filter @hirokisakabe/pom run <script>`
 packages/
 ├── pom/              # Core library — src/ (parseXml/ → calcYogaLayout/ → toPositioned/ → renderPptx/), vrt/, preview/, docs/, main.ts
 ├── pom-cli/          # CLI tool — preview and build presentations
-├── pom-editor/       # React component for visual DnD AST editing — PomAstEditor
+├── pom-editor/       # React component for XML / AST editing — PomEditor
 ├── pom-jsx/          # JSX/TSX authoring package
 ├── pom-md/           # Markdown → pom XML converter
 ├── pom-vscode/       # VS Code extension for live preview
@@ -76,7 +76,6 @@ Existing PPTX reading and structural round-trip work should treat `@pptx-glimpse
 ### Public API (`@hirokisakabe/pom-editor`)
 
 - `PomEditor` — XML / AST editing、preview、diagnostics、共通toolbarを持つReactコンポーネント。preview生成とoptionalなDownload / Save / PNG・SVG画像出力処理はhost callbackへ委譲する。画像出力は `PomEditorImageExportOptions` で形式、現在/全スライド、現在のスライド番号を受け取る。
-- `PomAstEditor` — React コンポーネント。`xml` と `onChange` props を受け取り、AST ツリーを表示して DnD でノードを並び替えると更新後の XML を返す。
 
 ### Key Internal Types
 

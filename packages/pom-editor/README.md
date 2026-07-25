@@ -60,37 +60,6 @@ import { PomEditor } from "@hirokisakabe/pom-editor";
 Preview generation and file operations stay in the host application. `onDownload`, `onExportImages`, `onSave`, and `onCopyPreview` are optional, and their actions only appear when the corresponding callback is provided. Image export adds PNG / SVG and current / all slide controls to the toolbar.
 SVG preview results are sanitized before they are inserted into the document.
 
-### Standalone AST editor
-
-```tsx
-import { PomAstEditor } from "@hirokisakabe/pom-editor";
-import { useState } from "react";
-
-const initialXml = `
-<Slide>
-  <VStack gap="16" padding="24">
-    <Text fontSize="32" bold="true">Title</Text>
-    <Text>Body text</Text>
-  </VStack>
-</Slide>
-`;
-
-function App() {
-  const [xml, setXml] = useState(initialXml);
-
-  return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <div style={{ width: 300, borderRight: "1px solid #e5e7eb" }}>
-        <PomAstEditor xml={xml} onChange={setXml} />
-      </div>
-      <div style={{ flex: 1, padding: 24 }}>
-        <pre>{xml}</pre>
-      </div>
-    </div>
-  );
-}
-```
-
 ## API
 
 ### `<PomEditor />`
@@ -109,21 +78,6 @@ function App() {
 | `debounceMs`     | `number`                                                               | Preview debounce delay (default: `500`)          |
 | `className`      | `string`                                                               | Optional class name for the editor root          |
 | `style`          | `CSSProperties`                                                        | Optional inline style for the editor root        |
-
-### `<PomAstEditor xml onChange />`
-
-| Prop               | Type                    | Description                                                        |
-| ------------------ | ----------------------- | ------------------------------------------------------------------ |
-| `xml`              | `string`                | pom XML string (one or more `<Slide>` elements)                    |
-| `onChange`         | `(xml: string) => void` | Called with updated XML after each drag-and-drop reorder           |
-| `onRequestXmlMode` | `() => void`            | Optional callback shown after parse errors to return to XML source |
-
-Renders a tree of nodes from the parsed XML. Each row supports two drop targets:
-
-- A thin gap between rows — drop here to insert as a **sibling** at that position (works across parents, so a node can be moved to any container or pulled up to the root).
-- The container row body itself — drop here to nest the dragged node as the **last child of that container** (`VStack` / `HStack` / `Layer` only). Drops on non-container bodies are ignored.
-
-Top-level slides can be reordered via the root-level gaps. Cycle-forming drops (e.g. moving a container into its own descendant) are silently rejected.
 
 ## License
 
