@@ -1,12 +1,16 @@
 import type { PositionedNode, LiNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToPt } from "../units.ts";
+import { resolveSubSup } from "../textOptions.ts";
+import { getContentArea } from "../utils/contentArea.ts";
 import {
-  convertUnderline,
-  convertStrike,
-  resolveSubSup,
-} from "../textOptions.ts";
-import { getContentAreaIn } from "../utils/contentArea.ts";
+  addGlimpseTextBox,
+  createGlimpseRunProperties,
+  type GlimpseTextRunStyle,
+} from "../utils/glimpseTextBox.ts";
+import {
+  type AddTextBoxParagraphInput,
+  type AddTextBoxRunInput,
+} from "@pptx-glimpse/document";
 
 type UlPositionedNode = Extract<PositionedNode, { type: "ul" }>;
 type OlPositionedNode = Extract<PositionedNode, { type: "ol" }>;
@@ -27,171 +31,126 @@ function resolveStyle(li: LiNode, parent: UlPositionedNode | OlPositionedNode) {
   };
 }
 
-function buildListTextItems(
+function paragraphProperties(parent: UlPositionedNode | OlPositionedNode) {
+  return {
+    align: parent.textAlign ?? "left",
+  };
+}
+
+function toRunStyle(
+  style: ReturnType<typeof resolveStyle>,
+): GlimpseTextRunStyle {
+  return {
+    fontSize: style.fontSize,
+    fontFace: style.fontFamily,
+    color: style.color,
+    bold: style.bold,
+    italic: style.italic,
+    underline: style.underline,
+    strike: style.strike,
+    subscript: style.subscript,
+    superscript: style.superscript,
+    highlight: style.highlight,
+  };
+}
+
+function buildListParagraphs(
   items: LiNode[],
   parent: UlPositionedNode | OlPositionedNode,
-  bullet: boolean | Record<string, unknown>,
-) {
-  const textItems: { text: string; options: Record<string, unknown> }[] = [];
+): AddTextBoxParagraphInput[] {
+  const paragraphs: AddTextBoxParagraphInput[] = [];
   for (let i = 0; i < items.length; i++) {
     const li = items[i];
     const style = resolveStyle(li, parent);
-    const isLast = i === items.length - 1;
-    const baseOptions = {
-      fontSize: pxToPt(style.fontSize),
-      fontFace: style.fontFamily,
-      color: style.color,
-      underline: convertUnderline(style.underline),
-      strike: convertStrike(style.strike),
-      subscript: style.subscript,
-      superscript: style.superscript,
-      highlight: style.highlight,
-    };
-
+    const runs: AddTextBoxRunInput[] = [];
     if (li.runs && li.runs.length > 0) {
-      for (let j = 0; j < li.runs.length; j++) {
-        const run = li.runs[j];
-        const isLastRun = j === li.runs.length - 1;
-        let text = run.text;
-        if (isLastRun && !isLast) text += "\n";
+      for (const run of li.runs) {
         const runSubSup = resolveSubSup(run, style);
-        textItems.push({
-          text,
-          options: {
-            ...baseOptions,
-            fontSize: pxToPt(run.fontSize ?? style.fontSize),
+        runs.push({
+          text: run.text,
+          properties: createGlimpseRunProperties({
+            fontSize: run.fontSize ?? style.fontSize,
             fontFace: run.fontFamily ?? style.fontFamily,
             color: run.color ?? style.color,
             bold: run.bold ?? style.bold,
             italic: run.italic ?? style.italic,
-            underline: convertUnderline(run.underline ?? style.underline),
-            strike: convertStrike(run.strike ?? style.strike),
+            underline: run.underline ?? style.underline,
+            strike: run.strike ?? style.strike,
             subscript: runSubSup.subscript,
             superscript: runSubSup.superscript,
             highlight: run.highlight ?? style.highlight,
-            bullet: j === 0 ? bullet : false,
-            ...(run.href ? { hyperlink: { url: run.href } } : {}),
-          },
+          }),
+          hyperlink: run.text ? run.href : undefined,
         });
       }
     } else {
-      textItems.push({
-        text: isLast ? li.text : li.text + "\n",
-        options: {
-          ...baseOptions,
-          bold: style.bold,
-          italic: style.italic,
-          bullet,
-        },
+      runs.push({
+        text: li.text,
+        properties: createGlimpseRunProperties(toRunStyle(style)),
       });
     }
+    paragraphs.push({
+      properties: paragraphProperties(parent),
+      runs,
+    });
   }
-  return textItems;
-}
-
-function hasItemStyleOverride(items: LiNode[]): boolean {
-  return items.some(
-    (li) =>
-      li.fontSize !== undefined ||
-      li.color !== undefined ||
-      li.bold !== undefined ||
-      li.italic !== undefined ||
-      li.underline !== undefined ||
-      li.strike !== undefined ||
-      li.subscript !== undefined ||
-      li.superscript !== undefined ||
-      li.highlight !== undefined ||
-      li.fontFamily !== undefined ||
-      li.runs !== undefined,
-  );
+  return paragraphs;
 }
 
 export function renderUlNode(node: UlPositionedNode, ctx: RenderContext): void {
   const fontSizePx = node.fontSize ?? 24;
   const fontFamily = node.fontFamily ?? "Noto Sans JP";
-  const lineHeight = node.lineHeight ?? 1.3;
-  const contentIn = getContentAreaIn(node);
+  const content = getContentArea(node);
 
-  if (hasItemStyleOverride(node.items)) {
-    // Li に個別スタイルがある場合は配列形式を使用
-    const textItems = buildListTextItems(node.items, node, true);
-
-    ctx.slide.addText(textItems, {
-      ...contentIn,
-      align: node.textAlign ?? "left",
-      valign: "top" as const,
-      margin: 0,
-      lineSpacingMultiple: lineHeight,
-    });
-  } else {
-    // Li にスタイルオーバーライドがない場合は単一文字列形式を使用
-    const text = node.items.map((li) => li.text).join("\n");
-
-    ctx.slide.addText(text, {
-      ...contentIn,
-      fontSize: pxToPt(fontSizePx),
-      fontFace: fontFamily,
-      align: node.textAlign ?? "left",
-      valign: "top" as const,
-      margin: 0,
-      lineSpacingMultiple: lineHeight,
-      color: node.color,
-      bold: node.bold,
-      italic: node.italic,
-      underline: convertUnderline(node.underline),
-      strike: convertStrike(node.strike),
-      subscript: node.subscript,
-      superscript: node.superscript,
-      highlight: node.highlight,
-      bullet: true,
-    });
-  }
+  const paragraphs = buildListParagraphs(node.items, node);
+  addGlimpseTextBox(ctx, content, {
+    fontSize: fontSizePx,
+    fontFace: fontFamily,
+    align: node.textAlign ?? "left",
+    valign: "top",
+    margin: 0,
+    color: node.color,
+    bold: node.bold,
+    italic: node.italic,
+    underline: node.underline,
+    strike: node.strike,
+    subscript: node.subscript,
+    superscript: node.superscript,
+    highlight: node.highlight,
+    paragraphs,
+    lineHeight: node.lineHeight,
+    bullet: {
+      kind: "bullet",
+    },
+  });
 }
 
 export function renderOlNode(node: OlPositionedNode, ctx: RenderContext): void {
   const fontSizePx = node.fontSize ?? 24;
   const fontFamily = node.fontFamily ?? "Noto Sans JP";
-  const lineHeight = node.lineHeight ?? 1.3;
-  const contentIn = getContentAreaIn(node);
+  const content = getContentArea(node);
 
-  const bulletOptions: Record<string, unknown> = { type: "number" };
-  if (node.numberType !== undefined) {
-    bulletOptions.numberType = node.numberType;
-  }
-  if (node.numberStartAt !== undefined) {
-    bulletOptions.numberStartAt = node.numberStartAt;
-  }
-
-  if (hasItemStyleOverride(node.items)) {
-    const textItems = buildListTextItems(node.items, node, bulletOptions);
-
-    ctx.slide.addText(textItems, {
-      ...contentIn,
-      align: node.textAlign ?? "left",
-      valign: "top" as const,
-      margin: 0,
-      lineSpacingMultiple: lineHeight,
-    });
-  } else {
-    const text = node.items.map((li) => li.text).join("\n");
-
-    ctx.slide.addText(text, {
-      ...contentIn,
-      fontSize: pxToPt(fontSizePx),
-      fontFace: fontFamily,
-      align: node.textAlign ?? "left",
-      valign: "top" as const,
-      margin: 0,
-      lineSpacingMultiple: lineHeight,
-      color: node.color,
-      bold: node.bold,
-      italic: node.italic,
-      underline: convertUnderline(node.underline),
-      strike: convertStrike(node.strike),
-      subscript: node.subscript,
-      superscript: node.superscript,
-      highlight: node.highlight,
-      bullet: bulletOptions,
-    });
-  }
+  const paragraphs = buildListParagraphs(node.items, node);
+  addGlimpseTextBox(ctx, content, {
+    fontSize: fontSizePx,
+    fontFace: fontFamily,
+    align: node.textAlign ?? "left",
+    valign: "top",
+    margin: 0,
+    color: node.color,
+    bold: node.bold,
+    italic: node.italic,
+    underline: node.underline,
+    strike: node.strike,
+    subscript: node.subscript,
+    superscript: node.superscript,
+    highlight: node.highlight,
+    paragraphs,
+    lineHeight: node.lineHeight,
+    bullet: {
+      kind: "number",
+      scheme: node.numberType,
+      startAt: node.numberStartAt,
+    },
+  });
 }

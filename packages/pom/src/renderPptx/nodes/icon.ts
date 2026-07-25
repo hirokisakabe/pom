@@ -1,6 +1,21 @@
+import { asEmu } from "@pptx-glimpse/document";
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToIn, pxToPt } from "../units.ts";
+import { toColorInput } from "../glimpseAdapter.ts";
+import { pxToEmu } from "../units.ts";
+import {
+  addGlimpsePicture,
+  imageBytesFromSource,
+} from "../utils/glimpsePicture.ts";
+import {
+  addGlimpseShape,
+  createShapeBoundsInput,
+  createShapeRotationInput,
+  noShapeOutline,
+  noneShapeFill,
+  shapeOutline,
+  solidShapeFill,
+} from "../utils/glimpseShape.ts";
 
 type IconPositionedNode = Extract<PositionedNode, { type: "icon" }>;
 
@@ -15,11 +30,11 @@ export function renderIconNode(
     const bgColor = node.bgColor ?? "#E0E0E0";
     const colorValue = bgColor.replace(/^#/, "");
 
-    // 背景図形の line のデフォルト: outlined variant は colorValue / 1.5pt、
+    // 背景図形の line のデフォルト: outlined variant は colorValue / 1.5pt 相当 (2px)、
     // filled variant は undefined (枠線なし)。
     const variantDefaultLine = isFilled
       ? undefined
-      : { color: colorValue, width: 1.5 };
+      : { color: colorValue, width: 2 };
     // outline 指定時は variant のデフォルト line とフィールド単位でマージする。
     // outline 側で省略された属性は variant default の値を引き継ぐので、例えば
     // outlined variant に `outline.color` だけ指定すると、太さは 1.5pt のまま
@@ -29,37 +44,54 @@ export function renderIconNode(
           color: node.outline.color ?? variantDefaultLine?.color ?? "FFFFFF",
           width:
             node.outline.size !== undefined
-              ? pxToPt(node.outline.size)
+              ? node.outline.size
               : (variantDefaultLine?.width ?? 1),
         }
       : variantDefaultLine;
 
-    const glowMarker = node.glow
-      ? ctx.buildContext.glowEffects.register(node.glow)
-      : undefined;
-
-    const shapeType = isCircle ? "ellipse" : "roundRect";
-    const shapeOptions: Record<string, unknown> = {
-      x: pxToIn(node.bgX ?? node.x),
-      y: pxToIn(node.bgY ?? node.y),
-      w: pxToIn(node.bgW ?? node.w),
-      h: pxToIn(node.bgH ?? node.h),
-      fill: isFilled ? { color: colorValue } : { type: "none" as const },
-      line: outlineLine,
-      rectRadius: isCircle ? undefined : 0.1,
-      rotate: node.rotate,
-      objectName: glowMarker,
+    const bounds = {
+      x: node.bgX ?? node.x,
+      y: node.bgY ?? node.y,
+      w: node.bgW ?? node.w,
+      h: node.bgH ?? node.h,
     };
+    const shapeType = isCircle ? "ellipse" : "roundRect";
 
-    ctx.slide.addShape(shapeType, shapeOptions);
+    addGlimpseShape(
+      ctx,
+      {
+        geometry: { kind: "preset", preset: shapeType },
+        ...createShapeBoundsInput(bounds),
+        rotation: createShapeRotationInput(node.rotate),
+        fill: isFilled ? solidShapeFill(colorValue) : noneShapeFill(),
+        outline: outlineLine ? shapeOutline(outlineLine) : noShapeOutline(),
+        effects: node.glow
+          ? {
+              glow: {
+                radius: asEmu(Math.round(pxToEmu(node.glow.size ?? 8))),
+                color: toColorInput(node.glow.color ?? "FFFFFF")!,
+              },
+            }
+          : undefined,
+      },
+      bounds,
+      {
+        fillColor: isFilled ? colorValue : undefined,
+        glow: node.glow,
+        rectRadius: isCircle ? undefined : 0.1,
+      },
+    );
   }
 
-  ctx.slide.addImage({
-    data: node.iconImageData,
-    x: pxToIn(node.iconX ?? node.x),
-    y: pxToIn(node.iconY ?? node.y),
-    w: pxToIn(node.iconW ?? node.w),
-    h: pxToIn(node.iconH ?? node.h),
-    rotate: node.rotate,
-  });
+  addGlimpsePicture(
+    ctx,
+    {
+      x: node.iconX ?? node.x,
+      y: node.iconY ?? node.y,
+      w: node.iconW ?? node.w,
+      h: node.iconH ?? node.h,
+    },
+    imageBytesFromSource("", node.iconImageData),
+    { rotate: node.rotate },
+  );
 }

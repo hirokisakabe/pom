@@ -2,24 +2,25 @@ import { autoFitSlide } from "./autoFit/autoFit.ts";
 import { createBuildContext } from "./buildContext.ts";
 import { calcYogaLayout } from "./calcYogaLayout/calcYogaLayout.ts";
 import type { TextMeasurementMode } from "./calcYogaLayout/measureText.ts";
+import type { FontInput } from "./calcYogaLayout/fontLoader.ts";
 import type { YogaNodeMap } from "./calcYogaLayout/types.ts";
 import { extractLayoutResults } from "./calcYogaLayout/types.ts";
 import type { Diagnostic } from "./diagnostics.ts";
 import { DiagnosticsError } from "./diagnostics.ts";
 import { parseMasterPptx } from "./parseMasterPptx.ts";
 import { parseXml } from "./parseXml/parseXml.ts";
-import { patchPptxWriteForGlowEffects } from "./renderPptx/glowEffects.ts";
-import { patchPptxWriteForGradientFills } from "./renderPptx/gradientFills.ts";
 import { renderPptx } from "./renderPptx/renderPptx.ts";
+import type { WritablePptx } from "./renderPptx/writablePptx.ts";
 import { freeYogaTree } from "./shared/freeYogaTree.ts";
+import { prefetchImageSize } from "./shared/measureImage.ts";
 import { toPositioned } from "./toPositioned/toPositioned.ts";
 import { PositionedNode, SlideMasterOptions } from "./types.ts";
 import { validatePositioned } from "./validatePositioned/validatePositioned.ts";
 
-export type { TextMeasurementMode };
+export type { FontInput, TextMeasurementMode };
 
 export interface BuildPptxResult {
-  pptx: import("pptxgenjs").default;
+  pptx: WritablePptx;
   diagnostics: Diagnostic[];
 }
 
@@ -30,18 +31,15 @@ export async function buildPptx(
     master?: SlideMasterOptions;
     masterPptx?: ArrayBuffer | Uint8Array;
     textMeasurement?: TextMeasurementMode;
+    fonts?: FontInput[];
     autoFit?: boolean;
     strict?: boolean;
   },
 ): Promise<BuildPptxResult> {
-  const ctx = createBuildContext(options?.textMeasurement ?? "auto");
-
-  // グラデーション後処理のマーカー色がユーザー指定色と衝突しないよう、
-  // 入力 XML / master オプション中に現れる色を予約しておく
-  ctx.gradientFills.reserveColors(xml);
-  if (options?.master) {
-    ctx.gradientFills.reserveColors(JSON.stringify(options.master));
-  }
+  const ctx = createBuildContext(
+    options?.textMeasurement ?? "auto",
+    options?.fonts,
+  );
 
   const nodes = parseXml(xml);
   const positionedPages: PositionedNode[] = [];
@@ -85,14 +83,34 @@ export async function buildPptx(
     }
   }
 
-  const pptx = await renderPptx(positionedPages, slideSize, ctx, master);
+  const masterImageSources = [
+    ...new Set(
+      [
+        master?.background && "image" in master.background
+          ? master.background.image
+          : undefined,
+        ...(master?.objects
+          ?.filter((object) => object.type === "image")
+          .map((object) => object.src) ?? []),
+      ].filter((source): source is string =>
+        Boolean(
+          source?.startsWith("https://") || source?.startsWith("http://"),
+        ),
+      ),
+    ),
+  ];
+  await Promise.all(
+    masterImageSources.map((source) =>
+      prefetchImageSize(
+        source,
+        ctx.imageSizeCache,
+        ctx.imageDataCache,
+        ctx.diagnostics,
+      ),
+    ),
+  );
 
-  // backgroundGradient / textGradient 使用時は write/writeFile に gradFill 置換の後処理を仕込む
-  patchPptxWriteForGradientFills(pptx, ctx.gradientFills);
-
-  // Shape / Icon の glow 指定がある場合は write/writeFile に effectLst 挿入の
-  // 後処理を仕込む (gradientFills の patch 後にチェーンする)
-  patchPptxWriteForGlowEffects(pptx, ctx.glowEffects);
+  const pptx = renderPptx(positionedPages, slideSize, ctx, master);
 
   const diagnostics = ctx.diagnostics.items;
 

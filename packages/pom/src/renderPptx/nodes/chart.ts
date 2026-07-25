@@ -1,19 +1,55 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { getContentAreaIn } from "../utils/contentArea.ts";
+import { asEmu, asOoxmlPercent, asPt } from "@pptx-glimpse/document";
+import { pxToEmu } from "../units.ts";
+import { getContentArea } from "../utils/contentArea.ts";
+import { toColorInput } from "../glimpseAdapter.ts";
 
 type ChartPositionedNode = Extract<PositionedNode, { type: "chart" }>;
+
+const DEFAULT_BAR_CHART_COLORS = [
+  "C0504D",
+  "4F81BD",
+  "9BBB59",
+  "8064A2",
+  "4BACC6",
+  "F79646",
+  "628FC6",
+  "C86360",
+  "C0504D",
+  "4F81BD",
+  "9BBB59",
+  "8064A2",
+  "4BACC6",
+  "F79646",
+  "628FC6",
+  "C86360",
+];
+const DEFAULT_PIE_CHART_COLORS = [
+  "5DA5DA",
+  "FAA43A",
+  "60BD68",
+  "F17CB0",
+  "B2912F",
+  "B276B2",
+  "DECF3F",
+  "F15854",
+  "A7A7A7",
+  "5DA5DA",
+  "FAA43A",
+  "60BD68",
+  "F17CB0",
+  "B2912F",
+  "B276B2",
+  "DECF3F",
+  "F15854",
+  "A7A7A7",
+];
 
 export function renderChartNode(
   node: ChartPositionedNode,
   ctx: RenderContext,
 ): void {
-  const chartData = node.data.map((d) => ({
-    name: d.name,
-    labels: d.labels,
-    values: d.values,
-  }));
-
   // sparkline モードは bar / line / area のみ対応。pie / doughnut / radar は
   // 元々凡例 / 軸の概念が異なるため sparkline=true でも通常描画にフォールバックする。
   const isSparkline =
@@ -22,41 +58,155 @@ export function renderChartNode(
       node.chartType === "line" ||
       node.chartType === "area");
 
-  const chartOptions: Record<string, unknown> = {
-    ...getContentAreaIn(node),
+  const content = getContentArea(node);
+  const series = normalizeChartSeries(node.data);
+  const chartColors =
+    node.chartColors ??
+    (node.chartType === "pie" || node.chartType === "doughnut"
+      ? DEFAULT_PIE_CHART_COLORS
+      : DEFAULT_BAR_CHART_COLORS);
+  const pointColors =
+    chartColors.length > 0 &&
+    (node.chartType === "pie" ||
+      node.chartType === "doughnut" ||
+      (node.chartType === "bar" &&
+        node.data.length === 1 &&
+        node.chartColors !== undefined &&
+        node.chartColors.length > 1))
+      ? node.data[0]?.values.map(
+          (_value, index) => chartColors[index % chartColors.length],
+        )
+      : undefined;
+  ctx.authoring.addChart({
+    chartType: node.chartType,
+    series: series.map((item, index) => ({
+      name: item.name,
+      categories: item.labels,
+      values: item.values,
+      color: chartColors[index % chartColors.length],
+      dataPoints:
+        index === 0
+          ? pointColors?.map((color, pointIndex) => ({
+              index: pointIndex,
+              fill: { kind: "solid", color: toColorInput(color)! },
+            }))
+          : undefined,
+      marker:
+        node.chartType === "line" || node.chartType === "radar"
+          ? {
+              symbol: "circle",
+              size: 6,
+              fill: {
+                kind: "solid",
+                color: toColorInput(chartColors[index % chartColors.length])!,
+              },
+            }
+          : undefined,
+    })),
+    offsetX: asEmu(Math.round(pxToEmu(content.x))),
+    offsetY: asEmu(Math.round(pxToEmu(content.y))),
+    width: asEmu(Math.round(pxToEmu(Math.max(content.w, 1)))),
+    height: asEmu(Math.round(pxToEmu(Math.max(content.h, 1)))),
+    title:
+      !isSparkline && node.showTitle ? node.title || "Chart Title" : undefined,
+    titleStyle:
+      !isSparkline && node.showTitle
+        ? {
+            fontFace: "Arial",
+            fontSize: asPt(18),
+            color: toColorInput("000000"),
+            bold: false,
+            italic: false,
+          }
+        : undefined,
+    displayBlanksAs: "span",
+    roundedCorners: !isSparkline,
+    chartArea: isSparkline
+      ? {
+          fill: {
+            kind: "solid",
+            color: {
+              ...toColorInput("FFFFFF")!,
+              transforms: [{ kind: "alpha", value: asOoxmlPercent(0) }],
+            },
+          },
+        }
+      : { fill: { kind: "none" }, outline: { fill: { kind: "none" } } },
+    plotArea: isSparkline
+      ? {
+          fill: {
+            kind: "solid",
+            color: {
+              ...toColorInput("FFFFFF")!,
+              transforms: [{ kind: "alpha", value: asOoxmlPercent(0) }],
+            },
+          },
+        }
+      : { fill: { kind: "none" }, outline: { fill: { kind: "none" } } },
     showLegend: isSparkline ? false : (node.showLegend ?? false),
-    showTitle: isSparkline ? false : (node.showTitle ?? false),
-    title: isSparkline ? undefined : node.title,
-    chartColors: node.chartColors,
-  };
+    radarStyle: node.chartType === "radar" ? node.radarStyle : undefined,
+    categoryAxis: isSparkline
+      ? { hidden: true, lineVisible: false, gridLinesVisible: false }
+      : {
+          majorTickMark: "outside",
+          labelPosition: "low",
+          numberFormat: { formatCode: "General", sourceLinked: true },
+          showMultiLevelLabels: false,
+          textStyle: {
+            fontFace: "Arial",
+            fontSize: asPt(12),
+            color: toColorInput("000000"),
+          },
+        },
+    valueAxis: isSparkline
+      ? { hidden: true, lineVisible: false, gridLinesVisible: false }
+      : {
+          majorTickMark: "outside",
+          labelPosition: "nextTo",
+          numberFormat: { formatCode: "General", sourceLinked: false },
+          majorGridline: {
+            width: asEmu(12700),
+            fill: { kind: "solid", color: toColorInput("888888")! },
+          },
+          textStyle: {
+            fontFace: "Arial",
+            fontSize: asPt(12),
+            color: toColorInput("000000"),
+          },
+        },
+    plotLayout: isSparkline
+      ? { coordinateMode: "edge", x: 0, y: 0, width: 1, height: 1 }
+      : undefined,
+  });
+}
 
-  // radar専用オプション
-  if (node.chartType === "radar" && node.radarStyle) {
-    chartOptions.radarStyle = node.radarStyle;
-  }
-
-  // sparkline モード: 凡例 / 軸 / グリッド線 / マージンをすべて非表示にし、
-  // プロット領域をチャート領域いっぱいに広げて小寸法でも視認できるようにする
-  if (isSparkline) {
-    chartOptions.catAxisHidden = true;
-    chartOptions.valAxisHidden = true;
-    chartOptions.catAxisLineShow = false;
-    chartOptions.valAxisLineShow = false;
-    chartOptions.showCatAxisTitle = false;
-    chartOptions.showValAxisTitle = false;
-    chartOptions.catGridLine = { style: "none" };
-    chartOptions.valGridLine = { style: "none" };
-    chartOptions.chartArea = {
-      fill: { type: "solid", color: "FFFFFF", transparency: 100 },
-      border: { color: "FFFFFF", pt: 0 },
-      roundedCorners: false,
-    };
-    chartOptions.plotArea = {
-      fill: { type: "solid", color: "FFFFFF", transparency: 100 },
-      border: { color: "FFFFFF", pt: 0 },
-    };
-    chartOptions.layout = { x: 0, y: 0, w: 1, h: 1 };
-  }
-
-  ctx.slide.addChart(node.chartType, chartData, chartOptions);
+/**
+ * glimpse の native writer は全系列で同じ category 軸と同じ点数を要求する。
+ * 従来受理していた不揃いな入力も生成を継続できるよう、位置ベースで
+ * category を共有し、欠けた値を 0 で補う。
+ */
+function normalizeChartSeries(data: ChartPositionedNode["data"]) {
+  const sourceData = data.length > 0 ? data : [{ labels: [], values: [] }];
+  const pointCount = Math.max(
+    1,
+    ...sourceData.flatMap((series) => [
+      series.labels.length,
+      series.values.length,
+    ]),
+  );
+  const categories = Array.from(
+    { length: pointCount },
+    (_, index) =>
+      sourceData.find((series) => series.labels[index] !== undefined)?.labels[
+        index
+      ] ?? "",
+  );
+  return sourceData.map((series) => ({
+    name: series.name,
+    labels: categories,
+    values: Array.from(
+      { length: pointCount },
+      (_, index) => series.values[index] ?? 0,
+    ),
+  }));
 }

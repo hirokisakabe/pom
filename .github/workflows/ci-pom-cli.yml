@@ -7,9 +7,11 @@ on:
       - "packages/pom-cli/**"
       - "packages/pom/src/**"
       - "packages/pom-md/**"
+      - "packages/pom-editor/src/**"
       - "package.json"
       - "eslint.config.shared.mjs"
       - "packages/pom/package.json"
+      - "packages/pom-editor/package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - ".node-version"
@@ -20,9 +22,11 @@ on:
       - "packages/pom-cli/**"
       - "packages/pom/src/**"
       - "packages/pom-md/**"
+      - "packages/pom-editor/src/**"
       - "package.json"
       - "eslint.config.shared.mjs"
       - "packages/pom/package.json"
+      - "packages/pom-editor/package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - ".node-version"
@@ -48,6 +52,8 @@ jobs:
       - run: pnpm --filter @hirokisakabe/pom run build
         working-directory: .
       - run: pnpm --filter @hirokisakabe/pom-md run build
+        working-directory: .
+      - run: pnpm --filter @hirokisakabe/pom-editor run build
         working-directory: .
       - run: pnpm run fmt:check
       - run: pnpm run lint

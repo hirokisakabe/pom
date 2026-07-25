@@ -12,7 +12,7 @@ When adding new properties or features, update the following files:
 2. **Coercion rules**: `packages/pom/src/parseXml/coercionRules.ts` - Add attribute coercion rules
 3. **XML parser**: `packages/pom/src/parseXml/parseXml.ts` - Add XML tag/attribute conversion logic
 4. **Node registry**: `packages/pom/src/registry/definitions/` - Add node definition to the registry
-5. **Rendering**: Under `packages/pom/src/renderPptx/` - Implement pptxgenjs conversion
+5. **Rendering**: Under `packages/pom/src/renderPptx/` - Implement `@pptx-glimpse/document` authoring conversion
 6. **VRT test data**: `packages/pom/vrt/lib/generatePptx.ts` - Add test cases for the new feature
 7. **Update VRT baseline**: Run `pnpm run vrt:docker:update` (from `packages/pom/`)
 8. **Documentation updates**:
@@ -61,9 +61,9 @@ Text width measurement uses `opentype.js`. The Noto Sans JP font is bundled with
 - `packages/pom/src/calcYogaLayout/fontLoader.ts` - Font loading (opentype.js)
 - `packages/pom/src/calcYogaLayout/fonts/` - Bundled fonts (Base64)
 - The `textMeasurement` option in `buildPptx` allows explicit specification of the measurement method
-  - `"opentype"`: Always measure with opentype.js (default)
+  - `"opentype"`: Always measure with opentype.js; unregistered fonts use bundled Noto Sans JP metrics
   - `"fallback"`: Always use fallback calculation (CJK characters = 1em, alphanumeric = 0.5em)
-  - `"auto"`: Measure with opentype.js (default)
+  - `"auto"`: Measure bundled or registered fonts with opentype.js and use fallback for unregistered fonts (default)
 
 ### Unit Conversion
 

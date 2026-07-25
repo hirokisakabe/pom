@@ -3,6 +3,28 @@ import { ICON_DATA } from "./icons/iconData.ts";
 import { parseGradient, parseLinearGradient } from "./shared/gradient.ts";
 
 // ===== Basic Types =====
+export interface ThemeTokens {
+  text: string;
+  background: string;
+  primary: string;
+  secondary: string;
+  accent3: string;
+  accent4: string;
+  accent5: string;
+  accent6: string;
+}
+
+export const FALLBACK_THEME_TOKENS: ThemeTokens = {
+  text: "#000000",
+  background: "#FFFFFF",
+  primary: "#4472C4",
+  secondary: "#ED7D31",
+  accent3: "#A5A5A5",
+  accent4: "#FFC000",
+  accent5: "#5B9BD5",
+  accent6: "#70AD47",
+};
+
 const lengthSchema = z.union([
   z.number(),
   z.literal("max"),

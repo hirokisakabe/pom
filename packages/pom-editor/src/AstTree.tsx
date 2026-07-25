@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import {
   DndContext,
+  DragOverlay,
   DragEndEvent,
   DragOverEvent,
   PointerSensor,
@@ -110,13 +111,34 @@ function GapStrip({ parentId, index, depth }: GapStripProps) {
     <div
       ref={setNodeRef}
       data-testid={id}
+      data-drop-placement="between"
       style={{
-        height: isOver ? "10px" : isDragging ? "8px" : "2px",
+        height: "16px",
+        marginTop: "-7px",
+        marginBottom: "-7px",
         marginLeft: `${depth * 16}px`,
-        backgroundColor: isOver ? "#3b82f6" : "transparent",
-        borderRadius: "2px",
+        position: "relative",
+        zIndex: isDragging ? 1 : undefined,
+        pointerEvents: isDragging ? "auto" : "none",
       }}
-    />
+    >
+      <div
+        data-testid={`${id}:indicator`}
+        style={{
+          position: "absolute",
+          top: "50%",
+          right: 0,
+          left: 0,
+          height: isOver ? "3px" : "1px",
+          transform: "translateY(-50%)",
+          backgroundColor: isOver ? "#2563eb" : "transparent",
+          borderRadius: "2px",
+          boxShadow: isOver ? "0 0 0 1px #ffffff" : undefined,
+          transition: "height 50ms, background-color 50ms",
+          pointerEvents: "none",
+        }}
+      />
+    </div>
   );
 }
 
@@ -149,6 +171,7 @@ function Row({ astNode, depth }: RowProps) {
     <div>
       <div
         ref={setBodyRef}
+        data-drop-placement={isContainer ? "inside" : undefined}
         style={{
           display: "flex",
           alignItems: "center",
@@ -173,8 +196,10 @@ function Row({ astNode, depth }: RowProps) {
             fontSize: "12px",
             lineHeight: 1,
             flexShrink: 0,
+            touchAction: "none",
           }}
           title="ドラッグして並び替え"
+          aria-label={`${nodeLabel(astNode.node)} をドラッグ`}
         >
           ⠿
         </span>
@@ -227,6 +252,17 @@ export interface AstTreeProps {
   onChange: (nodes: POMNode[]) => void;
 }
 
+function findAstNode(nodes: AstNode[], id: string): AstNode | null {
+  for (const node of nodes) {
+    if (node.id === id) return node;
+    if (node.children) {
+      const child = findAstNode(node.children, id);
+      if (child) return child;
+    }
+  }
+  return null;
+}
+
 export function AstTree({ ast, onChange }: AstTreeProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -235,6 +271,7 @@ export function AstTree({ ast, onChange }: AstTreeProps) {
   );
   const [overId, setOverId] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const activeNode = activeId ? findAstNode(ast, activeId) : null;
 
   function onDragStart(event: { active: { id: string | number } }) {
     setActiveId(String(event.active.id));
@@ -275,6 +312,7 @@ export function AstTree({ ast, onChange }: AstTreeProps) {
       <DndContext
         sensors={sensors}
         collisionDetection={pointerWithin}
+        autoScroll
         onDragStart={onDragStart}
         onDragOver={onDragOver}
         onDragEnd={onDragEnd}
@@ -310,6 +348,42 @@ export function AstTree({ ast, onChange }: AstTreeProps) {
                 <GapStrip parentId="root" index={i + 1} depth={0} />
               </React.Fragment>
             ))}
+            <DragOverlay>
+              {activeNode ? (
+                <div
+                  data-testid="ast-drag-overlay"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    maxWidth: "320px",
+                    padding: "7px 10px",
+                    border: "1px solid #93c5fd",
+                    borderRadius: "6px",
+                    background: "rgba(255, 255, 255, 0.96)",
+                    boxShadow: "0 8px 20px rgba(15, 23, 42, 0.18)",
+                    color: "#1e3a8a",
+                    fontFamily: "monospace",
+                    fontSize: "13px",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  <span aria-hidden="true" style={{ color: "#60a5fa" }}>
+                    ⠿
+                  </span>
+                  <span
+                    style={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {nodeLabel(activeNode.node)}
+                  </span>
+                </div>
+              ) : null}
+            </DragOverlay>
           </OverIdContext.Provider>
         </ActiveIdContext.Provider>
       </DndContext>

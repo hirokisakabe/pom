@@ -39,6 +39,7 @@ jobs:
       - run: pnpm --filter @hirokisakabe/pom-md run lint
       - run: pnpm --filter @hirokisakabe/pom-md run typecheck
       - run: pnpm --filter @hirokisakabe/pom-md run test:run
+      - run: pnpm --filter @hirokisakabe/pom-editor run build
       - run: pnpm --filter @hirokisakabe/pom-cli run build
       - run: pnpm --filter @hirokisakabe/pom-cli run fmt:check
       - run: pnpm --filter @hirokisakabe/pom-cli run lint
@@ -48,7 +49,6 @@ jobs:
       - run: pnpm --filter @hirokisakabe/pom-jsx run lint
       - run: pnpm --filter @hirokisakabe/pom-jsx run typecheck
       - run: pnpm --filter @hirokisakabe/pom-jsx run test:run
-      - run: pnpm --filter @hirokisakabe/pom-editor run build
       - run: pnpm --filter @hirokisakabe/pom-editor run fmt:check
       - run: pnpm --filter @hirokisakabe/pom-editor run lint
       - run: pnpm --filter @hirokisakabe/pom-editor run typecheck
@@ -99,6 +99,13 @@ jobs:
         if: steps.pom-vscode-check.outputs.changed == 'true'
         working-directory: packages/pom-vscode
         run: pnpm run test:run
+
+      - name: Test showcase samples (pom-vscode)
+        if: steps.pom-vscode-check.outputs.changed == 'true'
+        working-directory: packages/pom-vscode
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: pnpm run test:showcase
 
       - name: Build (pom-vscode)
         if: steps.pom-vscode-check.outputs.changed == 'true'

@@ -67,15 +67,15 @@ export async function runRender(
   };
 
   const t2 = Date.now();
-  let outputs: { slideNumber: number; data: string | Buffer }[];
+  let outputs: { slideNumber: number; data: string | Uint8Array }[];
   if (format === "svg") {
-    const slides = await convertPptxToSvg(buffer, {
+    const { slides } = await convertPptxToSvg(buffer, {
       ...convertOptions,
       ...(options.textOutput ? { textOutput: options.textOutput } : {}),
     });
     outputs = slides.map((s) => ({ slideNumber: s.slideNumber, data: s.svg }));
   } else {
-    const slides = await convertPptxToPng(buffer, convertOptions);
+    const { slides } = await convertPptxToPng(buffer, convertOptions);
     outputs = slides.map((s) => ({ slideNumber: s.slideNumber, data: s.png }));
   }
   log(`Rendering ${format.toUpperCase()}... done (${Date.now() - t2}ms)`);

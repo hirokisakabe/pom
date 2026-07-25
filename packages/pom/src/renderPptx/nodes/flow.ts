@@ -1,10 +1,20 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { stripHash } from "../utils/visualStyle.ts";
-import { pxToIn, pxToPt } from "../units.ts";
 import { measureFlow } from "../../calcYogaLayout/measureCompositeNodes.ts";
 import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
 import { withContentBounds } from "../utils/contentArea.ts";
+import { addStraightLine } from "../utils/straightLine.ts";
+import {
+  addGlimpseShape,
+  createShapeBoundsInput,
+  shapeOutline,
+  solidShapeFill,
+} from "../utils/glimpseShape.ts";
+import {
+  createGlimpseParagraphs,
+  addGlimpseTextBox,
+} from "../utils/glimpseTextBox.ts";
 
 type FlowPositionedNode = Extract<PositionedNode, { type: "flow" }>;
 
@@ -107,20 +117,26 @@ export function renderFlowNode(
       const labelW = 60 * scaleFactor;
       const labelH = 20 * scaleFactor;
 
-      ctx.slide.addText(conn.label, {
-        x: pxToIn(labelX - labelW / 2),
-        y: pxToIn(labelY - labelH / 2),
-        w: pxToIn(labelW),
-        h: pxToIn(labelH),
-        fontSize: pxToPt(10 * scaleFactor),
-        fontFace: "Noto Sans JP",
-        color:
-          stripHash(conn.labelColor) ??
-          stripHash(connectorStyle.labelColor) ??
-          "64748B",
-        align: "center",
-        valign: "middle",
-      });
+      addGlimpseTextBox(
+        ctx,
+        {
+          x: labelX - labelW / 2,
+          y: labelY - labelH / 2,
+          w: labelW,
+          h: labelH,
+        },
+        {
+          text: conn.label,
+          fontSize: 10 * scaleFactor,
+          fontFace: "Noto Sans JP",
+          color:
+            stripHash(conn.labelColor) ??
+            stripHash(connectorStyle.labelColor) ??
+            "64748B",
+          align: "center",
+          valign: "middle",
+        },
+      );
     }
   }
 
@@ -133,20 +149,32 @@ export function renderFlowNode(
     const textColor = item.textColor ?? "FFFFFF";
 
     // 図形を描画
-    ctx.slide.addText(item.text, {
-      x: pxToIn(layout.x),
-      y: pxToIn(layout.y),
-      w: pxToIn(layout.width),
-      h: pxToIn(layout.height),
-      shape: item.shape,
-      fill: { color: fillColor },
-      line: { color: "333333", width: pxToPt(1 * scaleFactor) },
-      fontSize: pxToPt(14 * scaleFactor),
-      fontFace: "Noto Sans JP",
-      color: textColor,
-      align: "center",
-      valign: "middle",
-    });
+    addGlimpseShape(
+      ctx,
+      {
+        geometry: { kind: "preset", preset: item.shape },
+        ...createShapeBoundsInput({
+          x: layout.x,
+          y: layout.y,
+          w: layout.width,
+          h: layout.height,
+        }),
+        fill: solidShapeFill(fillColor),
+        outline: shapeOutline({ color: "333333", width: 1 * scaleFactor }),
+        body: { anchor: "middle" },
+        paragraphs: createGlimpseParagraphs(
+          item.text,
+          {
+            fontSize: 14 * scaleFactor,
+            fontFace: "Noto Sans JP",
+            color: textColor,
+          },
+          { align: "center" },
+        ),
+      },
+      { x: layout.x, y: layout.y, w: layout.width, h: layout.height },
+      { fillColor },
+    );
   }
 }
 
@@ -235,17 +263,11 @@ function drawConnection(
 
   if (isHorizontalLine || isVerticalLine) {
     // 直線で描画
-    ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-      x: pxToIn(Math.min(startX, endX)),
-      y: pxToIn(Math.min(startY, endY)),
-      w: pxToIn(Math.abs(endX - startX)),
-      h: pxToIn(Math.abs(endY - startY)),
-      line: {
-        color: lineColor,
-        width: pxToPt(lineWidth),
-        endArrowType: arrowType,
-      },
-    });
+    addStraightLine(
+      ctx,
+      { x1: startX, y1: startY, x2: endX, y2: endY },
+      { color: lineColor, lineWidth, endArrow: { type: arrowType } },
+    );
   } else {
     // L字型接続
     drawLShapedConnection(
@@ -278,57 +300,37 @@ function drawLShapedConnection(
 
   if (direction === "horizontal") {
     // 水平→垂直→水平
-    ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-      x: pxToIn(startX),
-      y: pxToIn(startY),
-      w: pxToIn(midX - startX),
-      h: 0,
-      line: { color: lineColor, width: pxToPt(lineWidth) },
-    });
-    ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-      x: pxToIn(midX),
-      y: pxToIn(Math.min(startY, endY)),
-      w: 0,
-      h: pxToIn(Math.abs(endY - startY)),
-      line: { color: lineColor, width: pxToPt(lineWidth) },
-    });
-    ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-      x: pxToIn(midX),
-      y: pxToIn(endY),
-      w: pxToIn(endX - midX),
-      h: 0,
-      line: {
-        color: lineColor,
-        width: pxToPt(lineWidth),
-        endArrowType: arrowType,
-      },
-    });
+    addStraightLine(
+      ctx,
+      { x1: startX, y1: startY, x2: midX, y2: startY },
+      { color: lineColor, lineWidth },
+    );
+    addStraightLine(
+      ctx,
+      { x1: midX, y1: startY, x2: midX, y2: endY },
+      { color: lineColor, lineWidth },
+    );
+    addStraightLine(
+      ctx,
+      { x1: midX, y1: endY, x2: endX, y2: endY },
+      { color: lineColor, lineWidth, endArrow: { type: arrowType } },
+    );
   } else {
     // 垂直→水平→垂直
-    ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-      x: pxToIn(startX),
-      y: pxToIn(startY),
-      w: 0,
-      h: pxToIn(midY - startY),
-      line: { color: lineColor, width: pxToPt(lineWidth) },
-    });
-    ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-      x: pxToIn(Math.min(startX, endX)),
-      y: pxToIn(midY),
-      w: pxToIn(Math.abs(endX - startX)),
-      h: 0,
-      line: { color: lineColor, width: pxToPt(lineWidth) },
-    });
-    ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-      x: pxToIn(endX),
-      y: pxToIn(midY),
-      w: 0,
-      h: pxToIn(endY - midY),
-      line: {
-        color: lineColor,
-        width: pxToPt(lineWidth),
-        endArrowType: arrowType,
-      },
-    });
+    addStraightLine(
+      ctx,
+      { x1: startX, y1: startY, x2: startX, y2: midY },
+      { color: lineColor, lineWidth },
+    );
+    addStraightLine(
+      ctx,
+      { x1: startX, y1: midY, x2: endX, y2: midY },
+      { color: lineColor, lineWidth },
+    );
+    addStraightLine(
+      ctx,
+      { x1: endX, y1: midY, x2: endX, y2: endY },
+      { color: lineColor, lineWidth, endArrow: { type: arrowType } },
+    );
   }
 }

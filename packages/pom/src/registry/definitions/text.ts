@@ -50,6 +50,7 @@ export const textNodeDef: NodeDefinition = {
           letterSpacingPx,
         },
         ctx.textMeasurementMode,
+        ctx.fontRegistry,
       );
 
       return { width: widthPx, height: heightPx };

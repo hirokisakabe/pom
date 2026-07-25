@@ -1,6 +1,6 @@
 {
   "name": "@hirokisakabe/pom-md",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Markdown wrapper for pom — write slides in Markdown with pomxml code fences.",
   "type": "module",
   "main": "./dist/index.js",
@@ -36,7 +36,7 @@
   ],
   "author": "Hiroki Sakabe",
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -50,11 +50,12 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "markdown-it": "^14.2.0"
+    "markdown-it": "^14.3.0"
   },
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
-    "@vitest/coverage-v8": "^4.1.9"
+    "@types/node": "^26.1.1",
+    "@vitest/coverage-v8": "^4.1.10"
   },
   "publishConfig": {
     "access": "public"

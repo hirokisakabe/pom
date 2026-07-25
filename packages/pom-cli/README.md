@@ -12,16 +12,17 @@
 
 ## Features
 
-- **Live Preview Server** — `pom preview` opens a browser, watches the source file, and rebuilds + reloads on every save (handles editor atomic writes like Vim).
+- **Browser Editor + Live Preview** — `pom preview` opens the shared `PomEditor`, with XML / AST editing, unsaved previews, and explicit conflict-safe saves for `.pom.xml` files.
 - **PPTX Build** — `pom build` converts `.pom.xml` / `.pom.md` to a `.pptx` file, with optional `--watch` mode for incremental rebuilds.
 - **PNG / SVG Render** — `pom render` rasterizes each slide to PNG (default) or SVG without LibreOffice, useful for slide-image previews in docs.
+- **Theme Extraction** — `pom theme extract` reads an existing `.pptx` and prints its theme colors as pom `ThemeTokens` JSON, for onboarding brand assets.
 - **Diagnostic Surfacing** — Layout, image, master, and auto-fit diagnostics from `buildPptx` fail the run on stderr with a non-zero exit (`pom build` / `pom render`), while `pom preview` keeps updating so issues can be fixed interactively.
 - **Bundled Fonts** — Carlito and Noto Sans CJK JP are bundled for SVG / PNG rendering, so output looks the same on machines without those fonts installed.
 - **Configurable Output** — Choose port, target slides, output format, text rendering mode (`path` outlines vs native `<text>`), and verbose per-step timing.
 
 ## Installation
 
-> Requires Node.js 18+
+> Requires Node.js 22+
 
 ```bash
 npm install -g @hirokisakabe/pom-cli
@@ -35,20 +36,22 @@ One command is all it takes — no global install required:
 npx @hirokisakabe/pom-cli preview slides.pom.xml
 ```
 
-This starts a local preview server, opens your browser automatically, and live-reloads the preview every time the file is saved. This also works well when invoked from agent skills or scripts.
+This starts a local editor and preview server and opens your browser automatically. The editor client is bundled with `pom-cli`, so it does not need a CDN or an internet connection. This also works well when invoked from agent skills or scripts.
 
 ## Usage
 
 ### Preview
 
-Starts a local preview server with live reload on file changes.
+Starts the browser editor and live preview server.
 
 ```bash
 pom preview slides.pom.xml
 pom preview slides.pom.md
 ```
 
-The browser opens http://localhost:3000 automatically. The page updates whenever the file is saved — including atomic saves performed by editors like Vim.
+The browser opens http://localhost:3000 automatically. For `.pom.xml` files, XML and AST edits are kept in the browser and immediately reflected in the preview. Use **Save** to write the current XML back to the input file. If another editor changed the file after it was loaded, Save is rejected instead of overwriting that change. Successful saves replace the file atomically.
+
+External file changes continue to update the browser when there are no unsaved browser edits. When unsaved edits exist, they are preserved and the toolbar reports the external change. `.pom.md` input remains preview-only because writing generated XML back to Markdown is outside the editor's scope.
 
 To suppress the automatic browser open (e.g. in CI or headless environments):
 
@@ -61,8 +64,6 @@ To use a different port (e.g. when 3000 is already in use):
 ```bash
 pom preview slides.pom.xml --port 3001
 ```
-
-Use the zoom buttons in the toolbar or press `+` / `-` to zoom in and out. The current zoom level is saved across sessions.
 
 To print per-step timing on stderr when each rebuild completes:
 
@@ -113,6 +114,8 @@ pom render slides.pom.md -o ./images
 
 The images are written to the output directory as `slide-01.png`, `slide-02.png`, ... The directory is created if it does not exist. The rendering pipeline is the same as the preview server, so the images match what you see in `pom preview`.
 
+> **LibreOffice fallback caveat:** Current `pom render` uses `pptx-glimpse` directly and does not require LibreOffice. If you are using an older `pom-cli` / `pptx-glimpse` version or a fallback workflow that converts PPTX through LibreOffice before PNG output, pure numeric text with leading zeros (for example `01` / `001`) may be displayed without those zeros in the PNG (`01` -> `1`). The generated PPTX keeps the original text (`<a:t>01</a:t>`), so it displays as intended when opened in PowerPoint. For decorative numbering that must survive both paths, mix in one non-numeric character such as `01.` or `#01`.
+
 To output SVG instead of PNG:
 
 ```bash
@@ -136,6 +139,16 @@ To print per-step timing on stderr:
 ```bash
 pom render slides.pom.xml -o ./images --verbose
 ```
+
+### Theme Extract
+
+Extracts PowerPoint theme colors from an existing `.pptx` as pom `ThemeTokens` JSON — useful for onboarding brand assets (e.g. the `pom-theme` agent skill).
+
+```bash
+pom theme extract brand-master.pptx
+```
+
+Prints a JSON array to stdout with one entry per visible slide layout (`text` / `background` / `primary` / `secondary` / `accent3`–`accent6`, all 6-digit uppercase hex prefixed with `#`), preserving the source master/layout order.
 
 ## Diagnostics
 

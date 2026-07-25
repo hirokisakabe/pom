@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignore": ["content/**", "playground/components/ui/**"],
+  "ignore": ["content/**", "playground/components/ui/**", "vrt/screenshot.css"],
   "ignoreBinaries": ["eslint", "knip", "tsc"],
   "ignoreDependencies": [
     "@resvg/resvg-js",

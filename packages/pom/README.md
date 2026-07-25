@@ -48,11 +48,11 @@
 - **Leaf Rotation** — `Text`, `Shape`, `Image`, and `Icon` support `rotate` in clockwise degrees at render time without affecting flex layout.
 - **Pixel Units** — Intuitive pixel-based sizing (internally converted to inches at 96 DPI).
 - **Master Slide** — Define headers, footers, and page numbers once — applied to all slides automatically.
-- **Accurate Text Measurement** — Text width measured with opentype.js and bundled Noto Sans JP fonts for consistent layout.
+- **Accurate Text Measurement** — Text width measured with opentype.js and bundled or caller-supplied font bytes for consistent layout in Node.js and browsers.
 
 ## Installation
 
-> Requires Node.js 18+
+> Requires Node.js 22+
 
 ```bash
 npm install @hirokisakabe/pom
@@ -85,6 +85,43 @@ Each slide must be wrapped in a `<Slide>` element. To produce multiple slides, l
     <Text fontSize="48" bold="true" color="$textMain">Dark Theme</Text>
   </VStack>
 </Slide>
+```
+
+To reuse colors from an existing `.pptx` template, extract PowerPoint theme colors as pom design tokens:
+
+```typescript
+import { readFile } from "node:fs/promises";
+import { extractThemeTokensFromPptx } from "@hirokisakabe/pom";
+
+const pptxBytes = await readFile("template.pptx");
+const themeTokens = await extractThemeTokensFromPptx(pptxBytes);
+
+// One ThemeTokens object is returned for each visible slide layout under each slide master.
+console.log(themeTokens[0]);
+// {
+//   text: "#000000",
+//   background: "#FFFFFF",
+//   primary: "#4472C4",
+//   secondary: "#ED7D31",
+//   accent3: "#A5A5A5",
+//   accent4: "#FFC000",
+//   accent5: "#5B9BD5",
+//   accent6: "#70AD47"
+// }
+```
+
+To build a preview deck of every layout in an existing `.pptx` template (e.g. for a "pick a layout" UI), convert it into a PPTX containing one blank slide per visible slide layout:
+
+```typescript
+import { readFile } from "node:fs/promises";
+import { extractSlideMastersAsPptx } from "@hirokisakabe/pom";
+
+const pptxBytes = await readFile("template.pptx");
+const layoutDeck = await extractSlideMastersAsPptx(pptxBytes);
+// layoutDeck: ArrayBuffer — one blank slide per visible slide layout, grouped by
+// slide master in presentation order. Hidden layouts (`show="0"` / `"false"`) are
+// excluded. The slide order matches extractThemeTokensFromPptx's output order, so
+// the two can be zipped together to pair each slide with its theme.
 ```
 
 ## Available Nodes

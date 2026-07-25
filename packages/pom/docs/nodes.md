@@ -80,7 +80,7 @@ Layout attributes that all nodes can have.
 
   ![grow example](./images/attr-grow.png)
 
-- `backgroundGradient`: CSS-like `linear-gradient()` or `radial-gradient()` syntax. Exported as a native PowerPoint gradient fill (editable, not rasterized). Takes precedence over `backgroundColor`. When set on the root node of a slide, it is applied as the slide background. Note: in browser environments use `pptx.write()` — `pptx.writeFile()` falls back to plain pptxgenjs output without the gradient post-processing.
+- `backgroundGradient`: CSS-like `linear-gradient()` or `radial-gradient()` syntax. Exported as a native PowerPoint gradient fill (editable, not rasterized). Takes precedence over `backgroundColor`. When set on the root node of a slide, it is applied as the slide background.
 
   - **`linear-gradient(<angle>?, <stop>, <stop>, ...)`** — Angle accepts `<n>deg` (0 = bottom-to-top, clockwise) or `to <direction>` keywords (`to right`, `to bottom left`, ...) and defaults to `180deg` (top-to-bottom).
   - **`radial-gradient(<shape>? <size>? at <position>?, <stop>, <stop>, ...)`** — Shape accepts `circle` / `ellipse` (default `ellipse`). Size accepts `closest-side` / `closest-corner` / `farthest-side` / `farthest-corner` (default `farthest-corner`). Position accepts `at center` / `at top right` / `at 25% 75%` etc. (default `center`). Note: PowerPoint's radial gradient fill follows the container aspect ratio and does not visually distinguish `circle` vs. `ellipse` or the size keyword — they are accepted as syntax but render the same `farthest-corner` ellipse on output. Only the center position changes the rendered result.
@@ -142,7 +142,7 @@ A node for displaying text.
 | `outline`                 | `outline.size="2" outline.color="0088CC"`                  |
 | `rotate`                  | number (degrees clockwise, render-only)                    |
 
-`textGradient` accepts the same `linear-gradient(...)` syntax as `backgroundGradient` (angle + 2 or more hex color stops, optional `%` positions). Exported as a native PowerPoint gradient text fill (editable, not rasterized) and takes precedence over `color`. Applied at the `<Text>` node level — all runs (`<Span>`, `<B>`, etc.) inside are painted with the same gradient, overriding any per-run `color`. Note: in browser environments use `pptx.write()` — `pptx.writeFile()` falls back to plain pptxgenjs output without the gradient post-processing.
+`textGradient` accepts the same `linear-gradient(...)` syntax as `backgroundGradient` (angle + 2 or more hex color stops, optional `%` positions). Exported as a native PowerPoint gradient text fill (editable, not rasterized) and takes precedence over `color`. Applied at the `<Text>` node level — all runs (`<Span>`, `<B>`, etc.) inside are painted with the same gradient, overriding any per-run `color`.
 
 ```xml
 <Text fontSize="64" bold="true" textGradient="linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)">Gradient title</Text>
@@ -1083,9 +1083,10 @@ A node for drawing connectors between elements referenced by their `id` attribut
 | `dashType`                | `solid` / `dash` / `dashDot` / `lgDash` / `sysDash` etc.                             |
 | `beginArrow` / `endArrow` | `true` / `endArrow.type="triangle"` (type: none/arrow/triangle/diamond/oval/stealth) |
 
-The connector draws a straight line between the center points of the `from` and `to` nodes.
+The connector is stored as a native PowerPoint straight connector. It attaches to the nearest cardinal connection sites of the referenced shapes, so it follows them when they are moved in PowerPoint. `Text` nodes and `Shape` nodes whose `shapeType` is `rect`, `roundRect`, or `ellipse` can be connector targets. Rotation is reflected when choosing the nearest site.
 
 If either ID is not found on the slide, a `ARROW_REF_NOT_FOUND` diagnostic is emitted (build succeeds, connector is omitted).
+If an ID exists but belongs to another node type or an unsupported shape geometry, a `ARROW_REF_NOT_CONNECTABLE` diagnostic is emitted (build succeeds, connector is omitted).
 
 **Usage Example:**
 

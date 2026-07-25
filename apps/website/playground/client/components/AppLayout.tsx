@@ -1,15 +1,12 @@
 "use client";
 
-import { EditorView } from "@codemirror/view";
-import {
-  BookOpen,
-  ChevronDown,
-  Download,
-  ExternalLink,
-  RefreshCw,
-} from "lucide-react";
+import type {
+  PomEditorDiagnostic,
+  PomEditorPreviewResult,
+} from "@hirokisakabe/pom-editor";
+import { BookOpen, ChevronDown, ExternalLink } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 
 import {
   AlertDialog,
@@ -27,142 +24,44 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/playground/components/ui/dropdown-menu";
-import { cn } from "@/playground/lib/utils";
 
+import { copySvgAsPng } from "../lib/copySvgAsPng";
 import { downloadPptx } from "../lib/downloadPptx";
 import { honoClient } from "../lib/honoClient";
 import type { SampleTemplate } from "../lib/sampleTemplates";
 import { DEFAULT_TEMPLATE, SAMPLE_TEMPLATES } from "../lib/sampleTemplates";
-import type { StructuredError } from "./SlidePreview";
-import { SlidePreview } from "./SlidePreview";
-import { XmlEditor } from "./XmlEditor";
 
-type EditorMode = "xml" | "ast";
-
-const DEBOUNCE_MS = 500;
-
-const PomAstEditor = dynamic(
-  () => import("@hirokisakabe/pom-editor").then((m) => m.PomAstEditor),
+const PomEditor = dynamic(
+  () => import("@hirokisakabe/pom-editor").then((module) => module.PomEditor),
   { ssr: false },
 );
 
+const navigationLinkClass =
+  "text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md px-2 py-1 text-sm transition-colors";
+
 export function AppLayout() {
   const [xmlValue, setXmlValue] = useState(DEFAULT_TEMPLATE.xml);
-  const [mode, setMode] = useState<EditorMode>("xml");
-  const [svgs, setSvgs] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [errors, setErrors] = useState<StructuredError[] | null>(null);
   const [pendingTemplate, setPendingTemplate] = useState<SampleTemplate | null>(
     null,
   );
-  const editorViewRef = useRef<EditorView | null>(null);
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
-  async function handleDownload() {
-    setIsDownloading(true);
-    setErrors(null);
-
-    try {
-      await downloadPptx(xmlValue);
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "Download failed";
-      setErrors([{ type: "unknown", message }]);
-    } finally {
-      setIsDownloading(false);
-    }
-  }
-
-  async function executePreview() {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    setIsLoading(true);
-    setErrors(null);
-
-    try {
-      const res = await honoClient.api.preview.$post(
-        { json: { xml: xmlValue } },
-        { init: { signal: controller.signal } },
+  const generatePreview = useCallback(
+    async (
+      xml: string,
+      { signal }: { signal: AbortSignal },
+    ): Promise<PomEditorPreviewResult> => {
+      const response = await honoClient.api.preview.$post(
+        { json: { xml } },
+        { init: { signal } },
       );
-
-      const data = (await res.json()) as
-        | { svgs: string[] }
-        | { errors: StructuredError[] };
-
-      if ("errors" in data) {
-        setErrors(data.errors);
-        return;
-      }
-
-      setSvgs(data.svgs);
-      setCurrentPage(1);
-    } catch (e) {
-      if (e instanceof DOMException && e.name === "AbortError") {
-        return;
-      }
-      setErrors([{ type: "unknown", message: "Failed to generate preview" }]);
-    } finally {
-      if (!controller.signal.aborted) {
-        setIsLoading(false);
-      }
-    }
-  }
-
-  useEffect(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    debounceTimerRef.current = setTimeout(() => {
-      void executePreview();
-    }, DEBOUNCE_MS);
-
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, [xmlValue]);
-
-  function handleErrorClick(errorIndex: number) {
-    const view = editorViewRef.current;
-    if (!view || !errors) return;
-
-    const error = errors[errorIndex];
-    if (!error.line) return;
-
-    const line = view.state.doc.line(
-      Math.min(error.line, view.state.doc.lines),
-    );
-    view.dispatch({
-      selection: { anchor: line.from },
-      effects: EditorView.scrollIntoView(line.from, { y: "center" }),
-    });
-    view.focus();
-  }
-
-  function handleManualPreview() {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-      debounceTimerRef.current = null;
-    }
-    void executePreview();
-  }
+      return (await response.json()) as
+        { svgs: string[] } | { errors: PomEditorDiagnostic[] };
+    },
+    [],
+  );
 
   function handleSelectTemplate(template: SampleTemplate) {
-    if (xmlValue === template.xml) {
-      return;
-    }
+    if (xmlValue === template.xml) return;
     if (xmlValue.trim() !== "") {
       setPendingTemplate(template);
     } else {
@@ -171,156 +70,84 @@ export function AppLayout() {
   }
 
   function handleConfirmTemplate() {
-    if (pendingTemplate) {
-      setXmlValue(pendingTemplate.xml);
-      setPendingTemplate(null);
-    }
+    if (!pendingTemplate) return;
+    setXmlValue(pendingTemplate.xml);
+    setPendingTemplate(null);
   }
+
+  const toolbarStart = (
+    <>
+      <span className="mr-2 text-lg font-semibold">pom playground</span>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className={navigationLinkClass}>
+            <ChevronDown className="size-4" />
+            <span>Samples</span>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          {SAMPLE_TEMPLATES.map((template) => (
+            <DropdownMenuItem
+              key={template.id}
+              onClick={() => handleSelectTemplate(template)}
+            >
+              {template.name}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
+  );
+
+  const toolbarEnd = (
+    <>
+      <a href="/" className={navigationLinkClass}>
+        <BookOpen className="size-4" />
+        <span>Docs</span>
+      </a>
+      <a
+        href="/nodes"
+        target="_blank"
+        rel="noopener noreferrer"
+        className={navigationLinkClass}
+      >
+        <BookOpen className="size-4" />
+        <span>XML Reference</span>
+      </a>
+      <a
+        href="https://github.com/hirokisakabe/pom"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="XML to PPTX conversion library"
+        className={navigationLinkClass}
+      >
+        <ExternalLink className="size-4" />
+        <span>pom</span>
+      </a>
+      <a
+        href="https://github.com/hirokisakabe/pptx-glimpse"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="PPTX to SVG conversion library"
+        className={navigationLinkClass}
+      >
+        <ExternalLink className="size-4" />
+        <span>pptx-glimpse</span>
+      </a>
+    </>
+  );
 
   return (
     <div className="flex h-screen flex-col">
-      <header className="flex items-center justify-between border-b px-4 py-2">
-        <span className="text-lg font-semibold">pom playground</span>
-        <div className="flex items-center gap-2">
-          <div
-            role="radiogroup"
-            aria-label="Editor mode"
-            className="bg-muted/50 flex items-center rounded-md border p-0.5"
-          >
-            <button
-              type="button"
-              role="radio"
-              aria-checked={mode === "xml"}
-              className={cn(
-                "rounded-sm px-2 py-0.5 text-xs font-medium transition-colors",
-                mode === "xml"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-              onClick={() => {
-                setMode("xml");
-              }}
-            >
-              XML
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={mode === "ast"}
-              className={cn(
-                "rounded-sm px-2 py-0.5 text-xs font-medium transition-colors",
-                mode === "ast"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-              onClick={() => {
-                setMode("ast");
-              }}
-            >
-              AST
-            </button>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md px-2 py-1 text-sm transition-colors">
-                <ChevronDown className="size-4" />
-                <span>Samples</span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {SAMPLE_TEMPLATES.map((template) => (
-                <DropdownMenuItem
-                  key={template.id}
-                  onClick={() => {
-                    handleSelectTemplate(template);
-                  }}
-                >
-                  {template.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <button
-            className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md px-2 py-1 text-sm transition-colors disabled:opacity-50"
-            onClick={handleManualPreview}
-            disabled={isLoading}
-          >
-            <RefreshCw className="size-4" />
-            <span>Refresh Preview</span>
-          </button>
-          <button
-            className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md px-2 py-1 text-sm transition-colors disabled:opacity-50"
-            onClick={() => void handleDownload()}
-            disabled={isDownloading}
-          >
-            <Download className="size-4" />
-            <span>Download</span>
-          </button>
-          <div className="bg-border mx-1 h-5 w-px" />
-          <a
-            href="/"
-            className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md px-2 py-1 text-sm transition-colors"
-          >
-            <BookOpen className="size-4" />
-            <span>Docs</span>
-          </a>
-          <a
-            href="/nodes"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md px-2 py-1 text-sm transition-colors"
-          >
-            <BookOpen className="size-4" />
-            <span>XML Reference</span>
-          </a>
-          <a
-            href="https://github.com/hirokisakabe/pom"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="XML to PPTX conversion library"
-            className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md px-2 py-1 text-sm transition-colors"
-          >
-            <ExternalLink className="size-4" />
-            <span>pom</span>
-          </a>
-          <a
-            href="https://github.com/hirokisakabe/pptx-glimpse"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="PPTX to SVG conversion library"
-            className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md px-2 py-1 text-sm transition-colors"
-          >
-            <ExternalLink className="size-4" />
-            <span>pptx-glimpse</span>
-          </a>
-        </div>
-      </header>
-      <div className="grid min-h-0 flex-1 grid-cols-2 gap-4 p-4">
-        <div className="min-h-0">
-          {mode === "xml" ? (
-            <XmlEditor
-              value={xmlValue}
-              onChange={setXmlValue}
-              errors={errors}
-              onViewReady={(view) => {
-                editorViewRef.current = view;
-              }}
-            />
-          ) : (
-            <div className="border-border h-full min-h-0 overflow-hidden rounded-md border bg-white">
-              <PomAstEditor xml={xmlValue} onChange={setXmlValue} />
-            </div>
-          )}
-        </div>
-        <SlidePreview
-          svgs={svgs}
-          isLoading={isLoading}
-          errors={errors}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-          onErrorClick={mode === "xml" ? handleErrorClick : undefined}
-        />
-      </div>
+      <PomEditor
+        xml={xmlValue}
+        onChange={setXmlValue}
+        onPreview={generatePreview}
+        onDownload={downloadPptx}
+        onCopyPreview={copySvgAsPng}
+        toolbarStart={toolbarStart}
+        toolbarEnd={toolbarEnd}
+      />
       <AlertDialog
         open={pendingTemplate !== null}
         onOpenChange={(open) => {

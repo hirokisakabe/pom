@@ -1,5 +1,17 @@
 # pom-vscode
 
+## 0.4.1
+
+### Patch Changes
+
+- [#960](https://github.com/hirokisakabe/pom/pull/960) [`60cd1e5`](https://github.com/hirokisakabe/pom/commit/60cd1e5de556b7bc0bd3366091fe703ace608e19) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - 通常の統合テストを軽量 fixture に切り替え、展示用サンプルのプレビュー変換を専用テストとして分離しました。
+
+## 0.4.0
+
+### Minor Changes
+
+- [#924](https://github.com/hirokisakabe/pom/pull/924) [`d4b2b24`](https://github.com/hirokisakabe/pom/commit/d4b2b24119a02cb71077ccd17eb4a9457d2c71c0) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Node.js のサポート範囲を 22 以降に引き上げました。`@pptx-glimpse/document` 消費に備えて、pom 関連 package と VS Code extension の engines を Node 22 に揃えています。VS Code extension は Node.js 22 extension host を前提にするため、最小 VS Code バージョンも 1.101 に引き上げています。
+
 ## 0.3.4
 
 ### Patch Changes

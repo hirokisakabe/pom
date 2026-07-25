@@ -1,6 +1,6 @@
 {
   "name": "@hirokisakabe/pom",
-  "version": "8.8.0",
+  "version": "10.2.0",
   "description": "AI-friendly PowerPoint generation with a Flexbox layout engine.",
   "type": "module",
   "main": "./dist/index.js",
@@ -43,7 +43,7 @@
   ],
   "author": "Hiroki Sakabe",
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "scripts": {
     "build": "tsdown",
@@ -56,6 +56,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
     "test:coverage": "vitest run --coverage",
     "vrt": "tsx vrt/runVrt.ts",
     "vrt:update": "tsx vrt/runVrt.ts --update",
@@ -75,26 +76,29 @@
   },
   "devDependencies": {
     "@size-limit/file": "^12.1.0",
-    "@types/node": "^25.9.3",
     "@types/opentype.js": "^1.3.10",
     "@types/pngjs": "6.0.5",
-    "@vitest/coverage-v8": "^4.1.9",
-    "@vitest/ui": "^4.1.9",
-    "dependency-cruiser": "^17.4.3",
-    "lucide-static": "^1.18.0",
+    "@vitest/browser-playwright": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/ui": "^4.1.10",
+    "dependency-cruiser": "^18.1.0",
+    "lucide-static": "^1.25.0",
     "pixelmatch": "7.2.0",
+    "playwright": "^1.61.1",
     "pngjs": "7.0.0",
     "size-limit": "^12.1.0",
-    "tsdown": "^0.22.2",
-    "tsx": "4.22.4"
+    "tsdown": "^0.22.12",
+    "tsx": "4.23.1",
+    "typescript": "npm:@typescript/typescript6@6.0.2"
   },
   "dependencies": {
+    "@pptx-glimpse/document": "0.12.0",
     "@resvg/resvg-wasm": "^2.6.2",
-    "fast-xml-parser": "^5.8.0",
+    "@types/node": "^26.1.1",
+    "fast-xml-parser": "^5.10.1",
     "image-size": "2.0.2",
     "jszip": "^3.10.1",
     "opentype.js": "^2.0.0",
-    "pptxgenjs": "4.0.1",
     "yoga-layout": "3.2.1",
     "zod": "^4.4.3"
   }

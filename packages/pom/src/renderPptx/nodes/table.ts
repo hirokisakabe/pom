@@ -4,13 +4,20 @@ import {
   resolveColumnWidths,
   resolveRowHeights,
 } from "../../shared/tableUtils.ts";
-import { pxToIn, pxToPt, rectPxToIn } from "../units.ts";
 import {
-  convertUnderline,
-  convertStrike,
-  resolveSubSup,
-} from "../textOptions.ts";
+  asEmu,
+  type AddTableCellInput,
+  type AddTableRowInput,
+  type AddTableRunInput,
+  type SourceDashStyle,
+} from "@pptx-glimpse/document";
+import { pxToEmu } from "../units.ts";
 import { getContentArea } from "../utils/contentArea.ts";
+import {
+  cleanHex,
+  createGlimpseTableRunProperties,
+} from "../glimpseAdapter.ts";
+import { resolveSubSup } from "../textOptions.ts";
 
 type TablePositionedNode = Extract<PositionedNode, { type: "table" }>;
 
@@ -18,84 +25,118 @@ export function renderTableNode(
   node: TablePositionedNode,
   ctx: RenderContext,
 ): void {
-  const tableRows = node.rows.map((row) =>
-    row.cells.map((cell) => {
-      const cellFontFace = cell.fontFamily;
-      const cellOptions: Record<string, unknown> = {
-        fontSize: pxToPt(cell.fontSize ?? 18),
-        fontFace: cellFontFace,
-        color: cell.color,
-        bold: cell.bold,
-        italic: cell.italic,
-        underline: convertUnderline(cell.underline),
-        strike: convertStrike(cell.strike),
-        subscript: cell.subscript,
-        superscript: cell.superscript,
-        highlight: cell.highlight,
+  const content = getContentArea(node);
+  const rowHeights = resolveRowHeights(node);
+  const border = node.cellBorder
+    ? {
+        width: asEmu(Math.round(pxToEmu(node.cellBorder.width ?? 1 / 0.75))),
+        color: cleanHex(node.cellBorder.color) ?? "000000",
+        dash: toTableDash(node.cellBorder.dashType),
+      }
+    : undefined;
+  ctx.authoring.addTable({
+    offsetX: asEmu(Math.round(pxToEmu(content.x))),
+    offsetY: asEmu(Math.round(pxToEmu(content.y))),
+    width: asEmu(Math.round(pxToEmu(Math.max(content.w, 1)))),
+    height: asEmu(Math.round(pxToEmu(Math.max(content.h, 1)))),
+    columnWidths: resolveColumnWidths(node, content.w).map((width) =>
+      asEmu(Math.round(pxToEmu(Math.max(width, 1)))),
+    ),
+    rows: buildTableRows(node, rowHeights, border),
+  });
+}
+
+function buildTableRows(
+  node: TablePositionedNode,
+  rowHeights: number[],
+  border:
+    | {
+        width: ReturnType<typeof asEmu>;
+        color: string;
+        dash: SourceDashStyle | undefined;
+      }
+    | undefined,
+): AddTableRowInput[] {
+  const columnCount = node.columns.length;
+  const continuationCells = new Set<string>();
+  return node.rows.map((row, rowIndex) => {
+    const cells: AddTableCellInput[] = Array.from({ length: columnCount });
+    for (let columnIndex = 0; columnIndex < columnCount; columnIndex += 1) {
+      if (continuationCells.has(`${rowIndex}:${columnIndex}`)) {
+        cells[columnIndex] = {};
+      }
+    }
+
+    let columnIndex = 0;
+    for (const cell of row.cells) {
+      while (cells[columnIndex] !== undefined) columnIndex += 1;
+      cells[columnIndex] = {
+        runs: buildTableRuns(cell),
+        fill: cleanHex(cell.backgroundColor),
         align: cell.textAlign ?? "left",
-        fill: cell.backgroundColor
-          ? { color: cell.backgroundColor }
+        marginLeft: asEmu(0),
+        marginRight: asEmu(0),
+        marginTop: asEmu(0),
+        marginBottom: asEmu(0),
+        borders: border
+          ? { top: border, right: border, bottom: border, left: border }
           : undefined,
         colspan: cell.colspan,
         rowspan: cell.rowspan,
       };
-
-      if (cell.runs && cell.runs.length > 0) {
-        const textItems = cell.runs.map((run) => {
-          const runSubSup = resolveSubSup(run, cell);
-          return {
-            text: run.text,
-            options: {
-              fontSize: pxToPt(run.fontSize ?? cell.fontSize ?? 18),
-              fontFace: run.fontFamily ?? cellFontFace,
-              color: run.color ?? cell.color,
-              bold: run.bold ?? cell.bold,
-              italic: run.italic ?? cell.italic,
-              underline: convertUnderline(run.underline ?? cell.underline),
-              strike: convertStrike(run.strike ?? cell.strike),
-              subscript: runSubSup.subscript,
-              superscript: runSubSup.superscript,
-              highlight: run.highlight ?? cell.highlight,
-              ...(run.href ? { hyperlink: { url: run.href } } : {}),
-            },
-          };
-        });
-        return {
-          text: textItems,
-          options: {
-            align: cell.textAlign ?? "left",
-            fill: cell.backgroundColor
-              ? { color: cell.backgroundColor }
-              : undefined,
-            colspan: cell.colspan,
-            rowspan: cell.rowspan,
-          },
-        };
+      const colspan = cell.colspan ?? 1;
+      const rowspan = cell.rowspan ?? 1;
+      for (let y = rowIndex; y < rowIndex + rowspan; y += 1) {
+        for (let x = columnIndex; x < columnIndex + colspan; x += 1) {
+          if (x === columnIndex && y === rowIndex) continue;
+          continuationCells.add(`${y}:${x}`);
+          if (y === rowIndex) cells[x] = {};
+        }
       }
+      columnIndex += colspan;
+    }
 
-      return {
-        text: cell.text,
-        options: cellOptions,
-      };
-    }),
-  );
-
-  const content = getContentArea(node);
-  const tableOptions: Record<string, unknown> = {
-    ...rectPxToIn(content),
-    colW: resolveColumnWidths(node, content.w).map((width) => pxToIn(width)),
-    rowH: resolveRowHeights(node).map((height) => pxToIn(height)),
-    margin: 0,
-  };
-
-  if (node.cellBorder) {
-    tableOptions.border = {
-      color: node.cellBorder.color ?? "000000",
-      pt:
-        node.cellBorder.width !== undefined ? pxToPt(node.cellBorder.width) : 1,
-      type: node.cellBorder.dashType ?? "solid",
+    for (let index = 0; index < cells.length; index += 1) {
+      if (cells[index] === undefined) cells[index] = {};
+    }
+    return {
+      height: asEmu(
+        Math.round(pxToEmu(Math.max(rowHeights[rowIndex] ?? 0, 1))),
+      ),
+      cells,
     };
-  }
+  });
+}
 
-  ctx.slide.addTable(tableRows, tableOptions);
+function buildTableRuns(
+  cell: TablePositionedNode["rows"][number]["cells"][number],
+): AddTableRunInput[] {
+  const runs = cell.runs?.length ? cell.runs : [{ text: cell.text }];
+  return runs.flatMap((run) => {
+    const subSup = resolveSubSup(run, cell);
+    const properties = createGlimpseTableRunProperties({
+      fontSize: run.fontSize ?? cell.fontSize ?? 18,
+      fontFace: run.fontFamily ?? cell.fontFamily,
+      color: run.color ?? cell.color,
+      bold: run.bold ?? cell.bold,
+      italic: run.italic ?? cell.italic,
+      underline: run.underline ?? cell.underline,
+      strike: run.strike ?? cell.strike,
+      subscript: subSup.subscript,
+      superscript: subSup.superscript,
+      highlight: run.highlight ?? cell.highlight,
+    });
+    const lines = run.text.replace(/\r*\n/g, "\n").split("\n");
+    return lines.map((line, index) => ({
+      text: index === 0 ? line : `\n${line}`,
+      properties,
+      hyperlink: run.href,
+    }));
+  });
+}
+
+function toTableDash(
+  dash: NonNullable<TablePositionedNode["cellBorder"]>["dashType"],
+): SourceDashStyle | undefined {
+  return dash;
 }

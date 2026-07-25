@@ -8,9 +8,9 @@ async function buildSlideXml(xml: string): Promise<string> {
     { w: 1280, h: 720 },
     { autoFit: false },
   );
-  const buffer = (await pptx.write({
+  const buffer = await pptx.write({
     outputType: "uint8array",
-  })) as Uint8Array;
+  });
   const zip = await JSZip.loadAsync(buffer);
   return zip.file("ppt/slides/slide1.xml")!.async("text");
 }
@@ -51,6 +51,29 @@ describe("renderBackgroundAndBorder の辺ごと border", () => {
     expect(countLineShapes(slideXml)).toBe(0);
   });
 
+  it("backgroundGradient + shadow は legacy gradient 後処理と shadow XML を共存させる", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text w="200" h="100" backgroundGradient="linear-gradient(90deg, #FF0000, #0000FF)" shadow.type="outer" shadow.blur="4" shadow.offset="2">test</Text>
+    </VStack></Slide>`;
+    const slideXml = await buildSlideXml(xml);
+
+    expect(slideXml).toContain("<a:gradFill");
+    expect(slideXml).toContain("<a:outerShdw");
+    expect(slideXml).not.toContain("pom-gradient:");
+  });
+
+  it("backgroundGradient + borderRadius + shadow は roundRect geometry と effectLst を共存させる", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text w="200" h="100" borderRadius="12" backgroundGradient="linear-gradient(90deg, #FF0000, #0000FF)" shadow.type="outer">test</Text>
+    </VStack></Slide>`;
+    const slideXml = await buildSlideXml(xml);
+
+    expect(slideXml).toContain("<a:gradFill");
+    expect(slideXml).toContain("<a:outerShdw");
+    expect(slideXml).toContain('<a:prstGeom prst="roundRect">');
+    expect(slideXml).toContain('<a:gd name="adj" fmla="val 12000"/>');
+  });
+
   it("背景付きルートノード (slide.background 最適化パス) でも辺ごとの border が描画される", async () => {
     const xml = `<Slide><VStack w="100%" h="max" backgroundColor="F8FAFC" borderLeft.color="FF0000" borderLeft.width="6">
       <Text w="200" h="100">test</Text>
@@ -71,17 +94,27 @@ describe("renderBackgroundAndBorder の辺ごと border", () => {
     expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
   });
 
+  it("backgroundImage と背景色・一律 border を正しい描画順で分割する", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text w="200" h="100" backgroundColor="F8FAFC" backgroundImage.src="https://example.com/bg.png" border.color="FF0000" border.width="3">test</Text>
+    </VStack></Slide>`;
+    const slideXml = await buildSlideXml(xml);
+
+    expect(slideXml).toContain('<a:srgbClr val="F8FAFC"/>');
+    expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
+    expect(slideXml).not.toContain("pom-shape:");
+  });
+
   it("borderRadius と併用した場合は辺ごとに custGeom path として描画され、辺ごとの色が反映される", async () => {
     const xml = `<Slide><VStack w="100%" h="max">
       <Text w="200" h="100" borderRadius="8" borderTop.color="FF0000" borderTop.width="4">test</Text>
     </VStack></Slide>`;
     const slideXml = await buildSlideXml(xml);
 
-    // borderTop のみなので custGeom shape は 1 個。直線セグメント (a:lnTo)
-    // と両端の円弧 (a:arcTo) が含まれる
+    // borderTop のみなので custGeom shape は 1 個。角丸は複数の
+    // lineTo セグメントへ展開される
     expect(slideXml.match(/<a:custGeom>/g) ?? []).toHaveLength(1);
-    expect(slideXml).toMatch(/<a:arcTo /);
-    expect(slideXml).toMatch(/<a:lnTo>/);
+    expect(slideXml.match(/<a:lnTo>/g)?.length ?? 0).toBeGreaterThan(10);
     expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
   });
 

@@ -2,3 +2,8 @@
 node_modules/
 next-env.d.ts
 public/images/
+
+# Playwright VRT output (expected baselines under vrt/expected are tracked)
+vrt/results/
+vrt/playwright-report/
+test-results/

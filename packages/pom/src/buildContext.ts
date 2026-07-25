@@ -1,28 +1,26 @@
 import type { TextMeasurementMode } from "./calcYogaLayout/measureText.ts";
+import { FontRegistry, type FontInput } from "./calcYogaLayout/fontLoader.ts";
 import { DiagnosticCollector } from "./diagnostics.ts";
-import { GlowEffectRegistry } from "./renderPptx/glowEffects.ts";
-import { GradientFillRegistry } from "./renderPptx/gradientFills.ts";
 
 export interface BuildContext {
   textMeasurementMode: TextMeasurementMode;
+  fontRegistry: FontRegistry;
   imageSizeCache: Map<string, { widthPx: number; heightPx: number }>;
   imageDataCache: Map<string, string>;
   iconRasterCache: Map<string, string>;
   diagnostics: DiagnosticCollector;
-  gradientFills: GradientFillRegistry;
-  glowEffects: GlowEffectRegistry;
 }
 
 export function createBuildContext(
   textMeasurementMode: TextMeasurementMode = "auto",
+  fonts: readonly FontInput[] = [],
 ): BuildContext {
   return {
     textMeasurementMode,
+    fontRegistry: new FontRegistry(fonts),
     imageSizeCache: new Map(),
     imageDataCache: new Map(),
     iconRasterCache: new Map(),
     diagnostics: new DiagnosticCollector(),
-    gradientFills: new GradientFillRegistry(),
-    glowEffects: new GlowEffectRegistry(),
   };
 }

@@ -1,9 +1,9 @@
 /**
  * 見た目属性 (fill / border / shadow / opacity / borderRadius) を
- * pptxgenjs のオプションへ変換する共通 resolver 群。
+ * PPTX 描画用の中間オプションへ変換する共通 resolver 群。
  *
  * ノードごとに変換ロジックが重複・乖離すると、XML 上は同じ指定でも
- * 描画結果が異なるリスクがあるため、属性値 → pptxgenjs オプションの
+ * 描画結果が異なるリスクがあるため、属性値から描画オプションへの
  * 純粋変換をここに集約する。
  *
  * 共通化対象の属性カテゴリ:
@@ -13,9 +13,8 @@
  * - borderRadius (角丸): resolveRectRadius
  *
  * 既存 helper との責務境界:
- * - gradientFills.ts: backgroundGradient のマーカー登録と出力時の gradFill 置換。
- *   グラデーションはマーカー色 1 色の単色塗りに帰着するため本モジュールでは
- *   解釈せず、マーカー色を resolveBackgroundFill で単色 fill として扱う。
+ * - utils/glimpseShape.ts: backgroundGradient を writer 生成 XML の native
+ *   gradFill として出力する。
  * - utils/backgroundBorder.ts: 背景色 → 背景画像 → ボーダーの描画順序の
  *   オーケストレーション。個々の属性値の変換は本モジュールに委譲する。
  * - textOptions.ts: テキスト系属性 (font / underline / strike など) の変換。
@@ -24,7 +23,7 @@ import type { BorderStyle, ShadowStyle } from "../../types.ts";
 import { pxToPt } from "../units.ts";
 
 /**
- * 色文字列から "#" を 1 つ取り除き、pptxgenjs が受け付ける HEX 文字列にする。
+ * 色文字列から "#" を 1 つ取り除き、OOXML 向けの HEX 文字列にする。
  * undefined はそのまま返すため `stripHash(color) ?? fallback` の形で使える。
  */
 export function stripHash(color: string | undefined): string | undefined {
@@ -32,7 +31,7 @@ export function stripHash(color: string | undefined): string | undefined {
 }
 
 /**
- * ShadowStyle を pptxgenjs の shadow オプションに変換する
+ * ShadowStyle を描画用の shadow オプションに変換する
  * type 未指定時は outer をデフォルトとする
  */
 export function convertShadow(shadow: ShadowStyle | undefined):
@@ -114,11 +113,11 @@ export function resolvePerSideBorders(style: {
 }
 
 /**
- * BorderStyle を pptxgenjs の line オプションに変換する
- * width はユーザー入力 px、pptxgenjs の line.width は pt
+ * BorderStyle を描画用の line オプションに変換する
+ * width はユーザー入力 px、描画用の line.width は pt
  *
  * @param fallbackColor color 未指定時に使う色。省略時は color を
- *   undefined のまま渡し pptxgenjs のデフォルトに任せる
+ *   undefined のまま渡し呼び出し側のデフォルトに任せる
  */
 export function convertBorderLine(
   border: BorderStyle,
@@ -132,7 +131,7 @@ export function convertBorderLine(
 }
 
 /**
- * ノードの opacity (0-1、1 = 不透明) を pptxgenjs の
+ * ノードの opacity (0-1、1 = 不透明) を描画用の
  * transparency (0-100、100 = 透明) に変換する
  */
 export function opacityToTransparency(
@@ -142,13 +141,12 @@ export function opacityToTransparency(
 }
 
 /**
- * backgroundColor / opacity / グラデーションマーカー色から
- * pptxgenjs の fill オプションを解決する
+ * backgroundColor / opacity / 互換用のグラデーション fallback 色から
+ * fill オプションを解決する
  *
- * gradientMarker がある場合はマーカー色の単色塗りとして描画し、
- * 出力時の後処理で gradFill に置換される (gradientFills.ts 参照)。
- * opacity はマーカー側ではなく gradFill のカラーストップの alpha で
- * 表現するため、マーカー fill には transparency を付与しない。
+ * gradientMarker は既存 helper の互換引数として残している。
+ * backgroundGradient は utils/glimpseShape.ts 側で native
+ * gradFill に変換する。
  */
 export function resolveBackgroundFill(
   backgroundColor: string | undefined,
@@ -164,7 +162,7 @@ export function resolveBackgroundFill(
 
 /**
  * borderRadius (px) をノードサイズに対する 0-1 の正規化値
- * (pptxgenjs roundRect の rectRadius) に変換する
+ * (roundRect の rectRadius) に変換する
  */
 export function resolveRectRadius(
   borderRadius: number | undefined,

@@ -1,15 +1,7 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import {
-  createTextOptions,
-  convertUnderline,
-  convertStrike,
-  convertGlow,
-  convertOutline,
-  resolveSubSup,
-} from "../textOptions.ts";
-import { registerTextGradient } from "../gradientFills.ts";
-import { pxToPt } from "../units.ts";
+import { createTextNodeInput } from "../glimpseAdapter.ts";
+import { cardinalConnectorSites } from "../utils/connectorSites.ts";
 
 type TextPositionedNode = Extract<PositionedNode, { type: "text" }>;
 
@@ -17,59 +9,15 @@ export function renderTextNode(
   node: TextPositionedNode,
   ctx: RenderContext,
 ): void {
-  const textOptions = createTextOptions(node);
-
-  // textGradient はマーカー色で text run color に適用し、
-  // 出力時の後処理で gradFill に置換される (gradientFills.ts 参照)。
-  // node 単位の指定として全 run の color を上書きする (run 単位指定はスコープ外)。
-  const textGradientMarker = node.textGradient
-    ? registerTextGradient(node.textGradient, ctx.buildContext.gradientFills)
-    : undefined;
-
-  if (node.runs && node.runs.length > 0) {
-    const fontSizePx = node.fontSize ?? 24;
-    const fontFamily = node.fontFamily ?? "Noto Sans JP";
-    const textItems = node.runs.map((run) => {
-      const letterSpacingPx = run.letterSpacing ?? node.letterSpacing;
-      const runFontSizePx = run.fontSize ?? fontSizePx;
-      const subSup = resolveSubSup(run, node);
-      return {
-        text: run.text,
-        options: {
-          fontSize: pxToPt(runFontSizePx),
-          fontFace: run.fontFamily ?? fontFamily,
-          color: textGradientMarker ?? run.color ?? node.color,
-          bold: run.bold ?? node.bold,
-          italic: run.italic ?? node.italic,
-          underline: convertUnderline(run.underline ?? node.underline),
-          strike: convertStrike(run.strike ?? node.strike),
-          subscript: subSup.subscript,
-          superscript: subSup.superscript,
-          highlight: run.highlight ?? node.highlight,
-          // glow / outline はノード単位指定のみ (run 単位はスコープ外)
-          glow: convertGlow(node.glow),
-          outline: convertOutline(node.outline),
-          charSpacing:
-            letterSpacingPx !== undefined ? pxToPt(letterSpacingPx) : undefined,
-          ...(run.href ? { hyperlink: { url: run.href } } : {}),
-        },
-      };
-    });
-    ctx.slide.addText(textItems, {
-      x: textOptions.x,
-      y: textOptions.y,
-      w: textOptions.w,
-      h: textOptions.h,
-      rotate: textOptions.rotate,
-      align: textOptions.align,
-      valign: textOptions.valign,
-      margin: textOptions.margin,
-      lineSpacing: textOptions.lineSpacing,
-    });
-  } else {
-    ctx.slide.addText(node.text ?? "", {
-      ...textOptions,
-      color: textGradientMarker ?? textOptions.color,
+  const handle = ctx.authoring.addTextBox(
+    createTextNodeInput(node, ctx.authoring.useLayoutTextMargins),
+  );
+  if (node.id && ctx.idNodeMap.get(node.id) === node) {
+    const bounds = { x: node.x, y: node.y, w: node.w, h: node.h };
+    ctx.connectorTargetMap.set(node.id, {
+      handle,
+      bounds,
+      sites: cardinalConnectorSites(bounds, node.rotate),
     });
   }
 }

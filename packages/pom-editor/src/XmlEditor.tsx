@@ -3,17 +3,18 @@
 import { xml } from "@codemirror/lang-xml";
 import type { Diagnostic } from "@codemirror/lint";
 import { lintGutter, setDiagnostics } from "@codemirror/lint";
-import { EditorState } from "@codemirror/state";
+import { Annotation, EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { basicSetup } from "codemirror";
 import { useEffect, useRef } from "react";
 
-import type { StructuredError } from "./SlidePreview";
+import type { PomEditorDiagnostic } from "./PomEditor.tsx";
+
+const externalValueUpdate = Annotation.define<boolean>();
 
 function errorTypeToSeverity(type: string): Diagnostic["severity"] {
   switch (type) {
     case "xml_syntax":
-      return "error";
     case "schema":
       return "error";
     case "structure":
@@ -26,23 +27,25 @@ function errorTypeToSeverity(type: string): Diagnostic["severity"] {
 interface XmlEditorProps {
   value: string;
   onChange: (value: string) => void;
-  errors: StructuredError[] | null;
-  onViewReady?: (view: EditorView) => void;
+  diagnostics: PomEditorDiagnostic[] | null;
+  onViewReady: (view: EditorView) => void;
 }
 
 export function XmlEditor({
   value,
   onChange,
-  errors,
+  diagnostics,
   onViewReady,
 }: XmlEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
+  const onViewReadyRef = useRef(onViewReady);
 
   useEffect(() => {
     onChangeRef.current = onChange;
-  }, [onChange]);
+    onViewReadyRef.current = onViewReady;
+  }, [onChange, onViewReady]);
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -54,26 +57,27 @@ export function XmlEditor({
         xml(),
         lintGutter(),
         EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
+          const isExternalUpdate = update.transactions.some((transaction) =>
+            transaction.annotation(externalValueUpdate),
+          );
+          if (update.docChanged && !isExternalUpdate) {
             onChangeRef.current(update.state.doc.toString());
           }
+        }),
+        EditorView.theme({
+          "&": { height: "100%" },
+          ".cm-scroller": { overflow: "auto" },
         }),
       ],
     });
 
-    const view = new EditorView({
-      state,
-      parent: editorRef.current,
-    });
-
+    const view = new EditorView({ state, parent: editorRef.current });
     viewRef.current = view;
-
-    if (onViewReady) {
-      onViewReady(view);
-    }
+    onViewReadyRef.current(view);
 
     return () => {
       view.destroy();
+      viewRef.current = null;
     };
   }, []);
 
@@ -85,6 +89,7 @@ export function XmlEditor({
     if (currentDoc !== value) {
       view.dispatch({
         changes: { from: 0, to: currentDoc.length, insert: value },
+        annotations: externalValueUpdate.of(true),
       });
     }
   }, [value]);
@@ -93,35 +98,35 @@ export function XmlEditor({
     const view = viewRef.current;
     if (!view) return;
 
-    if (!errors || errors.length === 0) {
-      view.dispatch(setDiagnostics(view.state, []));
-      return;
-    }
-
-    const doc = view.state.doc;
-    const diagnostics: Diagnostic[] = [];
-
-    for (const error of errors) {
-      if (!error.line) continue;
-
-      const lineNum = Math.min(error.line, doc.lines);
-      const line = doc.line(lineNum);
-
-      diagnostics.push({
-        from: line.from,
-        to: line.to,
-        severity: errorTypeToSeverity(error.type),
-        message: error.message,
-      });
-    }
-
-    view.dispatch(setDiagnostics(view.state, diagnostics));
-  }, [errors]);
+    const cmDiagnostics: Diagnostic[] = (diagnostics ?? []).flatMap(
+      (diagnostic) => {
+        if (!diagnostic.line) return [];
+        const line = view.state.doc.line(
+          Math.min(diagnostic.line, view.state.doc.lines),
+        );
+        return [
+          {
+            from: line.from,
+            to: line.to,
+            severity: errorTypeToSeverity(diagnostic.type),
+            message: diagnostic.message,
+          },
+        ];
+      },
+    );
+    view.dispatch(setDiagnostics(view.state, cmDiagnostics));
+  }, [diagnostics]);
 
   return (
     <div
       ref={editorRef}
-      className="h-full overflow-auto rounded-md border [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto"
+      data-testid="pom-xml-editor"
+      style={{
+        height: "100%",
+        overflow: "auto",
+        border: "1px solid #e5e7eb",
+        borderRadius: 6,
+      }}
     />
   );
 }

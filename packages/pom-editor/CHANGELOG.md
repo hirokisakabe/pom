@@ -1,5 +1,77 @@
 # @hirokisakabe/pom-editor
 
+## 0.6.0
+
+### Minor Changes
+
+- [#980](https://github.com/hirokisakabe/pom/pull/980) [`bf25b9c`](https://github.com/hirokisakabe/pom/commit/bf25b9c813a040f2ab3470fe5a00171c6341f70b) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - AST モードの diagnostic から XML の該当行へ移動できるようにし、行情報がない error と parse 不能状態にも案内を追加しました。
+
+## 0.5.0
+
+### Minor Changes
+
+- [#973](https://github.com/hirokisakabe/pom/pull/973) [`586647d`](https://github.com/hirokisakabe/pom/commit/586647ddb62f9fa7baafceb2d002677094efb00f) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - XML / AST 編集、debounced preview、diagnostics、Refresh、optionalなDownload / Save操作をまとめた再利用可能な`PomEditor`コンポーネントを追加します。website playgroundも同コンポーネントへ移行し、既存の`PomAstEditor` APIは維持します。
+
+## 0.4.6
+
+### Patch Changes
+
+- Updated dependencies [[`6bd917d`](https://github.com/hirokisakabe/pom/commit/6bd917d98833fd4a5e544c87c1c19a41fba36a9e), [`30e3cba`](https://github.com/hirokisakabe/pom/commit/30e3cbad973770c2f27d99cea18b14c2335d40c7), [`a41f08f`](https://github.com/hirokisakabe/pom/commit/a41f08f3ac87966ceec9fb58e69e15f0053e3f7f)]:
+  - @hirokisakabe/pom@10.2.0
+
+## 0.4.5
+
+### Patch Changes
+
+- Updated dependencies [[`ce6fe6d`](https://github.com/hirokisakabe/pom/commit/ce6fe6dd96f3c38d1aaa54ffa34d8095b8421680), [`78ee654`](https://github.com/hirokisakabe/pom/commit/78ee654d21504e61491053266eb6fe6ff8f91e16)]:
+  - @hirokisakabe/pom@10.1.0
+
+## 0.4.4
+
+### Patch Changes
+
+- Updated dependencies [[`e5abe7b`](https://github.com/hirokisakabe/pom/commit/e5abe7b7452f54a469d00b999978357c5001bbc7), [`3f28c15`](https://github.com/hirokisakabe/pom/commit/3f28c1515d601a4852f1b73e6a826a6fa8215ed7)]:
+  - @hirokisakabe/pom@10.0.0
+
+## 0.4.3
+
+### Patch Changes
+
+- Updated dependencies [[`72774d5`](https://github.com/hirokisakabe/pom/commit/72774d5ed91bedee03e59ef12ad1d4b146d66c88), [`a61d148`](https://github.com/hirokisakabe/pom/commit/a61d148b216a37f1f02892a2f1209accc88d995d)]:
+  - @hirokisakabe/pom@9.1.2
+
+## 0.4.2
+
+### Patch Changes
+
+- Updated dependencies [[`90622a7`](https://github.com/hirokisakabe/pom/commit/90622a7acdc9aa63c4483d283bb6d9c517d78323)]:
+  - @hirokisakabe/pom@9.1.1
+
+## 0.4.1
+
+### Patch Changes
+
+- Updated dependencies [[`f748519`](https://github.com/hirokisakabe/pom/commit/f74851911968de692df8e64f8d1de865f41f5207), [`2fa8c77`](https://github.com/hirokisakabe/pom/commit/2fa8c77d1ff9511e585f79fba8f2e6a990885998)]:
+  - @hirokisakabe/pom@9.1.0
+
+## 0.4.0
+
+### Minor Changes
+
+- [#924](https://github.com/hirokisakabe/pom/pull/924) [`d4b2b24`](https://github.com/hirokisakabe/pom/commit/d4b2b24119a02cb71077ccd17eb4a9457d2c71c0) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Node.js のサポート範囲を 22 以降に引き上げました。`@pptx-glimpse/document` 消費に備えて、pom 関連 package と VS Code extension の engines を Node 22 に揃えています。VS Code extension は Node.js 22 extension host を前提にするため、最小 VS Code バージョンも 1.101 に引き上げています。
+
+### Patch Changes
+
+- Updated dependencies [[`d4b2b24`](https://github.com/hirokisakabe/pom/commit/d4b2b24119a02cb71077ccd17eb4a9457d2c71c0)]:
+  - @hirokisakabe/pom@9.0.0
+
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [[`433193e`](https://github.com/hirokisakabe/pom/commit/433193e1e3d3ef6342e4ffbda1278ae706b08add), [`cc5aaa8`](https://github.com/hirokisakabe/pom/commit/cc5aaa86d60fbded6c9d0136bafdf7043a06a698)]:
+  - @hirokisakabe/pom@8.9.0
+
 ## 0.3.0
 
 ### Minor Changes

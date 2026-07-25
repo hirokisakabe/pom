@@ -66,7 +66,7 @@ The default font is **Noto Sans JP**, bundled with pom for accurate text measure
 <Text fontFamily="Noto Sans JP">Japanese text (default)</Text>
 ```
 
-> **Note:** Custom fonts must be installed on the system where the PPTX is opened. Noto Sans JP is the only font with built-in measurement support.
+> **Note:** Custom fonts must be installed on the system where the PPTX is opened. For `Text`, `Ul`, `Ol`, and `Shape`, pass font bytes through the `buildPptx` `fonts` option to use their advance widths for layout measurement. This does not embed or install the font.
 
 ### Font Size Guide
 
@@ -236,7 +236,7 @@ Apply a CSS-like `linear-gradient()` or `radial-gradient()` as the background wi
 
 ### Text Gradient
 
-Paint the characters themselves with a `linear-gradient()` via `textGradient` on `<Text>`. Same syntax as `backgroundGradient` (angle + 2 or more hex color stops). Exported as a native PowerPoint gradient text fill (editable in PowerPoint, not rasterized). Takes precedence over `color`, and overrides per-run colors inside inline tags (`<Span color="...">` etc.) so the whole text reads with one gradient. Useful for cover titles, KPI numerals, and pull quotes. Note: in browser environments use `pptx.write()` — `pptx.writeFile()` falls back to plain pptxgenjs output without the gradient post-processing.
+Paint the characters themselves with a `linear-gradient()` via `textGradient` on `<Text>`. Same syntax as `backgroundGradient` (angle + 2 or more hex color stops). Exported as a native PowerPoint gradient text fill (editable in PowerPoint, not rasterized). Takes precedence over `color`, and overrides per-run colors inside inline tags (`<Span color="...">` etc.) so the whole text reads with one gradient. Useful for cover titles, KPI numerals, and pull quotes.
 
 ```xml
 <Text fontSize="64" bold="true" textGradient="linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)">Gradient title</Text>

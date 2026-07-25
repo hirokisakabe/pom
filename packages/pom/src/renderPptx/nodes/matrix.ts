@@ -1,9 +1,16 @@
 import type { PositionedNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
 import { stripHash } from "../utils/visualStyle.ts";
-import { pxToIn, pxToPt } from "../units.ts";
 import { measureMatrix } from "../../calcYogaLayout/measureCompositeNodes.ts";
 import { resolveScaledContentArea } from "../utils/scaleToFit.ts";
+import { addStraightLine } from "../utils/straightLine.ts";
+import {
+  addGlimpseShape,
+  createShapeBoundsInput,
+  noShapeOutline,
+  solidShapeFill,
+} from "../utils/glimpseShape.ts";
+import { addGlimpseTextBox } from "../utils/glimpseTextBox.ts";
 
 type MatrixPositionedNode = Extract<PositionedNode, { type: "matrix" }>;
 
@@ -45,55 +52,63 @@ export function renderMatrixNode(
 
   // === 1. 十字線（軸線）を描画 ===
   // 横線（X軸）
-  ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-    x: pxToIn(areaX),
-    y: pxToIn(centerY),
-    w: pxToIn(areaW),
-    h: 0,
-    line: { color: axisColor, width: pxToPt(lineWidth) },
-  });
+  addStraightLine(
+    ctx,
+    { x1: areaX, y1: centerY, x2: areaX + areaW, y2: centerY },
+    { color: axisColor, lineWidth },
+  );
 
   // 縦線（Y軸）
-  ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-    x: pxToIn(centerX),
-    y: pxToIn(areaY),
-    w: 0,
-    h: pxToIn(areaH),
-    line: { color: axisColor, width: pxToPt(lineWidth) },
-  });
+  addStraightLine(
+    ctx,
+    { x1: centerX, y1: areaY, x2: centerX, y2: areaY + areaH },
+    { color: axisColor, lineWidth },
+  );
 
   // === 2. 軸ラベルを描画 ===
   const axisLabelW = 120 * scaleFactor;
   const axisLabelH = 24 * scaleFactor;
 
   // X軸ラベル（下部中央）
-  ctx.slide.addText(axes.x, {
-    x: pxToIn(centerX - axisLabelW / 2),
-    y: pxToIn(areaY + areaH + 8 * scaleFactor),
-    w: pxToIn(axisLabelW),
-    h: pxToIn(axisLabelH),
-    fontSize: pxToPt(12 * scaleFactor),
-    fontFace: "Noto Sans JP",
-    color: axisLabelColor,
-    align: "center",
-    valign: "top",
-  });
+  addGlimpseTextBox(
+    ctx,
+    {
+      x: centerX - axisLabelW / 2,
+      y: areaY + areaH + 8 * scaleFactor,
+      w: axisLabelW,
+      h: axisLabelH,
+    },
+    {
+      text: axes.x,
+      fontSize: 12 * scaleFactor,
+      fontFace: "Noto Sans JP",
+      color: axisLabelColor,
+      align: "center",
+      valign: "top",
+    },
+  );
 
   // Y軸ラベル（左部中央）270° 回転で下から上読み。w が視覚的な高さになるため CJK 5 文字以上も収まる幅を確保
   const yLabelW = 100 * scaleFactor;
   const yLabelH = 20 * scaleFactor;
-  ctx.slide.addText(axes.y, {
-    x: pxToIn(content.x + axisMargin / 2 - yLabelW / 2),
-    y: pxToIn(centerY - yLabelH / 2),
-    w: pxToIn(yLabelW),
-    h: pxToIn(yLabelH),
-    fontSize: pxToPt(12 * scaleFactor),
-    fontFace: "Noto Sans JP",
-    color: axisLabelColor,
-    align: "center",
-    valign: "middle",
-    rotate: 270,
-  });
+  addGlimpseTextBox(
+    ctx,
+    {
+      x: content.x + axisMargin / 2 - yLabelW / 2,
+      y: centerY - yLabelH / 2,
+      w: yLabelW,
+      h: yLabelH,
+    },
+    {
+      text: axes.y,
+      fontSize: 12 * scaleFactor,
+      fontFace: "Noto Sans JP",
+      color: axisLabelColor,
+      align: "center",
+      valign: "middle",
+      rotate: 270,
+    },
+  );
 
   // === 3. 象限ラベルを描画 ===
   if (quadrants) {
@@ -124,28 +139,47 @@ export function renderMatrixNode(
     const itemColor = item.color ?? defaultItemColor;
 
     // 円を描画
-    ctx.slide.addShape(ctx.pptx.ShapeType.ellipse, {
-      x: pxToIn(itemX - itemSize / 2),
-      y: pxToIn(itemY - itemSize / 2),
-      w: pxToIn(itemSize),
-      h: pxToIn(itemSize),
-      fill: { color: itemColor },
-      line: { type: "none" as const },
-    });
+    addGlimpseShape(
+      ctx,
+      {
+        geometry: { kind: "preset", preset: "ellipse" },
+        ...createShapeBoundsInput({
+          x: itemX - itemSize / 2,
+          y: itemY - itemSize / 2,
+          w: itemSize,
+          h: itemSize,
+        }),
+        fill: solidShapeFill(itemColor),
+        outline: noShapeOutline(),
+      },
+      {
+        x: itemX - itemSize / 2,
+        y: itemY - itemSize / 2,
+        w: itemSize,
+        h: itemSize,
+      },
+      { fillColor: itemColor },
+    );
 
     // ラベルを描画（円の上）
-    ctx.slide.addText(item.label, {
-      x: pxToIn(itemX - itemLabelW / 2),
-      y: pxToIn(itemY - itemSize / 2 - 20 * scaleFactor),
-      w: pxToIn(itemLabelW),
-      h: pxToIn(itemLabelH),
-      fontSize: pxToPt(11 * scaleFactor),
-      fontFace: "Noto Sans JP",
-      color: stripHash(item.textColor) ?? itemLabelColor,
-      bold: true,
-      align: "center",
-      valign: "bottom",
-    });
+    addGlimpseTextBox(
+      ctx,
+      {
+        x: itemX - itemLabelW / 2,
+        y: itemY - itemSize / 2 - 20 * scaleFactor,
+        w: itemLabelW,
+        h: itemLabelH,
+      },
+      {
+        text: item.label,
+        fontSize: 11 * scaleFactor,
+        fontFace: "Noto Sans JP",
+        color: stripHash(item.textColor) ?? itemLabelColor,
+        bold: true,
+        align: "center",
+        valign: "bottom",
+      },
+    );
   }
 }
 
@@ -167,54 +201,78 @@ function renderQuadrantLabels(
   const quadrantH = 48 * scaleFactor;
 
   // 左上
-  ctx.slide.addText(quadrants.topLeft, {
-    x: pxToIn(areaX + quadrantInset),
-    y: pxToIn(areaY + quadrantInset),
-    w: pxToIn(quadrantW),
-    h: pxToIn(quadrantH),
-    fontSize: pxToPt(quadrantFontSize),
-    fontFace: "Noto Sans JP",
-    color: quadrantColor,
-    align: "left",
-    valign: "top",
-  });
+  addGlimpseTextBox(
+    ctx,
+    {
+      x: areaX + quadrantInset,
+      y: areaY + quadrantInset,
+      w: quadrantW,
+      h: quadrantH,
+    },
+    {
+      text: quadrants.topLeft,
+      fontSize: quadrantFontSize,
+      fontFace: "Noto Sans JP",
+      color: quadrantColor,
+      align: "left",
+      valign: "top",
+    },
+  );
 
   // 右上
-  ctx.slide.addText(quadrants.topRight, {
-    x: pxToIn(centerX + quadrantInset),
-    y: pxToIn(areaY + quadrantInset),
-    w: pxToIn(quadrantW),
-    h: pxToIn(quadrantH),
-    fontSize: pxToPt(quadrantFontSize),
-    fontFace: "Noto Sans JP",
-    color: quadrantColor,
-    align: "right",
-    valign: "top",
-  });
+  addGlimpseTextBox(
+    ctx,
+    {
+      x: centerX + quadrantInset,
+      y: areaY + quadrantInset,
+      w: quadrantW,
+      h: quadrantH,
+    },
+    {
+      text: quadrants.topRight,
+      fontSize: quadrantFontSize,
+      fontFace: "Noto Sans JP",
+      color: quadrantColor,
+      align: "right",
+      valign: "top",
+    },
+  );
 
   // 左下
-  ctx.slide.addText(quadrants.bottomLeft, {
-    x: pxToIn(areaX + quadrantInset),
-    y: pxToIn(centerY + areaH / 2 - quadrantH - quadrantInset),
-    w: pxToIn(quadrantW),
-    h: pxToIn(quadrantH),
-    fontSize: pxToPt(quadrantFontSize),
-    fontFace: "Noto Sans JP",
-    color: quadrantColor,
-    align: "left",
-    valign: "bottom",
-  });
+  addGlimpseTextBox(
+    ctx,
+    {
+      x: areaX + quadrantInset,
+      y: centerY + areaH / 2 - quadrantH - quadrantInset,
+      w: quadrantW,
+      h: quadrantH,
+    },
+    {
+      text: quadrants.bottomLeft,
+      fontSize: quadrantFontSize,
+      fontFace: "Noto Sans JP",
+      color: quadrantColor,
+      align: "left",
+      valign: "bottom",
+    },
+  );
 
   // 右下
-  ctx.slide.addText(quadrants.bottomRight, {
-    x: pxToIn(centerX + quadrantInset),
-    y: pxToIn(centerY + areaH / 2 - quadrantH - quadrantInset),
-    w: pxToIn(quadrantW),
-    h: pxToIn(quadrantH),
-    fontSize: pxToPt(quadrantFontSize),
-    fontFace: "Noto Sans JP",
-    color: quadrantColor,
-    align: "right",
-    valign: "bottom",
-  });
+  addGlimpseTextBox(
+    ctx,
+    {
+      x: centerX + quadrantInset,
+      y: centerY + areaH / 2 - quadrantH - quadrantInset,
+      w: quadrantW,
+      h: quadrantH,
+    },
+    {
+      text: quadrants.bottomRight,
+      fontSize: quadrantFontSize,
+      fontFace: "Noto Sans JP",
+      color: quadrantColor,
+      align: "right",
+      valign: "bottom",
+    },
+  );
 }

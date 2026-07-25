@@ -1,0 +1,1 @@
+../../../packages/pom/docs/pom-library.md

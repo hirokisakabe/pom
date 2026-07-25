@@ -5,6 +5,7 @@ import { DiagnosticsError } from "@hirokisakabe/pom";
 import { runBuild, runBuildWatch } from "./build.ts";
 import { runPreview } from "./preview.ts";
 import { runRender, type RenderFormat, type TextOutput } from "./render.ts";
+import { runThemeExtract } from "./theme.ts";
 
 const require = createRequire(import.meta.url);
 const { version } = require("../package.json") as { version: string };
@@ -162,5 +163,20 @@ program
       });
     },
   );
+
+const theme = program.command("theme").description("Theme-related utilities");
+
+theme
+  .command("extract")
+  .description(
+    "Extract PowerPoint theme colors as pom ThemeTokens JSON (one entry per visible slide layout)",
+  )
+  .argument("<pptx>", "Input PPTX file")
+  .action((pptx: string) => {
+    runThemeExtract(pptx).catch((err: unknown) => {
+      console.error(err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    });
+  });
 
 program.parse();

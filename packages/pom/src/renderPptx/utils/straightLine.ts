@@ -1,16 +1,24 @@
 /**
- * 2 点間の直線を pptxgenjs の line shape に変換する共通描画処理。
+ * 2 点間の直線を line shape に変換する共通描画処理。
  *
- * pptxgenjs の line shape は左上座標 (x, y) + サイズ (w, h) で表現され、
- * 線の向き (始点→終点) は flipH / flipV で表すため、端点座標からの
- * 変換ロジックを Line / Arrow ノードで共有する。
+ * line shape は左上座標 (x, y) + サイズ (w, h) で表現され、
+ * 線の向き (始点→終点) は flipH / flipV で表す。arrow endpoint の
+ * 型変換だけは native connector の Arrow と共有する。
  */
 import type { LineArrow, LineNode } from "../../types.ts";
 import type { RenderContext } from "../types.ts";
-import { pxToIn, pxToPt } from "../units.ts";
+import { asEmu } from "@pptx-glimpse/document";
+import { pxToEmu } from "../units.ts";
+import {
+  addGlimpseShape,
+  arrowEndpoint,
+  createShapeBoundsInput,
+  noneShapeFill,
+  solidShapeFill,
+} from "./glimpseShape.ts";
 
 /**
- * boolean | LineArrowOptions から pptxgenjs の arrow type を取得
+ * boolean | LineArrowOptions から arrow type を取得
  */
 export function resolveArrowType(
   arrow: LineArrow | undefined,
@@ -32,7 +40,10 @@ type StraightLinePoints = { x1: number; y1: number; x2: number; y2: number };
 type StraightLineStyle = Pick<
   LineNode,
   "color" | "lineWidth" | "dashType" | "beginArrow" | "endArrow"
->;
+> & {
+  lineGradient?: string;
+  lineGradientOpacity?: number;
+};
 
 /**
  * 始点 (x1, y1) から終点 (x2, y2) への直線を描画する
@@ -40,7 +51,15 @@ type StraightLineStyle = Pick<
 export function addStraightLine(
   ctx: RenderContext,
   { x1, y1, x2, y2 }: StraightLinePoints,
-  { color, lineWidth, dashType, beginArrow, endArrow }: StraightLineStyle,
+  {
+    color,
+    lineWidth,
+    dashType,
+    beginArrow,
+    endArrow,
+    lineGradient,
+    lineGradientOpacity,
+  }: StraightLineStyle,
 ): void {
   const minX = Math.min(x1, x2);
   const minY = Math.min(y1, y2);
@@ -53,19 +72,30 @@ export function addStraightLine(
   const flipH = x2 < x1;
   const flipV = y2 < y1;
 
-  ctx.slide.addShape(ctx.pptx.ShapeType.line, {
-    x: pxToIn(minX),
-    y: pxToIn(minY),
-    w: pxToIn(lineW),
-    h: pxToIn(lineH),
-    flipH,
-    flipV,
-    line: {
-      color: color ?? "000000",
-      width: lineWidth !== undefined ? pxToPt(lineWidth) : 1,
-      dashType,
-      beginArrowType: resolveArrowType(beginArrow),
-      endArrowType: resolveArrowType(endArrow),
+  addGlimpseShape(
+    ctx,
+    {
+      geometry: { kind: "preset", preset: "line" },
+      ...createShapeBoundsInput({ x: minX, y: minY, w: lineW, h: lineH }),
+      fill: noneShapeFill(),
+      outline: {
+        fill: solidShapeFill(color ?? "000000"),
+        width:
+          lineWidth !== undefined
+            ? asEmu(Math.round(pxToEmu(lineWidth)))
+            : asEmu(12700),
+        dash: dashType === "lgDashDotDot" ? undefined : dashType,
+        headEnd: arrowEndpoint(resolveArrowType(beginArrow)),
+        tailEnd: arrowEndpoint(resolveArrowType(endArrow)),
+      },
     },
-  });
+    { x: minX, y: minY, w: lineW, h: lineH },
+    {
+      flipH,
+      flipV,
+      dashType,
+      outlineGradient: lineGradient,
+      outlineOpacity: lineGradientOpacity,
+    },
+  );
 }

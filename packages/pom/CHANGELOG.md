@@ -1,5 +1,90 @@
 # @hirokisakabe/pom
 
+## 10.2.0
+
+### Minor Changes
+
+- [#967](https://github.com/hirokisakabe/pom/pull/967) [`30e3cba`](https://github.com/hirokisakabe/pom/commit/30e3cbad973770c2f27d99cea18b14c2335d40c7) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Arrow を PowerPoint native connector として出力し、接続先の Shape / Text を移動したときに追従するようにしました。
+
+### Patch Changes
+
+- [#968](https://github.com/hirokisakabe/pom/pull/968) [`6bd917d`](https://github.com/hirokisakabe/pom/commit/6bd917d98833fd4a5e544c87c1c19a41fba36a9e) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - PPTX 生成を `@pptx-glimpse/document` の authoring session API へ移行し、連続 authoring の状態管理を簡素化しました。
+
+- [#963](https://github.com/hirokisakabe/pom/pull/963) [`a41f08f`](https://github.com/hirokisakabe/pom/commit/a41f08f3ac87966ceec9fb58e69e15f0053e3f7f) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - PPTX authoring の状態管理を render 固有 context に分離し、POM style の glimpse input 変換を純粋 helper に整理しました。
+
+## 10.1.0
+
+### Minor Changes
+
+- [#961](https://github.com/hirokisakabe/pom/pull/961) [`ce6fe6d`](https://github.com/hirokisakabe/pom/commit/ce6fe6dd96f3c38d1aaa54ffa34d8095b8421680) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - `buildPptx` の `fonts` オプションに `ArrayBuffer` / `Uint8Array` の font data を持つ `FontInput[]` を指定し、Text・Ul・Ol・Shape の幅と折り返しを実フォントの advance width で計測できるようにしました。
+
+### Patch Changes
+
+- [#958](https://github.com/hirokisakabe/pom/pull/958) [`78ee654`](https://github.com/hirokisakabe/pom/commit/78ee654d21504e61491053266eb6fe6ff8f91e16) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Layer 内の絶対配置要素を autoFit が通常フローとして過大計測する問題を修正し、overflow diagnostic に原因ノードの計測値を追加しました。
+
+## 10.0.0
+
+### Major Changes
+
+- [#954](https://github.com/hirokisakabe/pom/pull/954) [`e5abe7b`](https://github.com/hirokisakabe/pom/commit/e5abe7b7452f54a469d00b999978357c5001bbc7) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - PPTX 全体を `@pptx-glimpse/document` の package writer で生成し、`pptxgenjs` 依存と marker 置換後処理を削除しました。
+
+  `buildPptx()` が返す `pptx` は pptxgenjs インスタンスではなく、`write` / `writeFile` / `stream` を提供する `WritablePptx` になります。出力以外の pptxgenjs API を戻り値から利用していた場合は、XML または `SlideMasterOptions` で生成内容を指定してください。
+
+  `write()` は `arraybuffer` / `base64` / `binarystring` / `blob` / `nodebuffer` / `uint8array` をサポートし、出力形式を省略した場合は `Blob` を返します。`nodebuffer` は Node.js 専用です。従来の `compression` オプションと `stream()` の引数は提供しません。
+
+### Patch Changes
+
+- [#950](https://github.com/hirokisakabe/pom/pull/950) [`3f28c15`](https://github.com/hirokisakabe/pom/commit/3f28c1515d601a4852f1b73e6a826a6fa8215ed7) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Table と Chart の PPTX 生成を `@pptx-glimpse/document` の native writer へ移行しました。
+
+## 9.1.2
+
+### Patch Changes
+
+- [#944](https://github.com/hirokisakabe/pom/pull/944) [`72774d5`](https://github.com/hirokisakabe/pom/commit/72774d5ed91bedee03e59ef12ad1d4b146d66c88) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Image / Svg / Icon primitives now emit image media parts and `<p:pic>` XML through the `@pptx-glimpse/document` writer path.
+
+- [#941](https://github.com/hirokisakabe/pom/pull/941) [`a61d148`](https://github.com/hirokisakabe/pom/commit/a61d148b216a37f1f02892a2f1209accc88d995d) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Improve Shape, Line, and Arrow PPTX XML generation by using the @pptx-glimpse/document shape writer.
+
+## 9.1.1
+
+### Patch Changes
+
+- [#934](https://github.com/hirokisakabe/pom/pull/934) [`90622a7`](https://github.com/hirokisakabe/pom/commit/90622a7acdc9aa63c4483d283bb6d9c517d78323) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Text primitive の PPTX 生成を @pptx-glimpse/document writer 経由に移行しました。
+
+## 9.1.0
+
+### Minor Changes
+
+- [#925](https://github.com/hirokisakabe/pom/pull/925) [`f748519`](https://github.com/hirokisakabe/pom/commit/f74851911968de692df8e64f8d1de865f41f5207) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - PPTX バッファから PowerPoint theme の配色を `ThemeTokens[]` として抽出する `extractThemeTokensFromPptx()` API を追加しました。
+
+- [#927](https://github.com/hirokisakabe/pom/pull/927) [`2fa8c77`](https://github.com/hirokisakabe/pom/commit/2fa8c77d1ff9511e585f79fba8f2e6a990885998) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - PPTX バッファを各 slideMaster 配下の表示レイアウトごとに空白スライド 1 枚だけ含む PPTX に変換する `extractSlideMastersAsPptx()` API を追加しました。
+
+## 9.0.0
+
+### Major Changes
+
+- [#924](https://github.com/hirokisakabe/pom/pull/924) [`d4b2b24`](https://github.com/hirokisakabe/pom/commit/d4b2b24119a02cb71077ccd17eb4a9457d2c71c0) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - Node.js のサポート範囲を 22 以降に引き上げました。`@pptx-glimpse/document` 消費に備えて、pom 関連 package と VS Code extension の engines を Node 22 に揃えています。VS Code extension は Node.js 22 extension host を前提にするため、最小 VS Code バージョンも 1.101 に引き上げています。
+
+## 8.9.0
+
+### Minor Changes
+
+- [#911](https://github.com/hirokisakabe/pom/pull/911) [`433193e`](https://github.com/hirokisakabe/pom/commit/433193e1e3d3ef6342e4ffbda1278ae706b08add) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - `backgroundGradient` 属性で CSS の `radial-gradient(<shape>? <size>? at <position>?, <stops>)` 構文をサポート。pptxgenjs は radial fill を未サポートのため、既存 `linear-gradient` と同様に出力 PPTX の slide XML を後処理で書き換え、DrawingML ネイティブの `<a:gradFill>` + `<a:path path="circle">` + `<a:fillToRect>` を生成する。
+
+  - 形状 (`circle` / `ellipse`、省略時 `ellipse`) と size キーワード (`closest-side` / `closest-corner` / `farthest-side` / `farthest-corner`、省略時 `farthest-corner`) は構文として受け付けるが、PowerPoint の radial fill は `path="circle"` 1 種類で shape / size を描画上区別しない。要素の縦横比に応じた `farthest-corner` 相当の楕円扱いで出力される。
+  - 中心位置は `at <position>` (キーワード / `%`) で指定可能。`fillToRect` の `l` / `t` / `r` / `b` に変換される。省略時は `at center`。
+  - `textGradient` は radial を受け付けない (linear-gradient のみ)。
+  - 既存の `linear-gradient` 構文の出力 XML は変化しない (後方互換)。
+
+- [#910](https://github.com/hirokisakabe/pom/pull/910) [`cc5aaa8`](https://github.com/hirokisakabe/pom/commit/cc5aaa86d60fbded6c9d0136bafdf7043a06a698) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - `<Timeline>` ノードのカスタマイズ範囲を拡張しました。
+
+  - `connectorColor`: 軸線色をハードコードの `E2E8F0` から変更可能になりました
+  - `connectorGradient`: `backgroundGradient` と同じ `linear-gradient(...)` 構文で軸線にリニアグラデーションを適用できます
+  - `useColorForDate`: `true` を指定すると各 `<TimelineItem>` の `color` が `date` テキスト色として連動します
+  - `<TimelineItem dateColor>`: per-item で `date` 色を上書きできます。`Timeline.dateColor` / `useColorForDate` よりも優先されます
+  - `fontFamily`: `Noto Sans JP` ハードコードを解除し、Timeline 全体のフォントファミリを指定できるようになりました (未指定時は従来通り `Noto Sans JP`)
+
+  既存 Timeline の出力は変化しません (後方互換)。`pom-jsx` 側にも対応する props を追加しました。
+
 ## 8.8.0
 
 ### Minor Changes

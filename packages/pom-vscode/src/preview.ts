@@ -18,6 +18,7 @@ const SEVERITY_MAP: Record<DiagnosticCode, vscode.DiagnosticSeverity> = {
   SCALE_BELOW_THRESHOLD: vscode.DiagnosticSeverity.Warning,
   MASTER_PPTX_PARSE_FAILED: vscode.DiagnosticSeverity.Warning,
   ARROW_REF_NOT_FOUND: vscode.DiagnosticSeverity.Warning,
+  ARROW_REF_NOT_CONNECTABLE: vscode.DiagnosticSeverity.Warning,
   DUPLICATE_NODE_ID: vscode.DiagnosticSeverity.Warning,
   NODE_OUT_OF_BOUNDS: vscode.DiagnosticSeverity.Warning,
   NODE_OVERLAP: vscode.DiagnosticSeverity.Warning,

@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "pom",
   "description": "Live preview for pom-md / pom XML presentations",
-  "version": "0.3.4",
+  "version": "0.4.1",
   "publisher": "hirokisakabe",
   "license": "MIT",
   "repository": {
@@ -12,8 +12,8 @@
     "directory": "packages/pom-vscode"
   },
   "engines": {
-    "node": ">=20",
-    "vscode": "^1.85.0"
+    "node": ">=22",
+    "vscode": "^1.101.0"
   },
   "icon": "icon.png",
   "categories": [
@@ -97,6 +97,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:showcase": "vitest run --config vitest.showcase.config.ts",
     "test:integration": "node esbuild.mjs --test && vscode-test",
     "test:vsix": "node esbuild.mjs --test && vsce package --no-dependencies && node run-vsix-test.mjs",
     "test:vsix:clean": "rm -f *.vsix"
@@ -105,15 +106,15 @@
     "@hirokisakabe/pom": "workspace:*",
     "@hirokisakabe/pom-md": "workspace:*",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^25",
-    "@types/vscode": "~1.85.0",
-    "@vitest/coverage-v8": "^4.1.9",
-    "@vscode/test-cli": "^0.0.12",
+    "@types/node": "^26",
+    "@types/vscode": "~1.101.0",
+    "@vitest/coverage-v8": "^4.1.10",
+    "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.0.0",
     "@vscode/vsce": "^3.9.2",
     "esbuild": "^0.28.1",
     "mocha": "^11.7.6",
-    "pptx-glimpse": "^1.1.1",
-    "sharp": "^0.35.1"
+    "pptx-glimpse": "^3.2.8",
+    "sharp": "^0.35.3"
   }
 }

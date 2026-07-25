@@ -1,0 +1,1 @@
+../../../../packages/pom-jsx/docs/_meta.ts
