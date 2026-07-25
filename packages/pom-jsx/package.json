@@ -1,6 +1,6 @@
 {
   "name": "@hirokisakabe/pom-jsx",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "JSX/TSX authoring package for pom — write slides in JSX/TSX.",
   "type": "module",
   "main": "./dist/index.js",
