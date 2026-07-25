@@ -287,7 +287,14 @@ function renderPerSideBorderPaths(
     const style = perSideBorders[side];
     if (!style) continue;
 
-    const points = buildSidePathPoints(side, w, h, r, ownership);
+    const points = buildSidePathPoints(
+      side,
+      w,
+      h,
+      r,
+      style.width ?? 1,
+      ownership,
+    );
     if (points.length < 2) continue;
 
     addGlimpseShape(
@@ -340,9 +347,14 @@ function buildSidePathPoints(
   w: number,
   h: number,
   r: number,
+  borderWidth: number,
   ownership: Record<BorderCorner, BorderSide | null>,
 ): CustGeomPoint[] {
   const points: CustGeomPoint[] = [];
+  // Outline は path の中心線を基準に両側へ広がる。中心線を線幅の半分だけ
+  // 内側へ寄せることで、ボーダー外周を背景 roundRect の外周に揃える。
+  const inset = Math.min(borderWidth / 2, r);
+  const pathRadius = Math.max(0, r - inset);
   const point = (p: { x: number; y: number }): CustGeomPoint => ({
     x: pxToIn(p.x),
     y: pxToIn(p.y),
@@ -357,8 +369,8 @@ function buildSidePathPoints(
       const radians = (angle * Math.PI) / 180;
       points.push(
         point({
-          x: center.x + r * Math.cos(radians),
-          y: center.y + r * Math.sin(radians),
+          x: center.x + pathRadius * Math.cos(radians),
+          y: center.y + pathRadius * Math.sin(radians),
         }),
       );
     }
@@ -367,12 +379,12 @@ function buildSidePathPoints(
   switch (side) {
     case "top": {
       if (ownership.topLeft === "top") {
-        points.push(point({ x: 0, y: r }));
+        points.push(point({ x: inset, y: r }));
         appendQuarterArc({ x: r, y: r }, 180);
       } else {
-        points.push(point({ x: r, y: 0 }));
+        points.push(point({ x: r, y: inset }));
       }
-      points.push(point({ x: w - r, y: 0 }));
+      points.push(point({ x: w - r, y: inset }));
       if (ownership.topRight === "top") {
         appendQuarterArc({ x: w - r, y: r }, 270);
       }
@@ -380,12 +392,12 @@ function buildSidePathPoints(
     }
     case "right": {
       if (ownership.topRight === "right") {
-        points.push(point({ x: w - r, y: 0 }));
+        points.push(point({ x: w - r, y: inset }));
         appendQuarterArc({ x: w - r, y: r }, 270);
       } else {
-        points.push(point({ x: w, y: r }));
+        points.push(point({ x: w - inset, y: r }));
       }
-      points.push(point({ x: w, y: h - r }));
+      points.push(point({ x: w - inset, y: h - r }));
       if (ownership.bottomRight === "right") {
         appendQuarterArc({ x: w - r, y: h - r }, 0);
       }
@@ -393,12 +405,12 @@ function buildSidePathPoints(
     }
     case "bottom": {
       if (ownership.bottomRight === "bottom") {
-        points.push(point({ x: w, y: h - r }));
+        points.push(point({ x: w - inset, y: h - r }));
         appendQuarterArc({ x: w - r, y: h - r }, 0);
       } else {
-        points.push(point({ x: w - r, y: h }));
+        points.push(point({ x: w - r, y: h - inset }));
       }
-      points.push(point({ x: r, y: h }));
+      points.push(point({ x: r, y: h - inset }));
       if (ownership.bottomLeft === "bottom") {
         appendQuarterArc({ x: r, y: h - r }, 90);
       }
@@ -406,12 +418,12 @@ function buildSidePathPoints(
     }
     case "left": {
       if (ownership.bottomLeft === "left") {
-        points.push(point({ x: r, y: h }));
+        points.push(point({ x: r, y: h - inset }));
         appendQuarterArc({ x: r, y: h - r }, 90);
       } else {
-        points.push(point({ x: 0, y: h - r }));
+        points.push(point({ x: inset, y: h - r }));
       }
-      points.push(point({ x: 0, y: r }));
+      points.push(point({ x: inset, y: r }));
       if (ownership.topLeft === "left") {
         appendQuarterArc({ x: r, y: r }, 180);
       }
