@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { PomEditor } from "@hirokisakabe/pom-editor";
 import {
+  downloadPptx,
+  exportImages,
   generatePreview,
   loadDocument,
   saveDocument,
@@ -109,6 +111,15 @@ export function App() {
         setXml(value);
       }}
       onPreview={(value, { signal }) => generatePreview(value, signal)}
+      onDownload={(value) => downloadPptx(value, document.filename)}
+      onExportImages={(value, options) =>
+        exportImages(value, {
+          format: options.format,
+          ...(options.scope === "current"
+            ? { slides: [options.currentSlide] }
+            : {}),
+        })
+      }
       onSave={
         document.editable
           ? async (value) => {

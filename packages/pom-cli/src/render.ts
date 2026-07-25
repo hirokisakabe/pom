@@ -8,9 +8,84 @@ import { loadInput } from "./input.ts";
 export type RenderFormat = "png" | "svg";
 export type TextOutput = "path" | "text";
 
+export interface RenderContext {
+  slideWidth: number;
+  slideHeight: number;
+  masterPptxData?: Uint8Array;
+}
+
+export interface RenderedSlide {
+  slideNumber: number;
+  data: string | Uint8Array;
+}
+
 function makeLog(verbose: boolean) {
   if (!verbose) return (_msg: string) => {};
   return (msg: string) => process.stderr.write(`[pom] ${msg}\n`);
+}
+
+export async function renderPresentation(
+  xml: string,
+  context: RenderContext,
+  options: {
+    format: RenderFormat;
+    slides?: number[];
+    textOutput?: TextOutput;
+    verbose?: boolean;
+  },
+): Promise<RenderedSlide[]> {
+  const log = makeLog(options.verbose ?? false);
+  const t1 = Date.now();
+  const { pptx } = await buildPptx(
+    xml,
+    { w: context.slideWidth, h: context.slideHeight },
+    {
+      textMeasurement: "fallback",
+      ...(context.masterPptxData ? { masterPptx: context.masterPptxData } : {}),
+      strict: true,
+    },
+  );
+  log(`Building PPTX... done (${Date.now() - t1}ms)`);
+
+  const buffer = await pptx.write({ outputType: "uint8array" });
+  if (!(buffer instanceof Uint8Array)) {
+    throw new Error("Unexpected output type from pptx.write");
+  }
+
+  const convertOptions = {
+    width: context.slideWidth,
+    fontDirs: [resolveBundledFontsDir()],
+    fontMapping: EXTRA_FONT_MAPPING,
+    skipSystemFonts: true,
+    ...(options.slides ? { slides: options.slides } : {}),
+  };
+
+  const t2 = Date.now();
+  let outputs: RenderedSlide[];
+  if (options.format === "svg") {
+    const { slides } = await convertPptxToSvg(buffer, {
+      ...convertOptions,
+      ...(options.textOutput ? { textOutput: options.textOutput } : {}),
+    });
+    outputs = slides.map((slide) => ({
+      slideNumber: slide.slideNumber,
+      data: slide.svg,
+    }));
+  } else {
+    const { slides } = await convertPptxToPng(buffer, convertOptions);
+    outputs = slides.map((slide) => ({
+      slideNumber: slide.slideNumber,
+      data: slide.png,
+    }));
+  }
+  log(
+    `Rendering ${options.format.toUpperCase()}... done (${Date.now() - t2}ms)`,
+  );
+
+  if (outputs.length === 0) {
+    throw new Error("No slides were rendered");
+  }
+  return outputs;
 }
 
 export async function runRender(
@@ -41,44 +116,20 @@ export async function runRender(
     log,
   );
 
-  const t1 = Date.now();
-  const { pptx } = await buildPptx(
+  const outputs = await renderPresentation(
     xml,
-    { w: slideWidth, h: slideHeight },
     {
-      textMeasurement: "fallback",
-      ...(masterPptxData ? { masterPptx: masterPptxData } : {}),
-      strict: true,
+      slideWidth,
+      slideHeight,
+      ...(masterPptxData ? { masterPptxData } : {}),
+    },
+    {
+      format,
+      ...(options.slides ? { slides: options.slides } : {}),
+      ...(options.textOutput ? { textOutput: options.textOutput } : {}),
+      verbose,
     },
   );
-  log(`Building PPTX... done (${Date.now() - t1}ms)`);
-
-  const buffer = await pptx.write({ outputType: "uint8array" });
-  if (!(buffer instanceof Uint8Array)) {
-    throw new Error("Unexpected output type from pptx.write");
-  }
-
-  const convertOptions = {
-    width: slideWidth,
-    fontDirs: [resolveBundledFontsDir()],
-    fontMapping: EXTRA_FONT_MAPPING,
-    skipSystemFonts: true,
-    ...(options.slides ? { slides: options.slides } : {}),
-  };
-
-  const t2 = Date.now();
-  let outputs: { slideNumber: number; data: string | Uint8Array }[];
-  if (format === "svg") {
-    const { slides } = await convertPptxToSvg(buffer, {
-      ...convertOptions,
-      ...(options.textOutput ? { textOutput: options.textOutput } : {}),
-    });
-    outputs = slides.map((s) => ({ slideNumber: s.slideNumber, data: s.svg }));
-  } else {
-    const { slides } = await convertPptxToPng(buffer, convertOptions);
-    outputs = slides.map((s) => ({ slideNumber: s.slideNumber, data: s.png }));
-  }
-  log(`Rendering ${format.toUpperCase()}... done (${Date.now() - t2}ms)`);
 
   if (options.slides) {
     const rendered = new Set(outputs.map((o) => o.slideNumber));
@@ -88,10 +139,6 @@ export async function runRender(
         `Warning: slide ${missing.join(", ")} not found in the presentation`,
       );
     }
-  }
-
-  if (outputs.length === 0) {
-    throw new Error("No slides were rendered");
   }
 
   fs.mkdirSync(absOutputDir, { recursive: true });

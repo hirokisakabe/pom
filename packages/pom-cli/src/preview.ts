@@ -5,9 +5,15 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildPptx, DiagnosticsError } from "@hirokisakabe/pom";
+import JSZip from "jszip";
 import { convertPptxToSvg } from "pptx-glimpse";
 import { EXTRA_FONT_MAPPING, resolveBundledFontsDir } from "./glimpse.ts";
 import { loadInput, loadInputContent, type LoadedInput } from "./input.ts";
+import {
+  renderPresentation,
+  type RenderedSlide,
+  type RenderFormat,
+} from "./render.ts";
 import { watchInputFile } from "./watch.ts";
 
 const DEFAULT_PORT = 3000;
@@ -34,6 +40,11 @@ interface PreviewFailure {
 }
 
 type PreviewResult = PreviewSuccess | PreviewFailure;
+
+interface ImageExportOptions {
+  format: RenderFormat;
+  slides?: number[];
+}
 
 class SaveConflictError extends Error {
   constructor() {
@@ -164,6 +175,25 @@ async function generateSvgs(
   return { svgs: slides.map((slide) => slide.svg) };
 }
 
+async function generatePptx(
+  xml: string,
+  context: Pick<LoadedInput, "slideWidth" | "slideHeight" | "masterPptxData">,
+): Promise<Uint8Array> {
+  const { pptx } = await buildPptx(
+    xml,
+    { w: context.slideWidth, h: context.slideHeight },
+    {
+      ...(context.masterPptxData ? { masterPptx: context.masterPptxData } : {}),
+      strict: true,
+    },
+  );
+  const buffer = await pptx.write({ outputType: "uint8array" });
+  if (!(buffer instanceof Uint8Array)) {
+    throw new Error("Unexpected output type from pptx.write");
+  }
+  return buffer;
+}
+
 function previewFailure(error: unknown): PreviewFailure {
   if (error instanceof DiagnosticsError) {
     return {
@@ -244,6 +274,32 @@ function readStringField(value: unknown, field: "xml" | "revision"): string {
   return (value as Record<string, string>)[field];
 }
 
+function readImageExportOptions(value: unknown): ImageExportOptions {
+  if (typeof value !== "object" || value === null) {
+    throw new Error("Expected an image export request");
+  }
+  const request = value as Record<string, unknown>;
+  if (request.format !== "png" && request.format !== "svg") {
+    throw new Error('Expected format to be "png" or "svg"');
+  }
+  if (
+    request.slides !== undefined &&
+    (!Array.isArray(request.slides) ||
+      request.slides.length === 0 ||
+      !request.slides.every(
+        (slide) => Number.isInteger(slide) && Number(slide) > 0,
+      ))
+  ) {
+    throw new Error("Expected slides to contain positive integers");
+  }
+  return {
+    format: request.format,
+    ...(request.slides
+      ? { slides: request.slides.map((slide) => Number(slide)) }
+      : {}),
+  };
+}
+
 function sendJson(
   res: http.ServerResponse,
   status: number,
@@ -256,10 +312,45 @@ function sendJson(
   res.end(JSON.stringify(value));
 }
 
+function outputBaseName(absInput: string): string {
+  return path.basename(absInput).replace(/\.pom\.(?:xml|md)$/u, "");
+}
+
+function encodeRfc5987(value: string): string {
+  return encodeURIComponent(value).replace(
+    /['()*]/gu,
+    (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
+  );
+}
+
+function sendAttachment(
+  res: http.ServerResponse,
+  data: string | Uint8Array,
+  mediaType: string,
+  filename: string,
+): void {
+  const buffer = Buffer.from(data);
+  res.writeHead(200, {
+    "Content-Type": mediaType,
+    "Content-Disposition": `attachment; filename="download"; filename*=UTF-8''${encodeRfc5987(
+      filename,
+    )}`,
+    "Content-Length": buffer.byteLength,
+    "Cache-Control": "no-store",
+    "X-Pom-Filename": encodeURIComponent(filename),
+  });
+  res.end(buffer);
+}
+
 export interface PreviewServerOptions {
   verbose?: boolean;
   clientScript?: string;
   generatePreview?: (xml: string) => Promise<PreviewResult>;
+  generatePptx?: (xml: string) => Promise<Uint8Array>;
+  renderImages?: (
+    xml: string,
+    options: ImageExportOptions,
+  ) => Promise<RenderedSlide[]>;
   onDocumentEvent?: (document: PreviewDocument) => void;
 }
 
@@ -376,6 +467,87 @@ export function createPreviewServer(
             ? await options.generatePreview(xml)
             : await generateSvgs(xml, loadInput(absInput), verbose);
           sendJson(res, 200, result);
+        } catch (error) {
+          sendJson(res, 422, previewFailure(error));
+        }
+        return;
+      }
+      if (req.method === "POST" && url.pathname === "/_api/export/pptx") {
+        const body = await readJsonBody(req);
+        const xml = readStringField(body, "xml");
+        try {
+          const buffer = options.generatePptx
+            ? await options.generatePptx(xml)
+            : await generatePptx(xml, loadInput(absInput));
+          sendAttachment(
+            res,
+            buffer,
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            `${outputBaseName(absInput)}.pptx`,
+          );
+        } catch (error) {
+          sendJson(res, 422, previewFailure(error));
+        }
+        return;
+      }
+      if (req.method === "POST" && url.pathname === "/_api/export/images") {
+        const body = await readJsonBody(req);
+        const xml = readStringField(body, "xml");
+        const imageOptions = readImageExportOptions(body);
+        try {
+          let outputs: RenderedSlide[];
+          if (options.renderImages) {
+            outputs = await options.renderImages(xml, imageOptions);
+          } else {
+            const context = loadInput(absInput);
+            outputs = await renderPresentation(
+              xml,
+              {
+                slideWidth: context.slideWidth,
+                slideHeight: context.slideHeight,
+                ...(context.masterPptxData
+                  ? { masterPptxData: context.masterPptxData }
+                  : {}),
+              },
+              {
+                ...imageOptions,
+                ...(imageOptions.format === "svg"
+                  ? { textOutput: "text" as const }
+                  : {}),
+                verbose,
+              },
+            );
+          }
+          const padWidth = Math.max(
+            2,
+            ...outputs.map((output) => String(output.slideNumber).length),
+          );
+          const files = outputs.map((output) => ({
+            filename: `${outputBaseName(absInput)}-slide-${String(
+              output.slideNumber,
+            ).padStart(padWidth, "0")}.${imageOptions.format}`,
+            data: output.data,
+          }));
+          if (imageOptions.slides !== undefined && files.length === 1) {
+            const file = files[0];
+            sendAttachment(
+              res,
+              file.data,
+              imageOptions.format === "png" ? "image/png" : "image/svg+xml",
+              file.filename,
+            );
+          } else {
+            const zip = new JSZip();
+            for (const file of files) {
+              zip.file(file.filename, file.data);
+            }
+            sendAttachment(
+              res,
+              await zip.generateAsync({ type: "uint8array" }),
+              "application/zip",
+              `${outputBaseName(absInput)}-${imageOptions.format}-images.zip`,
+            );
+          }
         } catch (error) {
           sendJson(res, 422, previewFailure(error));
         }

@@ -44,6 +44,7 @@
     "@hirokisakabe/pom": "workspace:*",
     "@hirokisakabe/pom-md": "workspace:*",
     "commander": "^15.0.0",
+    "jszip": "^3.10.1",
     "pptx-glimpse": "^3.2.8"
   },
   "devDependencies": {

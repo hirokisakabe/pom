@@ -49,7 +49,9 @@ pom preview slides.pom.xml
 pom preview slides.pom.md
 ```
 
-The browser opens http://localhost:3000 automatically. For `.pom.xml` files, XML and AST edits are kept in the browser and immediately reflected in the preview. Use **Save** to write the current XML back to the input file. If another editor changed the file after it was loaded, Save is rejected instead of overwriting that change. Successful saves replace the file atomically.
+The browser opens http://localhost:3000 automatically. For `.pom.xml` files, XML and AST edits are kept in the browser and immediately reflected in the preview. Use **Download** to generate a PPTX from the current browser contents, or choose PNG / SVG and the current / all slides before selecting **Export Images**. All-slide image exports are downloaded as a ZIP. These exports include unsaved edits and are also available for `.pom.md` inputs. Progress, success, and build diagnostics are shown in the editor.
+
+Use **Save** to write the current XML back to a `.pom.xml` input file. If another editor changed the file after it was loaded, Save is rejected instead of overwriting that change. Successful saves replace the file atomically.
 
 External file changes continue to update the browser when there are no unsaved browser edits. When unsaved edits exist, they are preserved and the toolbar reports the external change. `.pom.md` input remains preview-only because writing generated XML back to Markdown is outside the editor's scope.
 
