@@ -187,6 +187,80 @@ describe("PomEditor", () => {
     expect(await screen.findByText("SVG exported")).toBeTruthy();
   });
 
+  it("現在表示しているページ番号をcurrent画像出力へ渡す", async () => {
+    const onExportImages = vi.fn().mockResolvedValue(undefined);
+    render(
+      <PomEditor
+        xml="<Text />"
+        onChange={vi.fn()}
+        onPreview={vi.fn().mockResolvedValue({
+          svgs: [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>First</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>Second</text></svg>',
+          ],
+        })}
+        onExportImages={onExportImages}
+        debounceMs={0}
+      />,
+    );
+    await screen.findByText("First");
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+    await screen.findByText("Second");
+
+    fireEvent.click(screen.getByRole("button", { name: "Export Images" }));
+
+    await waitFor(() =>
+      expect(onExportImages).toHaveBeenCalledWith("<Text />", {
+        format: "png",
+        scope: "current",
+        currentSlide: 2,
+      }),
+    );
+  });
+
+  it("XML変更後は新しいpreviewが成功するまで画像出力を無効化する", async () => {
+    const never = new Promise<never>(() => {});
+    const onPreview = vi
+      .fn()
+      .mockResolvedValueOnce({
+        svgs: [
+          '<svg xmlns="http://www.w3.org/2000/svg"><text>Old</text></svg>',
+        ],
+      })
+      .mockReturnValueOnce(never);
+    const { rerender } = render(
+      <PomEditor
+        xml="<Text>old</Text>"
+        onChange={vi.fn()}
+        onPreview={onPreview}
+        onExportImages={vi.fn()}
+        debounceMs={0}
+      />,
+    );
+    await screen.findByText("Old");
+    expect(
+      screen
+        .getByRole("button", { name: "Export Images" })
+        .hasAttribute("disabled"),
+    ).toBe(false);
+
+    rerender(
+      <PomEditor
+        xml="<Text>new</Text>"
+        onChange={vi.fn()}
+        onPreview={onPreview}
+        onExportImages={vi.fn()}
+        debounceMs={0}
+      />,
+    );
+
+    expect(
+      screen
+        .getByRole("button", { name: "Export Images" })
+        .hasAttribute("disabled"),
+    ).toBe(true);
+  });
+
   it("出力処理中は多重実行を防ぎ、処理中表示とdiagnosticsを表示する", async () => {
     let rejectExport: ((reason: unknown) => void) | undefined;
     const onExportImages = vi.fn(

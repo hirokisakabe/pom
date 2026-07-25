@@ -75,6 +75,7 @@ export function PomEditor({
 }: PomEditorProps) {
   const [mode, setMode] = useState<PomEditorMode>("xml");
   const [svgs, setSvgs] = useState<string[]>([]);
+  const [previewedXml, setPreviewedXml] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [imageFormat, setImageFormat] = useState<"png" | "svg">("png");
@@ -97,11 +98,16 @@ export function PomEditor({
     onPreviewRef.current = onPreview;
   }, [onPreview]);
 
+  useEffect(() => {
+    setActionNotice(null);
+  }, [xml]);
+
   const executePreview = useCallback(async () => {
     abortControllerRef.current?.abort();
     const controller = new AbortController();
     abortControllerRef.current = controller;
     setIsLoading(true);
+    setPreviewedXml(null);
     setDiagnostics(null);
     setDiagnosticNotice(null);
 
@@ -115,6 +121,7 @@ export function PomEditor({
         return;
       }
       setSvgs(result.svgs);
+      setPreviewedXml(xml);
       setCurrentPage(1);
     } catch (error) {
       if (controller.signal.aborted) return;
@@ -334,9 +341,10 @@ export function PomEditor({
               <select
                 aria-label="Image format"
                 value={imageFormat}
-                onChange={(event) =>
-                  setImageFormat(event.target.value as "png" | "svg")
-                }
+                onChange={(event) => {
+                  setImageFormat(event.target.value as "png" | "svg");
+                  setActionNotice(null);
+                }}
                 disabled={runningAction !== null}
               >
                 <option value="png">PNG</option>
@@ -348,9 +356,10 @@ export function PomEditor({
               <select
                 aria-label="Slides to export"
                 value={imageScope}
-                onChange={(event) =>
-                  setImageScope(event.target.value as "current" | "all")
-                }
+                onChange={(event) => {
+                  setImageScope(event.target.value as "current" | "all");
+                  setActionNotice(null);
+                }}
                 disabled={runningAction !== null}
               >
                 <option value="current">Current</option>
@@ -372,7 +381,12 @@ export function PomEditor({
                   `${imageFormat.toUpperCase()} exported`,
                 )
               }
-              disabled={runningAction !== null || svgs.length === 0}
+              disabled={
+                runningAction !== null ||
+                isLoading ||
+                svgs.length === 0 ||
+                previewedXml !== xml
+              }
             >
               {runningAction === "images"
                 ? `Rendering ${imageFormat.toUpperCase()}...`
