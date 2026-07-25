@@ -130,6 +130,17 @@ describe("renderBackgroundAndBorder の辺ごと border", () => {
     expect(slideXml).toContain('<a:srgbClr val="EFEFEF"/>');
   });
 
+  it("borderLeft + borderRadius では左上・左下の角丸まで連続して描画される", async () => {
+    const xml = `<Slide><VStack w="100%" h="max">
+      <Text w="200" h="100" borderRadius="8" borderLeft.color="FF0000" borderLeft.width="4">test</Text>
+    </VStack></Slide>`;
+    const slideXml = await buildSlideXml(xml);
+
+    expect(slideXml.match(/<a:custGeom>/g) ?? []).toHaveLength(1);
+    expect(slideXml.match(/<a:lnTo>/g)?.length ?? 0).toBeGreaterThan(10);
+    expect(slideXml).toContain('<a:srgbClr val="FF0000"/>');
+  });
+
   it("borderRadius + 4 辺全部の指定では 4 個の custGeom path が描画される", async () => {
     const xml = `<Slide><VStack w="100%" h="max">
       <Text w="200" h="100" borderRadius="8"

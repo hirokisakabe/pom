@@ -4,7 +4,7 @@ import { palette } from "./palette.js";
 // Page 55: Per-Side Border × borderRadius Test
 // テスト対象: borderTop / borderRight / borderBottom / borderLeft と
 // borderRadius の併用 (#881)
-// 角弧は水平辺 (top / bottom) のみが所有することを確認する
+// 角弧は水平辺を優先し、水平辺がなければ垂直辺が所有することを確認する
 // ============================================================
 export const page55PerSideBorderRadiusXml = `
 <VStack w="100%" h="max" padding="48" gap="20" alignItems="stretch" backgroundColor="${palette.background}">

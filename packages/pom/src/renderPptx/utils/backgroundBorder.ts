@@ -246,20 +246,15 @@ function renderPerSideBorders(
  * borderRadius と辺ごと border の併用時に、角部の円弧と直線セグメントを
  * 含む custGeom path を辺ごとに描画する。
  *
- * 角弧は水平辺 (top / bottom) のみが所有する設計にしている。
+ * 角弧は水平辺 (top / bottom) を優先し、水平辺がなければ隣接する
+ * 垂直辺 (left / right) が所有する。
  * - `borderTop` + `borderRadius` (KPI タイル想定): 上 2 つの角丸が borderTop
  *   の色で連続描画される
  * - `borderBottom` + `borderRadius`: 下 2 つの角丸が borderBottom の色で描画
- * - `borderLeft` のみ + `borderRadius` (アクセントバー想定): 角弧は描画されず、
- *   左辺は角丸の内側で直線として始終する。背景 roundRect の角丸はそのまま
- *   見えるので「左辺ストレート + 残りはニュートラルな角丸」のすっきりした
- *   見た目になる
+ * - `borderLeft` のみ + `borderRadius` (アクセントバー想定): 左上・左下の
+ *   角丸を borderLeft が所有し、左辺が途切れずに描画される
  * - 4 辺すべて + `borderRadius`: top/bottom が上下 2 角を所有、left/right は
  *   角弧を持たず直線セグメントのみ
- *
- * CSS の `border-left + border-radius` は左辺が角に沿って巻き込む形になるが、
- * pom のアクセントバー / ヘッダ罫線ユースケースには「角を引き取らない」方が
- * 素直なので、そちらを採用している。
  */
 function renderPerSideBorderPaths(
   node: PositionedNode,
@@ -270,10 +265,22 @@ function renderPerSideBorderPaths(
   const r = effectiveBorderRadius(node.borderRadius, w, h);
 
   const ownership: Record<BorderCorner, BorderSide | null> = {
-    topLeft: perSideBorders.top ? "top" : null,
-    topRight: perSideBorders.top ? "top" : null,
-    bottomRight: perSideBorders.bottom ? "bottom" : null,
-    bottomLeft: perSideBorders.bottom ? "bottom" : null,
+    topLeft: perSideBorders.top ? "top" : perSideBorders.left ? "left" : null,
+    topRight: perSideBorders.top
+      ? "top"
+      : perSideBorders.right
+        ? "right"
+        : null,
+    bottomRight: perSideBorders.bottom
+      ? "bottom"
+      : perSideBorders.right
+        ? "right"
+        : null,
+    bottomLeft: perSideBorders.bottom
+      ? "bottom"
+      : perSideBorders.left
+        ? "left"
+        : null,
   };
 
   for (const side of BORDER_SIDES) {
