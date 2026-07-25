@@ -261,6 +261,52 @@ describe("PomEditor", () => {
     ).toBe(true);
   });
 
+  it("出力中にXMLが変わった場合は古いaction結果を表示しない", async () => {
+    let resolveExport: (() => void) | undefined;
+    const onExportImages = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveExport = resolve;
+        }),
+    );
+    const onPreview = vi.fn().mockResolvedValue({
+      svgs: [
+        '<svg xmlns="http://www.w3.org/2000/svg"><text>Ready</text></svg>',
+      ],
+    });
+    const { rerender } = render(
+      <PomEditor
+        xml="<Text>old</Text>"
+        onChange={vi.fn()}
+        onPreview={onPreview}
+        onExportImages={onExportImages}
+        debounceMs={0}
+      />,
+    );
+    await screen.findByText("Ready");
+    fireEvent.click(screen.getByRole("button", { name: "Export Images" }));
+
+    rerender(
+      <PomEditor
+        xml="<Text>new</Text>"
+        onChange={vi.fn()}
+        onPreview={onPreview}
+        onExportImages={onExportImages}
+        debounceMs={0}
+      />,
+    );
+    resolveExport?.();
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole("button", { name: "Export Images" })
+          .hasAttribute("disabled"),
+      ).toBe(false),
+    );
+    expect(screen.queryByText("PNG exported")).toBeNull();
+  });
+
   it("出力処理中は多重実行を防ぎ、処理中表示とdiagnosticsを表示する", async () => {
     let rejectExport: ((reason: unknown) => void) | undefined;
     const onExportImages = vi.fn(

@@ -93,6 +93,8 @@ export function PomEditor({
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const onPreviewRef = useRef(onPreview);
+  const currentXmlRef = useRef(xml);
+  currentXmlRef.current = xml;
 
   useEffect(() => {
     onPreviewRef.current = onPreview;
@@ -170,6 +172,7 @@ export function PomEditor({
     successMessage: string,
   ) {
     if (runningAction !== null) return;
+    const actionXml = xml;
     setRunningAction(action);
     setActionNotice(
       action === "download"
@@ -181,9 +184,12 @@ export function PomEditor({
     setDiagnostics(null);
     setDiagnosticNotice(null);
     try {
-      await callback(xml);
-      setActionNotice(successMessage);
+      await callback(actionXml);
+      if (currentXmlRef.current === actionXml) {
+        setActionNotice(successMessage);
+      }
     } catch (error) {
+      if (currentXmlRef.current !== actionXml) return;
       setActionNotice(null);
       const actionDiagnostics =
         typeof error === "object" &&
