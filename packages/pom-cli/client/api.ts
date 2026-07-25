@@ -191,8 +191,14 @@ export async function exportImages(
   if (!response.ok) {
     await throwExportError(response, "Image rendering failed");
   }
+  const fallbackFilename = response.headers
+    .get("content-type")
+    ?.toLowerCase()
+    .startsWith("application/zip")
+    ? "slides-images.zip"
+    : `slides.${options.format}`;
   downloadBlob(
     await response.blob(),
-    attachmentFilename(response, `slides.${options.format}`),
+    attachmentFilename(response, fallbackFilename),
   );
 }

@@ -316,6 +316,17 @@ describe("preview server", () => {
     expect(response.status).toBe(413);
   });
 
+  it("空のslides指定を400で拒否する", async () => {
+    await startServer();
+    const response = await fetch(`${baseUrl}/_api/export/images`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ xml: "<Text />", format: "png", slides: [] }),
+    });
+
+    expect(response.status).toBe(400);
+  });
+
   it("Save後のwatch通知を抑止し、後続のexternal changeだけを配信する", async () => {
     const onDocumentEvent = vi.fn();
     const generatePreview = await startServer(undefined, onDocumentEvent);

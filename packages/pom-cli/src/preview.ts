@@ -285,6 +285,7 @@ function readImageExportOptions(value: unknown): ImageExportOptions {
   if (
     request.slides !== undefined &&
     (!Array.isArray(request.slides) ||
+      request.slides.length === 0 ||
       !request.slides.every(
         (slide) => Number.isInteger(slide) && Number(slide) > 0,
       ))

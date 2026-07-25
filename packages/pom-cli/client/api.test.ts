@@ -120,14 +120,16 @@ describe("preview client API", () => {
         status: 200,
         headers: {
           "Content-Type": "application/zip",
-          "X-Pom-Filename": "slides-svg-images.zip",
         },
       }),
     );
     vi.stubGlobal("fetch", fetchMock);
+    let downloadedFilename = "";
     const click = vi
       .spyOn(HTMLAnchorElement.prototype, "click")
-      .mockImplementation(() => {});
+      .mockImplementation(function (this: HTMLAnchorElement) {
+        downloadedFilename = this.download;
+      });
     vi.stubGlobal("URL", {
       createObjectURL: vi.fn(() => "blob:image"),
       revokeObjectURL: vi.fn(),
@@ -149,6 +151,7 @@ describe("preview client API", () => {
       }),
     );
     expect(click).toHaveBeenCalledTimes(1);
+    expect(downloadedFilename).toBe("slides-images.zip");
   });
 
   it("export APIのdiagnosticsを保持したerrorを投げる", async () => {
