@@ -1,5 +1,16 @@
 # @hirokisakabe/pom-cli
 
+## 0.10.0
+
+### Minor Changes
+
+- [#994](https://github.com/hirokisakabe/pom/pull/994) [`577ac3b`](https://github.com/hirokisakabe/pom/commit/577ac3b2472c7de4843a79e50f73e5a1a9f5016b) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - `pom preview` の編集中 XML から PPTX と PNG / SVG をダウンロードできるようにし、`PomEditor` に現在または全スライドの画像出力 callback を追加します。
+
+### Patch Changes
+
+- Updated dependencies [[`2fd9979`](https://github.com/hirokisakabe/pom/commit/2fd99799de2098db64eef707ab073309042c453b)]:
+  - @hirokisakabe/pom@10.3.0
+
 ## 0.9.1
 
 ### Patch Changes
