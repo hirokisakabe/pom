@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useRef, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -46,10 +46,8 @@ const NODE_LABELS: Record<string, string> = {
 function nodeLabel(node: POMNode): string {
   const base = NODE_LABELS[node.type] ?? node.type;
   const record = node as Record<string, unknown>;
-  if (node.type === "text" && typeof record.text === "string") {
-    const preview = record.text.slice(0, 20);
-    return `${base}: "${preview}${record.text.length > 20 ? "…" : ""}"`;
-  }
+  if (node.type === "text" && typeof record.text === "string")
+    return record.text || "Empty text";
   if (node.type === "image" && typeof record.src === "string") {
     return `${base}: ${record.src.split("/").pop() ?? record.src}`;
   }
@@ -96,10 +94,9 @@ function parseInsideId(id: string): string | null {
 interface GapStripProps {
   parentId: string;
   index: number;
-  depth: number;
 }
 
-function GapStrip({ parentId, index, depth }: GapStripProps) {
+function GapStrip({ parentId, index }: GapStripProps) {
   const id = gapId(parentId, index);
   const { setNodeRef } = useDroppable({ id });
   const overId = useContext(OverIdContext);
@@ -116,7 +113,6 @@ function GapStrip({ parentId, index, depth }: GapStripProps) {
         height: "16px",
         marginTop: "-7px",
         marginBottom: "-7px",
-        marginLeft: `${depth * 16}px`,
         position: "relative",
         zIndex: isDragging ? 1 : undefined,
         pointerEvents: isDragging ? "auto" : "none",
@@ -144,10 +140,155 @@ function GapStrip({ parentId, index, depth }: GapStripProps) {
 
 interface RowProps {
   astNode: AstNode;
-  depth: number;
+  onTextChange: (id: string, text: string) => void;
 }
 
-function Row({ astNode, depth }: RowProps) {
+const LAYOUT_PRESENTATION = {
+  vstack: { icon: "↓", label: "VStack", description: "Vertical layout" },
+  hstack: { icon: "→", label: "HStack", description: "Horizontal layout" },
+  layer: { icon: "▱", label: "Layer", description: "Overlapping layout" },
+} as const;
+
+function DragHandle({
+  drag,
+  id,
+  label,
+  isDragging,
+}: {
+  drag: ReturnType<typeof useDraggable>;
+  id: string;
+  label: string;
+  isDragging: boolean;
+}) {
+  return (
+    <span
+      {...drag.listeners}
+      {...drag.attributes}
+      data-testid={`drag-handle:${id}`}
+      style={{
+        cursor: isDragging ? "grabbing" : "grab",
+        color: "#9ca3af",
+        fontSize: "12px",
+        lineHeight: 1,
+        flexShrink: 0,
+        touchAction: "none",
+        userSelect: "none",
+      }}
+      title="ドラッグして並び替え"
+      aria-label={`${label} をドラッグ`}
+    >
+      ⠿
+    </span>
+  );
+}
+
+function TextContent({
+  astNode,
+  onTextChange,
+}: {
+  astNode: AstNode;
+  onTextChange: (id: string, text: string) => void;
+}) {
+  const record = astNode.node as Record<string, unknown>;
+  const text = typeof record.text === "string" ? record.text : "";
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(text);
+  const cancelBlurRef = useRef(false);
+
+  function startEditing() {
+    setDraft(text);
+    cancelBlurRef.current = false;
+    setIsEditing(true);
+  }
+
+  function commit() {
+    if (cancelBlurRef.current) {
+      cancelBlurRef.current = false;
+      return;
+    }
+    setIsEditing(false);
+    if (draft !== text) onTextChange(astNode.id, draft);
+  }
+
+  if (isEditing) {
+    return (
+      <input
+        autoFocus
+        aria-label="Text を編集"
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            event.currentTarget.blur();
+          } else if (event.key === "Escape") {
+            event.preventDefault();
+            cancelBlurRef.current = true;
+            setDraft(text);
+            setIsEditing(false);
+          }
+        }}
+        style={{
+          minWidth: 0,
+          width: "100%",
+          border: "1px solid #60a5fa",
+          borderRadius: "4px",
+          padding: "3px 6px",
+          background: "#ffffff",
+          color: "#111827",
+          font: "inherit",
+          outline: "2px solid #dbeafe",
+        }}
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={startEditing}
+      aria-label={text ? `Text: ${text}` : "Empty Text"}
+      title="Text — クリックして編集"
+      style={{
+        minWidth: 0,
+        flex: 1,
+        border: 0,
+        padding: "3px 0",
+        background: "transparent",
+        color: text ? "#1f2937" : "#9ca3af",
+        cursor: "text",
+        font: "inherit",
+        fontStyle: text ? "normal" : "italic",
+        textAlign: "left",
+        whiteSpace: "pre-wrap",
+        overflowWrap: "anywhere",
+        userSelect: "text",
+      }}
+    >
+      {text || "クリックしてテキストを入力"}
+    </button>
+  );
+}
+
+function secondaryInformation(node: POMNode): string[] {
+  const record = node as Record<string, unknown>;
+  const information: string[] = [];
+  if (typeof record.gap === "number")
+    information.push(`gap ${record.gap.toString()}`);
+  if (record.padding !== undefined) {
+    const padding =
+      record.padding !== null && typeof record.padding === "object"
+        ? JSON.stringify(record.padding)
+        : typeof record.padding === "number"
+          ? record.padding.toString()
+          : "";
+    information.push(`padding ${padding}`);
+  }
+  return information;
+}
+
+function Row({ astNode, onTextChange }: RowProps) {
   const isContainer = isContainerType(astNode.node.type);
   const overId = useContext(OverIdContext);
   const activeId = useContext(ActiveIdContext);
@@ -160,54 +301,136 @@ function Row({ astNode, depth }: RowProps) {
     disabled: !isContainer || isDragging,
   });
 
-  const setBodyRef = (el: HTMLElement | null) => {
+  const setBodyRef = (el: HTMLDivElement | null) => {
     inside.setNodeRef(el);
     drag.setNodeRef(el);
   };
 
   const isInsideOver = isContainer && overId === insideId(astNode.id);
+  const presentation = isContainer
+    ? LAYOUT_PRESENTATION[astNode.node.type as keyof typeof LAYOUT_PRESENTATION]
+    : null;
 
-  return (
-    <div>
+  if (presentation) {
+    const information = secondaryInformation(astNode.node);
+    return (
       <div
         ref={setBodyRef}
-        data-drop-placement={isContainer ? "inside" : undefined}
+        data-testid={`layout-container:${astNode.id}`}
+        data-layout-type={astNode.node.type}
+        data-drop-placement="inside"
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "6px",
-          paddingLeft: `${depth * 16}px`,
-          paddingTop: "3px",
-          paddingBottom: "3px",
-          borderRadius: "4px",
-          userSelect: "none",
+          margin: "2px 0",
+          padding: "6px",
+          border: `1px solid ${isInsideOver ? "#2563eb" : "#cbd5e1"}`,
+          borderRadius: "7px",
           opacity: isDragging ? 0.4 : 1,
-          backgroundColor: isInsideOver ? "#dbeafe" : undefined,
-          outline: isInsideOver ? "1px solid #2563eb" : undefined,
-          transition: "background-color 50ms",
+          backgroundColor: isInsideOver ? "#dbeafe" : "#f8fafc",
+          transition: "background-color 50ms, border-color 50ms",
         }}
       >
-        <span
-          {...drag.listeners}
-          {...drag.attributes}
+        <div
           style={{
-            cursor: isDragging ? "grabbing" : "grab",
-            color: "#9ca3af",
+            display: "flex",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "6px",
+            minWidth: 0,
+            color: "#475569",
             fontSize: "12px",
-            lineHeight: 1,
-            flexShrink: 0,
-            touchAction: "none",
+            fontFamily: "sans-serif",
           }}
-          title="ドラッグして並び替え"
-          aria-label={`${nodeLabel(astNode.node)} をドラッグ`}
         >
-          ⠿
-        </span>
+          <DragHandle
+            drag={drag}
+            id={astNode.id}
+            label={presentation.label}
+            isDragging={isDragging}
+          />
+          <span
+            aria-label={presentation.description}
+            title={presentation.description}
+            style={{
+              display: "inline-grid",
+              placeItems: "center",
+              width: "18px",
+              height: "18px",
+              borderRadius: "4px",
+              background: "#e2e8f0",
+              color: "#334155",
+              fontWeight: 700,
+            }}
+          >
+            {presentation.icon}
+          </span>
+          <span style={{ fontWeight: 600 }}>{presentation.label}</span>
+          {information.map((item) => (
+            <span
+              key={item}
+              style={{
+                borderRadius: "999px",
+                padding: "1px 5px",
+                background: "#e2e8f0",
+                color: "#64748b",
+                fontSize: "10px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+        <div
+          data-testid={`layout-children:${astNode.id}`}
+          style={{
+            minWidth: 0,
+            marginTop: "5px",
+            paddingLeft: "14px",
+            borderLeft: "2px solid #e2e8f0",
+          }}
+        >
+          <ChildList
+            parentId={astNode.id}
+            nodes={astNode.children ?? []}
+            onTextChange={onTextChange}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={setBodyRef}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+        minWidth: 0,
+        padding: "3px 4px",
+        borderRadius: "4px",
+        opacity: isDragging ? 0.4 : 1,
+        fontSize: "13px",
+        fontFamily: "sans-serif",
+      }}
+    >
+      <DragHandle
+        drag={drag}
+        id={astNode.id}
+        label={nodeLabel(astNode.node)}
+        isDragging={isDragging}
+      />
+      {astNode.node.type === "text" ? (
+        <TextContent
+          key={`${astNode.id}:${astNode.node.text}`}
+          astNode={astNode}
+          onTextChange={onTextChange}
+        />
+      ) : (
         <span
           style={{
-            fontSize: "13px",
-            fontFamily: "monospace",
-            color: astNode.children ? "#1d4ed8" : "#374151",
+            minWidth: 0,
+            color: "#374151",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -215,13 +438,6 @@ function Row({ astNode, depth }: RowProps) {
         >
           {nodeLabel(astNode.node)}
         </span>
-      </div>
-      {astNode.children && (
-        <ChildList
-          parentId={astNode.id}
-          nodes={astNode.children}
-          depth={depth + 1}
-        />
       )}
     </div>
   );
@@ -230,17 +446,17 @@ function Row({ astNode, depth }: RowProps) {
 interface ChildListProps {
   parentId: string;
   nodes: AstNode[];
-  depth: number;
+  onTextChange: (id: string, text: string) => void;
 }
 
-function ChildList({ parentId, nodes, depth }: ChildListProps) {
+function ChildList({ parentId, nodes, onTextChange }: ChildListProps) {
   return (
     <>
-      <GapStrip parentId={parentId} index={0} depth={depth} />
+      <GapStrip parentId={parentId} index={0} />
       {nodes.map((child, i) => (
         <React.Fragment key={child.id}>
-          <Row astNode={child} depth={depth} />
-          <GapStrip parentId={parentId} index={i + 1} depth={depth} />
+          <Row astNode={child} onTextChange={onTextChange} />
+          <GapStrip parentId={parentId} index={i + 1} />
         </React.Fragment>
       ))}
     </>
@@ -261,6 +477,26 @@ function findAstNode(nodes: AstNode[], id: string): AstNode | null {
     }
   }
   return null;
+}
+
+function replaceText(nodes: AstNode[], id: string, text: string): AstNode[] {
+  return nodes.map((node) => {
+    if (node.id === id) {
+      const updatedNode = {
+        ...node.node,
+        text,
+      } as POMNode & { runs?: unknown };
+      delete updatedNode.runs;
+      return {
+        ...node,
+        node: updatedNode,
+      };
+    }
+    if (node.children) {
+      return { ...node, children: replaceText(node.children, id, text) };
+    }
+    return node;
+  });
 }
 
 export function AstTree({ ast, onChange }: AstTreeProps) {
@@ -307,6 +543,10 @@ export function AstTree({ ast, onChange }: AstTreeProps) {
     setActiveId(null);
   }
 
+  function onTextChange(id: string, text: string) {
+    onChange(rebuildNodes(replaceText(ast, id, text)));
+  }
+
   return (
     <div>
       <DndContext
@@ -320,7 +560,7 @@ export function AstTree({ ast, onChange }: AstTreeProps) {
       >
         <ActiveIdContext.Provider value={activeId}>
           <OverIdContext.Provider value={overId}>
-            <GapStrip parentId="root" index={0} depth={0} />
+            <GapStrip parentId="root" index={0} />
             {ast.map((astNode, i) => (
               <React.Fragment key={astNode.id}>
                 {i > 0 && (
@@ -344,8 +584,8 @@ export function AstTree({ ast, onChange }: AstTreeProps) {
                 >
                   Slide {i + 1}
                 </div>
-                <Row astNode={astNode} depth={0} />
-                <GapStrip parentId="root" index={i + 1} depth={0} />
+                <Row astNode={astNode} onTextChange={onTextChange} />
+                <GapStrip parentId="root" index={i + 1} />
               </React.Fragment>
             ))}
             <DragOverlay>

@@ -1,4 +1,10 @@
-import { act, cleanup, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 interface DragSubject {
@@ -18,6 +24,7 @@ let capturedHandlers: {
   onDragCancel?: () => void;
 } = {};
 let capturedAutoScroll: boolean | undefined;
+const dragPointerDown = vi.fn();
 
 vi.mock("@dnd-kit/core", () => ({
   DndContext: ({
@@ -47,7 +54,7 @@ vi.mock("@dnd-kit/core", () => ({
   pointerWithin: () => [],
   useDraggable: () => ({
     attributes: {},
-    listeners: {},
+    listeners: { onPointerDown: dragPointerDown },
     setNodeRef: () => {},
     transform: null,
     isDragging: false,
@@ -66,6 +73,7 @@ afterEach(() => {
   cleanup();
   capturedHandlers = {};
   capturedAutoScroll = undefined;
+  dragPointerDown.mockClear();
 });
 
 // Two slides, each is a VStack with text children.
@@ -286,13 +294,9 @@ describe("AstTree DnD — visual feedback distinguishes inside vs between", () =
       capturedHandlers.onDragOver?.(dragTo("1", "inside:3"));
     });
 
-    // Both VStack rows are present; the one we dropped onto gets the inside highlight.
-    const insideHighlighted = screen
-      .getAllByText("VStack")
-      .map((el) => el.parentElement)
-      .find((el) => el?.style.backgroundColor === "rgb(219, 234, 254)");
-    expect(insideHighlighted).toBeTruthy();
-    expect(insideHighlighted!.style.outline).toBe("1px solid #2563eb");
+    const insideHighlighted = screen.getByTestId("layout-container:3");
+    expect(insideHighlighted.style.backgroundColor).toBe("rgb(219, 234, 254)");
+    expect(insideHighlighted.style.border).toBe("1px solid rgb(37, 99, 235)");
   });
 
   it.each(["gap:0:0", "gap:0:2"])(
@@ -318,10 +322,8 @@ describe("AstTree DnD — visual feedback distinguishes inside vs between", () =
     act(() => {
       capturedHandlers.onDragOver?.(dragTo("1", "inside:3"));
     });
-    const insideBg = screen
-      .getAllByText("VStack")
-      .map((el) => el.parentElement)
-      .find((el) => el?.style.backgroundColor)?.style.backgroundColor;
+    const insideBg =
+      screen.getByTestId("layout-container:3").style.backgroundColor;
 
     act(() => {
       capturedHandlers.onDragOver?.(dragTo("1", "gap:0:2"));
@@ -344,8 +346,9 @@ describe("AstTree DnD — drag overlay and scrolling", () => {
       capturedHandlers.onDragStart?.({ active: { id: "1" } });
     });
 
-    expect(screen.getByTestId("ast-drag-overlay").textContent).toContain(
-      'Text: "A"',
+    expect(screen.getByTestId("ast-drag-overlay").textContent).toContain("A");
+    expect(screen.getByTestId("ast-drag-overlay").textContent).not.toContain(
+      "Text:",
     );
   });
 
@@ -364,21 +367,17 @@ describe("AstTree DnD — drag lifecycle clears state", () => {
     act(() => {
       capturedHandlers.onDragOver?.(dragTo("1", "inside:3"));
     });
-    expect(
-      screen
-        .getAllByText("VStack")
-        .some((el) => el.parentElement?.style.backgroundColor),
-    ).toBe(true);
+    expect(screen.getByTestId("layout-container:3").style.backgroundColor).toBe(
+      "rgb(219, 234, 254)",
+    );
 
     act(() => {
       capturedHandlers.onDragCancel?.();
     });
 
-    expect(
-      screen
-        .getAllByText("VStack")
-        .every((el) => !el.parentElement?.style.backgroundColor),
-    ).toBe(true);
+    expect(screen.getByTestId("layout-container:3").style.backgroundColor).toBe(
+      "rgb(248, 250, 252)",
+    );
   });
 
   it("drag end 後にハイライトがクリアされる", () => {
@@ -392,11 +391,9 @@ describe("AstTree DnD — drag lifecycle clears state", () => {
       capturedHandlers.onDragEnd?.(dragTo("1", "inside:3"));
     });
 
-    expect(
-      screen
-        .getAllByText("VStack")
-        .every((el) => !el.parentElement?.style.backgroundColor),
-    ).toBe(true);
+    expect(screen.getByTestId("layout-container:3").style.backgroundColor).toBe(
+      "rgb(248, 250, 252)",
+    );
   });
 
   it("over が null の drag end では onChange が呼ばれない", () => {
@@ -406,5 +403,180 @@ describe("AstTree DnD — drag lifecycle clears state", () => {
     capturedHandlers.onDragEnd?.(dragTo("1", null));
 
     expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
+describe("AstTree content editing", () => {
+  it("Text prefix や引用符を付けず本文を主表示にする", () => {
+    render(<AstTree ast={makeAst()} onChange={vi.fn()} />);
+
+    expect(screen.getByRole("button", { name: "Text: A" }).textContent).toBe(
+      "A",
+    );
+    expect(screen.queryByText('Text: "A"')).toBeNull();
+  });
+
+  it("本文クリック後、Enter で編集内容を確定する", () => {
+    const onChange = vi.fn();
+    render(<AstTree ast={makeAst()} onChange={onChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Text: A" }));
+    const input = screen.getByRole("textbox", { name: "Text を編集" });
+    fireEvent.change(input, { target: { value: "Edited title" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(onChange).toHaveBeenCalledOnce();
+    const nodes = onChange.mock.calls[0][0] as Array<
+      POMNode & { children: Array<POMNode & { text?: string }> }
+    >;
+    expect(nodes[0].children[0].text).toBe("Edited title");
+  });
+
+  it("フォーカスアウトで編集内容を確定する", () => {
+    const onChange = vi.fn();
+    render(<AstTree ast={makeAst()} onChange={onChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Text: B" }));
+    const input = screen.getByRole("textbox", { name: "Text を編集" });
+    fireEvent.change(input, { target: { value: "Edited body" } });
+    fireEvent.blur(input);
+
+    const nodes = onChange.mock.calls[0][0] as Array<
+      POMNode & { children: Array<POMNode & { text?: string }> }
+    >;
+    expect(nodes[0].children[1].text).toBe("Edited body");
+  });
+
+  it("Escape で編集前の本文へ戻し、変更を通知しない", () => {
+    const onChange = vi.fn();
+    render(<AstTree ast={makeAst()} onChange={onChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Text: A" }));
+    const input = screen.getByRole("textbox", { name: "Text を編集" });
+    fireEvent.change(input, { target: { value: "Discard me" } });
+    fireEvent.keyDown(input, { key: "Escape" });
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Text: A" })).toBeTruthy();
+  });
+
+  it("編集中に外部から本文が変わった場合は stale draft を破棄する", () => {
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <AstTree ast={makeAst()} onChange={onChange} />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Text: A" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Text を編集" }), {
+      target: { value: "Stale draft" },
+    });
+
+    const updatedAst = makeAst();
+    updatedAst[0].children![0] = {
+      ...updatedAst[0].children![0],
+      node: { type: "text", text: "External update" },
+    };
+    rerender(<AstTree ast={updatedAst} onChange={onChange} />);
+
+    expect(screen.queryByRole("textbox", { name: "Text を編集" })).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Text: External update" }),
+    ).toBeTruthy();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("空 Text にクリック可能な placeholder を表示する", () => {
+    const emptyText = {
+      id: "empty",
+      node: { type: "text", text: "" } as POMNode,
+      parentId: "root",
+    };
+    render(<AstTree ast={[emptyText]} onChange={vi.fn()} />);
+
+    const placeholder = screen.getByRole("button", { name: "Empty Text" });
+    expect(placeholder.textContent).toBe("クリックしてテキストを入力");
+    fireEvent.click(placeholder);
+    expect(screen.getByRole("textbox", { name: "Text を編集" })).toBeTruthy();
+  });
+
+  it("本文の操作では drag listener が動かず、専用 handle から開始できる", () => {
+    render(<AstTree ast={makeAst()} onChange={vi.fn()} />);
+
+    const text = screen.getByRole("button", { name: "Text: A" });
+    fireEvent.pointerDown(text);
+    expect(dragPointerDown).not.toHaveBeenCalled();
+
+    fireEvent.pointerDown(screen.getByTestId("drag-handle:1"));
+    expect(dragPointerDown).toHaveBeenCalledOnce();
+  });
+});
+
+describe("AstTree layout containers", () => {
+  function makeLayoutAst(): AstNode[] {
+    const text = {
+      id: "text",
+      node: { type: "text", text: "Nested content" } as POMNode,
+      parentId: "layer",
+    };
+    const layer = {
+      id: "layer",
+      node: { type: "layer", children: [text.node] } as POMNode,
+      parentId: "hstack",
+      children: [text],
+    };
+    const hstack = {
+      id: "hstack",
+      node: {
+        type: "hstack",
+        gap: 12,
+        children: [layer.node],
+      } as POMNode,
+      parentId: "vstack",
+      children: [layer],
+    };
+    return [
+      {
+        id: "vstack",
+        node: {
+          type: "vstack",
+          padding: { top: 8, right: 16, bottom: 8, left: 16 },
+          children: [hstack.node],
+        },
+        parentId: "root",
+        children: [hstack],
+      },
+    ];
+  }
+
+  it("VStack / HStack / Layer が子要素を内包する frame として表示される", () => {
+    render(<AstTree ast={makeLayoutAst()} onChange={vi.fn()} />);
+
+    expect(
+      screen
+        .getByTestId("layout-container:vstack")
+        .contains(screen.getByTestId("layout-container:hstack")),
+    ).toBe(true);
+    expect(
+      screen
+        .getByTestId("layout-container:hstack")
+        .contains(screen.getByTestId("layout-container:layer")),
+    ).toBe(true);
+    expect(
+      screen
+        .getByTestId("layout-container:layer")
+        .contains(screen.getByRole("button", { name: "Text: Nested content" })),
+    ).toBe(true);
+  });
+
+  it("layout ごとに異なる方向表現と secondary information を表示する", () => {
+    render(<AstTree ast={makeLayoutAst()} onChange={vi.fn()} />);
+
+    expect(screen.getByLabelText("Vertical layout").textContent).toBe("↓");
+    expect(screen.getByLabelText("Horizontal layout").textContent).toBe("→");
+    expect(screen.getByLabelText("Overlapping layout").textContent).toBe("▱");
+    expect(screen.getByText("gap 12")).toBeTruthy();
+    expect(
+      screen.getByText('padding {"top":8,"right":16,"bottom":8,"left":16}'),
+    ).toBeTruthy();
   });
 });
