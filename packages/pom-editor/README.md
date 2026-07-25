@@ -48,10 +48,16 @@ import { PomEditor } from "@hirokisakabe/pom-editor";
     return response.json();
   }}
   onDownload={(nextXml) => downloadPptx(nextXml)}
+  onExportImages={(nextXml, { format, scope, currentSlide }) =>
+    exportImages(nextXml, {
+      format,
+      slides: scope === "current" ? [currentSlide] : undefined,
+    })
+  }
 />;
 ```
 
-Preview generation and file operations stay in the host application. `onDownload`, `onSave`, and `onCopyPreview` are optional, and their actions only appear when the corresponding callback is provided.
+Preview generation and file operations stay in the host application. `onDownload`, `onExportImages`, `onSave`, and `onCopyPreview` are optional, and their actions only appear when the corresponding callback is provided. Image export adds PNG / SVG and current / all slide controls to the toolbar.
 SVG preview results are sanitized before they are inserted into the document.
 
 ### Standalone AST editor
@@ -89,19 +95,20 @@ function App() {
 
 ### `<PomEditor />`
 
-| Prop            | Type                                                   | Description                                      |
-| --------------- | ------------------------------------------------------ | ------------------------------------------------ |
-| `xml`           | `string`                                               | Controlled pom XML source                        |
-| `onChange`      | `(xml: string) => void`                                | Receives XML and AST edits                       |
-| `onPreview`     | `(xml, { signal }) => Promise<{ svgs } \| { errors }>` | Host-provided preview adapter                    |
-| `onDownload`    | `(xml: string) => void \| Promise<void>`               | Optional Download action                         |
-| `onSave`        | `(xml: string) => void \| Promise<void>`               | Optional Save action                             |
-| `onCopyPreview` | `(svg: string) => void \| Promise<void>`               | Optional preview image copy action               |
-| `toolbarStart`  | `ReactNode`                                            | Host content before the standard toolbar actions |
-| `toolbarEnd`    | `ReactNode`                                            | Host content after the standard toolbar actions  |
-| `debounceMs`    | `number`                                               | Preview debounce delay (default: `500`)          |
-| `className`     | `string`                                               | Optional class name for the editor root          |
-| `style`         | `CSSProperties`                                        | Optional inline style for the editor root        |
+| Prop             | Type                                                                   | Description                                      |
+| ---------------- | ---------------------------------------------------------------------- | ------------------------------------------------ |
+| `xml`            | `string`                                                               | Controlled pom XML source                        |
+| `onChange`       | `(xml: string) => void`                                                | Receives XML and AST edits                       |
+| `onPreview`      | `(xml, { signal }) => Promise<{ svgs } \| { errors }>`                 | Host-provided preview adapter                    |
+| `onDownload`     | `(xml: string) => void \| Promise<void>`                               | Optional Download action                         |
+| `onExportImages` | `(xml, options: PomEditorImageExportOptions) => void \| Promise<void>` | Optional PNG / SVG image export action           |
+| `onSave`         | `(xml: string) => void \| Promise<void>`                               | Optional Save action                             |
+| `onCopyPreview`  | `(svg: string) => void \| Promise<void>`                               | Optional preview image copy action               |
+| `toolbarStart`   | `ReactNode`                                                            | Host content before the standard toolbar actions |
+| `toolbarEnd`     | `ReactNode`                                                            | Host content after the standard toolbar actions  |
+| `debounceMs`     | `number`                                                               | Preview debounce delay (default: `500`)          |
+| `className`      | `string`                                                               | Optional class name for the editor root          |
+| `style`          | `CSSProperties`                                                        | Optional inline style for the editor root        |
 
 ### `<PomAstEditor xml onChange />`
 

@@ -151,6 +151,90 @@ describe("PomEditor", () => {
     await waitFor(() => expect(onSave).toHaveBeenCalledWith("<Text />"));
   });
 
+  it("PNG / SVGと現在 / 全スライドを選んで画像出力callbackへ渡す", async () => {
+    const onExportImages = vi.fn().mockResolvedValue(undefined);
+    render(
+      <PomEditor
+        xml="<Text />"
+        onChange={vi.fn()}
+        onPreview={vi.fn().mockResolvedValue({
+          svgs: [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>Ready</text></svg>',
+          ],
+        })}
+        onExportImages={onExportImages}
+        debounceMs={0}
+      />,
+    );
+    await screen.findByText("Ready");
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Image format" }), {
+      target: { value: "svg" },
+    });
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Slides to export" }),
+      { target: { value: "all" } },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Export Images" }));
+
+    await waitFor(() =>
+      expect(onExportImages).toHaveBeenCalledWith("<Text />", {
+        format: "svg",
+        scope: "all",
+        currentSlide: 1,
+      }),
+    );
+    expect(await screen.findByText("SVG exported")).toBeTruthy();
+  });
+
+  it("出力処理中は多重実行を防ぎ、処理中表示とdiagnosticsを表示する", async () => {
+    let rejectExport: ((reason: unknown) => void) | undefined;
+    const onExportImages = vi.fn(
+      () =>
+        new Promise<void>((_resolve, reject) => {
+          rejectExport = reject;
+        }),
+    );
+    const onDownload = vi.fn();
+    render(
+      <PomEditor
+        xml="<Text />"
+        onChange={vi.fn()}
+        onPreview={vi.fn().mockResolvedValue({
+          svgs: ['<svg xmlns="http://www.w3.org/2000/svg" />'],
+        })}
+        onDownload={onDownload}
+        onExportImages={onExportImages}
+        debounceMs={0}
+      />,
+    );
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole("button", { name: "Export Images" })
+          .hasAttribute("disabled"),
+      ).toBe(false),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Export Images" }));
+    expect(
+      screen
+        .getByRole("button", { name: "Rendering PNG..." })
+        .hasAttribute("disabled"),
+    ).toBe(true);
+    expect(
+      screen.getByRole("button", { name: "Download" }).hasAttribute("disabled"),
+    ).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Download" }));
+    expect(onDownload).not.toHaveBeenCalled();
+
+    rejectExport?.({
+      diagnostics: [{ type: "NODE_OVERLAP", message: "overlap" }],
+    });
+
+    expect(await screen.findByRole("button", { name: /overlap/ })).toBeTruthy();
+  });
+
   it("AST modeの行付きdiagnosticからXML modeへ切り替えて該当位置へ移動する", async () => {
     render(
       <PomEditor

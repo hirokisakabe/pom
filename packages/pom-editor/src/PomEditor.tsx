@@ -22,6 +22,12 @@ export type PomEditorPreviewResult =
   | { svgs: string[]; errors?: never }
   | { errors: PomEditorDiagnostic[]; svgs?: never };
 
+export interface PomEditorImageExportOptions {
+  format: "png" | "svg";
+  scope: "current" | "all";
+  currentSlide: number;
+}
+
 export interface PomEditorProps {
   xml: string;
   onChange: (xml: string) => void;
@@ -30,6 +36,10 @@ export interface PomEditorProps {
     options: { signal: AbortSignal },
   ) => Promise<PomEditorPreviewResult>;
   onDownload?: (xml: string) => void | Promise<void>;
+  onExportImages?: (
+    xml: string,
+    options: PomEditorImageExportOptions,
+  ) => void | Promise<void>;
   onSave?: (xml: string) => void | Promise<void>;
   onCopyPreview?: (svg: string) => void | Promise<void>;
   toolbarStart?: ReactNode;
@@ -54,6 +64,7 @@ export function PomEditor({
   onChange,
   onPreview,
   onDownload,
+  onExportImages,
   onSave,
   onCopyPreview,
   toolbarStart,
@@ -66,9 +77,12 @@ export function PomEditor({
   const [svgs, setSvgs] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [imageFormat, setImageFormat] = useState<"png" | "svg">("png");
+  const [imageScope, setImageScope] = useState<"current" | "all">("current");
   const [runningAction, setRunningAction] = useState<
-    "download" | "save" | null
+    "download" | "images" | "save" | null
   >(null);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [diagnostics, setDiagnostics] = useState<PomEditorDiagnostic[] | null>(
     null,
   );
@@ -144,22 +158,42 @@ export function PomEditor({
   }
 
   async function runAction(
-    action: "download" | "save",
+    action: "download" | "images" | "save",
     callback: (xml: string) => void | Promise<void>,
+    successMessage: string,
   ) {
     if (runningAction !== null) return;
     setRunningAction(action);
+    setActionNotice(
+      action === "download"
+        ? "Generating PPTX..."
+        : action === "images"
+          ? `Rendering ${imageFormat.toUpperCase()}...`
+          : "Saving...",
+    );
     setDiagnostics(null);
     setDiagnosticNotice(null);
     try {
       await callback(xml);
+      setActionNotice(successMessage);
     } catch (error) {
-      setDiagnostics([
-        {
-          type: "unknown",
-          message: error instanceof Error ? error.message : `${action} failed`,
-        },
-      ]);
+      setActionNotice(null);
+      const actionDiagnostics =
+        typeof error === "object" &&
+        error !== null &&
+        "diagnostics" in error &&
+        Array.isArray(error.diagnostics)
+          ? (error.diagnostics as PomEditorDiagnostic[])
+          : null;
+      setDiagnostics(
+        actionDiagnostics ?? [
+          {
+            type: "unknown",
+            message:
+              error instanceof Error ? error.message : `${action} failed`,
+          },
+        ],
+      );
     } finally {
       setRunningAction(null);
     }
@@ -234,6 +268,7 @@ export function PomEditor({
           gap: 8,
           padding: "6px 16px",
           borderBottom: "1px solid #e5e7eb",
+          flexWrap: "wrap",
         }}
       >
         {toolbarStart}
@@ -284,21 +319,87 @@ export function PomEditor({
           <button
             type="button"
             style={toolbarButtonStyle}
-            onClick={() => void runAction("download", onDownload)}
+            onClick={() =>
+              void runAction("download", onDownload, "PPTX downloaded")
+            }
             disabled={runningAction !== null}
           >
-            Download
+            {runningAction === "download" ? "Generating PPTX..." : "Download"}
           </button>
+        )}
+        {onExportImages && (
+          <>
+            <label style={{ color: "#4b5563", fontSize: 12 }}>
+              <span style={{ marginRight: 4 }}>Format</span>
+              <select
+                aria-label="Image format"
+                value={imageFormat}
+                onChange={(event) =>
+                  setImageFormat(event.target.value as "png" | "svg")
+                }
+                disabled={runningAction !== null}
+              >
+                <option value="png">PNG</option>
+                <option value="svg">SVG</option>
+              </select>
+            </label>
+            <label style={{ color: "#4b5563", fontSize: 12 }}>
+              <span style={{ marginRight: 4 }}>Slides</span>
+              <select
+                aria-label="Slides to export"
+                value={imageScope}
+                onChange={(event) =>
+                  setImageScope(event.target.value as "current" | "all")
+                }
+                disabled={runningAction !== null}
+              >
+                <option value="current">Current</option>
+                <option value="all">All</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              style={toolbarButtonStyle}
+              onClick={() =>
+                void runAction(
+                  "images",
+                  (value) =>
+                    onExportImages(value, {
+                      format: imageFormat,
+                      scope: imageScope,
+                      currentSlide: currentPage,
+                    }),
+                  `${imageFormat.toUpperCase()} exported`,
+                )
+              }
+              disabled={runningAction !== null || svgs.length === 0}
+            >
+              {runningAction === "images"
+                ? `Rendering ${imageFormat.toUpperCase()}...`
+                : "Export Images"}
+            </button>
+          </>
         )}
         {onSave && (
           <button
             type="button"
             style={toolbarButtonStyle}
-            onClick={() => void runAction("save", onSave)}
+            onClick={() => void runAction("save", onSave, "Saved")}
             disabled={runningAction !== null}
           >
-            Save
+            {runningAction === "save" ? "Saving..." : "Save"}
           </button>
+        )}
+        {actionNotice && (
+          <span
+            role="status"
+            style={{
+              color: runningAction === null ? "#047857" : "#4b5563",
+              fontSize: 12,
+            }}
+          >
+            {actionNotice}
+          </span>
         )}
         {toolbarEnd && (
           <div

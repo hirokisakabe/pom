@@ -28,20 +28,21 @@ import { PomEditor } from "@hirokisakabe/pom-editor";
     return response.json();
   }}
   onDownload={(nextXml) => downloadPptx(nextXml)}
+  onExportImages={(nextXml, options) => exportImages(nextXml, options)}
   onSave={(nextXml) => saveXml(nextXml)}
 />;
 ```
 
-`PomEditor` is controlled through `xml` and `onChange`. It includes XML / AST modes, debounced preview, diagnostics, Refresh, and slide pagination. `onDownload` and `onSave` add toolbar actions, while `onCopyPreview` adds a Copy button to the preview; each appears only when its callback is supplied. SVG previews are sanitized before insertion.
+`PomEditor` is controlled through `xml` and `onChange`. It includes XML / AST modes, debounced preview, diagnostics, Refresh, and slide pagination. `onDownload`, `onExportImages`, and `onSave` add toolbar actions, while `onCopyPreview` adds a Copy button to the preview; each appears only when its callback is supplied. `onExportImages` receives the selected PNG / SVG format, current / all scope, and current 1-based slide number. SVG previews are sanitized before insertion.
 
-| Prop                                    | Purpose                                                                     |
-| --------------------------------------- | --------------------------------------------------------------------------- |
-| `xml`, `onChange`                       | Controlled pom XML source and updates                                       |
-| `onPreview`                             | Host adapter returning `{ svgs }` or `{ errors }`; receives an abort signal |
-| `onDownload`, `onSave`, `onCopyPreview` | Optional host actions                                                       |
-| `toolbarStart`, `toolbarEnd`            | Host content around standard toolbar actions                                |
-| `debounceMs`                            | Preview delay; defaults to 500 ms                                           |
-| `className`, `style`                    | Root element styling                                                        |
+| Prop                                                      | Purpose                                                                     |
+| --------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `xml`, `onChange`                                         | Controlled pom XML source and updates                                       |
+| `onPreview`                                               | Host adapter returning `{ svgs }` or `{ errors }`; receives an abort signal |
+| `onDownload`, `onExportImages`, `onSave`, `onCopyPreview` | Optional host actions                                                       |
+| `toolbarStart`, `toolbarEnd`                              | Host content around standard toolbar actions                                |
+| `debounceMs`                                              | Preview delay; defaults to 500 ms                                           |
+| `className`, `style`                                      | Root element styling                                                        |
 
 ## Embed only the AST editor
 
