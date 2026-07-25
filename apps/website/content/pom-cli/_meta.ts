@@ -1,0 +1,1 @@
+../../../../packages/pom-cli/docs/_meta.ts

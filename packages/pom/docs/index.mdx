@@ -1,88 +1,63 @@
-# pom
+# pom kit
 
-**pom (PowerPoint Object Model)** is a library for declaratively describing PowerPoint presentations in TypeScript. It takes XML as input and generates editable PowerPoint files (.pptx).
+pom is a **Presentations as Code** toolkit: author a presentation in the form that fits your workflow, keep pom XML as the shared source of truth, and use the same core model to preview, validate, and render it.
 
-[Try in Playground →](/playground)
+It is more than a PPTX generation API. Agent skills, Markdown, JSX/TSX, and the visual editor all meet at pom XML. The core library turns that XML into positioned presentation objects, and the surrounding tools operate on that common model.
 
-![Playground](./images/playground.png)
-
-## Features
-
-- **AI Friendly** — Simple XML structure suited for LLM code generation
-- **Declarative** — Describe slides in XML. No imperative API calls needed
-- **Flexible Layout** — Flexbox-style layout powered by yoga-layout (VStack / HStack)
-- **Rich Nodes** — 20 built-in node types: charts, flowcharts, tables, timelines, and more
-- **Design Tokens** — Declare a color palette once with a top-level `<Theme>` element and reference tokens as `$name` from any color attribute
-- **Schema-validated** — Runtime validation with Zod schemas
-- **PowerPoint Native** — Full use of native PowerPoint shape features
-- **Pixel Units** — Intuitive pixel-based sizing (internally converted to inches at 96 DPI)
-- **Master Slide** — Define headers, footers, and page numbers once and apply to all slides
-- **Accurate Text Measurement** — Precise text measurement with opentype.js and bundled Noto Sans JP font
-
-## Quick Start
-
-Requires Node.js 22 or later.
-
-```bash
-npm install @hirokisakabe/pom
+```text
+Authoring
+pom XML / pom-md / pom-jsx / pom-slide
+                    |
+                    v
+        pom XML (source of truth / IR)
+                    |
+                    v
+        pom core -> PositionedNode
+                    |
+                    v
+Rendering / Tools
+PositionedNode -> PPTX -> SVG / PNG
+pom-cli / pom-vscode / Playground
 ```
 
-```typescript
-import { buildPptx } from "@hirokisakabe/pom";
+`pom-cli`, `pom-vscode`, and the Playground do not define separate presentation formats. They preview, inspect, or output the same pom model.
 
-const xml = `
-<Slide>
-  <VStack w="100%" h="max" padding="48" gap="24" alignItems="start">
-    <Text fontSize="48" bold="true">Presentation Title</Text>
-    <Text fontSize="24" color="666666">Subtitle</Text>
-  </VStack>
-</Slide>
-`;
+## Choose a Quick Start
 
-const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
-await pptx.writeFile({ fileName: "presentation.pptx" });
-```
+### AI agent + pom CLI (recommended)
 
-Each slide must be wrapped in a `<Slide>` element. To produce multiple slides, list multiple `<Slide>` elements at the top level.
+Describe the deck you want, let `pom-slide` create or edit the pom XML, and keep `pom preview` open while you review the result. Continue with [Getting Started: AI agent + pom CLI](/getting-started#ai-agent--pom-cli-recommended).
 
-## Node List
+### TypeScript library
 
-| Node         | Description                                   |
-| ------------ | --------------------------------------------- |
-| Text         | Text display (font styles, decorations)       |
-| Ul           | Bullet list                                   |
-| Ol           | Numbered list                                 |
-| Image        | Image (file path, URL, base64)                |
-| Table        | Table                                         |
-| Shape        | PowerPoint shape (178 types)                  |
-| Chart        | Chart (bar, line, pie, area, doughnut, radar) |
-| Timeline     | Timeline / roadmap                            |
-| Matrix       | 2x2 matrix                                    |
-| Tree         | Org chart, decision tree                      |
-| Flow         | Flowchart                                     |
-| ProcessArrow | Chevron-style process diagram                 |
-| Pyramid      | Pyramid diagram                               |
-| Line         | Line / arrow                                  |
-| Arrow        | Connector between nodes referenced by `id`    |
-| Layer        | Absolute positioning container                |
-| VStack       | Vertical stack layout                         |
-| HStack       | Horizontal stack layout                       |
-| Icon         | Lucide icon                                   |
-| Svg          | Inline SVG graphic                            |
+For an application or custom generation pipeline, pass pom XML directly to `buildPptx()`. Continue with [Getting Started: TypeScript library](/getting-started#typescript-library) or the [`@hirokisakabe/pom` library guide](/pom-library).
 
-See the [Nodes](/nodes) for details. For color, font, and visual effect guidance, see the [Styling Guide](/styling-guide).
+## Find the Right Surface
 
-## Auto-Fit
+| Goal                                                  | Start here                                |
+| ----------------------------------------------------- | ----------------------------------------- |
+| Generate and refine a deck through an AI coding agent | [Agent Skills](/agent-skills)             |
+| Author the complete model directly                    | [pom XML](/pom-xml)                       |
+| Write prose-first slides                              | [pom-md](/pom-md)                         |
+| Compose typed, reusable slide components              | [pom-jsx](/pom-jsx)                       |
+| Embed XML / AST editing and preview in a React app    | [Embedding the Editor](/embedding-editor) |
+| Preview, build, or render local files                 | [pom CLI](/pom-cli)                       |
+| Preview from VS Code                                  | [pom-vscode](/pom-vscode)                 |
+| Try XML without installing anything                   | [Playground](/playground)                 |
 
-When content exceeds the slide height, pom automatically adjusts it to fit (enabled by default). See [API Reference](./api-reference.md#autofit) for adjustment priority and configuration.
+The [Getting Started guide](/getting-started#choose-an-authoring-surface) compares the authoring options in more detail.
 
-## For AI Agent Developers
+## Core Concepts
 
-If you are building an AI agent that generates PPTX with pom, include the content of [`llm.txt`](/llm.txt) in your system prompt. It provides a compact XML reference designed for LLMs.
+- A presentation is one or more top-level `<Slide>` elements, optionally preceded by a `<Theme>`.
+- Layout uses pixel units and Flexbox-style `VStack` / `HStack` containers.
+- The core pipeline is `parseXml` -> `calcYogaLayout` -> `toPositioned` -> `renderPptx`.
+- PPTX output uses native, editable PowerPoint objects where possible; image-based nodes such as `Image`, `Icon`, and `Svg` remain images.
+
+Continue with [Nodes](/nodes), [Layout System](/layout-system), and [Styling Guide](/styling-guide).
 
 ## Links
 
 - [GitHub](https://github.com/hirokisakabe/pom)
 - [npm](https://www.npmjs.com/package/@hirokisakabe/pom)
-- [Playground](/playground)
 - [llm.txt](/llm.txt)
