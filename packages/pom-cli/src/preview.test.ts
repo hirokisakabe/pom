@@ -3,6 +3,7 @@ import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { DiagnosticsError } from "@hirokisakabe/pom";
+import JSZip from "jszip";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const watchState = vi.hoisted(() => ({
@@ -213,21 +214,26 @@ describe("preview server", () => {
       slides: [2],
     });
     expect(renderImages).toHaveBeenNthCalledWith(2, xml, { format: "svg" });
-    await expect(currentResponse.json()).resolves.toMatchObject({
-      files: [
-        {
-          filename: "slides-slide-02.png",
-          mediaType: "image/png",
-          data: "AQID",
-        },
-      ],
-    });
-    await expect(allResponse.json()).resolves.toMatchObject({
-      files: [
-        { filename: "slides-slide-01.svg", mediaType: "image/svg+xml" },
-        { filename: "slides-slide-02.svg", mediaType: "image/svg+xml" },
-      ],
-    });
+    expect(currentResponse.headers.get("content-type")).toBe("image/png");
+    expect(
+      decodeURIComponent(currentResponse.headers.get("x-pom-filename") ?? ""),
+    ).toBe("slides-slide-02.png");
+    expect(new Uint8Array(await currentResponse.arrayBuffer())).toEqual(
+      new Uint8Array([1, 2, 3]),
+    );
+
+    expect(allResponse.headers.get("content-type")).toBe("application/zip");
+    expect(
+      decodeURIComponent(allResponse.headers.get("x-pom-filename") ?? ""),
+    ).toBe("slides-svg-images.zip");
+    const zip = await JSZip.loadAsync(await allResponse.arrayBuffer());
+    expect(Object.keys(zip.files).sort()).toEqual([
+      "slides-slide-01.svg",
+      "slides-slide-02.svg",
+    ]);
+    await expect(
+      zip.file("slides-slide-02.svg")?.async("string"),
+    ).resolves.toBe("<svg>two</svg>");
   });
 
   it("PPTX / 画像生成失敗時はdiagnosticsを422で返す", async () => {

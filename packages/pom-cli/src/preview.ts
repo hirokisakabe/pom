@@ -5,6 +5,7 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildPptx, DiagnosticsError } from "@hirokisakabe/pom";
+import JSZip from "jszip";
 import { convertPptxToSvg } from "pptx-glimpse";
 import { EXTRA_FONT_MAPPING, resolveBundledFontsDir } from "./glimpse.ts";
 import { loadInput, loadInputContent, type LoadedInput } from "./input.ts";
@@ -314,6 +315,32 @@ function outputBaseName(absInput: string): string {
   return path.basename(absInput).replace(/\.pom\.(?:xml|md)$/u, "");
 }
 
+function encodeRfc5987(value: string): string {
+  return encodeURIComponent(value).replace(
+    /['()*]/gu,
+    (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
+  );
+}
+
+function sendAttachment(
+  res: http.ServerResponse,
+  data: string | Uint8Array,
+  mediaType: string,
+  filename: string,
+): void {
+  const buffer = Buffer.from(data);
+  res.writeHead(200, {
+    "Content-Type": mediaType,
+    "Content-Disposition": `attachment; filename="download"; filename*=UTF-8''${encodeRfc5987(
+      filename,
+    )}`,
+    "Content-Length": buffer.byteLength,
+    "Cache-Control": "no-store",
+    "X-Pom-Filename": encodeURIComponent(filename),
+  });
+  res.end(buffer);
+}
+
 export interface PreviewServerOptions {
   verbose?: boolean;
   clientScript?: string;
@@ -451,16 +478,12 @@ export function createPreviewServer(
           const buffer = options.generatePptx
             ? await options.generatePptx(xml)
             : await generatePptx(xml, loadInput(absInput));
-          res.writeHead(200, {
-            "Content-Type":
-              "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            "Content-Disposition": `attachment; filename="presentation.pptx"; filename*=UTF-8''${encodeURIComponent(
-              `${outputBaseName(absInput)}.pptx`,
-            )}`,
-            "Content-Length": buffer.byteLength,
-            "Cache-Control": "no-store",
-          });
-          res.end(buffer);
+          sendAttachment(
+            res,
+            buffer,
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            `${outputBaseName(absInput)}.pptx`,
+          );
         } catch (error) {
           sendJson(res, 422, previewFailure(error));
         }
@@ -498,16 +521,32 @@ export function createPreviewServer(
             2,
             ...outputs.map((output) => String(output.slideNumber).length),
           );
-          sendJson(res, 200, {
-            files: outputs.map((output) => ({
-              filename: `${outputBaseName(absInput)}-slide-${String(
-                output.slideNumber,
-              ).padStart(padWidth, "0")}.${imageOptions.format}`,
-              mediaType:
-                imageOptions.format === "png" ? "image/png" : "image/svg+xml",
-              data: Buffer.from(output.data).toString("base64"),
-            })),
-          });
+          const files = outputs.map((output) => ({
+            filename: `${outputBaseName(absInput)}-slide-${String(
+              output.slideNumber,
+            ).padStart(padWidth, "0")}.${imageOptions.format}`,
+            data: output.data,
+          }));
+          if (imageOptions.slides !== undefined && files.length === 1) {
+            const file = files[0];
+            sendAttachment(
+              res,
+              file.data,
+              imageOptions.format === "png" ? "image/png" : "image/svg+xml",
+              file.filename,
+            );
+          } else {
+            const zip = new JSZip();
+            for (const file of files) {
+              zip.file(file.filename, file.data);
+            }
+            sendAttachment(
+              res,
+              await zip.generateAsync({ type: "uint8array" }),
+              "application/zip",
+              `${outputBaseName(absInput)}-${imageOptions.format}-images.zip`,
+            );
+          }
         } catch (error) {
           sendJson(res, 422, previewFailure(error));
         }

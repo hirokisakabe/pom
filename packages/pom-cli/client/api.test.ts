@@ -114,21 +114,17 @@ describe("preview client API", () => {
     expect(click).toHaveBeenCalled();
   });
 
-  it("画像形式とslide指定をAPIへ渡して全responseをdownloadする", async () => {
-    const fetchMock = mockResponse(200, {
-      files: [
-        {
-          filename: "slides-slide-01.svg",
-          mediaType: "image/svg+xml",
-          data: "PHN2ZyAvPg==",
+  it("画像形式とslide指定をAPIへ渡してresponseを1回downloadする", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(new Uint8Array([80, 75]), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/zip",
+          "X-Pom-Filename": "slides-svg-images.zip",
         },
-        {
-          filename: "slides-slide-02.svg",
-          mediaType: "image/svg+xml",
-          data: "PHN2ZyAvPg==",
-        },
-      ],
-    });
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
     const click = vi
       .spyOn(HTMLAnchorElement.prototype, "click")
       .mockImplementation(() => {});
@@ -152,7 +148,7 @@ describe("preview client API", () => {
         }),
       }),
     );
-    expect(click).toHaveBeenCalledTimes(2);
+    expect(click).toHaveBeenCalledTimes(1);
   });
 
   it("export APIのdiagnosticsを保持したerrorを投げる", async () => {
@@ -168,5 +164,13 @@ describe("preview client API", () => {
     expect((error as PreviewExportError).diagnostics).toEqual([
       { type: "NODE_OVERLAP", message: "overlap" },
     ]);
+  });
+
+  it("不正なdiagnostics responseは型付きerrorとして扱わない", async () => {
+    mockResponse(422, { errors: [null] });
+
+    await expect(downloadPptx("<Text />", "slides.pom.xml")).rejects.toThrow(
+      "PPTX generation failed",
+    );
   });
 });

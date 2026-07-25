@@ -2,7 +2,13 @@
 
 import { EditorView } from "@codemirror/view";
 import type { CSSProperties, ReactNode } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { PomAstEditor } from "./PomAstEditor.tsx";
 import { SlidePreview } from "./SlidePreview.tsx";
@@ -94,7 +100,10 @@ export function PomEditor({
   const abortControllerRef = useRef<AbortController | null>(null);
   const onPreviewRef = useRef(onPreview);
   const currentXmlRef = useRef(xml);
-  currentXmlRef.current = xml;
+
+  useLayoutEffect(() => {
+    currentXmlRef.current = xml;
+  }, [xml]);
 
   useEffect(() => {
     onPreviewRef.current = onPreview;

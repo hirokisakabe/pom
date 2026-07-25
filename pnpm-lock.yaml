@@ -253,6 +253,9 @@ importers:
       commander:
         specifier: ^15.0.0
         version: 15.0.0
+      jszip:
+        specifier: ^3.10.1
+        version: 3.10.1
       pptx-glimpse:
         specifier: ^3.2.8
         version: 3.2.8

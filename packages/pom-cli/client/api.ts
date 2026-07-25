@@ -10,12 +10,6 @@ export interface PreviewDocument {
   editable: boolean;
 }
 
-interface ExportedImage {
-  filename: string;
-  mediaType: string;
-  data: string;
-}
-
 export class PreviewExportError extends Error {
   constructor(
     message: string,
@@ -28,6 +22,17 @@ export class PreviewExportError extends Error {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function isDiagnostic(value: unknown): value is PomEditorDiagnostic {
+  return (
+    isRecord(value) &&
+    typeof value.type === "string" &&
+    typeof value.message === "string" &&
+    (value.line === undefined || typeof value.line === "number") &&
+    (value.column === undefined || typeof value.column === "number") &&
+    (value.tagName === undefined || typeof value.tagName === "string")
+  );
 }
 
 async function readJson(response: Response): Promise<unknown> {
@@ -49,8 +54,12 @@ async function throwExportError(
   fallback: string,
 ): Promise<never> {
   const result = await readJson(response);
-  if (isRecord(result) && Array.isArray(result.errors)) {
-    const diagnostics = result.errors as PomEditorDiagnostic[];
+  if (
+    isRecord(result) &&
+    Array.isArray(result.errors) &&
+    result.errors.every(isDiagnostic)
+  ) {
+    const diagnostics = result.errors;
     throw new PreviewExportError(
       diagnostics.map((diagnostic) => diagnostic.message).join("\n") ||
         fallback,
@@ -71,6 +80,16 @@ function downloadBlob(blob: Blob, filename: string): void {
 
 function outputBaseName(filename: string): string {
   return filename.replace(/\.pom\.(?:xml|md)$/u, "");
+}
+
+function attachmentFilename(response: Response, fallback: string): string {
+  const encoded = response.headers.get("x-pom-filename");
+  if (!encoded) return fallback;
+  try {
+    return decodeURIComponent(encoded);
+  } catch {
+    return fallback;
+  }
 }
 
 export async function loadDocument(signal?: AbortSignal) {
@@ -104,8 +123,12 @@ export async function generatePreview(
     signal,
   });
   const result = await readJson(response);
-  if (isRecord(result) && Array.isArray(result.errors)) {
-    return { errors: result.errors as PomEditorDiagnostic[] };
+  if (
+    isRecord(result) &&
+    Array.isArray(result.errors) &&
+    result.errors.every(isDiagnostic)
+  ) {
+    return { errors: result.errors };
   }
   if (!response.ok) throw new Error(errorMessage(result, "Preview failed"));
   if (
@@ -147,7 +170,10 @@ export async function downloadPptx(
   if (!response.ok) {
     await throwExportError(response, "PPTX generation failed");
   }
-  downloadBlob(await response.blob(), `${outputBaseName(sourceFilename)}.pptx`);
+  downloadBlob(
+    await response.blob(),
+    attachmentFilename(response, `${outputBaseName(sourceFilename)}.pptx`),
+  );
 }
 
 export async function exportImages(
@@ -165,24 +191,8 @@ export async function exportImages(
   if (!response.ok) {
     await throwExportError(response, "Image rendering failed");
   }
-  const result = await readJson(response);
-  if (
-    !isRecord(result) ||
-    !Array.isArray(result.files) ||
-    !result.files.every(
-      (file) =>
-        isRecord(file) &&
-        typeof file.filename === "string" &&
-        typeof file.mediaType === "string" &&
-        typeof file.data === "string",
-    )
-  ) {
-    throw new Error("Invalid image export response from the preview server");
-  }
-  for (const file of result.files as ExportedImage[]) {
-    const bytes = Uint8Array.from(atob(file.data), (character) =>
-      character.charCodeAt(0),
-    );
-    downloadBlob(new Blob([bytes], { type: file.mediaType }), file.filename);
-  }
+  downloadBlob(
+    await response.blob(),
+    attachmentFilename(response, `slides.${options.format}`),
+  );
 }
