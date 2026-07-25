@@ -382,7 +382,7 @@ Declare a color palette once at the top level and reference each token from any 
 | `backgroundGradient` | `linear-gradient(135deg, #667EEA 0%, #764BA2 100%)` or `radial-gradient(circle at center, #1D4ED8 0%, #38BDF8 100%)` | Gradient background. **linear**: angle (`<n>deg` or `to right` etc., default `180deg`) + 2 or more stops. **radial**: optional `<shape>` (`circle` / `ellipse`, default `ellipse`) + optional `<size>` (`closest-side` / `closest-corner` / `farthest-side` / `farthest-corner`, default `farthest-corner`) + optional `at <position>` (`at center` / `at top right` / `at 25% 75%`, default `center`) + 2 or more stops. PowerPoint's radial fill does not visually distinguish `circle` / `ellipse` or the size keyword (only the center position affects output). Takes precedence over `backgroundColor`. On the slide root node it becomes the slide background |
 | `backgroundImage` | `backgroundImage.src="url" backgroundImage.sizing="cover"` | Background image                           |
 | `border`          | `border.color="333" border.width="1"`                      | Border (shorthand + dot notation can be mixed) |
-| `borderTop` `borderRight` `borderBottom` `borderLeft` | `borderLeft.color="1D4ED8" borderLeft.width="6"` | Per-side border with the same fields as `border`. Overrides `border` for that side (field-by-field). Useful for accent bars / underlined headings. Cannot be combined with `borderRadius` (per-side values are ignored with a warning) |
+| `borderTop` `borderRight` `borderBottom` `borderLeft` | `borderLeft.color="1D4ED8" borderLeft.width="6"` | Per-side border with the same fields as `border`. Overrides `border` for that side (field-by-field). Useful for accent bars / underlined headings. Combinable with `borderRadius`: `borderTop` paints both upper corners in its color, `borderBottom` paints both lower corners. `borderLeft` / `borderRight` only draw the straight segment between the corners — they do not wrap into the arcs, so `borderLeft` + `borderRadius` reads as a clean left accent bar with neutral rounded corners |
 | `borderRadius`    | number                                                     | Border radius (px)                         |
 | `opacity`         | 0-1                                                        | Background opacity                         |
 | `margin`          | number / `margin.top="8" margin.bottom="8"`                | Margin (shorthand + dot notation can be mixed) |
@@ -989,7 +989,7 @@ When the same property is specified via both attributes (JSON string) and child 
 
 ### KPI Tile with Dot Indicator (color-coded category)
 
-A per-side border (`borderTop` etc.) cannot be combined with `borderRadius`. To color-code a rounded KPI tile by category, replace the top-edge accent bar with a small filled circle (`Shape shapeType="ellipse"`) placed next to a short uppercase label. The result is just as recognizable and works with `borderRadius`.
+`borderTop` + `borderRadius` is now supported directly — `<VStack borderRadius="16" borderTop.color="1D4ED8" borderTop.width="6">` produces a rounded tile whose top edge and both upper corners are painted in `borderTop.color`. The dot + uppercase label pattern below remains a useful alternative when you want the indicator inside the tile (e.g. to leave the corner radius uniform across mixed-color KPI rows).
 
 ```xml
 <HStack gap="20" alignItems="stretch">

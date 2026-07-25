@@ -56,6 +56,7 @@ import {
   page52TextGradientXml,
   page53RadialGradientXml,
   page54TimelineCustomizationXml,
+  page55PerSideBorderRadiusXml,
   vrtThemeXml,
 } from "./slides/index.js";
 
@@ -116,6 +117,7 @@ export async function generatePptx(outputPath: string): Promise<void> {
     page52TextGradientXml,
     page53RadialGradientXml,
     page54TimelineCustomizationXml,
+    page55PerSideBorderRadiusXml,
   ]
     .map((pageXml) => `<Slide>${pageXml}</Slide>`)
     .join("\n");

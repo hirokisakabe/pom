@@ -68,6 +68,7 @@ export const PAGE_NAMES = [
   "52-text-gradient",
   "53-radial-gradient",
   "54-timeline-customization",
+  "55-per-side-border-radius",
 ] as const;
 
 export const THRESHOLD = 0.1;

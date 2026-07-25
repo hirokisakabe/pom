@@ -1,11 +1,13 @@
 import type { PositionedNode } from "../../types.ts";
 import { getImageData } from "../../shared/measureImage.ts";
 import type { RenderContext } from "../types.ts";
+import { pxToIn } from "../units.ts";
 import {
   BORDER_SIDES,
   hasVisibleBorder,
   resolvePerSideBorders,
   resolveRectRadius,
+  type BorderSide,
   type PerSideBorders,
 } from "./visualStyle.ts";
 import { addGlimpsePicture, imageBytesFromSource } from "./glimpsePicture.ts";
@@ -37,7 +39,7 @@ export function renderBackgroundAndBorder(
     shadow,
   } = node;
 
-  const perSideBorders = resolveEffectivePerSideBorders(node, ctx);
+  const perSideBorders = resolvePerSideBorders(node);
 
   const hasBackground = Boolean(backgroundColor) || Boolean(backgroundGradient);
   const hasBackgroundImage = Boolean(backgroundImage);
@@ -91,7 +93,7 @@ export function renderBackgroundAndBorder(
       );
     }
 
-    renderPerSideBorderLines(node, perSideBorders, ctx);
+    renderPerSideBorders(node, perSideBorders, ctx);
     return;
   }
 
@@ -156,27 +158,7 @@ export function renderBackgroundAndBorder(
     );
   }
 
-  renderPerSideBorderLines(node, perSideBorders, ctx);
-}
-
-/**
- * 辺ごとの border 指定を解決する。borderRadius との併用は角の接続処理が
- * 複雑になるためサポートせず、警告を発して 4 辺一律の border に
- * フォールバックする
- */
-function resolveEffectivePerSideBorders(
-  node: PositionedNode,
-  ctx: RenderContext,
-): PerSideBorders | undefined {
-  const perSideBorders = resolvePerSideBorders(node);
-  if (perSideBorders && node.borderRadius !== undefined) {
-    ctx.buildContext.diagnostics.add(
-      "PER_SIDE_BORDER_WITH_RADIUS",
-      'borderTop / borderRight / borderBottom / borderLeft cannot be combined with borderRadius — falling back to the uniform "border" style',
-    );
-    return undefined;
-  }
-  return perSideBorders;
+  renderPerSideBorders(node, perSideBorders, ctx);
 }
 
 /**
@@ -190,9 +172,9 @@ export function renderBorderOnly(
 ): void {
   const { border, borderRadius } = node;
 
-  const perSideBorders = resolveEffectivePerSideBorders(node, ctx);
+  const perSideBorders = resolvePerSideBorders(node);
   if (perSideBorders) {
-    renderPerSideBorderLines(node, perSideBorders, ctx);
+    renderPerSideBorders(node, perSideBorders, ctx);
     return;
   }
 
@@ -217,16 +199,21 @@ export function renderBorderOnly(
 }
 
 /**
- * 辺ごとの border をノードの各辺に沿った line shape として描画する。
- * shape の line オプション (4 辺一律) では表現できないため、辺ごとに
- * 独立した line shape を追加する
+ * 辺ごとの border を描画する。borderRadius の有無に応じて分岐:
+ * - radius 無し: 各辺を独立した line shape として描画
+ * - radius 有り: 角部の円弧 + 直線セグメントの custGeom shape を辺ごとに描画
  */
-function renderPerSideBorderLines(
+function renderPerSideBorders(
   node: PositionedNode,
   perSideBorders: PerSideBorders | undefined,
   ctx: RenderContext,
 ): void {
   if (!perSideBorders) return;
+
+  if (node.borderRadius) {
+    renderPerSideBorderPaths(node, perSideBorders, ctx);
+    return;
+  }
 
   const edges = {
     top: { x: node.x, y: node.y, w: node.w, h: 0 },
@@ -252,5 +239,195 @@ function renderPerSideBorderLines(
         dashType: style.dashType,
       },
     );
+  }
+}
+
+/**
+ * borderRadius と辺ごと border の併用時に、角部の円弧と直線セグメントを
+ * 含む custGeom path を辺ごとに描画する。
+ *
+ * 角弧は水平辺 (top / bottom) を優先し、水平辺がなければ隣接する
+ * 垂直辺 (left / right) が所有する。
+ * - `borderTop` + `borderRadius` (KPI タイル想定): 上 2 つの角丸が borderTop
+ *   の色で連続描画される
+ * - `borderBottom` + `borderRadius`: 下 2 つの角丸が borderBottom の色で描画
+ * - `borderLeft` のみ + `borderRadius` (アクセントバー想定): 左上・左下の
+ *   角丸を borderLeft が所有し、左辺が途切れずに描画される
+ * - 4 辺すべて + `borderRadius`: top/bottom が上下 2 角を所有、left/right は
+ *   角弧を持たず直線セグメントのみ
+ */
+function renderPerSideBorderPaths(
+  node: PositionedNode,
+  perSideBorders: PerSideBorders,
+  ctx: RenderContext,
+): void {
+  const { w, h } = node;
+  const r = effectiveBorderRadius(node.borderRadius, w, h);
+
+  const ownership: Record<BorderCorner, BorderSide | null> = {
+    topLeft: perSideBorders.top ? "top" : perSideBorders.left ? "left" : null,
+    topRight: perSideBorders.top
+      ? "top"
+      : perSideBorders.right
+        ? "right"
+        : null,
+    bottomRight: perSideBorders.bottom
+      ? "bottom"
+      : perSideBorders.right
+        ? "right"
+        : null,
+    bottomLeft: perSideBorders.bottom
+      ? "bottom"
+      : perSideBorders.left
+        ? "left"
+        : null,
+  };
+
+  for (const side of BORDER_SIDES) {
+    const style = perSideBorders[side];
+    if (!style) continue;
+
+    const points = buildSidePathPoints(
+      side,
+      w,
+      h,
+      r,
+      style.width ?? 1,
+      ownership,
+    );
+    if (points.length < 2) continue;
+
+    addGlimpseShape(
+      ctx,
+      {
+        geometry: { kind: "preset", preset: "rect" },
+        ...createShapeBoundsInput(node),
+        fill: noneShapeFill(),
+        outline: shapeOutline(style, "000000"),
+      },
+      node,
+      {
+        dashType: style.dashType,
+        customGeometry: {
+          width: pxToIn(w),
+          height: pxToIn(h),
+          points,
+        },
+      },
+    );
+  }
+}
+
+type BorderCorner = "topLeft" | "topRight" | "bottomRight" | "bottomLeft";
+
+type CustGeomPoint = { x: number; y: number };
+
+/**
+ * 描画時の実効半径 (px)。roundRect の半径上限に合わせ、custGeom 側でも
+ * min(w, h) / 2 へクランプする。
+ */
+function effectiveBorderRadius(
+  borderRadius: number | undefined,
+  w: number,
+  h: number,
+): number {
+  if (!borderRadius) return 0;
+  return Math.min(borderRadius, Math.min(w, h) / 2);
+}
+
+/**
+ * 1 辺分のパスを (px 単位の) custGeom 用 point 列として返す。座標系は
+ * ノード自身のローカル (左上 = 0,0、右下 = w,h)。
+ *
+ * @pptx-glimpse/document の custom geometry writer は moveTo / lineTo を
+ * サポートするため、角部の 90° 円弧を複数の lineTo へ展開する。
+ */
+function buildSidePathPoints(
+  side: BorderSide,
+  w: number,
+  h: number,
+  r: number,
+  borderWidth: number,
+  ownership: Record<BorderCorner, BorderSide | null>,
+): CustGeomPoint[] {
+  const points: CustGeomPoint[] = [];
+  // Outline は path の中心線を基準に両側へ広がる。中心線を線幅の半分だけ
+  // 内側へ寄せることで、ボーダー外周を背景 roundRect の外周に揃える。
+  const inset = Math.min(borderWidth / 2, r);
+  const pathRadius = Math.max(0, r - inset);
+  const point = (p: { x: number; y: number }): CustGeomPoint => ({
+    x: pxToIn(p.x),
+    y: pxToIn(p.y),
+  });
+  const appendQuarterArc = (
+    center: { x: number; y: number },
+    startAngle: number,
+  ): void => {
+    const segmentCount = 8;
+    for (let index = 1; index <= segmentCount; index += 1) {
+      const angle = startAngle + (90 * index) / segmentCount;
+      const radians = (angle * Math.PI) / 180;
+      points.push(
+        point({
+          x: center.x + pathRadius * Math.cos(radians),
+          y: center.y + pathRadius * Math.sin(radians),
+        }),
+      );
+    }
+  };
+
+  switch (side) {
+    case "top": {
+      if (ownership.topLeft === "top") {
+        points.push(point({ x: inset, y: r }));
+        appendQuarterArc({ x: r, y: r }, 180);
+      } else {
+        points.push(point({ x: r, y: inset }));
+      }
+      points.push(point({ x: w - r, y: inset }));
+      if (ownership.topRight === "top") {
+        appendQuarterArc({ x: w - r, y: r }, 270);
+      }
+      return points;
+    }
+    case "right": {
+      if (ownership.topRight === "right") {
+        points.push(point({ x: w - r, y: inset }));
+        appendQuarterArc({ x: w - r, y: r }, 270);
+      } else {
+        points.push(point({ x: w - inset, y: r }));
+      }
+      points.push(point({ x: w - inset, y: h - r }));
+      if (ownership.bottomRight === "right") {
+        appendQuarterArc({ x: w - r, y: h - r }, 0);
+      }
+      return points;
+    }
+    case "bottom": {
+      if (ownership.bottomRight === "bottom") {
+        points.push(point({ x: w - inset, y: h - r }));
+        appendQuarterArc({ x: w - r, y: h - r }, 0);
+      } else {
+        points.push(point({ x: w - r, y: h - inset }));
+      }
+      points.push(point({ x: r, y: h - inset }));
+      if (ownership.bottomLeft === "bottom") {
+        appendQuarterArc({ x: r, y: h - r }, 90);
+      }
+      return points;
+    }
+    case "left": {
+      if (ownership.bottomLeft === "left") {
+        points.push(point({ x: r, y: h - inset }));
+        appendQuarterArc({ x: r, y: h - r }, 90);
+      } else {
+        points.push(point({ x: inset, y: h - r }));
+      }
+      points.push(point({ x: inset, y: r }));
+      if (ownership.topLeft === "left") {
+        appendQuarterArc({ x: r, y: r }, 180);
+      }
+      return points;
+    }
   }
 }
