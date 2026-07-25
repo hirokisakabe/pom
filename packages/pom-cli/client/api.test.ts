@@ -172,8 +172,12 @@ describe("preview client API", () => {
   it("不正なdiagnostics responseは型付きerrorとして扱わない", async () => {
     mockResponse(422, { errors: [null] });
 
-    await expect(downloadPptx("<Text />", "slides.pom.xml")).rejects.toThrow(
-      "PPTX generation failed",
+    const error = await downloadPptx("<Text />", "slides.pom.xml").catch(
+      (reason: unknown) => reason,
     );
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error).not.toBeInstanceOf(PreviewExportError);
+    expect((error as Error).message).toBe("PPTX generation failed");
   });
 });

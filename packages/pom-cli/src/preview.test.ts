@@ -327,6 +327,26 @@ describe("preview server", () => {
     expect(response.status).toBe(400);
   });
 
+  it.each([
+    ["xmlなし", { format: "png" }],
+    ["未知のformat", { xml: "<Text />", format: "gif" }],
+    ["0のslide", { xml: "<Text />", format: "png", slides: [0] }],
+    ["負数のslide", { xml: "<Text />", format: "png", slides: [-1] }],
+    ["小数のslide", { xml: "<Text />", format: "png", slides: [1.5] }],
+    ["文字列のslide", { xml: "<Text />", format: "png", slides: ["1"] }],
+  ])("不正な画像出力request (%s) を400で拒否する", async (_name, body) => {
+    const renderImages = vi.fn();
+    await startServer(undefined, undefined, { renderImages });
+    const response = await fetch(`${baseUrl}/_api/export/images`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    expect(response.status).toBe(400);
+    expect(renderImages).not.toHaveBeenCalled();
+  });
+
   it("Save後のwatch通知を抑止し、後続のexternal changeだけを配信する", async () => {
     const onDocumentEvent = vi.fn();
     const generatePreview = await startServer(undefined, onDocumentEvent);
