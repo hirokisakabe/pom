@@ -1,6 +1,6 @@
 # Embedding the Editor
 
-`@hirokisakabe/pom-editor` provides React components for embedding pom XML / AST editing, preview, diagnostics, and host actions in an application. It edits the same pom XML model used by the other authoring surfaces; preview generation and persistence remain under host control.
+`@hirokisakabe/pom-editor` provides a React component for embedding pom XML / AST editing, preview, diagnostics, and host actions in an application. It edits the same pom XML model used by the other authoring surfaces; preview generation and persistence remain under host control.
 
 ## Install
 
@@ -43,19 +43,5 @@ import { PomEditor } from "@hirokisakabe/pom-editor";
 | `toolbarStart`, `toolbarEnd`                              | Host content around standard toolbar actions                                |
 | `debounceMs`                                              | Preview delay; defaults to 500 ms                                           |
 | `className`, `style`                                      | Root element styling                                                        |
-
-## Embed only the AST editor
-
-```tsx
-import { PomAstEditor } from "@hirokisakabe/pom-editor";
-import { useState } from "react";
-
-function App() {
-  const [xml, setXml] = useState(`<Slide><Text>Hello</Text></Slide>`);
-  return <PomAstEditor xml={xml} onChange={setXml} />;
-}
-```
-
-`PomAstEditor` shows the parsed tree and supports drag-and-drop reordering and nesting for `VStack`, `HStack`, and `Layer`. It returns serialized pom XML after every accepted move.
 
 For server-side preview generation, pass the XML to [`buildPptx()`](/pom-library) and convert the result to SVG, or expose an application-specific endpoint like the example above. See [pom XML](/pom-xml) for the shared model.
