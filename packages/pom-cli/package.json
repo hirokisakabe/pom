@@ -45,12 +45,12 @@
     "@hirokisakabe/pom-md": "workspace:*",
     "commander": "^15.0.0",
     "jszip": "^3.10.1",
-    "pptx-glimpse": "^3.2.8"
+    "pptx-glimpse": "^5.2.0"
   },
   "devDependencies": {
     "@hirokisakabe/pom-editor": "workspace:*",
     "@testing-library/react": "^16.3.2",
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.2.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "esbuild": "^0.28.1",
