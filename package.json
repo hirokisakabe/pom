@@ -21,17 +21,17 @@
     }
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.7.0",
-    "@changesets/cli": "^2.31.1",
+    "@changesets/changelog-github": "^1.0.0",
+    "@changesets/cli": "^3.0.1",
     "@eslint/js": "^10.0.1",
     "@typescript/native": "npm:typescript@7.0.2",
     "eslint": "^10.7.0",
-    "globals": "^17.7.0",
+    "globals": "^17.11.0",
     "jiti": "^2.7.0",
-    "knip": "^6.27.0",
-    "prettier": "3.9.5",
+    "knip": "^6.32.3",
+    "prettier": "3.9.6",
     "typescript": "npm:@typescript/typescript6@6.0.2",
-    "typescript-eslint": "^8.64.0",
-    "vitest": "^4.1.10"
+    "typescript-eslint": "^8.68.0",
+    "vitest": "^4.1.11"
   }
 }
