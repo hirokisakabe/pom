@@ -55,7 +55,7 @@
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^26.1.1",
-    "@vitest/coverage-v8": "^4.1.10"
+    "@vitest/coverage-v8": "^5.0.0"
   },
   "publishConfig": {
     "access": "public"
