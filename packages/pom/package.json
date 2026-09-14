@@ -92,14 +92,14 @@
     "typescript": "npm:@typescript/typescript6@6.0.2"
   },
   "dependencies": {
-    "@pptx-glimpse/document": "0.12.0",
+    "@pptx-glimpse/document": "0.16.0",
     "@resvg/resvg-wasm": "^2.6.2",
-    "@types/node": "^26.1.1",
-    "fast-xml-parser": "^5.10.1",
+    "@types/node": "^26.5.1",
+    "fast-xml-parser": "^5.11.1",
     "image-size": "2.0.2",
-    "jszip": "^3.10.1",
+    "jszip": "^3.10.2",
     "opentype.js": "^2.0.0",
     "yoga-layout": "3.2.1",
-    "zod": "^4.4.3"
+    "zod": "^4.6.2"
   }
 }
