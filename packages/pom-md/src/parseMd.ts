@@ -1,5 +1,5 @@
 import MarkdownIt from "markdown-it";
-import type Token from "markdown-it/lib/token.mjs";
+import type { Token } from "markdown-it";
 
 // ===== スライドサイズプリセット =====
 const SIZE_PRESETS: Record<string, { w: number; h: number }> = {
@@ -113,7 +113,7 @@ function extractInlineXml(tokens: Token[]): string {
     } else if (t.type === "em_close") {
       xml += "</I>";
     } else if (t.type === "link_open") {
-      const href = t.attrGet("href") ?? "";
+      const href = String(t.attrGet("href") ?? "");
       xml += `<A href="${escapeXml(href)}">`;
     } else if (t.type === "link_close") {
       xml += "</A>";
@@ -154,7 +154,7 @@ function tokensToXml(tokens: Token[]): string {
         inlineToken.children[0].type === "image"
       ) {
         const imgToken = inlineToken.children[0];
-        const src = imgToken.attrGet("src") ?? "";
+        const src = String(imgToken.attrGet("src") ?? "");
         parts.push(`<Image src="${escapeXml(src)}" />`);
         i += 3; // paragraph_open, inline, paragraph_close
         continue;
