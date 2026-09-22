@@ -1,5 +1,17 @@
 # @hirokisakabe/pom-editor
 
+## 1.0.0
+
+### Major Changes
+
+- [#997](https://github.com/hirokisakabe/pom/pull/997) [`f01de47`](https://github.com/hirokisakabe/pom/commit/f01de47aa2587c13a4aa96a70e393f7e5821d3cd) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - 公開コンポーネントを `PomEditor` に一本化し、package root から `PomAstEditor` と `PomAstEditorProps` の export を削除します。
+
+  AST 編集を利用する場合は、XML / AST モード切り替え、preview、diagnostics、host actions をまとめた `PomEditor` へ移行してください。
+
+### Minor Changes
+
+- [#999](https://github.com/hirokisakabe/pom/pull/999) [`af3efc6`](https://github.com/hirokisakabe/pom/commit/af3efc67da9a95e5bf10c296bb12b355bd34ba05) Thanks [@hirokisakabe](https://github.com/hirokisakabe)! - AST editor の Text を本文中心のインライン編集表示へ変更し、VStack、HStack、Layer を方向と構造属性が分かるレイアウトコンテナとして表示します。
+
 ## 0.7.0
 
 ### Minor Changes
