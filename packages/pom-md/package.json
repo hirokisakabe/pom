@@ -50,7 +50,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "markdown-it": "^15.0.2"
+    "markdown-it": "^15.0.3"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",
