@@ -75,8 +75,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       fast-xml-parser:
-        specifier: ^5.11.2
-        version: 5.11.2
+        specifier: ^5.12.0
+        version: 5.12.0
       hono:
         specifier: ^4.13.16
         version: 4.13.16
@@ -178,8 +178,8 @@ importers:
         specifier: ^26.6.5
         version: 26.6.5
       fast-xml-parser:
-        specifier: ^5.11.2
-        version: 5.11.2
+        specifier: ^5.12.0
+        version: 5.12.0
       image-size:
         specifier: 2.0.4
         version: 2.0.4
@@ -5061,11 +5061,11 @@ packages:
   fast-wrap-ansi@0.2.2:
     resolution: {integrity: sha512-7F2Fl+TjRSenLqlU3UjSH0iyqopqoZIu7eZVpEirP2g1GtWa2G/ecEmBdgz31+Mxr+ELclgg6sokpSFIQiZ02Q==}
 
-  fast-xml-builder@1.3.1:
-    resolution: {integrity: sha512-pIM/1n3ntFXKYrUZwW7QCK0gAW7XY+wzj1YMIV3tLDvPj/V+zTGJK5e3/4WJfwj0qWw2ElNXiTixda/R+3YSug==}
+  fast-xml-builder@1.3.2:
+    resolution: {integrity: sha512-OX91VSlShLPDgRZV7tk/YQ4l8tT75QziF5Ixg8g4PFbCVPjuTWwN+yQfAxLJ0dufJpprdOd6HlM74Jhd39TcBQ==}
 
-  fast-xml-parser@5.11.2:
-    resolution: {integrity: sha512-R9iDuNrQYeQut46cn2r2wHKn4HYzVDvDm5J1wW+koZewykv0yuO2HChTYeZtrULyHIDM9cj9TUXloCsueCQUog==}
+  fast-xml-parser@5.12.0:
+    resolution: {integrity: sha512-/pXxRBtwxY9w8z7YbgsvIPPcPvFDsTbIkWwTQJhzNJPokj+TbN6ftmcv4j/pEQDvOCNnKGDzuk5Bo2oogIOiFg==}
     hasBin: true
 
   fastq@1.20.3:
@@ -5615,8 +5615,8 @@ packages:
     resolution: {integrity: sha512-mE00Gnza5EEB3Ds0HfMyllZzbBrmLOX3vfWoj9A9PEnTfratQ/BcaJOuMhnkhjXvb2+FkY3VuHqtAGpTPmglFQ==}
     engines: {node: '>=18'}
 
-  is-unsafe@2.0.2:
-    resolution: {integrity: sha512-HgbIHPBH0KHHCcjLfGsCvhtPTVxjaAZlXjwdz7/GQC40SjSe4sfQsar8J5VFo8JOSbarkpV0OLG95bbaNd9aAQ==}
+  is-unsafe@2.0.3:
+    resolution: {integrity: sha512-ZBllczCCO267vgdFb6Tq3pv+LhHaCiGMdr+ZsuL+OopruAg7S+3ZDs1vD0RPC0uSrkjzbraxaGjtX1YBxjPeFQ==}
 
   is-windows@1.0.2:
     resolution: {integrity: sha512-eXK1UInq2bPmjyX6e3VHIzMLobc4J94i4AWn+Hpq3OU5KkrRC96OAcR3PRJ/pGu6m8TRnBHP9dkXQVsT/COVIA==}
@@ -6807,8 +6807,8 @@ packages:
     resolution: {integrity: sha512-zkd+e9S1AQHhmaBKye9zlFHWjOwVgqXl1q3ECYy8561K7qxR2cREf/STLskulBFd78k6AOFeA+ff1TtEzk9bAA==}
     engines: {node: ^10 || ^12 || >=14}
 
-  postcss@8.5.32:
-    resolution: {integrity: sha512-LJlKCCAUFKOuZxipUdYw1NzIITEsPcgyOG9LkvRJvuKj/bRzbuRY0ARXvL0pWGpsZvn8jku+LMep2eU0seHp8g==}
+  postcss@8.5.33:
+    resolution: {integrity: sha512-RVHEU9/Pp1Fnjr/MpAJsZoADukCKhfIi15OunEYiGktIkYLkPVvC1sioWolGDS7XByMTx9m/IGbro0Js13zhnQ==}
     engines: {node: ^10 || ^12 || >=14}
 
   powershell-utils@0.2.1:
@@ -7652,15 +7652,15 @@ packages:
   tldts-core@7.4.2:
     resolution: {integrity: sha512-nwEyF4vl4RSJjwSjBUmOSxc3BFPoIFdlRthJ6e+5v9P3bHNsoD06UjuqMUspqp7vsEZ1beaHi1km+optiE17yA==}
 
-  tldts-core@7.5.2:
-    resolution: {integrity: sha512-8W1topazDwhMKbm2I83IPa57Ow5VUxFgLbXv42+vSILnv8FY5OHvdEY/tS6WoWeMbxkHZQhra5cmeFHriKptSQ==}
+  tldts-core@7.5.3:
+    resolution: {integrity: sha512-G9K/M0Ah+U22clAb1r0fYNheSysv7Y6OAIundzKcFQx5jBgPId3CnFl44sAGGqJA+lUXMOrREFXHX1lrtEApdA==}
 
   tldts@7.4.2:
     resolution: {integrity: sha512-kCwffuaH8ntKtygnWe1b4BJKWiCUH30n5KfoTr6IchcXOwR7chAOFJxFrH3vjANafUYrIA4a7SDL+nn7SiR4Sw==}
     hasBin: true
 
-  tldts@7.5.2:
-    resolution: {integrity: sha512-p+JwEdxIWQx033pMvW9ULBbyC1Eg6JtWo2Mo0jbC8TVSjp2QrHFE+WKs8JpMGc3ECMsmBpU2RH/25NgX3k1ulg==}
+  tldts@7.5.3:
+    resolution: {integrity: sha512-Gt09nFFdNq5+Gm7qubL33O+g1UZ6lAlV3QXUTbXpqYWS+OI58IqzuxUrwk/D6S6jLNvEZrHaBtXIGMh1mW1poA==}
     hasBin: true
 
   tmp@0.2.7:
@@ -9880,7 +9880,7 @@ snapshots:
 
   '@pptx-glimpse/document@0.16.0':
     dependencies:
-      fast-xml-parser: 5.11.2
+      fast-xml-parser: 5.12.0
       fflate: 0.8.3
 
   '@pptx-glimpse/editor@0.6.0':
@@ -13175,16 +13175,16 @@ snapshots:
       fast-string-width: 3.0.2
     optional: true
 
-  fast-xml-builder@1.3.1:
+  fast-xml-builder@1.3.2:
     dependencies:
       path-expression-matcher: 1.6.2
       xml-naming: 0.3.0
 
-  fast-xml-parser@5.11.2:
+  fast-xml-parser@5.12.0:
     dependencies:
       '@nodable/entities': 3.1.0
-      fast-xml-builder: 1.3.1
-      is-unsafe: 2.0.2
+      fast-xml-builder: 1.3.2
+      is-unsafe: 2.0.3
       path-expression-matcher: 1.6.2
       strnum: 2.5.1
       xml-naming: 0.3.0
@@ -13781,7 +13781,7 @@ snapshots:
 
   is-unicode-supported@2.1.0: {}
 
-  is-unsafe@2.0.2: {}
+  is-unsafe@2.0.3: {}
 
   is-windows@1.0.2: {}
 
@@ -15376,7 +15376,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.2
 
-  postcss@8.5.32:
+  postcss@8.5.33:
     dependencies:
       nanoid: 3.3.20
       picocolors: 1.1.1
@@ -15389,7 +15389,7 @@ snapshots:
       '@pptx-glimpse/document': 0.16.0
       '@pptx-glimpse/editor': 0.6.0
       '@resvg/resvg-wasm': 2.6.2
-      fast-xml-parser: 5.11.2
+      fast-xml-parser: 5.12.0
       opentype.js: 1.3.4
 
   prebuild-install@7.1.3:
@@ -16523,16 +16523,16 @@ snapshots:
 
   tldts-core@7.4.2: {}
 
-  tldts-core@7.5.2:
+  tldts-core@7.5.3:
     optional: true
 
   tldts@7.4.2:
     dependencies:
       tldts-core: 7.4.2
 
-  tldts@7.5.2:
+  tldts@7.5.3:
     dependencies:
-      tldts-core: 7.5.2
+      tldts-core: 7.5.3
     optional: true
 
   tmp@0.2.7: {}
@@ -16551,7 +16551,7 @@ snapshots:
 
   tough-cookie@6.1.0:
     dependencies:
-      tldts: 7.5.2
+      tldts: 7.5.3
     optional: true
 
   tr46@0.0.3: {}
@@ -16879,7 +16879,7 @@ snapshots:
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
-      postcss: 8.5.32
+      postcss: 8.5.33
       rolldown: 1.0.0-rc.11(@emnapi/core@1.11.0)(@emnapi/runtime@1.11.0)
       tinyglobby: 0.2.17
     optionalDependencies:
@@ -16897,7 +16897,7 @@ snapshots:
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
-      postcss: 8.5.32
+      postcss: 8.5.33
       rolldown: 1.0.0-rc.11(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)
       tinyglobby: 0.2.17
     optionalDependencies:
@@ -16915,7 +16915,7 @@ snapshots:
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
-      postcss: 8.5.32
+      postcss: 8.5.33
       rolldown: 1.0.0-rc.11(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)
       tinyglobby: 0.2.17
     optionalDependencies:
